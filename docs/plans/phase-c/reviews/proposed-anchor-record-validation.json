@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "anchors": 18,
+    "path": "docs/plans/phase-c/anchors.json",
+    "problems": [],
+    "warnings": []
+  },
+  "error": null
+}

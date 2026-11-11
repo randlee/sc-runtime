@@ -14,7 +14,7 @@ attribute-generated CLI tests (`REQ-RUN-0312`, `ADR-RUN-0304`, `REQ-RUN-0311`),
 and framework-generated responses for unknown routes, Axum body rejection, and
 rmcp protocol errors (`REQ-RUN-0203` OPEN) stay deferred. Postgres/both,
 prototype-repository handoff, and other post-core layers stay outside Phase A.
-sc-lint 0.8.0 is in Phase A: a-5 installs it for this repository, and a-6
+sc-lint 0.8.4 is in Phase A: a-5 installs it for this repository, and a-6
 installs the consumer contract into generated projects.
 
 `REQ-RUN-0702` stays open. Git tag `v0.1.0`, crates.io publication of the four
@@ -26,6 +26,7 @@ authorization and registry credentials. Merging the release kit onto
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
+| sc-lint 0.8.6 repeat-init maintenance | [sprint](plans/maintenance/sc-lint-0-8-6.md) | implemented; QA pending | `codex/upgrade-sc-lint-0.8.6` |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
 | a-2 sc-config | [sprint-a-2](plans/phase-a/sprint-a-2-config.md) | complete | `sprint/a-2-config` |
 | a-3 sc-transport | [sprint-a-3](plans/phase-a/sprint-a-3-transport.md) | complete | `sprint/a-3-transport` |
@@ -102,26 +103,38 @@ parent merges. This docs amendment selects no replacement consumer pin.
 Phase c is the post-Phase-b consumer-quality and ecosystem-release phase.
 It makes the generated sc-lint consumer complete and moves the public
 runtime/template pair to the approved latest RMCP and Utoipa family while
-retaining the rusqlite 0.39/SQLx compatibility guard. See [Phase c
-plan](plans/phase-c/phase-c-plan.md).
+retaining the rusqlite 0.39/SQLx compatibility guard. It also makes the existing
+cron core consumable through public logging, cooperative store/lifecycle and
+query contracts, with supported custom-store/behavior paths and documented
+consumer responsibilities. An optional standard cron command adapter supplies
+shared JSON across selected UIs; the release sprint proves the documented
+default recipe and actual packaged composition. All six sprints are delivered and their parent Beads normally closed. [Final full-release QA5](https://github.com/randlee/sc-runtime/pull/124#issuecomment-6686113168) accepted109/109 phase delivery,26/26 C4 and retained111/111 source qualification, separately. All six public crates shipped at0.2.0; immutable `v0.2.0` remains at `118ee72d831f79778f3584f57a48706111754673`. See [Phase c plan](plans/phase-c/phase-c-plan.md) and [normal QA reports](plans/phase-c/reviews/sprint-qa/README.md).
+
+Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under maintenance parent `run-8qs`, with original contract/evidence and a nonblocking C1 origin link. Current shipping Windows success does not fix its historical cause. Normal report task `run-x8d.10` and the parent closure audit remain open pending review/merge of this separate documentation closeout; its HEAD is not the shipping or measured source.
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
-| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | planned | `sprint/c-1-consumer-runtime-contract` |
-| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
-| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
-| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
+| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | complete | `sprint/c-1-consumer-runtime-contract` |
+| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | complete | `sprint/c-2-consumer-sc-lint-full-profile` |
+| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | complete | `sprint/c-3-runtime-ecosystem-upgrade` |
+| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | complete | `sprint/c-4-runtime-ecosystem-release` |
+| c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
+| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |
 
-## Proposed reusable Dolt access
+## Proposed reusable Dolt access (on hold)
 
 The owner requested a thin multi-consumer `sc-dolt` crate maintained in this
 workspace: explicit branch-scoped SQL, concurrent-client isolation, native branch
 creation and clean merge, and native conflict/diff information. Earlier push/pull
 scope remains. Fork and clone are outside the initial delivery.
 
-[Proposed requirements](sc-dolt/requirements.md) and
+[Plan sprint](plans/maintenance/sc-dolt-plan.md),
+[proposed requirements](sc-dolt/requirements.md), and
 [architecture](sc-dolt/architecture.md) are grounded in
 [pinned Dolt source and executed native probes](research/dolt-v2.6.2/README.md).
 Implementation work is tracked by Beads epic `run-sc-dolt` and its three children.
-The proposal does not replace Phase C, start implementation, or authorize a
-registry/tag release. Raptor is the first intended consumer.
+
+**Status: on hold.** The branch is rebased on current `develop`. Implementation,
+registry publication, and tag release remain unauthorized until plan QA-1 reports
+PASS on the updated documents and CI is green. Raptor is the first intended
+consumer, not the API namespace.

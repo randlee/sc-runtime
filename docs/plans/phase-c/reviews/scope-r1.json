@@ -1,0 +1,88 @@
+{
+  "status": "FAIL",
+  "mode": "plan-scope-review",
+  "reviewer": "plan-scope-reviewer",
+  "round_id": "SCOPE-R1",
+  "round_index": 1,
+  "reviewed_commit": "5d8480586617de1397a77e6a4c47ec7f1f9e8227",
+  "previous_reviewed_commit": "76d6cfea54e1347d954a712d18a0824e8b24b695",
+  "findings_hash": "c2500353e73d25c04aa67ed8b7090cf57b0b2a3d0910dde7cc4ef443939c59d7",
+  "scope": {"phase": "c", "sprint": null},
+  "parallelism": {"waves": 3, "critical_path": 3, "width": 2, "sprint_count": 4, "tracks": 4, "must_follow_edges": 3, "parallel_safe_edges": 1},
+  "sprint_scores": [
+    {"sprint": "c-1", "closure_type": "contract", "target_boundary": "phase-c-consumer-runtime-contract", "status": "FAIL", "blocking_count": 0, "important_count": 1, "minor_count": 0},
+    {"sprint": "c-2", "closure_type": "integration", "target_boundary": "generated-consumer-lint", "status": "FAIL", "blocking_count": 0, "important_count": 2, "minor_count": 0},
+    {"sprint": "c-3", "closure_type": "integration", "target_boundary": "runtime-template-ecosystem-integration", "status": "FAIL", "blocking_count": 0, "important_count": 1, "minor_count": 0},
+    {"sprint": "c-4", "closure_type": "integration", "target_boundary": "published-runtime-template-consumer", "status": "FAIL", "blocking_count": 0, "important_count": 1, "minor_count": 0}
+  ],
+  "docs_read": [
+    ".claude/agents/plan-scope-reviewer.md",
+    ".claude/skills/plan-hardening/sprint-planning-guidelines.md",
+    ".claude/project/quality-policy.md",
+    "docs/project-plan.md",
+    "docs/plans/phase-c/phase-c-plan.md",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+    ".sprints/c/structure.ttl",
+    "boundaries/sc-runtime/sc-runtime.toml",
+    "boundaries/sc-command/sc-command.toml"
+  ],
+  "findings": [
+    {
+      "id": "PLAN-SCOPE-001",
+      "severity": "Important",
+      "category": "SERIAL-RISK",
+      "classification": "structural",
+      "affects_ac": true,
+      "target_refs": [
+        "docs/plans/phase-c/phase-c-plan.md:123",
+        "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md:34",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:67",
+        "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:26"
+      ],
+      "issue": "The three must_follow edges identify their parent artifacts in prose, but none records the required execution triggers. The phase says c-1 must finish before c-2/c-3 and their amendments are reviewed before work begins, which leaves a QA-wait interpretation and provides no merge-forward protocol for parent development pushes or child fix rounds. c-4 similarly names only the parent sprint. A downstream orchestrator cannot determine when to ingest pushed contract/source changes or whether child completion may precede parent PR merge.",
+      "required_correction": "For c-2/c-3 consuming c-1 and c-4 consuming c-3, state: parent development push triggers parent-to-child merge-forward before each development/fix round; parent QA is not a start barrier; parent PR merge precedes child PR completion. Preserve named contract artifacts and current three-edge graph. Replace ambiguous finish/review-before-begin language with those explicit triggers; no new sprint or process artifact is needed."
+    },
+    {
+      "id": "PLAN-SCOPE-002",
+      "severity": "Important",
+      "category": "QA-UNFRIENDLY",
+      "classification": "structural",
+      "affects_ac": true,
+      "target_refs": [
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:17",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:49",
+        "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md:19"
+      ],
+      "issue": "The newly approved configuration-derived boundary policy explicitly consumes ADR-RUN-0303's generated application crate graph in c-1 and requires c-2 to emit and verify its selected crates/edges, but neither sprint lists ADR-RUN-0303 in its authoritative adrs frontmatter. The direct-consumption architecture checklist therefore omits the contract that determines whether the fresh-install policy is correct. The phase ADR index also omits that newly governing decision.",
+      "required_correction": "Add ADR-RUN-0303 to c-1, c-2, and the phase ADR lists; verify other newly introduced policy references against the requirements/ADR registers and include only the decisions that actually govern the mapping. Retain ADR-RUN-0303 as the graph authority rather than introducing a second graph definition."
+    }
+  ],
+  "minor_wording": [],
+  "ready_for_next_step": false,
+  "errors": [],
+  "review_notes": [
+    "Genuine Step1 developer JSON loaded from /tmp/sc-runtime-phase-c-review/step1-developer.json; status PASS and mode plan-hardening-guidelines-pass match reviewed HEAD.",
+    "The declared owned paths of same-wave c-2/c-3 were checked against repository files and prefix patterns; intersection is empty, including future descendant paths.",
+    "Computed graph c-1 -> c-2 and c-1 -> c-3 -> c-4 yields critical path3, width2 and four sprints. No additional split is recommended.",
+    "Runtime/template public type migration is a justified vertical integration cut; publication/registry proof is separately owned by c-4.",
+    "Owner-approved fresh-install boundaries policy is accepted as authoritative steering; obsolete no-policy constraints are not imposed.",
+    "Review ran in Codex with the inherited model; no claim of Sonnet execution."
+  ],
+  "previous_step_json_file": "/tmp/sc-runtime-phase-c-review/step1-developer.json",
+  "previous_step_json": {
+    "status": "PASS",
+    "mode": "plan-hardening-guidelines-pass",
+    "round_id": "STEP1-R1",
+    "round_index": 1,
+    "reviewed_commit": "5d8480586617de1397a77e6a4c47ec7f1f9e8227",
+    "previous_reviewed_commit": "76d6cfea54e1347d954a712d18a0824e8b24b695",
+    "iterations": 1,
+    "docs_modified": ["docs/plans/phase-c/phase-c-plan.md", "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md", "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md"],
+    "docs_created": [],
+    "ready_for_next_step": true,
+    "errors": []
+  }
+}

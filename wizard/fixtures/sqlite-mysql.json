@@ -2,5 +2,7 @@
   "project_name": "widget-sqlite-mysql",
   "db": "sqlite-mysql",
   "mcp": true,
-  "licence": "MIT"
+  "licence": "MIT",
+  "cron": false,
+  "cron_commands": false
 }

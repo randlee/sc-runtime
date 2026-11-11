@@ -199,7 +199,7 @@ Limitations, stated honestly:
 ## sc-lint line counts
 
 Root `sc-lint.toml` records a `paths` glob of `template/**/*.rs` for the
-line-counts check. sc-lint 0.8.0's line-counts implementation walks workspace
+line-counts check. sc-lint 0.8.4's line-counts implementation walks workspace
 members and ignores unknown keys, and `template/` is not a workspace member.
 The glob is the configuration this sprint is allowed to add. It does not add
 a line-counting script and it does not make `template/` a member.

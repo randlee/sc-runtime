@@ -45,9 +45,10 @@ the application. Emission rejection never changes assembly or HTTP results.
 | Item | Purpose |
 |---|---|
 | `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
-| `DaemonBuilder::logger / stores / routes / mcp / run` | optional same-state logger injection, the project's three closures, then serve; the five-method surface adds no logger typestate |
+| `DaemonBuilder::logger / stores / routes / mcp / run / run_with_cleanup / run_with_cleanup_and_bound` | exactly seven methods; same-state logger, three project closures and three alternative Ready-state terminal runs; NFR-RT-0001, no new typestate or callback engine |
 | `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
+| `mcp_request_body(&axum::http::request::Parts)` | read-only original bounded HTTP JSON bytes for application-owned canonical validation, NFR-RT-0001 |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
 Shape of use, from the design:
@@ -68,6 +69,14 @@ decision.
 ---
 
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
+
+Phase C narrow public-surface reconciliation: NFR-RT-0001's closed table and
+rustdoc criterion include existing run_with_cleanup and the approved bound
+receipt alternative run_with_cleanup_and_bound. These remain Ready-only
+terminal alternatives through the same runner, with startup/teardown order
+and ADR-RT-0005 ownership unchanged. The bound callback observes the owned
+Endpoint after bind; it is not a registry, library wrapper, new typestate or
+general callback mechanism. No other public method is authorized by this change.
 
 **2026-10-31 amendment:** ADR-RUN-0017 changes only canonical port ownership
 to command for initial release; the existing command edge carries it. No
@@ -191,7 +200,8 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
+of `DaemonBuilder` (exactly `stores`, `routes`, `mcp`, `logger`, `run`,
+`run_with_cleanup`, `run_with_cleanup_and_bound`; terminal runs are Ready-only).
 
 ### Related Documents
 
@@ -343,6 +353,20 @@ boundary manifest under `boundaries/sc-runtime/`, checked by
 
 ---
 
+### Phase C MCP input clarification
+
+The ordinary project-supplied StreamableHttpService enters through `.mcp(...)`.
+Private middleware retains original JSON POST bytes in an HTTP extension under
+the service's own max_request_body_bytes. The read-only `mcp_request_body` accessor
+reads those bytes from ordinary request Parts, preserving headers and the absolute
+deadline; GET/SSE are untouched. NFR-RT-0001 records this one minimal free function.
+Runtime owns no protocol DTO, duplicate-key policy or cron dependency. The generated
+cron tool reparses its sole canonical CronRequest from the original generic RPC
+envelope before executing. Duplicate struct fields remain rejected by the DTO,
+while arbitrary Value payloads and unrelated tools keep their own JSON semantics.
+Normal serde_json is removed; test-only parsing is a dev dependency. No extra
+public test middleware helper, RMCP wrapper or command registry is introduced.
+
 ## ADR-RT-0004: `DaemonFixture` runs the real daemon
 
 **Status:** Active  
@@ -425,6 +449,26 @@ serve path.
 - [NFR-RUN-0005](../requirements.md)
 
 ## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+
+NFR-RT-0001's exact seven-method surface includes this existing cleanup
+terminal method and the bound-receipt alternative alongside run. All three
+are Ready-only alternatives through the same runner, as reconciled in
+ADR-RT-0001; no extra setter, registry, wrapper or callback engine is added.
+
+Phase C target amendment (planned): REQ-RT-0006's additive portable
+`DaemonFixture::start_with_cleanup` reuses this production ownership sequence
+and common internal fixture runner; ordinary start uses empty cleanup. Preserve
+once-only cleanup, primary startup error, stores/logger/instance-lock lifetimes,
+endpoint ordering and physical fixture-thread join. REQ-RT-0005 additionally
+selects Windows Ctrl-Break with early registration/polling alongside Ctrl-C;
+Unix and private fixture triggers remain unchanged. No alternate lifecycle or
+public test shutdown trigger is introduced.
+
+The Phase C production bound-endpoint callback delegates through this same
+runner and preserves the existing transport port-zero ownership handshake.
+One actual Endpoint callback while the listener is retained supports isolated
+real-signal test IPC; it is not a health signal. No reserve/drop/rebind helper,
+retry/sleep workaround, new transport API or alternate lifecycle is introduced.
 
 **Status:** Active  
 **Decision Date:** 2026-10-30  

@@ -1,7 +1,7 @@
 # Managed by sc-lint; regenerate with `sc-lint init --just`, then re-apply
 # sc-runtime maintainer profiles below (REQ-RUN-0004 / REQ-RUN-0005).
 [tool.sc-lint]
-minimum_version = "0.8.0"
+minimum_version = "0.8.6"
 
 # Source-maintainer checks (this repository). Generated applications use the
 # consumer template from sprint a-6 with the same minimum_version floor.
@@ -60,12 +60,9 @@ command = ["sc-lint", "compatibility", "check", "--config", "sc-lint.toml"]
 name = "adr-run-0011"
 command = ["just", "adr-run-0011"]
 
-# Bundled SQLite does not cross-compile on this xwin toolchain: cc-rs looks
-# for `llvm-lib` and it is not on PATH. `sc-runtime-db-sqlite` and `sc-cron`
-# both enable rusqlite's `bundled` feature, so both stay out of the Windows
-# cross check until that link exists. Later sprints drop the excludes:
-#   cargo xwin check --workspace --target x86_64-pc-windows-msvc
-#   cargo xwin clippy --workspace --all-targets --target x86_64-pc-windows-msvc -- -D warnings -D clippy::await_holding_lock
+# Keep the existing workspace-root exclusions. --all-targets still follows
+# sc-cron-commands' SQLite-backed dev dependency, so cross builds need LLVM's
+# llvm-lib on PATH. CI installs it explicitly before running the full profile.
 [[tool.sc-lint.lint]]
 name = "xwin-check"
 command = ["cargo", "xwin", "check", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--exclude", "sc-cron", "--target", "x86_64-pc-windows-msvc"]
@@ -81,7 +78,7 @@ gates = ["boundary", "production-tool-boundary", "observability-boundary", "line
 full = ["boundary", "production-tool-boundary", "observability-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
 
 # Cargo removes the versionless checkout-only cron dev-self edge at packaging.
-# sc-lint 0.8.0 requires a version on that edge. The mandatory observability
+# sc-lint 0.8.6 requires a version on that edge. The mandatory observability
 # guard checks every other cron path version and the exact self-test exception.
 [tool.sc-lint.analyzers.boundary.exclude_paths_by_rule]
 "SCB-MANIFEST-002" = ["crates/sc-cron/Cargo.toml"]
@@ -97,7 +94,7 @@ fail_rules = ["SCB-RUNTIME-001", "SCB-RUNTIME-002"]
 [identities]
 forbidden_literals = []
 
-# Non-test lines under crates/*/src. Key from sc-lint 0.8.0 line-counts.
+# Non-test lines under crates/*/src. Key from sc-lint 0.8.6 line-counts.
 [line_counts]
 max_production_lines = 1000
 paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]

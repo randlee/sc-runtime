@@ -1,0 +1,190 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "Backup archives must use AES-256-GCM encryption.",
+        "quote": "encrypt backup archives",
+        "scope": "backup storage",
+        "verdict": "needs_work",
+        "failing": [
+          "faithful"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.95,
+              "unclear": 0.02,
+              "yes": 0.03
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.86,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.08,
+              "yes": 0.91
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+          "request_sha256": "6229da1b902963aa25723b78df80ec8b923e34ca270cbc3729847090a6cae323"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.95,
+              "unclear": 0.02,
+              "yes": 0.03
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.05,
+              "yes": 0.94
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.0,
+              "yes": 0.98
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "needs_work",
+          "failing": [
+            "faithful"
+          ],
+          "low_confidence": [],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "no",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.86,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

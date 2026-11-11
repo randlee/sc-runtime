@@ -1,0 +1,6 @@
+{
+  "id": "sc-runtime-phase-c-candidate-anc-014-source-intent",
+  "version": 1,
+  "sha256": "8b9dad3d39933c11cc7545cf94874ca39b5b26da59fadc5295a2cf7369969379",
+  "content": "{\n  \"source_records\": [\n    {\n      \"speaker\": \"human\",\n      \"text\": \"there should be a standard/recommended cli surface for cron in sc-runtime. we have already implemented cron interface in atm-cron crate (in atm-core) and I think I specified in one other place as well.\"\n    },\n    {\n      \"speaker\": \"human\",\n      \"text\": \"it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.\"\n    }\n  ]\n}"
+}

@@ -1,0 +1,27 @@
+{
+  "script": "/tmp/sc-runtime-phase-c-review/continuation/calibration/run_088_local.py",
+  "script_sha256": "9cd8098b4b08a0bcf8a48283414204713ca67222ff68c19f54a2bf5620a154e6",
+  "argv": [
+    "python3",
+    "/tmp/sc-runtime-phase-c-review/continuation/calibration/run_088_local.py",
+    "--request-dir",
+    "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r3",
+    "--allow-redacted-presentation",
+    "--live"
+  ],
+  "explicit_environment": {
+    "SSL_CERT_FILE": "/etc/ssl/cert.pem"
+  },
+  "stdout_stderr_log": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-attempt-01/live-execution.log",
+  "frozen_payload_proof": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-attempt-01/export-lineage-and-policy-proof.json",
+  "verified_dry_runs": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-attempt-01/dry-run-verification.json",
+  "repo_input_hashes": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-attempt-01/materialization-verification.json",
+  "exact_invocation": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r3/invocation-fence.md",
+  "evaluator_concurrency": 3,
+  "expected_cli_commands": 63,
+  "expected_initial_jev_requests": 126,
+  "question_generation_in_runner": false,
+  "question_or_oracle_mutation_in_runner": false,
+  "first_escalation_rejected": true,
+  "new_calls": 0
+}

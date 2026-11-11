@@ -7,27 +7,31 @@
       "id": "ANC-001",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles.",
+      "statement": "Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.",
       "quote": "a full sc-lint is installed on a consumer repo",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
       "context": "Phase C planning conversation",
       "summary": "Generated consumer runs every configured analyzer",
-      "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands",
+      "scope": "c-2 generated consumer setup and any plan item that installs the consumer lint toolchain.",
       "deterministic_check": "A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Consumer setup installs the full sc-lint toolchain, including its boundary, portability, and runtime analyzers."
+        ],
+        "fail": [
+          "Consumer setup installs only rustfmt and clippy and does not install the sc-lint toolchain."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 4,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-32b",
+        "plan_questions": "run-32b.1",
+        "dev_questions": "run-32b.2"
       },
       "history": [
         {
@@ -45,6 +49,97 @@
             "deterministic_check"
           ],
           "previous_statement": "A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint."
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles."
+        },
+        {
+          "at": "2026-11-03T02:59:45+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-32b",
+            "plan_questions": "run-32b.1",
+            "dev_questions": "run-32b.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope"
+          ],
+          "previous_statement": "A generated consumer repository must have the full sc-lint toolchain installed."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "C-3 upgrades runtime/projection code; consumer lint toolchain installation is owned by C-2.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron behavior and consumer examples; it does not install lint tools.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 is the command-adapter boundary, not consumer lint installation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-1",
+          "reason": "C-1 qualifies the released lint tool in an internal temporary probe but does not ship consumer installation, which is owned by C-2.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "C-3 upgrades runtime/projection code; consumer lint toolchain installation is owned by C-2."
+        },
+        {
+          "item": "c-4",
+          "reason": "C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron behavior and consumer examples; it does not install lint tools."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 is the command-adapter boundary, not consumer lint installation."
+        },
+        {
+          "item": "c-1",
+          "reason": "C-1 qualifies the released lint tool in an internal temporary probe but does not ship consumer installation, which is owned by C-2."
         }
       ]
     },
@@ -52,7 +147,7 @@
       "id": "ANC-002",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C must select and validate newest stable compatible versions of rmcp, utoipa, and utoipa-axum through one runtime/template composition graph.",
+      "statement": "Phase C must upgrade rmcp and utoipa to their latest released versions.",
       "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
       "kind": "directive",
       "stated_by": "randlee",
@@ -62,23 +157,58 @@
       "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
       "deterministic_check": "Cargo metadata for the runtime and generated daemon composition graph reports one reachable package identity for rmcp, utoipa, and utoipa-axum.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Phase C checks the released rmcp and utoipa versions and upgrades both dependencies to the latest releases."
+        ],
+        "fail": [
+          "Phase C keeps the older rmcp and utoipa dependencies despite newer released versions being available."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-dle",
+        "plan_questions": "run-dle.1",
+        "dev_questions": "run-dle.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C must select and validate newest stable compatible versions of rmcp, utoipa, and utoipa-axum through one runtime/template composition graph."
+        },
+        {
+          "at": "2026-11-03T02:59:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-dle",
+            "plan_questions": "run-dle.1",
+            "dev_questions": "run-dle.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-009",
+          "reason": "User-approved split into ANC-009, ANC-010; both preserve the original quote and projected approved fixtures."
         }
       ]
     },
@@ -86,7 +216,7 @@
       "id": "ANC-003",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "The repository and generated template must both declare and bootstrap sc-lint 0.8.4.",
+      "statement": "The repository and generated template must both use sc-lint 0.8.4.",
       "quote": "both repo and templates should use 0.8.4",
       "kind": "directive",
       "stated_by": "randlee",
@@ -96,23 +226,98 @@
       "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
       "deterministic_check": "The root and template sc-lint configuration require 0.8.4, and each bootstrap path installs or verifies that version.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Both the repository and generated template declare sc-lint 0.8.4 and their bootstrap commands install or verify 0.8.4."
+        ],
+        "fail": [
+          "The repository bootstraps sc-lint 0.8.4 while the generated template declares and installs 0.8.0."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-83r",
+        "plan_questions": "run-83r.1",
+        "dev_questions": "run-83r.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "The repository and generated template must both declare and bootstrap sc-lint 0.8.4."
+        },
+        {
+          "at": "2026-11-03T02:59:48+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-83r",
+            "plan_questions": "run-83r.1",
+            "dev_questions": "run-83r.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "This anchor scope explicitly names C-1 and C-2; C-3 does not select the repository/template sc-lint version.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "This anchor scope names C-1/C-2 sc-lint version selection, not C-4 runtime publication.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "The sc-lint version anchor explicitly governs C-1/C-2, not C-5 cron code or fixtures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The sc-lint version scope explicitly names C-1/C-2, not C-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "This anchor scope explicitly names C-1 and C-2; C-3 does not select the repository/template sc-lint version."
+        },
+        {
+          "item": "c-4",
+          "reason": "This anchor scope names C-1/C-2 sc-lint version selection, not C-4 runtime publication."
+        },
+        {
+          "item": "c-5",
+          "reason": "The sc-lint version anchor explicitly governs C-1/C-2, not C-5 cron code or fixtures."
+        },
+        {
+          "item": "c-6",
+          "reason": "The sc-lint version scope explicitly names C-1/C-2, not C-6."
         }
       ]
     },
@@ -120,7 +325,7 @@
       "id": "ANC-004",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C plan paths, branches, sprint identifiers, triage records, and QA evidence must use the phase identifier c.",
+      "statement": "sc-runtime's Phase C must use the identifier phase-c.",
       "quote": "rename to phase-c",
       "kind": "structural",
       "stated_by": "randlee",
@@ -130,23 +335,60 @@
       "scope": "every Phase C plan item and its plan metadata",
       "deterministic_check": "A targeted repository scan of Phase C assets reports no phase-bc, bc-<n>, or ARCH-BC identifiers.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Plan documents live under docs/plans/phase-c, sprint IDs are c-1 through c-4, and current branch, triage, and QA metadata use phase-c."
+        ],
+        "fail": [
+          "The current plan, sprint IDs, branch metadata, triage, and QA evidence still use phase-bc and bc-1 through bc-4."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 3,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-xiw",
+        "plan_questions": "run-xiw.1",
+        "dev_questions": "run-xiw.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C plan paths, branches, sprint identifiers, triage records, and QA evidence must use the phase identifier c."
+        },
+        {
+          "at": "2026-11-03T02:59:49+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-xiw",
+            "plan_questions": "run-xiw.1",
+            "dev_questions": "run-xiw.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "The current phase must be named phase-c."
         }
       ]
     },
@@ -154,9 +396,9 @@
       "id": "ANC-005",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C planning must be maintained on a dedicated plan/phase-c worktree and proposed to develop in a separate pull request.",
+      "statement": "Phase C planning must use a dedicated worktree and a separate pull request to develop.",
       "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
-      "kind": "directive",
+      "kind": "structural",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
       "context": "Phase C planning conversation",
@@ -164,23 +406,59 @@
       "scope": "the Phase C plan branch, worktree, and pull request metadata",
       "deterministic_check": "Git worktree metadata records plan/phase-c separately, and its pull request targets develop.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Git worktree metadata shows a separate plan/phase-c checkout, and its dedicated planning pull request targets develop."
+        ],
+        "fail": [
+          "Phase C planning is committed directly on the primary develop checkout and has no separate planning pull request."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-aov",
+        "plan_questions": "run-aov.1",
+        "dev_questions": "run-aov.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "kind",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C planning must be maintained on a dedicated plan/phase-c worktree and proposed to develop in a separate pull request."
+        },
+        {
+          "at": "2026-11-03T02:59:51+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-aov",
+            "plan_questions": "run-aov.1",
+            "dev_questions": "run-aov.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-011",
+          "reason": "User-approved split into ANC-011, ANC-012; both preserve the original quote and projected approved fixtures."
         }
       ]
     },
@@ -188,7 +466,7 @@
       "id": "ANC-006",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph.",
+      "statement": "Phase C's rusqlite dependency must remain at version 0.39.x.",
       "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
       "kind": "directive",
       "stated_by": "randlee",
@@ -198,23 +476,1357 @@
       "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
       "deterministic_check": "Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Phase C retains rusqlite 0.39.x while upgrading the other approved dependencies."
+        ],
+        "fail": [
+          "Phase C upgrades rusqlite from 0.39 to a newer minor release line."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 3,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-ioz",
+        "plan_questions": "run-ioz.1",
+        "dev_questions": "run-ioz.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:34:55+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph."
+        },
+        {
+          "at": "2026-11-03T02:59:52+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ioz",
+            "plan_questions": "run-ioz.1",
+            "dev_questions": "run-ioz.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Phase C must keep rusqlite on the 0.39 release line."
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "C-4 consumes the frozen dependency graph and owns no manifest selecting or changing rusqlite/sqlx/libsqlite3-sys versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions."
+        },
+        {
+          "item": "c-4",
+          "reason": "C-4 consumes the frozen dependency graph and owns no manifest selecting or changing rusqlite/sqlx/libsqlite3-sys versions."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline."
+        }
+      ]
+    },
+    {
+      "id": "ANC-007",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Fresh consumer installation must generate a default boundaries policy selected from the consumer's configuration settings.",
+      "quote": "and you will need to determine the 'appropriate' default policy to install on consumer repos\nbased on configuration settings",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by delivering a checkable contract that defines how selected configuration determines boundary owners and permitted dependency edges, omits disabled components, and qualifies the contract with the representative consumer-shaped configuration required by C1. C1 need not ship C2's bootstrap or claim C2's full matrix. C2 still must implement real fresh-install policy generation from settings and pass the approved supported-configuration/edge matrix and real analyzer checks. A future promise without the specified contract and qualification does not fulfill C1. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json.",
+      "summary": "Configuration-selected default boundaries",
+      "scope": "c-1 consumer policy contract and c-2 fresh-install implementation",
+      "deterministic_check": "Generate supported consumer configurations and verify their emitted policy matches selected crates and edges.",
+      "fixtures": {
+        "pass": [
+          "Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary.",
+          "C1 delivers the selected-crate/edge mapping contract and a representative qualification showing the selected consumer policy; the shipped generator and full installation matrix remain explicitly owned by C2."
+        ],
+        "fail": [
+          "Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration.",
+          "C1's contract merely promises appropriate boundaries later and neither defines the configuration-to-owner/edge mapping nor supplies its required representative qualification."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-a7e",
+        "plan_questions": "run-a7e.1",
+        "dev_questions": "run-a7e.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T02:59:53+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-a7e",
+            "plan_questions": "run-a7e.1",
+            "dev_questions": "run-a7e.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Default consumer boundaries-policy generation is owned by C-1/C-2; C-3 does not implement it.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "Fresh-install boundaries-policy generation is C-1/C-2 work, not C-4 runtime composition.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not generate consumer boundaries policies; that is C-1/C-2 scope.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 does not implement fresh-install boundaries-policy generation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json",
+          "approval": "Approve C1 clarification and fixtures",
+          "verification_status": "fresh fixture and live verification pending for this version",
+          "maintenance_note": "Installed CLI update has no context option; context uses the installed script record writer within the same approved fixture version."
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "Default consumer boundaries-policy generation is owned by C-1/C-2; C-3 does not implement it."
+        },
+        {
+          "item": "c-4",
+          "reason": "Fresh-install boundaries-policy generation is C-1/C-2 work, not C-4 runtime composition."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not generate consumer boundaries policies; that is C-1/C-2 scope."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 does not implement fresh-install boundaries-policy generation."
+        }
+      ]
+    },
+    {
+      "id": "ANC-008",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "After fresh setup, the consumer repository must control subsequent boundaries-policy decisions.",
+      "quote": "you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by explicitly defining the initial policy handoff and the consumer's authority over all subsequent boundary-policy decisions, with checkable contract/probe evidence required by C1. C1 need not ship the C2 handoff implementation. C2 still must write the policy into the consumer repository and verify the approved preservation/ownership behaviors. The narrow existing successful-customized-native-init waiver remains unchanged; it does not waive consumer control or silently permit overwriting policy. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json.",
+      "summary": "Consumer-owned boundaries policy",
+      "scope": "c-1 consumer policy ownership contract and c-2 generated policy handoff",
+      "deterministic_check": "Generated policy lives in the consumer repository and documented setup identifies the consumer as owner.",
+      "fixtures": {
+        "pass": [
+          "Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions.",
+          "C1's contract makes the consumer the decision owner after initial setup and supplies its required ownership qualification, while explicitly assigning the shipped policy handoff/preservation implementation to C2."
+        ],
+        "fail": [
+          "The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes.",
+          "C1's contract leaves subsequent consumer boundary decisions with sc-runtime, or only promises to decide ownership in a later sprint without defining the handoff."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-81q",
+        "plan_questions": "run-81q.1",
+        "dev_questions": "run-81q.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T02:59:54+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-81q",
+            "plan_questions": "run-81q.1",
+            "dev_questions": "run-81q.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Consumer boundaries-policy ownership is explicitly scoped to C-1/C-2, not C-3 runtime upgrades.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing policy-ownership scope names C-1/C-2; C-4 owns no consumer policy handoff.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not manage consumer boundaries-policy handoff or subsequent policy decisions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 does not own consumer boundaries-policy handoff or later policy decisions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json",
+          "approval": "Approve C1 clarification and fixtures",
+          "verification_status": "fresh fixture and live verification pending for this version",
+          "maintenance_note": "Installed CLI update has no context option; context uses the installed script record writer within the same approved fixture version."
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "Consumer boundaries-policy ownership is explicitly scoped to C-1/C-2, not C-3 runtime upgrades."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing policy-ownership scope names C-1/C-2; C-4 owns no consumer policy handoff."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not manage consumer boundaries-policy handoff or subsequent policy decisions."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 does not own consumer boundaries-policy handoff or later policy decisions."
+        }
+      ]
+    },
+    {
+      "id": "ANC-009",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must upgrade rmcp to its latest released version.",
+      "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged.",
+      "summary": "upgrade rmcp to its latest released version.",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "deterministic_check": "Verify the c-1 dated registry query and frozen rmcp version used by the runtime/template graph.",
+      "fixtures": {
+        "pass": [
+          "Phase C checks the released rmcp versions and upgrades rmcp to its latest release."
+        ],
+        "fail": [
+          "Phase C keeps the older rmcp dependency despite a newer released version being available."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-qt3",
+        "plan_questions": "run-qt3.1",
+        "dev_questions": "run-qt3.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:14+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-qt3",
+            "plan_questions": "run-qt3.1",
+            "dev_questions": "run-qt3.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "The existing scope assigns RMCP version selection/upgrades to C-1 and C-3, not the C-2 lint profile.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing RMCP upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "RMCP version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The existing RMCP version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "The existing scope assigns RMCP version selection/upgrades to C-1 and C-3, not the C-2 lint profile."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing RMCP upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions."
+        },
+        {
+          "item": "c-5",
+          "reason": "RMCP version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts."
+        },
+        {
+          "item": "c-6",
+          "reason": "The existing RMCP version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior."
+        }
+      ]
+    },
+    {
+      "id": "ANC-010",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must upgrade utoipa to its latest released version.",
+      "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged.",
+      "summary": "upgrade utoipa to its latest released version.",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "deterministic_check": "Verify the c-1 dated registry query and frozen utoipa version used by the runtime/template graph.",
+      "fixtures": {
+        "pass": [
+          "Phase C checks the released utoipa versions and upgrades utoipa to its latest release."
+        ],
+        "fail": [
+          "Phase C keeps the older utoipa dependency despite a newer released version being available."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-evb",
+        "plan_questions": "run-evb.1",
+        "dev_questions": "run-evb.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:15+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-evb",
+            "plan_questions": "run-evb.1",
+            "dev_questions": "run-evb.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "The existing scope assigns Utoipa version selection/upgrades to C-1 and C-3, not the C-2 lint profile.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing Utoipa upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "Utoipa version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The existing Utoipa version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "The existing scope assigns Utoipa version selection/upgrades to C-1 and C-3, not the C-2 lint profile."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing Utoipa upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions."
+        },
+        {
+          "item": "c-5",
+          "reason": "Utoipa version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts."
+        },
+        {
+          "item": "c-6",
+          "reason": "The existing Utoipa version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior."
+        }
+      ]
+    },
+    {
+      "id": "ANC-011",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C planning must use a dedicated Git worktree.",
+      "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+      "kind": "structural",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged.",
+      "summary": "use a dedicated Git worktree.",
+      "scope": "the Phase C planning branch and Git worktree metadata",
+      "deterministic_check": "Git worktree metadata identifies the separate plan/phase-c checkout.",
+      "fixtures": {
+        "pass": [
+          "Git worktree metadata shows a dedicated Phase C planning checkout."
+        ],
+        "fail": [
+          "Phase C planning is performed in the primary develop checkout."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-alr",
+        "plan_questions": "run-alr.1",
+        "dev_questions": "run-alr.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:17+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-alr",
+            "plan_questions": "run-alr.1",
+            "dev_questions": "run-alr.2"
+          }
+        },
+        {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-1",
+          "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:07+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:11+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-1",
+          "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-3",
+          "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        }
+      ]
+    },
+    {
+      "id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C planning must have a separate pull request targeting develop.",
+      "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+      "kind": "structural",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged.",
+      "summary": "have a separate pull request targeting develop.",
+      "scope": "the Phase C planning pull request metadata",
+      "deterministic_check": "GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.",
+      "fixtures": {
+        "pass": [
+          "A separate Phase C planning pull request targets develop."
+        ],
+        "fail": [
+          "Phase C planning has no separate pull request to develop."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-mwv",
+        "plan_questions": "run-mwv.1",
+        "dev_questions": "run-mwv.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-mwv",
+            "plan_questions": "run-mwv.1",
+            "dev_questions": "run-mwv.2"
+          }
+        },
+        {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-1",
+          "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:07+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:11+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-1",
+          "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-3",
+          "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        }
+      ]
+    },
+    {
+      "id": "ANC-013",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must complete its dedicated compatibility sprint before publishing sc-runtime 0.2.0.",
+      "quote": "Add a dedicated Phase C compatibility sprint (Recommended)",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
+      "summary": "Compatibility precedes publication",
+      "scope": "Phase C compatibility completion and the 0.2.0 publication handoff",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "The dedicated Phase C compatibility sprint completes before the release handoff publishes sc-runtime 0.2.0."
+        ],
+        "fail": [
+          "The release handoff publishes sc-runtime 0.2.0 before the dedicated Phase C compatibility sprint is complete."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-299",
+        "plan_questions": "run-299.1",
+        "dev_questions": "run-299.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:27+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:27+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:33+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:51+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-299",
+            "plan_questions": "run-299.1",
+            "dev_questions": "run-299.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-1",
+          "reason": "C-1 defines the future release contract but performs neither C-5 compatibility completion nor the actual C-4 publication handoff governed by this anchor.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-06T04:26:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "C-3 prepares versions and prepublication inputs without performing C-5 compatibility completion or the actual C-4 publication handoff, and retains its required C-5-before-publication dependency guard.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence."
+        },
+        {
+          "item": "c-1",
+          "reason": "C-1 defines the future release contract but performs neither C-5 compatibility completion nor the actual C-4 publication handoff governed by this anchor."
+        },
+        {
+          "item": "c-3",
+          "reason": "C-3 prepares versions and prepublication inputs without performing C-5 compatibility completion or the actual C-4 publication handoff, and retains its required C-5-before-publication dependency guard."
+        }
+      ]
+    },
+    {
+      "id": "ANC-014",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A consumer application must be able to omit the standard cron command set.",
+      "quote": "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
+      "summary": "Optional standard cron commands",
+      "scope": "Standard cron command-set adoption and composition",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "The consumer can choose whether to expose the standard cron command set and can omit it entirely."
+        ],
+        "fail": [
+          "Every consumer is required to expose the standard cron command set."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8co",
+        "plan_questions": "run-8co.1",
+        "dev_questions": "run-8co.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:27+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:33+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:52+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8co",
+            "plan_questions": "run-8co.1",
+            "dev_questions": "run-8co.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 does not adopt or compose cron commands; that contract/adapter/composition work belongs to C-1/C-6/C-4.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 owns cron core/store behavior; optional standard-command adoption/composition is C-1/C-6/C-4 work.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 does not adopt or compose cron commands; that contract/adapter/composition work belongs to C-1/C-6/C-4."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 owns cron core/store behavior; optional standard-command adoption/composition is C-1/C-6/C-4 work."
+        }
+      ]
+    },
+    {
+      "id": "ANC-015",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Supported cron user interfaces must share the standard JSON command contract.",
+      "quote": "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
+      "summary": "Shared cron JSON contract",
+      "scope": "Supported cron UI JSON command contracts",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "Supported cron user interfaces use the same standard JSON command contract to configure schedules."
+        ],
+        "fail": [
+          "Each supported cron user interface defines a different, incompatible JSON command contract for configuring schedules."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-m9k",
+        "plan_questions": "run-m9k.1",
+        "dev_questions": "run-m9k.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:33+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:54+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-m9k",
+            "plan_questions": "run-m9k.1",
+            "dev_questions": "run-m9k.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs analyzers and boundaries policy, not cron UI JSON projections.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 has no CLI/HTTP/MCP standard JSON projections; the adapter and composition owners are C-6/C-4.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 installs analyzers and boundaries policy, not cron UI JSON projections."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 has no CLI/HTTP/MCP standard JSON projections; the adapter and composition owners are C-6/C-4."
+        }
+      ]
+    },
+    {
+      "id": "ANC-016",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
+      "quote": "yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
+      "summary": "Common schedule-management subcommands across handlers",
+      "scope": "Standard cron subcommand vocabulary and handler-kind selection",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "Python, Monty, and Rust cron handlers use the same general subcommands, with handler-specific choices represented by their options."
+        ],
+        "fail": [
+          "Python, Monty, and Rust cron handlers each require a different set of general cron subcommands."
+        ]
+      },
+      "question_overrides": {},
+      "version": 5,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-fwe",
+        "plan_questions": "run-fwe.1",
+        "dev_questions": "run-fwe.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:34+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:29:40+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary"
+          ],
+          "previous_statement": "The standard cron subcommands must be the same for Python, Monty, and Rust handlers."
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:55+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-fwe",
+            "plan_questions": "run-fwe.1",
+            "dev_questions": "run-fwe.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 has no cron management verbs or Rust/Python/Monty target selection.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not implement the standard management-command vocabulary or its target-selection UI; C-6/C-4 do.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 has no cron management verbs or Rust/Python/Monty target selection."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not implement the standard management-command vocabulary or its target-selection UI; C-6/C-4 do."
+        }
+      ]
+    },
+    {
+      "id": "ANC-017",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-runtime must expose supported extension points that let consumers replace default core-library behavior with application-specific behavior.",
+      "quote": "it is not sc-runtime job to guarantee a customer can not misuse the core libraries.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
+      "summary": "Supported consumer overrides",
+      "scope": "Core-library integration hooks for consumer store/schema and shutdown policy",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "The cron integration accepts an application-provided store with an extended row schema and a consumer shutdown policy through supported extension points instead of requiring its bundled defaults."
+        ],
+        "fail": [
+          "Every consumer must use the bundled cron store and default shutdown policy; custom row schemas and application-specific lifecycle behavior have no supported integration seam."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ifo",
+        "plan_questions": "run-ifo.1",
+        "dev_questions": "run-ifo.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:34+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:56+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ifo",
+            "plan_questions": "run-ifo.1",
+            "dev_questions": "run-ifo.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 policy ownership is covered by ANC-008; it does not replace core-library stores, schemas or shutdown policies.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 policy ownership is covered by ANC-008; it does not replace core-library stores, schemas or shutdown policies."
+        }
+      ]
+    },
+    {
+      "id": "ANC-018",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-runtime must document a supported integration path that explains correct use of the core libraries and the responsibilities of consumer overrides.",
+      "quote": "it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-03",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
+      "summary": "Documented integration and override responsibilities",
+      "scope": "Default and extension integration guides and consumer responsibilities",
+      "deterministic_check": "",
+      "fixtures": {
+        "pass": [
+          "The integration guide shows the default cron setup and a supported custom store or shutdown policy example, including the consumer's validation, lifecycle and ownership responsibilities."
+        ],
+        "fail": [
+          "Consumers must inspect private scheduler internals to discover override wiring; the documentation explains neither supported hooks nor consumer responsibilities."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-c5i",
+        "plan_questions": "run-c5i.1",
+        "dev_questions": "run-c5i.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T21:31:28+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T21:34:34+00:00",
+          "event": "updated",
+          "fields": [
+            "summary"
+          ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:58+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-c5i",
+            "plan_questions": "run-c5i.1",
+            "dev_questions": "run-c5i.2"
+          }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 documents lint setup and policy ownership, not the core-library default/override integration guides.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Default/override guides are owned by C-5/C-6 and consumed by C-4; C-3 owns code/projection fixtures, not those guides.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 documents lint setup and policy ownership, not the core-library default/override integration guides."
+        },
+        {
+          "item": "c-3",
+          "reason": "Default/override guides are owned by C-5/C-6 and consumed by C-4; C-3 owns code/projection fixtures, not those guides."
         }
       ]
     }

@@ -445,7 +445,7 @@ pub trait IntoMcp {
 }
 ```
 
-`CallToolResult` is `rmcp::model::CallToolResult` from rmcp 3.7. `McpError`
+`CallToolResult` is `rmcp::model::CallToolResult` from rmcp **3.8.0**, the frozen Phase C identity (ADR-RUN-0203). `McpError`
 is `rmcp::ErrorData`, which tool handlers import under that name and which
 `sc-command` re-exports as `sc_command::McpError`. The error flag is
 `is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
@@ -603,6 +603,26 @@ envelope object or of the error object is rejected by
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
+**Phase C frozen amendment:** use only the `~3.8` RMCP
+minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
+alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
+matrix. All optional/server/defaults-off gating and remaining dependency,
+conversion and error restrictions remain binding; this does not permit
+server dependencies in a CLI's isolated normal graph.
+
+The same c-1 contract also adds independent optional
+`schema = ["dep:schemars", "dep:utoipa"]`, with compatible identities frozen
+by ADR-RUN-0203. Schema-only adds those schema dependencies to the otherwise
+unchanged default allowlist; schema+server uses the union of the two explicit
+feature allowlists. Neither schema nor server enables the other or enters
+defaults. C-1 owns compileable owner-local JsonSchema/ToSchema implementations
+for Envelope<T>, OpError and ErrorKind in the narrow declaration modules before
+c-3's later migration. Envelope's custom four-field wire representation and
+OpError's five fields require schemas matching existing serialization exactly,
+not a derive over internal enum variants. Foreign ErrorCode is represented by
+its canonical serialized leaf shape inside the owned schema, without orphan
+impls or duplicate error models. REQ-CMD-0001/0002 wire behavior is unchanged.
+
 **2026-10-31 amendment:** ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
 only std. Neither activates server/axum/rmcp. The exact types pin is temporary;
@@ -623,7 +643,7 @@ default features the crate's direct non-dev dependencies MUST be `serde`,
 `serde_json`, and `sc-observability-types` at temporary exact `=1.5.0` (ADR-RUN-0017).
 `serde_json` is required because `details` holds arbitrary JSON. With
 `--features server` the direct non-dev dependencies MUST be those plus
-`axum` 0.8.9 and `rmcp` `~3.7`, and nothing else. `axum` MUST be declared
+`axum` 0.8.9 and `rmcp` `~3.8` (frozen resolved identity 3.8.0), and nothing else. `axum` MUST be declared
 with `default-features = false`.
 
 This item is the owner of the list of third-party crates `sc-command` may

@@ -1,0 +1,17 @@
+{
+  "status": "PASS_OFFLINE_STRICT_FREEZE",
+  "schema_contract_runner_check_render": true,
+  "source_destination_files": 8,
+  "six_unique_faithful_variants": true,
+  "fixed_other_four_questions": "UNACCEPTED extension-04-03",
+  "unchanged_cases_states_labels": 23,
+  "original_seventeen_corpus_digest_verified": true,
+  "historical_sidecar_chain_verified": true,
+  "candidate_evaluators_maximum": 3,
+  "dry_run_process_concurrency": 1,
+  "production_confidence_threshold": 0.6,
+  "repeat_count": 2,
+  "actual_production_seal_unchanged": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+  "live_calls": 0,
+  "semantic_gate_result": null
+}

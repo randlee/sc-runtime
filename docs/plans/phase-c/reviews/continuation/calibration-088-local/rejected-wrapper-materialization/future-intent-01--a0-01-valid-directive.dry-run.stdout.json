@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "RUBRIC.QUESTIONS",
+    "message": "sealed rubric requires exactly questions and digest",
+    "recoverable": false,
+    "suggested_action": ""
+  }
+}

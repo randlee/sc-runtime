@@ -3,32 +3,37 @@ name = "service"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = []
+default = [{% if cron_commands %}"cron-commands"{% endif %}]
 {% else %}
-default = ["general-db"]
+default = ["general-db"{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 general-db = []
+cron-commands = ["dep:sc-cron-commands"]
 
 [dependencies]
-api-types = { path = "../api-types" }
+api-types = { path = "../api-types", version = "0.1.1" }
 {% if db != "none" %}
-schema = { path = "../schema" }
+schema = { path = "../schema", version = "0.1.1" }
 {% endif %}
 {% if db == "sqlite" %}
-store-sqlite = { path = "../store-sqlite" }
+store-sqlite = { path = "../store-sqlite", version = "0.1.1" }
 {% elsif db == "postgres" %}
-store-postgres = { path = "../store-postgres" }
+store-postgres = { path = "../store-postgres", version = "0.1.1" }
 {% elsif db == "mysql" %}
-store-mysql = { path = "../store-mysql" }
+store-mysql = { path = "../store-mysql", version = "0.1.1" }
 {% elsif db == "sqlite-postgres" or db == "sqlite-mysql" %}
-store-adaptor = { path = "../store-adaptor" }
+store-adaptor = { path = "../store-adaptor", version = "0.1.1" }
 {% endif %}
 sc-command.workspace = true
+sc-cron-commands = { workspace = true, features = ["schema"], optional = true }
 sc-observability-types.workspace = true
 serde_json.workspace = true
 

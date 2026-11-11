@@ -15,7 +15,9 @@ Repo-level architecture and ADRs for `sc-runtime`, extracted from
 [sc-config](sc-config/architecture.md),
 [sc-transport](sc-transport/architecture.md),
 [sc-command](sc-command/architecture.md),
-[sc-runtime](sc-runtime/architecture.md).
+[sc-runtime](sc-runtime/architecture.md),
+[sc-cron](sc-cron/architecture.md),
+[sc-cron-commands](sc-cron-commands/architecture.md) (Phase C target).
 
 ADR entries follow the shared SC requirement and ADR templates.
 
@@ -27,7 +29,7 @@ An ADR whose status field reads Active or Approved is binding on every plan,
 change and fix. An ADR whose status field reads Proposed is not binding, and
 no sprint may depend on it, until it is made Active. ADR ids have the form
 `ADR-<DOMAIN>-nnnn`, where the domain is `RUN` (this file), `CFG`, `TRN`,
-`CMD` or `RT` (the crate files).
+`CMD`, `RT` or `CRNC` (the crate files).
 
 ## System shape
 
@@ -121,7 +123,7 @@ workspace-internal edges and the forbidden edges.
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
@@ -230,7 +232,8 @@ types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify
 with it. This exact-pin exception bounds the inspected validator and type
 identity but prevents resolution with consumer requirements for newer types.
 
-Permit only cron's normal `sc-command` 0.1.1 edge with defaults disabled and no
+Permit only cron's normal `sc-command` 0.2.0 Phase C edge (initial-release
+0.1.1 retained as historical evidence) with defaults disabled and no
 features. Command allowed_dependents becomes exactly runtime+cron. Runtime
 uses its existing server-enabled command edge. Restore the original cron
 forbidden edge and runtime-only command dependent at cleanup. All other
@@ -516,6 +519,25 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ---
 
+### Phase C shared-version release policy (owner correction, 2026-11-04)
+
+The owner stated: "I expect we will release all crates every release". Every
+public crate therefore participates in the same versioned release. Phase C
+publishes sc-config, sc-transport, sc-command, sc-runtime, sc-cron and
+sc-cron-commands at 0.2.0; the internal publish=false SQLite helper stays
+private. C-3 owns the coherent source/template manifest and lock migration and
+canonical kit-input regeneration; c-4 owns actual authorized publication,
+existing-kit qualification and registry-only consumer proof.
+
+Historical observation, superseded as a requirement: the pinned canonical kit
+b6947ab2e495398a58123c60c0b86b5421f89979 rejected a disposable mixed-version
+fixture (config/transport0.1.1 versus tag0.2.0), including disabled publication
+rows. That selective probe did not pass. The corrected policy uses the kit's
+existing uniform-version model, so selective-publishing enhancement is not a
+C1 or release prerequisite. Existing version/visibility checks and publication
+authorization remain binding; no hand-written workflow bypass is allowed.
+
+
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
 
 **Status:** Active  
@@ -546,7 +568,7 @@ as its own selection.
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
@@ -777,7 +799,7 @@ for the order in point 4.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the sc-lint 0.8.0 consumer install. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
+**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the historical sc-lint 0.8.0 consumer install. The active consumer contract is sc-lint 0.8.6. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document
 
 ### Context
 
@@ -792,17 +814,21 @@ be upgraded.
 
 ### Decision
 
-1. `template/` MUST NOT contain hand-written lint configuration, crate-boundary
-   rules, adapter-drift tooling, or `just` modules. `sc-lint.toml` is the
+1. `template/` MUST NOT contain copied maintainer lint/boundary configuration,
+   adapter-drift tooling, or `just` modules. The narrow fresh-install exception
+   below permits configuration-derived application boundary inventory and
+   the three REQ-RUN-0307 analyzer invocation declarations only. `sc-lint.toml` is the
    consumer pin. It is not a hand-written clippy, rustfmt, deny, or
    `boundaries/` policy.
 2. This repository MUST NOT build surface-snapshot or adapter-drift tooling.
-3. A generated project gets its `just` and lint install from sc-lint 0.8.0.
+3. A generated project gets its `just` and lint install from sc-lint 0.8.6.
    The install command is `sc-lint init --just`. The template commits
-   `template/sc-lint.toml` with `minimum_version` 0.8.0 and
+   `template/sc-lint.toml` with `minimum_version` 0.8.6 and
    `template/.sc-lint/bootstrap.py`.
 4. The public recipes are `setup`, `lint`, `test`, and `upgrade`. The
-   consumer-owned recipe `db-prepare` MUST survive a later `sc-lint init`.
+   consumer-owned recipe `db-prepare` MUST survive repeated `sc-lint init`.
+   SDK custom profiles and edits to external boundary policies MUST also
+   survive repeated native initialization and the public setup/upgrade flow.
    a-6 owns the generated consumer install.
 5. The placeholder `Justfile` and the prototype-handoff order are retired.
    There is no step that generates prototype repositories so the sc-lint team
@@ -835,12 +861,12 @@ a later init. a-6 owns the generated install.
 
 **Enforced by:** [NFR-RUN-0006](requirements.md), checked by inspecting the contents of
 `template/` for lint configuration, boundary rules and `just` modules;
-`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.0 consumer install); `req-qa` on
+`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.6 consumer install); `req-qa` on
 [REQ-RUN-0005](requirements.md) for point 6.
 
 ### Related Documents
 
-- [REQ-RUN-0307](requirements.md): sc-lint 0.8.0 consumer install and its recipe names.
+- [REQ-RUN-0307](requirements.md): sc-lint 0.8.6 consumer install and its recipe names.
 - [NFR-RUN-0006](requirements.md): the template carries no lint knowledge.
 - [REQ-RUN-0004](requirements.md): this repository's own `just lint`, `just test` and
   `just new <dest>`.
@@ -851,6 +877,64 @@ a later init. a-6 owns the generated install.
   is `sc-lint init --just`, owned by a-6, not a prototype handoff.
 
 ---
+
+### Phase C fresh-install qualification (2026-11-04)
+
+The generated consumer needs its own default boundary policy: derive one active
+record per selected application crate, with outgoing `allowed_dependencies`
+and incoming `allowed_dependents` restricted to actual selected direct edges
+from ADR-RUN-0303. Include api-types/service/daemon/CLI and only selected store
+and MCP components; never list absent optional owners or permissions. The
+policy is consumer-owned after setup; subsequent setup/upgrade and repeated
+`sc-lint init --just` must preserve its edits, `db-prepare`, all three analyzer
+entries, and ordinary/default/full execution. This exception supplies missing
+consumer policy; it does not copy maintainer manifests, clippy/rustfmt/deny,
+custom rules or `just` modules.
+
+Released 0.8.4 inventory schema uses
+`boundaries/<owner_package>/<record>.toml`: boundary_id, owner_package,
+owner_crate_path and name, with public.facade, implementation, composition,
+dependencies, references, testing, enforcement and status tables. Active
+records use `state = "concrete_landed"`. A nonempty public facade and
+`boundaries/planning.toml` with `[planning].current_sprint = "A.1"` are
+required even for a new consumer. The planning value is initial consumer
+metadata, not a copy of this repository's sprint state.
+
+Observed released archive:
+`sc-lint_0.8.4_aarch64-apple-darwin.tar.gz`, SHA256
+`798e245719cad2383650eb51dc7ccabd8eaa63e44c53733a4313a3a1cc69dbf2`.
+A minimal consumer-shaped workspace with fresh generated inventory ran
+`just lint`, `just lint default`, and `just lint full` successfully, each
+reporting five steps. The bootstrap receipt, exact command argv and zero exit
+status for sc-boundary/sc-portability/sc-runtime are required evidence; TOML
+inspection alone cannot certify analyzer execution.
+
+**Historical 0.8.4 qualification:** the released binary rejected subsequent
+`sc-lint init --just` after adding the three declarations/profiles and
+consumer `db-prepare`, with exit 3 and
+`CLI.SC_LINT_INTEGRATION_CONFLICT`. Release source
+`crates/sc-lint/src/consumer_integration.rs` classifies only canonical files
+or version-only configuration drift as preservable; arbitrary config/Justfile
+extensions. This is retained as Phase C historical evidence; it is no longer
+the active behavior requirement. The sc-runtime#117 waiver is retired by the
+released 0.8.6 qualification below. Consumer edits must never be removed or
+analyzer execution suppressed to obtain a passing receipt.
+
+The user-waiver probe was rerun successfully on the remaining criteria:
+ordinary/default/full each reported five passing steps; the structured
+`lint.ci.consumer` full-profile receipt identified the exact three analyzer
+argv strings with status pass. Both subsequent init attempts returned the
+recorded exit3, and config/Justfile/edited boundary policy stayed byte-exact.
+This remains historical 0.8.4 profile/preservation evidence, not an init
+success claim.
+
+**Released 0.8.6 repeat-init qualification:** the published
+`sc-lint_0.8.6_aarch64-apple-darwin.tar.gz` archive passed its published
+SHA-256. In an isolated consumer using the actual SDK profiles from
+`template/sc-lint.toml`, an `extra-db-prepare` recipe, and an edited external
+boundary policy, two native `sc-lint init --just` runs exited 0. Both runs
+reported the customized files as preserved, and SHA-256 snapshots of the
+configuration, Justfile, and policy were unchanged.
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
 
@@ -1482,10 +1566,68 @@ nothing.
 
 ## ADR-RUN-0203: Library versions on one router; one struct for both schemas
 
+**Phase C planned amendment, owned by c-1:** the optional standard-cron DTO is
+defined once in sc-cron-commands, and api-types/projections import that owned
+type. Its independent optional schema feature implements JsonSchema/ToSchema
+on the same request/response family using the existing probe's frozen schemars
+and Utoipa identities. Adapter/schema also selects command/schema: the canonical
+Envelope<T>/OpError/ErrorKind owners supply schema traits matching their custom
+wire serialization, with no wire changes, copied wrapper models or orphan
+implementations. C-1 commits compileable declarations and schema manifest/
+boundary baseline before c-3/c-6; c-3 enables schema on selected daemon/service
+edges and compiles real Parameters<CronRequest>/typed Utoipa projections against
+the executor double. C-6 preserves the contract; c-4 verifies actual tools/list
+and OpenAPI schema consistency. CLI/default graphs remain schema/server-free
+through this adapter edge. This extends the one-struct decision's ownership
+for the shared library type; it does not authorize duplicate DTOs or generic
+schemas in place of the typed library-native projections.
+
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  
 **Acceptance:** made Active, or amended, by sprint a-1
+
+### Phase C frozen runtime matrix (queried 2026-11-04)
+
+This matrix supersedes the historical a-1 pins below for Phase C. Official
+crates.io sparse index records were queried at
+`https://index.crates.io/rm/cp/rmcp`, `https://index.crates.io/ut/oi/utoipa`, and
+`https://index.crates.io/ut/oi/utoipa-axum`. Latest non-yanked released versions
+were **rmcp 3.8.0**, **utoipa 6.0.0**, and **utoipa-axum 0.3.0**. Freeze
+schemars **1.2.3**, the resolved identity satisfying RMCP's JsonSchema bound.
+C-3 consumes this exact matrix; newer versions require an ADR amendment and
+repeat qualification, not an implicit latest upgrade.
+
+The temporary composition manifest compiles ordinary OpenApiRouter split and
+Axum nest_service of the streamable-HTTP service, real Parameters<CronRequest>,
+schema_for!(CronRequest), Envelope<CronResponse> JSON/OpenAPI schemas, and the
+same sc-command nominal logging trait with command-dependent cron. Locked
+`cargo metadata --format-version 1 --all-features` is traversed from each
+runtime/daemon composition root via resolve.nodes[].deps[].pkg. Identify each
+reachable package by `(name, version, source)`, not display text or dependency
+key aliases; require exactly one tuple for each selected rmcp/utoipa/
+utoipa-axum/schemars identity, and require locked RMCP/Utoipa equal the dated
+latest registry selections. The composition probe passed on this matrix.
+C-3 repeats this algorithm for the actual migrated runtime and generated
+daemon graphs; this probe does not claim their later migration is complete.
+
+Shared release versions: sc-config, sc-transport, sc-command, sc-runtime,
+sc-cron and sc-cron-commands are all **0.2.0** in the Phase C release. Every
+public crate participates in each release. The internal sc-runtime-db-sqlite
+helper remains publish=false. Command publishes before cron/runtime and cron
+before cron-commands; every declared normal prerequisite is registry-visible
+before its dependent. Preserve cron's defaults-off temporary command edge and
+nominal logging trait (ADR-RUN-0017), without server activation or an upstream
+cleanup claim.
+
+C-3 owns the atomic normal manifest/version/lock/template migration; C1's
+additive declarations retain the current checkout's baseline packages until
+that handoff. C-4 alone qualifies existing-kit all-crates publication and owns
+its authorized release/visibility/no-patch registry-consumer proof. This
+matrix is not publication approval. The historical mixed-version selective
+probe failed, but no selective-publishing feature is required by the corrected
+all-public-crates contract.
+
 
 ### Context
 
@@ -3000,3 +3142,80 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
+
+Phase C's default command intake completes this same pre-submission admission
+contract with finite per-Scheduler capacity (default64, validated finite
+pre-start override), immediate typed refusal rather than an unbounded wait
+queue, and permits retained until physical completion after waiter cancellation.
+Stop/cleanup remain independent; public commands cannot use private internal
+paths to bypass capacity. NFR-RUN-0002 and the existing service-hardening
+checklist section 7 motivate this operational bound. Existing row-limit and
+scheduled-job concurrency decisions are unchanged; custom operation/executor
+providers retain responsibility for their explicitly documented overload policy.
+
+**Status:** Approved Phase C target; implementation planned. REQ-CRON-0020/0021
+and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
+public receiver facade, legacy-safe store admission, directly mutable real
+monotonic budgets, tracked public CRUD/query, restricted generation-fenced
+cleanup, typed expiry and actual physical ownership. This extends ADR-RUN-0013
+without changing the bundled schema, existing Rust/Python/Monty targets or environment
+policy in ADR-RUN-0016. It preserves ADR-RUN-0017's temporary nominal command
+logging port rather than claiming upstream observability cleanup.
+
+Caller absolute G/K permits equality. T=0 cancels immediately with no hidden
+cleanup allowance or instantaneous-join promise. The shared real stop clock
+is independent of schedule ManualClock; test-only forced expiry proves
+propagation, while real-clock tests prove elapsed bounds. Unsupported stores
+cannot enter cooperative mode, and provider overruns cannot become successful
+bounded completion by dropping a waiter or emitting early status.
+
+The framework charter retains custom ScheduleStore/schema and caller-owned
+legacy integrations. The cooperative guarantees here apply to the standard
+path and any custom provider explicitly implementing that capability. SQLite
+hooks/TLS/interrupt are bundled-provider mechanisms, not requirements to use
+SQLite in every application. Custom providers forward the live scope and
+truthfully declare support or remain on the documented legacy path. C-5 proves
+one application-field store example without changing shared Schedule/DTOs.
+
+Human-approved commit clarification: G/K cut off new commit admission, not
+universal physical commit/fsync completion. An owned commit_hook decision
+briefly serializes stop/real-time/class/generation eligibility then releases
+the controller lock before COMMIT. Admitted transactions may finish later and
+remain physically owned. Report confirmed committed-late, explicit rollback
+or indeterminate truthfully; expiry/Drop is not rollback evidence. No uncertain
+mutation replay, expired-budget reconciliation or effects after physical
+release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
+the actual admission race and persisted state after join, c-4 proves packaged
+behavior. This changes the prior strict physical-cutoff interpretation by the
+explicit human decision, not a finding waiver or implementation PASS.
+
+
+## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
+
+**Status:** Approved Phase C target; implementation planned. The new optional
+`sc-cron-commands` library provides common start/end/list JSON and canonical
+Envelope errors, with Rust/Python/Monty execution options. DTO-only defaults
+use serde/serde_json and defaults-off command; optional scheduler adds cron.
+Core command and runtime gain no cron/adapter reverse edge. This explicitly
+amends ADR-RUN-0003's workspace graph and the product-API restriction of
+ADR-RUN-0013 only for the separate adapter: scheduler core keeps no binary,
+HTTP/MCP routes or configuration-file loading.
+
+REQ-RUN-0332 adds default-off generation selection and real selected CLI/HTTP/
+optional-MCP wiring, governed by ADR-CRNC-0001. C-1 owns new manifests/shared
+declarations/contracts and injectable native-operation/executor/target-binding
+ports; c-3 generic template projections, c-5 real core operations, c-6 concrete
+adapter behavior, c-4 final selected-template binding and real prepublication/
+registry integration. Canonical dev-only doubles and real context probe support
+parallel work without production stubs. The actual
+ATM start/end/list and ADR-069 inform the general verbs only: no ATM package,
+team/phase/mandatory-until, six-field-only grammar or second response envelope.
+Public CronOperations/CronExecutor ports also permit application behavior and
+lifecycle policy replacement. The standard executor retains shared-context
+safety; custom implementations document their own authorization, cancellation,
+physical ownership and truthful error/outcome duties. C-6 extends existing
+usage documentation with one selected-default recipe and the c-5 store-example
+link; c-4 consumes it through real generated and registry-only composition.
+No new plugin framework, automatic job start or private wiring is required.

@@ -44,7 +44,7 @@ Evidence: [DOLT_LOG fixed metadata schema description](https://github.com/dolthu
 | Commit history/status and AS OF | Native capability | Persist commit hashes and read by explicit revision; validate exact read-only export strategy. |
 | Human/agent/session/team/stakeholder repository attribution graph | Consumer policy / separate app trace graph | Record authenticated actor/session/context and target stakeholder repo IDs in app-owned append-only events; do not infer them from Dolt author. |
 | Credential provider semantics | Unresolved consumer design | Define precedence, key scope, rotation, redaction, audit, secret-store plugins, and env override behavior; align with version API investigation. |
-| Snapshot export to SQLite refresh | Unresolved implementation probe | Pin hash first; open read-only revision context, export deterministic row/schema snapshot, and verify no working-set drift during extraction. |
+| Snapshot export to SQLite refresh | Consumer-owned (outside `sc-dolt`) | Pin hash first in the consumer cache adaptor; export deterministic row/schema snapshot and verify no working-set drift during extraction. Not part of `sc-dolt` acceptance. |
 
 ## Proposed acceptance probes
 
@@ -52,5 +52,5 @@ Evidence: [DOLT_LOG fixed metadata schema description](https://github.com/dolthu
 2. Set distinct local/global `user.name` and `user.email`, then `DOLT_AUTHOR_*`, `DOLT_COMMITTER_*`, and `CALL DOLT_COMMIT(... '--author', ...)`; inspect `dolt_log` and prove this attribution can differ from SQL `CURRENT_USER()`.
 3. Configure local and global remote credential helper values and observe resolution; verify expected local/global behavior, env override, missing-secret, rotation, redaction, and two simultaneous consumers using different credentials against a shared server.
 4. Pass hostile branch/revision strings through supported procedure value slots; separately test database/table identifier construction using the consumer's quoting/allowlist layer.
-5. Capture a commit hash, perform concurrent commits on another branch, then export using explicit `AS OF`/revision semantics and compare a deterministic manifest (schema, row count, stable content digest) to ensure refresh is pinned and read-only.
+5. *(Consumer-owned acceptance, not `sc-dolt`.)* Capture a commit hash, perform concurrent commits on another branch, then export using explicit `AS OF`/revision semantics and compare a deterministic manifest (schema, row count, stable content digest) to ensure refresh is pinned and read-only.
 6. Emit application trace events for human, agent, session, team, and several stakeholder repos; verify each event links to authenticated SQL principal plus exact Dolt commit hash, while Dolt commit author remains optional display metadata.

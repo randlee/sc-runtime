@@ -1,0 +1,190 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The service must write JSON request logs and retry failed requests twice.",
+        "quote": "Write JSON request logs and retry failed requests twice.",
+        "scope": "service request logging and failed request handling",
+        "verdict": "needs_work",
+        "failing": [
+          "single_constraint"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.04,
+              "yes": 0.96
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.02,
+              "yes": 0.97
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "d9ea4e61726ff3a02e68ef630b5320f9ce4d6f5f7cb587271c33e7eeb1e03d18",
+          "request_sha256": "3fae8654104da35cce5a8da59418d3125a735a5aa930ea34561713d4d97c4b0a"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.88,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.08,
+              "yes": 0.92
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.02,
+              "yes": 0.96
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "needs_work",
+          "failing": [
+            "single_constraint"
+          ],
+          "low_confidence": [],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.88,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.94,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "no",
+              "confidence": 1.0,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

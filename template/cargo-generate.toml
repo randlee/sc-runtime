@@ -8,6 +8,9 @@ exclude = [
 # ignore removes the file from the generated project. The schema stays in
 # the template so generation tests can check config/default.json.
 ignore = [
+    # A local maintainer template lock contains unprefixed/checkout identities.
+    # Consumers resolve their own selected application graph.
+    "Cargo.lock",
     "config/cron.schema.json",
 ]
 
@@ -24,6 +27,16 @@ choices = ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mys
 type = "bool"
 prompt = "Include MCP?"
 default = true
+
+[placeholders.cron]
+type = "bool"
+prompt = "Include cron scheduler support?"
+default = false
+
+[placeholders.cron_commands]
+type = "bool"
+prompt = "Include standard cron commands (requires cron)?"
+default = false
 
 [placeholders.licence]
 type = "string"

@@ -202,8 +202,7 @@ async fn file_instance_root_is_not_lock_held() {
     let dir = tempfile::tempdir().expect("temp dir");
     let file = dir.path().join("not-a-directory");
     std::fs::write(&file, b"x").expect("file");
-    let mut config = DaemonConfig::default();
-    config.transport.instance_root = Some(file);
+    let config = rooted_config(&file);
     let called = Arc::new(Mutex::new(false));
     let flag = Arc::clone(&called);
     let err = Daemon::builder(&app(), &config)
@@ -413,3 +412,54 @@ fn error_is_a_std_error() {
 }
 
 mod lifecycle;
+
+mod observability_http;
+mod phase_c_hooks;
+
+#[tokio::test]
+async fn mcp_retains_the_consumers_configured_body_limit() {
+    use crate::testing::DaemonFixture;
+    use axum::http::StatusCode;
+    let config = DaemonConfig {
+        endpoint_flag: Some("tcp:127.0.0.1:0".into()),
+        ..DaemonConfig::default()
+    };
+    for limit in [64, 4096] {
+        let fixture = DaemonFixture::start_with_mcp(
+            &app(),
+            config.clone(),
+            || async { Ok(()) },
+            |_| OpenApiRouter::new(),
+            move |stores| {
+                let mut service = demo_service(stores);
+                service.config.max_request_body_bytes = limit;
+                service
+            },
+        )
+        .await
+        .expect("MCP fixture");
+        let address = fixture.endpoint_str();
+        let address = address.strip_prefix("tcp:").expect("actual TCP endpoint");
+        let response = reqwest::Client::new().post(format!("http://{address}/mcp"))
+            .timeout(Duration::from_secs(5))
+            .header("accept", "application/json, text/event-stream")
+            .json(&serde_json::json!({"jsonrpc":"2.0", "id":1, "method":"tools/list", "params":{"padding":"x".repeat(128)}}))
+            .send().await.expect("MCP response");
+        if limit == 64 {
+            assert_eq!(response.status(), StatusCode::PAYLOAD_TOO_LARGE);
+            let error: serde_json::Value =
+                response.json().await.expect("fixed JSON-RPC size error");
+            assert_eq!(
+                error["error"]["message"],
+                "MCP request body cannot be read within its configured limit"
+            );
+        } else {
+            assert_ne!(
+                response.status(),
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "consumer can raise its service limit"
+            );
+        }
+        fixture.shutdown().await.expect("shutdown");
+    }
+}

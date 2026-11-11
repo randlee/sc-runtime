@@ -1,0 +1,43 @@
+{
+  "source_commit": "725420b5980e4a0e4a85db3d77a227c9b18a8c88",
+  "v0_1_1_tag_commit": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+  "patch_sha256": {
+    "logging-reexports.patch": "733cd01fe61f75d8f2c6cd8227f2a87fe6330c5f619f690161be5c23bb01c636",
+    "logging-consumer-fixture.patch": "a1912e58f13141781ed9d88dffabd4c1de15b1f69fc3f45d44af2ea6f8eab438",
+    "logging-proposal.patch": "135e52e2be4e02789980325c606ebe2f376576241fc5f2cf703e112395218837"
+  },
+  "actual_metadata_sha256": "10d2e8e568952adc6422497ff6912e4162514adc93a0194968749eb2d8a43497",
+  "consumer_lock_sha256": "4843eae36532b46bdb511a2ac1256124b6ef5411c4c957b4e077814aee717765",
+  "validation": {
+    "patched_receiver_compile_and_actual_events": "PASS",
+    "locked_normal_build_graph": "PASS",
+    "unpatched_source_missing_export_negative": "PASS (expected E0432)",
+    "restored_patched_locked_run": "PASS",
+    "checker_unit_tests": "3 PASS",
+    "apply_check_all_patches": "PASS"
+  },
+  "environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/tmp/phase-c-execution/c-1/qa-4/logging-proposal/target"
+  },
+  "initial_network_attempt": "Stopped after DNS resolution failure; successful checks used offline cached dependencies",
+  "logs": [
+    "receiver-proof.log",
+    "receiver-proof-offline.log",
+    "receiver-proof-locked.log",
+    "actual-graph.log",
+    "metadata-stderr.log",
+    "checker-tests.log",
+    "unpatched-negative.log"
+  ],
+  "findings_still_open": [
+    "REQ-QA-004",
+    "ARCH-001",
+    "RBQA-F001",
+    "RSH-001",
+    "QA2-001"
+  ],
+  "heavy_build_slot": "released",
+  "consumer_baseline_or_real_upstream_edits": false
+}

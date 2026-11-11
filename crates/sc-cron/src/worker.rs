@@ -46,9 +46,10 @@ use crate::coord::{MontyFeedGuard, RunCoord};
 use crate::hook::{ResolvedTarget, Step, stop_step, tick_outcome};
 use crate::{
     Clock, CronError, HookCall, HookEvent, HookTarget, Job, MissedTickPolicy, PythonHook,
-    RunOutcome, Schedule, ScheduleStore, StopDecision, StoreError, StoreErrorKind, Timestamp,
+    RunOutcome, Schedule, ScheduleStore, StopDecision, Timestamp,
 };
 
+mod store_calls;
 mod worker_runs;
 
 pub(crate) use worker_runs::{Event, event_record, terminal_event};
@@ -208,6 +209,8 @@ pub(crate) struct Worker<S, C> {
     environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
     hosts: Arc<crate::MontyHostRegistry>,
+    controller: Option<Arc<crate::operation::Controller>>,
+    cooperative: bool,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
     /// handle was dropped, which stops the worker without a handle deadline.
@@ -370,6 +373,8 @@ where
             environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
             hosts,
+            controller: None,
+            cooperative: false,
             shutdown,
             handle_deadline: None,
             stopping: false,
@@ -392,6 +397,16 @@ where
         self
     }
 
+    pub(crate) fn with_operation_controller(
+        mut self,
+        controller: Arc<crate::operation::Controller>,
+        cooperative: bool,
+    ) -> Self {
+        self.controller = Some(controller);
+        self.cooperative = cooperative;
+        self
+    }
+
     /// Returns whether shutdown was requested, without waiting.
     fn note_stop(&mut self, deadline: Option<tokio::time::Instant>) {
         self.stopping = true;
@@ -401,6 +416,9 @@ where
     }
 
     fn stop_requested(&mut self) -> bool {
+        if let Some(budget) = self.controller.as_ref().and_then(|c| c.budget()) {
+            self.note_stop(Some(budget.grace.into()));
+        }
         if !self.stopping {
             match self.shutdown.try_recv() {
                 Ok(deadline) => self.note_stop(deadline),
@@ -413,6 +431,10 @@ where
 
     pub(crate) async fn run(mut self, mut reload: watch::Receiver<u64>) {
         let mut reload_open = true;
+        let mut lifecycle = self
+            .controller
+            .as_ref()
+            .map(|controller| controller.subscribe());
         loop {
             if self.stop_requested() {
                 break;
@@ -437,6 +459,10 @@ where
             let clock = Arc::clone(&self.clock);
             tokio::select! {
                 biased;
+                () = async {
+                    if let Some(lifecycle) = &mut lifecycle { let _ = lifecycle.changed().await; }
+                    else { std::future::pending::<()>().await; }
+                } => {}
                 message = &mut self.shutdown => {
                     self.note_stop(message.ok().flatten());
                     break;
@@ -450,6 +476,12 @@ where
                     self.on_finished(index, finished, guard).await;
                 }
                 () = clock.sleep_until(wake) => {}
+            }
+        }
+        if let Some(controller) = &self.controller {
+            controller.note_ordinary_completion();
+            if self.cooperative {
+                controller.status(crate::ShutdownStatus::CleaningUp);
             }
         }
         self.drain().await;
@@ -534,22 +566,6 @@ where
 
     fn now_stamp(&self) -> Timestamp {
         Timestamp::from_datetime(self.clock.now())
-    }
-
-    async fn store_call<T: Send + 'static>(
-        &self,
-        operation: impl FnOnce(&S) -> Result<T, CronError> + Send + 'static,
-    ) -> Result<T, CronError> {
-        let store = Arc::clone(&self.store);
-        // Not cancelled: shutdown waits out the current statement. Lock waits
-        // inside it are bounded by the store's SQLite busy timeout.
-        tokio::task::spawn_blocking(move || operation(store.as_ref()))
-            .await
-            .map_err(|error| {
-                CronError::Store(
-                    StoreError::new(StoreErrorKind::Other, "store task failed").with_source(error),
-                )
-            })?
     }
 
     async fn reload(&mut self) {
@@ -821,6 +837,13 @@ where
     }
 
     fn launch(&mut self, index: usize, correlation: RunCorrelation) {
+        if self
+            .controller
+            .as_ref()
+            .is_some_and(|controller| !controller.admit_launch())
+        {
+            return;
+        }
         #[cfg(feature = "monty")]
         if matches!(
             self.slots.get(index).map(|slot| &slot.schedule.spec.hook),
@@ -877,6 +900,9 @@ where
         result: Result<Report, JoinError>,
         correlation: RunCorrelation,
     ) -> bool {
+        if let Some(controller) = &self.controller {
+            controller.note_ordinary_completion();
+        }
         let Some(slot) = self.slots.get_mut(index) else {
             return false;
         };
@@ -981,7 +1007,7 @@ where
         }
     }
 
-    /// Stores the next run time; returns `false` only when fenced.
+    /// Stores the next run time; fencing or uncertain persistence refuses launch.
     async fn persist_next(&mut self, schedule: &Schedule, next: DateTime<Utc>) -> bool {
         let (id, generation) = (schedule.id, schedule.generation);
         let next = Timestamp::from_datetime(next);
@@ -995,7 +1021,8 @@ where
                 false
             }
             Err(error) => {
-                // The in-memory next run still drives this process.
+                // Uncertain persistence cannot authorize an external launch or automatic replay.
+                let reconcile = self.persistence_requires_reconciliation(&error);
                 if let Some(event) = event_record(
                     self.coord.logger.service_name().clone(),
                     Event::ScheduleNextFailed,
@@ -1004,13 +1031,13 @@ where
                 ) {
                     let _ = self.coord.logger.emit(event);
                 };
-                true
+                !reconcile
             }
         }
     }
 
-    /// Writes the end of a schedule; returns `false` only when the store
-    /// failed, so the caller can retry. A fenced write is answered (`true`).
+    /// Writes the end of a schedule; known failures may retry, while uncertain
+    /// or committed-late writes remain reported and cannot be replayed.
     async fn end(
         &mut self,
         schedule: &Schedule,
@@ -1046,7 +1073,7 @@ where
                     event.correlation_id = correlation.clone();
                     let _ = self.coord.logger.emit(event);
                 };
-                return false;
+                return self.persistence_requires_reconciliation(&error);
             }
         }
         self.write_answered();
@@ -1095,7 +1122,9 @@ where
                     event.correlation_id = correlation.clone();
                     let _ = self.coord.logger.emit(event);
                 };
-                self.rebuild_later();
+                if !self.persistence_requires_reconciliation(&error) {
+                    self.rebuild_later();
+                }
             }
         }
     }

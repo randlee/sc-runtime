@@ -49,7 +49,11 @@ class CronEnvironmentTests(unittest.TestCase):
         manifest = (ROOT / "template/crates/daemon/Cargo.toml").read_text()
         cron_feature = manifest.split('cron = [', 1)[1].split(']', 1)[0]
         self.assertEqual(set(tomllib.loads("cron = [" + cron_feature + "]")["cron"]), {"dep:sc-cron", "dep:async-trait"})
-        self.assertIn('monty = ["cron", "sc-cron/monty"]', (ROOT / "template/crates/daemon/Cargo.toml").read_text())
+        monty_feature = manifest.split('monty = [', 1)[1].split(']', 1)[0]
+        self.assertEqual(set(tomllib.loads("monty = [" + monty_feature + "]")["monty"]),
+                         {"cron", "sc-cron/monty", "sc-cron-commands?/monty"})
+        # Optional forwarding must not activate command support for cron-only users.
+        self.assertNotIn('"sc-cron-commands/monty"', monty_feature)
 
     def test_checked_example_receives_identity_team_clear_reference_dotenv_without_render_helper(self):
         calls = []

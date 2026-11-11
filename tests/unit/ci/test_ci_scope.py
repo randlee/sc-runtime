@@ -1,4 +1,4 @@
-"""Documentation-only diffs do not require the runtime CI jobs."""
+"""Additional runtime scope never bypasses the every-PR template fixture matrix."""
 
 import importlib.util
 import unittest
@@ -37,6 +37,22 @@ class CiScopeTests(unittest.TestCase):
         self.assertTrue(ci_scope.requires_runtime(["template/Justfile"]))
         self.assertTrue(ci_scope.requires_runtime([".github/workflows/crates.yml"]))
         self.assertTrue(ci_scope.requires_runtime(["Cargo.lock"]))
+
+    def test_template_fixture_matrix_runs_for_documentation_only_prs(self):
+        workflow = (ROOT / ".github/workflows/template.yml").read_text()
+        generate = workflow.split("\n  generate:\n", 1)[1].split(
+            "\n  plain-cargo-generate:\n", 1
+        )[0]
+        self.assertIn("needs: fixtures", generate)
+        self.assertNotIn("ci-scope", generate)
+        self.assertNotIn("Documentation-only runtime skip", generate)
+        conditions = [line.strip() for line in generate.splitlines()
+                      if line.strip().startswith("if:")]
+        self.assertEqual(conditions, ["if: ${{ matrix.fixture == 'sqlite-mcp.json' }}"])
+        for step in ("Checkout", "Generate", "Consumer recipes", "Workspace check"):
+            self.assertIn(f"- name: {step}\n", generate)
+        for recipe in ("setup", "lint", "test", "build-cli", "build-daemon"):
+            self.assertIn(f"just {recipe}", generate)
 
     def test_empty_path_does_not_require_runtime(self):
         self.assertFalse(ci_scope.requires_runtime(["", "docs/architecture.md"]))

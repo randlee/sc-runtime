@@ -51,7 +51,7 @@
           "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/sql.go#L436-L439"
         }
       ],
-      "conclusion": "DOLT_CHECKOUT updates the checked-out revision in the DoltSession and then changes that SQL context's current database to the base database. It does not change the CLI's repository checkout. Switching requires a clean working set; uncommitted changes must be committed or rolled back first.",
+      "conclusion": "DOLT_CHECKOUT updates the checked-out revision in the DoltSession and then changes that SQL context's current database to the base database. It does not change the CLI's repository checkout. Upstream CLI source documents a clean-working-set requirement, but the executed v2.6.2 native probe checked out with a dirty main edit, switched the active view, and retained the edit on dirty/main (see probes/probe.md). Plan the adapter around qualified USE/branch targets, not around checkout refusal on dirty working sets.",
       "limitation": "This is session state, not per-statement routing. Returning a connection with a changed checkout to a pool without resetting/re-establishing its schema can route subsequent unqualified statements to the wrong branch.",
       "proposedAcceptanceProbe": "On a pinned SQL connection, checkout a branch and assert it affects only that connection; assert a second connection retains its prior ACTIVE_BRANCH(). Attempt checkout with pending writes and assert the expected error, then rollback and retry."
     },

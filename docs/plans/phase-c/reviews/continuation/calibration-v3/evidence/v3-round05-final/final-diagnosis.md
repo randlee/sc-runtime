@@ -1,0 +1,13 @@
+The bounded v3 calibration is complete and unaccepted. No new five-role rubric seal was issued.
+
+Across five rounds, 21 genuine role-complete candidates were evaluated against the unchanged 36-case oracle (180 role cells per bundle). The 756 rubric CLI executions preserved 1,548 confirmations, including 36 third calls triggered only by initial choice disagreement. There were no retries. All eight deterministic lint cases passed.
+
+The diagnostic leader, v3-round03-01, has 179 exact, 170 confident and 180 stable cells. Its self_contained judgment incorrectly accepts an approval condition with no recorded artifact (yes at .89 and .88, expected no). Nine further cells lack two confirmations at the unchanged .6 threshold: seven faithful cells and two self_contained cells. The faithful boundaries concern authorized directive formalization, explicit approval-source preservation, and unsupported shape/channel/configuration choices. Correct answers below threshold remain failures; the high-confidence semantic mismatch remains a failure.
+
+The separately evaluated dedupe correction v3-dedupe-round05-01 passes all eight unchanged statement-only pairs with two confident, agreeing oracle matches. The other dedupe candidates and original failed instrument remain preserved. This isolated dedupe success does not authorize partial rubric adoption or alter installed defaults.
+
+The request minimum of three and result-schema minimum of six were reconciled with actual additional v3 candidates. No v2 candidate was relabeled as v3, and no count or schema was weakened. General fidelity policy and five revised seed statements derive from the exact recorded human approval. All historical v2 states, labels, evidence and seal remain unchanged. No actual Phase C plan, anchor or consumer source was used as oracle or exported in the requests.
+
+The hard stop after round five is respected. The supported local unreleased 0.8.8 runtime demonstrated input capability, but no complete candidate satisfied the frozen instrument acceptance criteria. This result supplies no authority to change project requirements, waive confidence, adopt a partial bundle, or claim a new live planning gate.
+
+The complete strict result is result.md / result.json. All schemas, relational checks and outer fence passed. Raw-answer tables, frozen-body hashes, cumulative source-neutral history, execution attestation and artifact bindings are alongside it. Earlier render metadata and summary-classification versions remain in prior-bootstrap-correlation/ and prior-summary-classification/; these corrections changed neither answers nor acceptance.

@@ -1,102 +1,181 @@
 # sc-dolt proposed architecture
 
-Status: proposed. Scope: a thin reusable branch-aware Dolt access crate maintained
-in sc-runtime, consumed by Raptor and other applications. No product code is
-changed by this proposal. Source: owner planning conversation of 2026-11-02 and
-[pinned Dolt evidence](../research/dolt-v2.6.2/README.md).
+**Status:** Proposed (on hold per [sc-dolt plan](../plans/maintenance/sc-dolt-plan.md))  
+**Scope:** thin reusable branch-aware Dolt access in `crates/sc-dolt`  
+**Source:** owner planning conversation 2026-11-02, QA-1 findings 2026-11-11,
+[pinned Dolt evidence](../research/dolt-v2.6.2/README.md)
+
+No product code ships under this proposal. **Root** documents (`docs/requirements.md`,
+`docs/architecture.md`) change only when implementation is authorized and the
+amendments below are applied verbatim.
+
+---
+
+## Public surface sketch (binding on implementation)
+
+These names are planning contracts. They MUST NOT wrap or re-export `sqlx` pool,
+connection, or transaction types ([ADR-RUN-0001](../architecture.md) point 4
+amendment).
+
+| Type | Role |
+| --- | --- |
+| `DatabaseName`, `BranchName`, `RevisionId` | Validated newtypes; parse/validate at construction |
+| `BranchTarget` | Pair of validated database + branch |
+| `BranchLease` | Owns one SQL connection and session state for one target; drop/rollback policy documented at implementation |
+| `DoltError` | Crate error enum with stable `code()` strings ([NFR-RUN-0009](../requirements.md)) |
+| `SqlCredentialResolver` | Object-safe trait: resolve SQL principal + secret handle for a `BranchTarget`; no secret in `Debug` |
+
+Consumers execute SQL through methods on `BranchLease` that accept only bound
+parameters and qualified identifiers assembled by the consumer store layer.
+`BranchLease` MAY hold a private `sqlx` connection internally; that type MUST
+NOT appear in public signatures.
+
+**Typestate (planned):** `Unbound` → `CheckedOut` → `InTransaction` → `Published`.
+The lease typestate is also the capability token: only `InTransaction` may issue
+CRUD; only `Published` may release the connection to a pool.
+
+---
 
 ## ADR-DOLT-0001: reuse SQLx MySQL and native Dolt operations
 
-The implementation lives at `crates/sc-dolt`, a sibling of the runtime SDKs.
-It does not become a dependency of the daemon bootstrap merely because it lives
-in this workspace. Applications supply stores through the existing stores seam.
-SQLx MySQL owns the wire protocol, pooling primitives and transactions. Dolt
-owns branches, commits, merges and conflict/diff computation. Consumer stores own
-schema, migrations and domain CRUD. This preserves the framework charter and
-avoids a second database driver or portable query framework.
+**Status:** Proposed  
+**Decision Date:** 2026-11-02  
+**Source:** [sc-dolt requirements](requirements.md) REQ-DOLT-0001, REQ-DOLT-0006  
+**Amends:** [ADR-RUN-0001](../architecture.md) point 4 (public session types)  
 
-The first contract names validated database, branch and revision types; a
-branch-bound session/transaction; a connection credential resolver; native
-operation results and stable actionable errors. This is a focused access API,
-not a SQL parser or a second command framework. Compile the contract against the
-selected SQLx version before freezing signatures; method names in this document
-are conceptual until that contract is reviewed.
+### Context
+
+Applications need Dolt branch semantics without a second driver. SQLx MySQL
+handles the wire protocol; Dolt owns branches, merges, and conflict math.
+
+### Decision
+
+1. Implementation lives at `crates/sc-dolt`, a workspace sibling of the runtime
+   SDKs. It does not become a dependency of the daemon bootstrap.
+2. SQLx MySQL owns pooling primitives; Dolt owns native branch/merge/remote
+   procedures. Consumer stores own schema and domain CRUD SQL.
+3. Public API is the validated newtypes and `BranchLease` above—not a SQL parser
+   or command registry.
+4. Signatures compile against the selected SQLx version before the ADR moves to
+   Active.
+
+### Consequences
+
+Consumers depend on `sc-dolt` from generated store crates, not from `sc-runtime`.
+
+---
 
 ## ADR-DOLT-0002: selection is explicit and request-local
 
-Clients resolve configuration and attach database/branch to every request.
-The library receives the resolved target. It never obtains a remote client's
-branch by reading the server environment. A bounded pool registry may reuse
-connections only within the same server/database/principal/credential-version/
-branch scope; changing a scope requires reinitialization proved by a real test.
-A lease owns one SQL connection for its complete transaction and commit outcome.
-Do not run checkout on one connection and CRUD on another. Validate/quote
-identifiers through the driver; bind ordinary procedure/data values.
+**Status:** Proposed  
+**Decision Date:** 2026-11-02  
+**Source:** REQ-DOLT-0001, [branch evidence](../research/dolt-v2.6.2/branches.md)  
 
-Bound resource use and pool retirement are configuration, not performance claims.
-Do not promise independent dirty working sets to clients on the same branch:
-Dolt branches have shared working sets, while transactions have their own views.
-Raptor normally publishes a versioned transaction per mutation; the generic
-crate exposes the distinction rather than secretly enabling per-statement commits.
+### Decision
+
+1. Every operation carries an explicit validated `BranchTarget`.
+2. Pool registry keys include server, database, principal, credential version,
+   and branch.
+3. A lease owns one connection end-to-end for an operation; no checkout on one
+   connection and CRUD on another.
+4. Prefer `USE db/branch` or qualified identifiers over `DOLT_CHECKOUT` in the
+   initial delivery (checkout deferred per REQ-DOLT-0002).
+
+### Consequences
+
+Branch working sets may be shared across sessions; transactions retain isolated
+views.
+
+---
 
 ## ADR-DOLT-0003: merge only through native success semantics
 
-Support branch creation, fast-forward merge and clean three-way merge. Native
-preview/diff can inform a request but does not authorize a later merge: source
-and target may move, and preview does not enumerate every constraint failure.
-The actual merge outcome is authoritative. Preserve the observed before/after
-revision IDs and native conflict diagnostics. Return a conflict rather than
-publishing a conflict-bearing commit or choosing ours/theirs.
+**Status:** Proposed  
+**Decision Date:** 2026-11-02  
+**Source:** REQ-DOLT-0002, [probes](../research/dolt-v2.6.2/probes/probe.md)  
 
-The native probe shows that autocommit conflicts roll back, manual transaction
-conflicts can be inspected then rolled back, and abort restores the merge state.
-It also shows that rollback does not undo a clean merge already published.
-The adapter's first real SQLx test must select and lock down one native flow,
-including dirty-target protection, constraint failures, concurrent head changes,
-cancellation and lost-response behavior. If a requested guarantee cannot be
-proved, fail the compatibility gate; do not implement a guessed compensating reset.
+### Decision
+
+Support create/list/select, fast-forward merge, and clean three-way merge.
+Return conflicts with native diagnostics; never publish conflict-bearing commits.
+The pinned SQLx test must lock one native conflict-cleanup flow before release.
+
+---
 
 ## ADR-DOLT-0004: authentication is not attribution
 
-Applications provide SQL credentials by named connection, with pluggable local
-storage/environment support. Keep secret values out of context/trace objects.
-Human, agent/session, team and repository may be attribution attached to an
-operation; none substitutes for the authenticated SQL principal. The application
-owns approval of author claims. Reuse the existing sc-observability injection
-contract at the selected SDK baseline; do not create a competing logging API.
+**Status:** Proposed  
+**Decision Date:** 2026-11-02  
+**Source:** REQ-DOLT-0003  
 
-Remote SQL procedures can use server-managed credentials that are not isolated
-per caller. Expose that capability/limitation. Never write environment variables
-while serving concurrent clients. Additional remote credential backends require
-their own proved binding and can be added without changing record CRUD.
+### Decision
+
+1. Applications implement `SqlCredentialResolver`.
+2. Attribution metadata is optional and application-owned.
+3. Observability uses **`sc-observability-types` only** at the injection seam
+   (see ADR-RUN-0004 amendment). `sc-dolt` MUST NOT depend on `sc-observability`
+   or `sc-observability-otlp`.
+
+---
+
+## Binding root amendments (apply when hold lifts)
+
+### Amendment to REQ-RUN-0001 / workspace members
+
+Add one workspace member row (same pattern as `sc-cron-commands`):
+
+| Member path | Crate name | Purpose |
+| --- | --- | --- |
+| `crates/sc-dolt` | `sc-dolt` | Dolt branch/merge/remote access (planned; not yet a member) |
+
+`sc-runtime` MUST NOT depend on `sc-dolt`.
+
+### Amendment to ADR-RUN-0003 (edge row)
+
+| Crate | Workspace crates it depends on | Forbidden edges |
+| --- | --- | --- |
+| `sc-dolt` | none at workspace level; **may** depend on crates.io `sqlx` (MySQL) and Tokio; **may** depend on `sc-observability-types` only among workspace observability crates | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+
+`sc-runtime` and existing store crates remain **`sqlx`-free** (cargo tree unchanged).
+`allowed_dependents` for `sc-dolt`: empty at introduction; consumer store crates
+add edges through their manifests when integrated.
+
+### Amendment to ADR-RUN-0004
+
+`sc-observability-types` is allowed on `sc-command`, `sc-runtime`, `sc-cron`, and
+**`sc-dolt`**. Injection contract is unchanged: projects construct canonical
+events; `sc-dolt` emits through injected types only.
+
+### Amendment to ADR-RUN-0001 point 4
+
+`sc-dolt` MAY expose `BranchLease` and validated string newtypes. Those types
+MUST NOT be wrappers that re-export sqlx, Axum, or rmcp types. Internal use of
+sqlx is private to the crate.
+
+### Amendment to ADR-RUN-0301 point 6 / ADR-RUN-0305 point 9
+
+Framework crates still do **not** move rows between consumer stores. **Exception:**
+`sc-dolt` issues native Dolt `fetch` / `push` / `pull` against a Dolt server
+using Dolt's protocol. That is not store-to-store replication inside the
+generated adaptor; row copy between SQLite and Dolt remains consumer-owned.
+
+---
 
 ## Proposed boundary map
 
 | Boundary | Owns | Does not own |
 | --- | --- | --- |
-| sc-dolt | branch leases, native operations, credentials seam, outcomes | domain models, migrations, HTTP commands |
-| existing sc-runtime | daemon lock/router/shutdown and stores closure | a mandatory database engine |
-| generated/consumer store | table SQL, canonical schema, transactions policy | another MySQL wire driver |
-| consumer cache adaptor | immutable revision reads and local publication | Dolt merge or bidirectional reconciliation |
+| sc-dolt | branch leases, native operations, credentials seam, `DoltError` | domain models, migrations, HTTP commands |
+| sc-runtime | daemon lock/router/shutdown and stores closure | mandatory database engine |
+| generated consumer store | table SQL, canonical schema | second MySQL driver |
+| consumer cache adaptor | immutable revision reads, **SQLite snapshot export** | Dolt merge or bidirectional reconciliation |
 
-Proposed normal dependencies are SQLx MySQL/Tokio and the existing SDK's
-applicable shared error/observability types. Existing boundary manifests and the
-chosen SDK baseline decide the exact allowed edges; add the new manifest in the
-implementation, not fictitious current edges. Keep the schema crate and CLI free
-of server/database runtime dependencies. SQLx/Dolt source/API pins are recorded
-in the implementation receipt and real integration job.
+---
 
 ## Delivery cut
 
-Execution is tracked in Beads under `run-sc-dolt`, not duplicated in this file.
-A branch/session implementation establishes the usable crate and branch-create
-path. A native-operations implementation adds clean merge, diagnostics and remote
-operations using that capability. A consumer integration proves the complete
-API against pinned Dolt and two differently shaped consumers. These form a
-single three-step track because the later operations consume the actual branch
-lease implementation and the final proof consumes the complete native facade.
-No unrelated SDK/template upgrade is pulled into this scope.
+Execution stays in Beads epic `run-sc-dolt` (`.1` branch sessions, `.2` native ops,
+`.3` two-consumer proof). See [sc-dolt plan](../plans/maintenance/sc-dolt-plan.md).
 
-The initial source/checkout integration is independent of publication. Publishing
-or changing SDK release versions follows the existing maintainer release gate;
-this plan does not authorize publishing credentials, tags or crate releases.
+Publication of any crate version follows the maintainer release gate; this plan
+does not authorize tags or registry upload.

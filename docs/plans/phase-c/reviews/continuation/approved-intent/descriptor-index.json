@@ -1,0 +1,77 @@
+{
+  "source_index": "/tmp/sc-runtime-phase-c-review/continuation/gate-preparation/approved-intent-descriptor-candidate.json",
+  "source_index_sha256": "c3252fe5c59eba28b92cfc048a08dcf4219398f177803860e411de0c6d594eff",
+  "selection_only": true,
+  "descriptors": [
+    {
+      "anchor_id": "ANC-001",
+      "path": "ANC-001.json",
+      "id": "sc-runtime-phase-c-anc-001-approved-intent",
+      "version": 1,
+      "sha256": "78cf4ab1c19a32f719521324ffbc03bd26951a508ff2d741cbca5ec357a4dd11"
+    },
+    {
+      "anchor_id": "ANC-003",
+      "path": "ANC-003.json",
+      "id": "sc-runtime-phase-c-anc-003-approved-intent",
+      "version": 1,
+      "sha256": "3cfabf72271f31ed25c411e395c43f4f80840d825a69c4c5d7ef3aa9ddce5f35"
+    },
+    {
+      "anchor_id": "ANC-004",
+      "path": "ANC-004.json",
+      "id": "sc-runtime-phase-c-anc-004-approved-intent",
+      "version": 1,
+      "sha256": "7e09b94141ce71ecd47d978b65828a3786b6b0721b45de183098151a04dc8dff"
+    },
+    {
+      "anchor_id": "ANC-006",
+      "path": "ANC-006.json",
+      "id": "sc-runtime-phase-c-anc-006-approved-intent",
+      "version": 1,
+      "sha256": "d38d3d1d7f7926e3ff871c929217f7f40442640df61defc607355bf7857e4b97"
+    },
+    {
+      "anchor_id": "ANC-007",
+      "path": "ANC-007.json",
+      "id": "sc-runtime-phase-c-anc-007-approved-intent",
+      "version": 1,
+      "sha256": "1738694b9c07a6a7505d4d855bc0cc9012fd8112014a423956a282a462a1b923"
+    },
+    {
+      "anchor_id": "ANC-008",
+      "path": "ANC-008.json",
+      "id": "sc-runtime-phase-c-anc-008-approved-intent",
+      "version": 1,
+      "sha256": "4b1acad50d964aabf25e5af34e4cf60afe928f4d68820ea4c7e6e3c248c1e16e"
+    },
+    {
+      "anchor_id": "ANC-009",
+      "path": "ANC-009.json",
+      "id": "sc-runtime-phase-c-anc-009-approved-intent",
+      "version": 1,
+      "sha256": "c8282dad14544f69c5877de3c7b0f99b62a779e192cbd985112539ae3df3bc4a"
+    },
+    {
+      "anchor_id": "ANC-010",
+      "path": "ANC-010.json",
+      "id": "sc-runtime-phase-c-anc-010-approved-intent",
+      "version": 1,
+      "sha256": "d1e49589b4adb79ff8daf98190aa6f635892e7b1da460284f153b39f15970965"
+    },
+    {
+      "anchor_id": "ANC-011",
+      "path": "ANC-011.json",
+      "id": "sc-runtime-phase-c-anc-011-approved-intent",
+      "version": 1,
+      "sha256": "13d24bb79484968405a2f7167ee80c7c9fd23fd68f2a93c5f9d16e3ce63e868e"
+    },
+    {
+      "anchor_id": "ANC-012",
+      "path": "ANC-012.json",
+      "id": "sc-runtime-phase-c-anc-012-approved-intent",
+      "version": 1,
+      "sha256": "311113ec0d15dbf6772ba13389ba2289bc1d97197ebd7bf2a591bb8eb10e90e3"
+    }
+  ]
+}

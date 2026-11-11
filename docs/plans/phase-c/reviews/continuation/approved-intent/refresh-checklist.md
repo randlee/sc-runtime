@@ -1,0 +1,18 @@
+# Request binding refresh after the pending 0.8.8 installer
+
+These ten offline descriptors select existing approved authority; they add none. Each descriptor has exactly `id`, `version`, `sha256`, and `content`. The content holds one current approved anchor statement, original quote, version and fixtures; the applicable exact human approval answers and source digests; and, for ANC-001 only, the original detailed human sc-lint question. No evaluator findings, desired role labels, live result expectations, or assistant packet analysis is included.
+
+All source-index hashes and every referenced repository source hash were verified before selection. All anchor fields were compared to the currently locked record. `descriptor-index.json` binds the source index and lists content digests; it is local assembly metadata, not a new human approval.
+
+Future refresh checklist for the parent, after supported canonical 0.8.8 installation is available:
+
+1. Check canonical installer status and verify actual installed version/targets, then read the installed 0.8.8 skill, runtime CLI help, templates, schemas, and contract. Confirm the intended approved-intent input is actually supported. A pending release or new source file alone proves neither installation nor runtime capability.
+2. Confirm these anchor versions/statements/quotes/fixtures and the referenced approved source files remain unchanged. If any source changed, recompute selection against the approved version rather than transplanting stale descriptor hashes.
+3. Resolve the actual installed Codex Sol tuner/gate descriptor once per intended role through the installed runner; retain the returned descriptor. Hash the actual installed judge script, relational contract, templates, and schema inputs. Do not fabricate an 0.8.8 descriptor by changing the version on an 0.8.7 object.
+4. Read the new approved-intent CLI/request contract before selecting the descriptor. Bind exactly the matching per-anchor `content` and its UTF-8 SHA-256 using the supported input field. Preserve original quote and statement provenance. If the runtime only accepts a whole-plan source, report that mismatch instead of sending unrelated accepted anchors or plan text as testability authority.
+5. Keep bootstrap calibration's original frozen plan-independent corpus distinct from actual-anchor validation. Carry the existing rubric seal and predecessor evidence; do not introduce accepted Phase C anchors as calibration labels. Reopen only independently authorized affected roles, retain all prior candidates/raw responses, and freeze any authorized generic supplements before their first answer.
+6. Render the new checked-in request and outer invocation templates with strict/check-render. Validate exact inner/outer schemas and relational contract; compare the rendered payload to the JSON request. Check script/template/agent hashes, intent content digest, anchor-record digest, original source digest, sealed question digest and exact role set.
+7. Before live dispatch, inspect the generated request: only the matching approved provenance should reach the actual-anchor rubric; no secret, active plan, desired role answer, or evaluator conclusion should appear. The parent launches the independent agent only after all bindings pass.
+8. Preserve a new append-only run/invocation directory. Record actual response and request digests and validate response schemas/contracts/fence before consuming results. The existence of these offline descriptors is not a rubric or planning-gate PASS.
+
+No installation, live call, runtime descriptor resolution for pending 0.8.8, repository edit, question edit, or authority mutation occurred during this selection task.

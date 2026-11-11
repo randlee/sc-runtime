@@ -1,0 +1,194 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The package may publish only when the release lead approves.",
+        "quote": "only publish after the release lead says yes",
+        "scope": "package publishing",
+        "verdict": "inconclusive",
+        "failing": [
+          "self_contained",
+          "observable"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.52,
+            "probabilities": {
+              "no": 0.68,
+              "unclear": 0.12,
+              "yes": 0.2
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.73,
+            "probabilities": {
+              "no": 0.82,
+              "unclear": 0.02,
+              "yes": 0.16
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648",
+          "request_sha256": "dd7c0bcc8222571fd4da9a2596b6365703b65a3dbda9f1ce67cba1ceb0beb964"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.53,
+            "probabilities": {
+              "no": 0.69,
+              "unclear": 0.12,
+              "yes": 0.19
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.05,
+              "yes": 0.95
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.74,
+            "probabilities": {
+              "no": 0.83,
+              "unclear": 0.02,
+              "yes": 0.15
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "self_contained",
+            "observable"
+          ],
+          "low_confidence": [
+            "observable"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "no",
+              "confidence": 0.52,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "no",
+              "confidence": 0.73,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 1.0,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

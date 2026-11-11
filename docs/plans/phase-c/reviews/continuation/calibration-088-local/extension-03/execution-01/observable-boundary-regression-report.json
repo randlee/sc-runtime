@@ -1,0 +1,1168 @@
+{
+  "selected_diagnostic_candidate": "extension-03-01",
+  "observable_cells": 23,
+  "observable_exact": 23,
+  "observable_confident": 23,
+  "observable_stable": 23,
+  "unrecorded_approval_check": [
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "needs_work",
+      "candidate_id": "extension-03-01",
+      "case_id": "a0-12-unrecorded-approval",
+      "confident": true,
+      "exact": true,
+      "expected": "no",
+      "raw_answers": [
+        {
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.98,
+            "unclear": 0.01,
+            "yes": 0.01
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.98,
+            "unclear": 0.01,
+            "yes": 0.01
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--a0-12-unrecorded-approval.live.stdout.json",
+      "request_sha256": "eb88dceb712e28c499419cdc3d430e7b48fcb5fe098e586f61831c4f5a4781d1",
+      "role": "observable",
+      "source": "original",
+      "stable": true
+    }
+  ],
+  "recorded_approval_boundary_checks": [
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "704742eb7168479fa11d07e457282474b6249b0aa16cef17d8921232f729bc48",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "704742eb7168479fa11d07e457282474b6249b0aa16cef17d8921232f729bc48",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "704742eb7168479fa11d07e457282474b6249b0aa16cef17d8921232f729bc48",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "704742eb7168479fa11d07e457282474b6249b0aa16cef17d8921232f729bc48",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "704742eb7168479fa11d07e457282474b6249b0aa16cef17d8921232f729bc48",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "b95e2b849d6cfc56620b3c1eb4d17332295eaed7bd61a29c3a7b0994a87724c1",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "b95e2b849d6cfc56620b3c1eb4d17332295eaed7bd61a29c3a7b0994a87724c1",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.74,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.16,
+            "yes": 0.83
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.7,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.18,
+            "yes": 0.8
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "b95e2b849d6cfc56620b3c1eb4d17332295eaed7bd61a29c3a7b0994a87724c1",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.03,
+            "yes": 0.95
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.02,
+            "yes": 0.96
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "b95e2b849d6cfc56620b3c1eb4d17332295eaed7bd61a29c3a7b0994a87724c1",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-01",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "b95e2b849d6cfc56620b3c1eb4d17332295eaed7bd61a29c3a7b0994a87724c1",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "0c21ad0115baa2ee8e79105a15b333d6812cda9fe91344676495a013974eb636",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "0c21ad0115baa2ee8e79105a15b333d6812cda9fe91344676495a013974eb636",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "0c21ad0115baa2ee8e79105a15b333d6812cda9fe91344676495a013974eb636",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "0c21ad0115baa2ee8e79105a15b333d6812cda9fe91344676495a013974eb636",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "0c21ad0115baa2ee8e79105a15b333d6812cda9fe91344676495a013974eb636",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "fdf767c1cf03699664ba3dc2a78c78b61899921b3313e3ca918c39db45967bb5",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.01,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "fdf767c1cf03699664ba3dc2a78c78b61899921b3313e3ca918c39db45967bb5",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.82,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.11,
+            "yes": 0.88
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.76,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.15,
+            "yes": 0.84
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "fdf767c1cf03699664ba3dc2a78c78b61899921b3313e3ca918c39db45967bb5",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.02,
+            "yes": 0.96
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.03,
+            "yes": 0.95
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "fdf767c1cf03699664ba3dc2a78c78b61899921b3313e3ca918c39db45967bb5",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-02",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-02--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "fdf767c1cf03699664ba3dc2a78c78b61899921b3313e3ca918c39db45967bb5",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "e6bdef4143662674e38cf72b2b842dff1996dc768109702c3dd9f71cbe7f3234",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.04,
+            "unclear": 0.01,
+            "yes": 0.95
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.91,
+          "probabilities": {
+            "no": 0.05,
+            "unclear": 0.01,
+            "yes": 0.94
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "e6bdef4143662674e38cf72b2b842dff1996dc768109702c3dd9f71cbe7f3234",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.03,
+            "yes": 0.97
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.03,
+            "yes": 0.97
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "e6bdef4143662674e38cf72b2b842dff1996dc768109702c3dd9f71cbe7f3234",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.01,
+            "yes": 0.98
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "e6bdef4143662674e38cf72b2b842dff1996dc768109702c3dd9f71cbe7f3234",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-01-json-decision",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-01-json-decision.live.stdout.json",
+      "request_sha256": "e6bdef4143662674e38cf72b2b842dff1996dc768109702c3dd9f71cbe7f3234",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.0,
+            "yes": 0.99
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "dd8ba479f76128cec76ca722484aea5e1c70a8882446a5740bac00def5f583f5",
+      "role": "faithful",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.03,
+            "unclear": 0.01,
+            "yes": 0.96
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.04,
+            "unclear": 0.01,
+            "yes": 0.95
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "dd8ba479f76128cec76ca722484aea5e1c70a8882446a5740bac00def5f583f5",
+      "role": "observable",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.68,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.19,
+            "yes": 0.79
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.8,
+          "probabilities": {
+            "no": 0.01,
+            "unclear": 0.12,
+            "yes": 0.87
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "dd8ba479f76128cec76ca722484aea5e1c70a8882446a5740bac00def5f583f5",
+      "role": "scoped",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.03,
+            "yes": 0.95
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.03,
+            "yes": 0.95
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "dd8ba479f76128cec76ca722484aea5e1c70a8882446a5740bac00def5f583f5",
+      "role": "self_contained",
+      "source": "approval_boundary",
+      "stable": true
+    },
+    {
+      "accepted": true,
+      "actual_anchor_verdict": "testable",
+      "candidate_id": "extension-03-03",
+      "case_id": "approval-boundary-02-recorded-signature",
+      "confident": true,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-03--approval-boundary-02-recorded-signature.live.stdout.json",
+      "request_sha256": "dd8ba479f76128cec76ca722484aea5e1c70a8882446a5740bac00def5f583f5",
+      "role": "single_constraint",
+      "source": "approval_boundary",
+      "stable": true
+    }
+  ],
+  "remaining_fixed_role_failures": [
+    {
+      "accepted": false,
+      "actual_anchor_verdict": "inconclusive",
+      "candidate_id": "extension-03-01",
+      "case_id": "a0-16-duplicate-second",
+      "confident": false,
+      "exact": true,
+      "expected": "yes",
+      "raw_answers": [
+        {
+          "choice": "yes",
+          "confidence": 0.5,
+          "probabilities": {
+            "no": 0.31,
+            "unclear": 0.02,
+            "yes": 0.67
+          },
+          "type": "choice"
+        },
+        {
+          "choice": "yes",
+          "confidence": 0.66,
+          "probabilities": {
+            "no": 0.22,
+            "unclear": 0.01,
+            "yes": 0.77
+          },
+          "type": "choice"
+        }
+      ],
+      "raw_cli_output": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-03-execution-01/extension-03-01--a0-16-duplicate-second.live.stdout.json",
+      "request_sha256": "883a83e43444c267326db437c60a7ffe4f18833cb091cc1fa8b8f7fe7902571b",
+      "role": "faithful",
+      "source": "original",
+      "stable": true
+    }
+  ],
+  "complete_rubric_accepted": false,
+  "role_only_seal_issued": false,
+  "production_adoption_authorized": false
+}

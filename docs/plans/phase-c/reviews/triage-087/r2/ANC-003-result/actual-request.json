@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0.0",
+  "operation": "triage",
+  "template": {
+    "id": "anchor-tuning-review-feedback",
+    "version": "0.4.1",
+    "sha256": "d3655b970a0cc4bdd8f7987b8ecd3233993350c5ba14708db9f5d0fb1f4fa076"
+  },
+  "correlation_id": "sc-runtime-phase-c-anc-003-testability-triage-087-r2",
+  "runtime": {
+    "workspace": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c",
+    "script": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/.codex/skills/plan-anchoring/scripts/jev_judge.py",
+    "version": "0.8.7",
+    "sha256": "be99ae73699f25d5385e3611461eb5d874cd9ce72d7c451995869f09fa3012de",
+    "contract_script": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/.codex/skills/plan-anchoring/scripts/anchor_tuning_contract.py",
+    "contract_sha256": "769cd7f5729f2662fc7018a9a4b3356bc203c0741c6a86adb15c0a92004bfdc0",
+    "agent": "anchor-tuning",
+    "harness": "codex",
+    "model": "sol"
+  },
+  "authority": {
+    "intent": {
+      "id": "sc-runtime-phase-c-review-completion-intent",
+      "version": 2,
+      "content": "Approval provenance supplied by the parent from this human conversation:\n1. The assistant-authored packet anchor-proposal.md was presented for approval of its statements and fixtures. The human answer was exactly: \"Approve statements and fixtures\".\n2. The assistant-authored packet anchor-clarity-diagnosis.md was presented by a question listing clarity corrections and split fixtures, while stating the shared 0.8.4 rule stays intact. The human answer was exactly: \"Approve clarity corrections and split fixtures\".\nThese human approvals authorize the applicable statements, scope corrections, and fixtures. The packets remain verbatim assistant-authored drafts below: their pre-approval wording is historical, and analytical opinions do not become independent human facts or requested adjudication outcomes merely because the changes were approved.\nAdditional original human provenance for ANC-001, verbatim: \"do we install sc-lint as part of the template w/ pre-populated boundary lint and cros-platform lint and runtime lint set up by default?\" This records the existing question; it asserts no new requirement beyond the approved fixture and clarity correction.\nCurrent locked anchor records in this request are the approved authoritative versions. Their original quotes are unchanged.\n\n--- Verbatim existing packet: anchor-proposal.md ---\n# Phase C anchor and fixture approval packet\n\nPrepared from the six proposed entries in this sc-runtime worktree and the user's subsequent boundary-policy instructions. This packet is a proposal, not a gate verdict, a lock record, or fixture approval. Parent owns capture, locking, and tracker writes. No repository file or Beads record was changed by this preparation.\n\n## Simplification proposal for the existing six anchors\n\nThe parent reports the live rubric found the original statements compound or insufficiently faithful to their shorter quotes. The statements below are proposed replacements, not edits already applied. Public router identity, SQLx compatibility, profile recipe names, and exact transitive package versions remain governed by existing REQ/ADR text and sprint acceptance criteria rather than being attributed to a quote that did not state them.\n\n### ANC-001 \u2014 full consumer lint\n\nQuote: \u201ca full sc-lint is installed on a consumer repo\u201d\n\nProposed replacement statement: A generated consumer repository must have the full sc-lint toolchain installed.\n\nPass fixture: Consumer setup installs the full sc-lint toolchain, including its boundary, portability, and runtime analyzers.\n\nFail fixture: Consumer setup installs only rustfmt and clippy and does not install the sc-lint toolchain.\n\n### ANC-002 \u2014 current compatible ecosystem\n\nQuote: \u201cupgrading rmcp/utopia to the latest releave version should be planned in phase-<next>\u201d\n\nProposed replacement statement: Phase C must upgrade rmcp and utoipa to their latest released versions.\n\nPass fixture: Phase C checks the released rmcp and utoipa versions and upgrades both dependencies to the latest releases.\n\nFail fixture: Phase C keeps the older rmcp and utoipa dependencies despite newer released versions being available.\n\n### ANC-003 \u2014 sc-lint version\n\nQuote: \u201cboth repo and templates should use 0.8.4\u201d\n\nProposed replacement statement: The repository and generated template must both use sc-lint 0.8.4.\n\nPass fixture: Both the repository and generated template declare sc-lint 0.8.4 and their bootstrap commands install or verify 0.8.4.\n\nFail fixture: The repository bootstraps sc-lint 0.8.4 while the generated template declares and installs 0.8.0.\n\n### ANC-004 \u2014 phase naming\n\nQuote: \u201crename to phase-c\u201d\n\nProposed replacement statement: The current phase must be named phase-c.\n\nPass fixture: Plan documents live under docs/plans/phase-c, sprint IDs are c-1 through c-4, and current branch, triage, and QA metadata use phase-c.\n\nFail fixture: The current plan, sprint IDs, branch metadata, triage, and QA evidence still use phase-bc and bc-1 through bc-4.\n\nKind: retain `structural`; a deterministic scan of the current Phase C artifacts is the evidence. The fixture pair tests the scan/expectation, not semantic Jev judgment. Historical provenance can accurately mention the old name; the current test must distinguish historical text from active identifiers.\n\n### ANC-005 \u2014 isolated planning\n\nQuote: \u201cplanning should be done on a second pr to develop on a dedicated $sc-git-worktree\u201d\n\nProposed replacement statement: Phase C planning must use a dedicated worktree and a separate pull request to develop.\n\nPass fixture: Git worktree metadata shows a separate plan/phase-c checkout, and its dedicated planning pull request targets develop.\n\nFail fixture: Phase C planning is committed directly on the primary develop checkout and has no separate planning pull request.\n\nKind: existing record says `directive`; its truth is primarily Git/PR metadata rather than a sprint's promise. Recommend parent evaluate changing to `structural` before any gate baseline is frozen, while retaining statement/quote and using worktree inventory plus PR base/head evidence. Merely saying it in each sprint is weaker than the metadata. Do not silently change its kind to obtain a pass.\n\n### ANC-006 \u2014 SQLite compatibility\n\nQuote: \u201cso rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.\u201d\n\nProposed replacement statement: Phase C must keep rusqlite on the 0.39 release line.\n\nPass fixture: Phase C retains rusqlite 0.39.x while upgrading the other approved dependencies.\n\nFail fixture: Phase C upgrades rusqlite from 0.39 to a newer minor release line.\n\n## Missing boundary-policy candidates\n\n### Candidate ANC-007 \u2014 configuration-selected default policy\n\nVerbatim provenance, consecutive user messages:\n\n> and you will need to determine the 'appropriate' default policy to install on consumer repos\n>\n> based on configuration settings\n\nProposed immutable quote: \u201cand you will need to determine the 'appropriate' default policy to install on consumer repos\u201d\n\nProposed context: The next consecutive user message specifies \u201cbased on configuration settings\u201d; earlier the user says \u201cyes, you need a boundaries policy\u201d.\n\nProposed statement: Fresh consumer installation must generate a default boundaries policy selected from the consumer's configuration settings.\n\nScope: c-1's consumer policy contract, c-2's fresh-install implementation, and any item that selects or generates consumer boundaries policies.\n\nKind: directive.\n\nDeterministic check: Generate consumers with representative supported configurations and assert that each emitted policy matches its selected configuration and is accepted by sc-boundary.\n\nPass fixture: Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary.\n\nFail fixture: Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration.\n\n### Candidate ANC-008 \u2014 consumer ownership\n\nQuote: \u201cyou will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy\u201d\n\nProposed statement: After fresh setup, the generated boundaries policy must be owned by the consumer repository.\n\nScope: c-1's consumer policy ownership contract and c-2's generated policy handoff.\n\nKind: directive.\n\nDeterministic check: The generated policy lives in the consumer repository and the documented setup contract identifies the consumer as its owner.\n\nPass fixture: Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions.\n\nFail fixture: The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes.\n\nThis anchor does not invent a specific merge algorithm, upgrade preservation protocol, never-overwrite rule, or policy format. Any such implementation choice needs the existing plan's ownership contract and tests; the quote alone does not authorize imposing one.\n\n## Provenance and overlap audit\n\n- Every fixture in this packet was newly authored from the quoted instruction and proposed statement; none is already user-approved, and none is evidence of live Jev calibration.\n- ANC-001/003 overlap REQ-RUN-0307, NFR-RUN-0006, and ADR-RUN-0005's consumer lint installation/version contract. These register texts currently include the old no-handwritten-boundaries restriction; c-1 is already assigned their amendment. Retain user anchors for provenance but import relevant governing REQ/ADR constraints as their original register IDs rather than inventing duplicate ANC entries.\n- ANC-002 overlaps ADR-RUN-0203's one-library-type-universe constraint. User's latest-version instruction adds a selection constraint, so it is not identical to the current ADR.\n- ANC-004 overlaps the naming guidelines and quality-policy convention. Existing ANC-004 records the explicit user override to `c` and remains valuable; deterministic checks must respect that override.\n- ANC-005 overlaps the worktree workflow. Its dedicated plan PR constraint is user provenance, and actual Git/PR evidence is appropriate.\n- ANC-006 carries a user-approved version decision; retain it and pair with the existing resolver guard rather than adding a second SQLite anchor.\n- ANC-007/008 are not duplicates of the six existing anchors: full sc-lint can run with no boundary manifests, and configuration selection does not imply consumer ownership. They address the explicit policy instruction that the old no-manifest plan violates.\n- ANC-007 and ANC-008 should remain separate: a policy could be correctly selected but centrally owned, or consumer-owned but incorrectly selected.\n\n## Parent execution commands after approval\n\nRun in the Phase C worktree; use the installed script `.codex/skills/plan-anchoring/scripts/jev_judge.py` and `docs/plans/phase-c/anchors.json`.\n\n1. Run `rubric --anchors docs/plans/phase-c/anchors.json --all` (parent already started this). Preserve rubric outputs.\n2. Rubric each new candidate with `rubric --statement '<statement above>' --quote '<quote above>' --scope '<scope above>'` before proposing/locking. Pass the adjacent configuration-setting utterance as explicit provenance in the record's context; never silently concatenate two messages as a fake verbatim quote.\n3. After user approval, use `update --anchors ... --id ANC-00N --fixture-pass '<approved text>' --fixture-fail '<approved text>'` for each existing anchor. Use the supported lifecycle command from `--help` to lock existing proposals; do not hand-edit statuses.\n4. After approval, use `add --anchors ... --quote ... --statement ... --scope ... --deterministic-check ... --kind directive --status locked` for each new candidate, then `update` for its fixtures. Preserve original quotes exactly.\n5. Run `lint`, `validate`, and `render`; create anchor/question bead trees and record `set-beads` IDs in the main session as the installed bead-layout reference requires.\n6. Freeze the approved fixtures before independent question tuning or live gate judgments. Delegate the tuner using the installed runner contract; parent must not author overrides to make current plans pass.\n7. After hardening, delegate one full sprint file per planning gate. Compute coverage in code and record structural metadata checks. A JSON validation or dry run is not a gate PASS.\n\nNo live Jev call or Beads mutation was performed by this preparation task.\n\n--- End packet: anchor-proposal.md ---\n\n--- Verbatim existing packet: anchor-clarity-diagnosis.md ---\n# Phase C anchor clarity diagnosis and proposed approval packet\n\nRead-only diagnosis of the eight approved locked anchors against `/tmp/sc-runtime-phase-c-review/calibrated-anchor-rubric.json`. No tuning, live calls, repository changes, question overrides, or gate PASS is claimed.\n\nThe JSON stores raw requests and responses, not per-anchor `verdict` fields. Below, a \u201cfailure\u201d means a role response cannot satisfy the required two agreeing answers at confidence >= 0.6. Several failures reflect genuine incomplete definitions, while others are low-confidence answers to ordinary technical language; confidence alone does not establish which instrument or statement is wrong.\n\n## Diagnosis independent of obtaining a yes\n\n| Anchor | Observed response issue | Semantic diagnosis | Minimal action |\n|---|---|---|---|\n| ANC-001 | `observable` changes unclear\u2192yes at .11; `self_contained` changes no\u2192yes at .16\u2013.20 | \u201cfull sc-lint toolchain\u201d leaves the decisive installed components undefined inside the statement. The already approved pass fixture supplies exactly the three analyzers. This is a real standalone clarity gap. | Replace the shorthand with the approved analyzer list, retaining one installation outcome. |\n| ANC-002 | `single_constraint` no .28/.37, `faithful` no .43/.44, `observable` yes .02/.19 | rmcp and utoipa can be upgraded independently, so this is genuine bundling. \u201clatest\u201d is temporal but not intrinsically unobservable; the existing c-1 query/frozen-matrix process provides the selection time. The quote's \u201cshould be planned\u201d versus \u201cmust upgrade\u201d strength was explicitly approved in the previous packet; a new interpretation must not silently revert that approval. | Split the two package duties with the same immutable source quote. Preserve the approved upgrade meaning and latest-release instruction. |\n| ANC-003 | `single_constraint` no .53/.48; other roles yes above .6 | One version equality rule applied to repository and template is permitted by the rubric's own instruction (\u201cpossibly several output surfaces\u201d). A repository-only implementation is insufficient, but that does not necessarily make the shared equality invariant two unrelated obligations. This looks like a plausible instrument false rejection, not demonstrated anchor ambiguity. | Retain the approved statement. Optional \u201cBoth sc-lint installations\u2014the repository and generated template\u2014must be version 0.8.4\u201d restates the shared invariant but is not necessary. |\n| ANC-004 | all yes; `self_contained` .58/.52 | \u201ccurrent phase\u201d is deictic when detached from its scope, though its structural deterministic check already identifies the concrete artifacts. | Name \u201csc-runtime's Phase C\u201d explicitly; retain structural kind and verify current naming in metadata. |\n| ANC-005 | `single_constraint` no .64/.67; `self_contained` yes .22/.19 | Worktree isolation and separate PR targeting develop are independently enforceable: either can hold without the other. This is genuine bundling. | Split into two structural anchors; check actual worktree and PR metadata separately. |\n| ANC-006 | `self_contained` alternates no/yes/no .16\u2013.22; observable/scoped/single yes strongly; faithful .53/.64/.53 | \u201crusqlite\u201d, \u201c0.39\u201d, and a Cargo release line are ordinary technical terms, not private shorthand. No independently missing condition is shown. The quote is a question, but the approved packet and later user acknowledgment establish the decision. | Keep the requirement; optionally spell its Cargo constraint as `0.39.x` without importing transitive SQLite rules into the quote. |\n| ANC-007 | all yes; faithful .38/.44, observable .26/.35, self-contained .28/.28 | \u201cconfiguration settings\u201d does not identify which settings drive policy or what \u201cmatching\u201d means. The user approved the relational requirement, but the precise supported configuration-to-policy rule is an output of c-1. This is a real contract-detail question, not a license to invent a policy matrix. | Preserve the anchor as that relational requirement; require c-1 to define the mapping. A wording replacement alone cannot supply the missing configuration contract. |\n| ANC-008 | all yes; self-contained .43/.34 | Ownership may mean file location, modification rights, lifecycle decisions, or central maintenance responsibility. The approved pass fixture makes the intended policy-decision meaning explicit. | Replace \u201cowned\u201d with the approved subsequent consumer policy-decision responsibility. |\n\n## Exact proposed changes for user approval\n\nThese are proposals only. Preserve every existing quote byte-for-byte. A split adds a new anchor ID and retires/replaces the bundled record through the installed lifecycle commands; never silently erase the old approval or reuse an ID to mean only half its previous duty.\n\n### ANC-001 clarity replacement\n\nCurrent: \u201cA generated consumer repository must have the full sc-lint toolchain installed.\u201d\n\nProposed: \u201cGenerated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.\u201d\n\nPre-existing authority: quote \u201ca full sc-lint is installed on a consumer repo\u201d; user also asked for \u201cpre-populated boundary lint and cros-platform lint and runtime lint set up by default\u201d; approved pass fixture explicitly lists \u201cboundary, portability, and runtime analyzers.\u201d The replacement defines the installed set; it adds neither profile names nor a receipt mechanism.\n\nProposed scope: \u201cc-2 generated consumer setup and any plan item that installs the consumer lint toolchain.\u201d This removes command/profile signals unrelated to the narrowed installation statement. Scope change requires approval.\n\nFixtures: retain the approved current pair; they already distinguish installing this analyzer toolchain from installing only rustfmt/clippy.\n\n### ANC-002 split proposal\n\nDuty A: \u201cPhase C must upgrade rmcp to its latest released version.\u201d\n\nDuty B: \u201cPhase C must upgrade utoipa to its latest released version.\u201d\n\nPre-existing authority for both: unchanged quote \u201cupgrading rmcp/utopia to the latest releave version should be planned in phase-<next>\u201d; user approved the corrected package spelling and upgrade requirement in the previous packet. Separate package obligations prevent one upgrade from masking omission of the other. Do not add utoipa-axum as if present in this quote; its compatibility requirement remains in the governing runtime ADR/plan and other user context.\n\nScope for both: retain \u201cthe c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints.\u201d\n\nFixture projection proposal (requires approval): A-pass \u201cPhase C checks the released rmcp versions and upgrades rmcp to its latest release.\u201d A-fail \u201cPhase C keeps the older rmcp dependency despite a newer released version being available.\u201d B-pass/B-fail are the same sentences with utoipa substituted. These are exact one-package projections of the previously approved two-package fixtures.\n\nTiming: c-1's already planned query determines the current release selection and freezes its exact version. Do not append \u201clatest forever\u201d or require an unbounded stream of new upgrades after that contract freeze.\n\n### ANC-003 retain\n\nRetain statement, scope, and fixtures. Do not split a shared version invariant solely because one confidence measure rejected it. If the independent evaluator concludes the common constraint is truly compound, present that rationale with a proposed split; this diagnosis does not supply it.\n\n### ANC-004 clarity replacement\n\nCurrent: \u201cThe current phase must be named phase-c.\u201d\n\nProposed: \u201csc-runtime's Phase C must use the identifier phase-c.\u201d\n\nPre-existing authority: unchanged quote \u201crename to phase-c\u201d; approved fixture identifies the sc-runtime plan paths and c-1\u2026c-4 metadata. The change resolves a deictic subject without changing phase identity. Retain existing scope and structural kind.\n\n### ANC-005 split proposal\n\nDuty A: \u201cPhase C planning must use a dedicated Git worktree.\u201d\n\nDuty B: \u201cPhase C planning must have a separate pull request targeting develop.\u201d\n\nPre-existing authority: unchanged quote \u201cplanning should be done on a second pr to develop on a dedicated $sc-git-worktree\u201d; the approved pass fixture separately asserts Git worktree metadata and a dedicated planning PR to develop. Both are structural checks over actual state, not Jev judgments of a sprint's promise.\n\nScopes: A \u201cthe Phase C planning branch and Git worktree metadata\u201d; B \u201cthe Phase C planning pull request metadata.\u201d Both scope changes require approval.\n\nFixture projection proposal (requires approval): A-pass \u201cGit worktree metadata shows a dedicated Phase C planning checkout\u201d; A-fail \u201cPhase C planning is performed in the primary develop checkout.\u201d B-pass \u201cA separate Phase C planning pull request targets develop\u201d; B-fail \u201cPhase C planning has no separate pull request to develop.\u201d\n\n### ANC-006 retain, optional notation clarification\n\nCurrent meaning is adequate. If the user wants notation clarification, proposed replacement: \u201cPhase C's rusqlite dependency must remain at version 0.39.x.\u201d\n\nPre-existing authority: unchanged original quote names 0.39; approved pass fixture explicitly says rusqlite 0.39.x. This changes no version boundary. Retain existing fixtures. Do not claim libsqlite3-sys 0.37 or the whole unchanged graph came from this quote; those remain separately governed compatibility constraints.\n\n### ANC-007 contract clarification, no invented mapping\n\nRetain the approved statement and fixtures. Its two consecutive original user messages already say the default policy is selected \u201cbased on configuration settings.\u201d\n\nThe observed gap is the missing concrete mapping: the c-1 plan must identify the actual consumer generation configuration inputs and how enabled crates/roles change the initial policy. The approved user instruction authorizes determining that mapping, rather than asking the user to design it. The existing full-plan hardening developer owns that detail. Do not add an exact list of configuration fields to this anchor before that list has a reviewed source.\n\nIf a lexical clarification is wanted, \u201cFresh consumer setup must generate the default boundaries policy for the selected consumer configuration\u201d preserves the existing relational requirement, but by itself does not cure a missing c-1 configuration contract. This optional wording is not a promised rubric fix.\n\n### ANC-008 clarity replacement\n\nCurrent: \u201cAfter fresh setup, the generated boundaries policy must be owned by the consumer repository.\u201d\n\nProposed: \u201cAfter fresh setup, the consumer repository must control subsequent boundaries-policy decisions.\u201d\n\nPre-existing authority: unchanged quote ends \u201conce a consumer is set up, they will have their own boundaries policy\u201d; approved pass fixture states \u201cthe consumer owns subsequent policy decisions\u201d; approved fail fixture assigns those subsequent decisions centrally to sc-runtime. The replacement names the actual ownership right already approved. It does not impose a merge algorithm, never-overwrite rule, or new preservation workflow.\n\nRetain scope and approved fixtures, which already assert this ownership meaning.\n\n## Instrument limitation versus plan changes\n\nThe current results do not justify rewriting all eight anchors until they pass. ANC-003's shared-invariant rejection and ANC-006's low-confidence ordinary technical terminology are specifically plausible instrument limitations. ANC-004/005 are structural and never need semantic planning judgments, although their pre-gate testability process remains distinct.\n\nApply only clarity changes independently justified above after user approval; keep the existing locked versions and gate evidence in history. Re-run the proper testability workflow on affected anchors without lowering 0.6, averaging, majority voting, or borrowing the tournament's threshold-free semantics. If results stay inconclusive despite a clear supported requirement, report the instrument limitation for independent adjudication rather than repeatedly changing approved intent.\n\n--- End packet: anchor-clarity-diagnosis.md ---\n",
+      "sha256": "e9f3cc7ae32002d5592d393ba24c82732f0e00d4633a37ad06928e1294777a0f"
+    },
+    "anchors": {
+      "sha256": "a850631ccc95eedfc715baeb75c0b91e73875a634fba9265a934c87180dab323",
+      "records": [
+        {
+          "id": "ANC-003",
+          "version": 2,
+          "state": "locked",
+          "statement": "The repository and generated template must both use sc-lint 0.8.4.",
+          "kind": "directive",
+          "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
+          "check": "The root and template sc-lint configuration require 0.8.4, and each bootstrap path installs or verifies that version.",
+          "fixtures": {
+            "pass": [
+              "Both the repository and generated template declare sc-lint 0.8.4 and their bootstrap commands install or verify 0.8.4."
+            ],
+            "fail": [
+              "The repository bootstraps sc-lint 0.8.4 while the generated template declares and installs 0.8.0."
+            ]
+          },
+          "quote": "both repo and templates should use 0.8.4"
+        }
+      ]
+    }
+  },
+  "sealed_question_set": {
+    "digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+    "questions": {
+      "faithful": {
+        "criteria": {
+          "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+          "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+          "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+        },
+        "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+        "type": "choice"
+      },
+      "observable": {
+        "criteria": {
+          "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+          "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+          "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+        },
+        "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+        "type": "choice"
+      },
+      "scoped": {
+        "criteria": {
+          "no": "No work area or applicability set is identifiable.",
+          "unclear": "An area is named but its applicability cannot be determined.",
+          "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+        },
+        "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+        "type": "choice"
+      },
+      "self_contained": {
+        "criteria": {
+          "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+          "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+          "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+        },
+        "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+        "type": "choice"
+      },
+      "single_constraint": {
+        "criteria": {
+          "no": "At least two independently enforceable duties are joined in the statement.",
+          "unclear": "The statement leaves independence of its duties ambiguous.",
+          "yes": "All details enforce the same invariant and would be evaluated together."
+        },
+        "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+        "type": "choice"
+      }
+    }
+  },
+  "gate": "testability",
+  "review": {
+    "role": "single_constraint",
+    "source_digest": "b0a1b4167089de9ea0c501719e74c4909650db7625bc70b926959861d5f64fb7",
+    "canonical_request": {
+      "model": "jev-1.14.0",
+      "questions": {
+        "faithful": {
+          "criteria": {
+            "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+            "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+            "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+          },
+          "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+          "type": "choice"
+        },
+        "observable": {
+          "criteria": {
+            "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+            "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+            "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+          },
+          "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+          "type": "choice"
+        },
+        "scoped": {
+          "criteria": {
+            "no": "No work area or applicability set is identifiable.",
+            "unclear": "An area is named but its applicability cannot be determined.",
+            "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+          },
+          "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+          "type": "choice"
+        },
+        "self_contained": {
+          "criteria": {
+            "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+            "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+            "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+          },
+          "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+          "type": "choice"
+        },
+        "single_constraint": {
+          "criteria": {
+            "no": "At least two independently enforceable duties are joined in the statement.",
+            "unclear": "The statement leaves independence of its duties ambiguous.",
+            "yes": "All details enforce the same invariant and would be evaluated together."
+          },
+          "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+          "type": "choice"
+        }
+      },
+      "state": {
+        "anchor": {
+          "statement": "The repository and generated template must both use sc-lint 0.8.4.",
+          "quote": "both repo and templates should use 0.8.4",
+          "scope": "the c-1 consumer contract and c-2 template lint profile sprints"
+        }
+      }
+    },
+    "raw_response": {
+      "model": "jev-1.14.0",
+      "answers": {
+        "faithful": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.7,
+          "probabilities": {
+            "no": 0.16,
+            "unclear": 0.04,
+            "yes": 0.8
+          }
+        },
+        "observable": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.91,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.04,
+            "yes": 0.94
+          }
+        },
+        "scoped": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0,
+            "unclear": 0.03,
+            "yes": 0.97
+          }
+        },
+        "self_contained": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.64,
+          "probabilities": {
+            "no": 0.16,
+            "unclear": 0.08,
+            "yes": 0.76
+          }
+        },
+        "single_constraint": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.46,
+          "probabilities": {
+            "no": 0.64,
+            "unclear": 0.01,
+            "yes": 0.35
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1078,
+        "output_tokens": 189
+      }
+    }
+  },
+  "planner_observation": {
+    "trust": "untrusted",
+    "text": "{\"purpose\":\"Supply existing approval provenance omitted from R1, without changing the judged source, question seal, or raw response. Independently adjudicate; no disposition is requested.\",\"evidence_pointer\":{\"corpus_path\":\".codex/skills/plan-anchoring/assets/fixtures/testability-calibration.v2.json\",\"canonical_corpus_sha256\":\"ce5f4efcfee74ecc767bb8c140bf749ef2e33c779f82397d5c42d96698a7b1bc\",\"payload_schema\":\"plan-anchor/testability-calibration-corpus/1\",\"case_ids\":[\"a0-06-genuinely-bundled\",\"a0-10-api-key-redaction\"],\"cases_verbatim\":[{\"case_id\":\"a0-06-genuinely-bundled\",\"expected\":{\"atomicity\":\"no\",\"faithful\":\"yes\",\"observable\":\"yes\",\"scoped\":\"yes\",\"self_contained\":\"yes\"},\"rationale\":\"Two independently satisfiable obligations must split.\",\"requirement_form_lint\":\"pass\",\"state\":{\"anchor\":{\"quote\":\"the CLI must emit JSON and the daemon must write an audit log\",\"scope\":\"CLI output and daemon audit\",\"statement\":\"The CLI must emit JSON and the daemon must write an audit log.\"}},\"title\":\"genuinely bundled statement\"},{\"case_id\":\"a0-10-api-key-redaction\",\"expected\":{\"atomicity\":\"yes\",\"faithful\":\"yes\",\"observable\":\"yes\",\"scoped\":\"yes\",\"self_contained\":\"yes\"},\"rationale\":\"Concrete input/action/outcome proves redaction without literal statement-token dependence.\",\"requirement_form_lint\":\"pass\",\"state\":{\"anchor\":{\"quote\":\"test a transport failure with a canary TypeSafe key and make sure console output and saved run files contain neither the key nor its bearer header\",\"scope\":\"transport-error output and persisted run artifacts\",\"statement\":\"When TYPESAFE_API_KEY is set to canary-123 and transport fails, stdout, stderr, and saved run artifacts must omit canary-123 and Authorization: Bearer canary-123.\"}},\"title\":\"API-key output redaction\"}],\"sealed_rubric_digest\":\"96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4\"},\"limitations\":\"The corpus labels are the pre-existing labels for those frozen examples, not proposed labels for ANC-001 or ANC-003. No actual-anchor expectation or requested disposition is supplied. Apply the gate-specific adjudication contract to the provided authority and evidence.\"}"
+  }
+}

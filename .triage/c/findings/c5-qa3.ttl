@@ -1,0 +1,30 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c5_qa3_REQ_C5_008 a triage:Finding ;
+ triage:id "REQ-C5-008" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba" ;
+ triage:file "tests/unit/generation/test_monty_example.py:137; tests/unit/generation/test_monty_example.py:150; scripts/new_project.py:159; scripts/new_project.py:227" ;
+ triage:issue "The new planted-Cargo.lock regression fixes the intended inventory assertion but calls generation.cargo_generate directly inside the unittest. That executes both the cargo-generate version probe and generation command through subprocess.run with captured stdout/stderr and no deadline or owned process-tree cleanup. A hung cargo/plugin/hook or inherited pipe writer can therefore hang this new test indefinitely; the successful current run does not satisfy the binding bounded-ownership validation policy." ;
+ triage:action "Keep the planted stale-lock fixture and absence assertion, but execute its generation through the canonical bounded owned-process boundary (or adapt every invoked external process to that existing owner). Preserve physical descendant cleanup and regular-file capture on errors/timeouts, with a causal stalled-generation negative. Do not rewrite the product driver broadly, weaken byte preservation, skip, retry or extend timing windows. Reuse the same narrow fix for the C2/C3 copied regression as needed." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676408599" .
+
+triage:c5_qa3_REQ_C5_008 a triage:Finding ;
+ triage:id "REQ-C5-008" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba" ;
+ triage:file "tests/unit/generation/test_monty_example.py" ;
+ triage:issue "Correlated existing requirement-review finding: the new planted-lock regression calls generation.cargo_generate in-process. Its external version, generation and formatting commands lack deadlines and owned descendant cleanup; a stalled command or inherited captured-pipe writer can hang this unittest indefinitely." ;
+ triage:action "Keep the planted stale-lock fixture and absence assertion; run generation through the existing bounded owned-process boundary with physical descendant cleanup and regular-file capture. Add a causal stalled-generation negative. No retries, skips, padding, serialization or broad product-driver rewrite." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676408599" .
+
+# Both reviewer occurrences retain their original status/severity; independent re-QA pending.
+triage:c5_qa3_REQ_C5_008
+ triage:implementation_status "corrected_pending_reqa" ;
+ triage:implementation_commit "c0c6cb4a9f84b74f0824fdab1337f74036f21687" ;
+ triage:implementation "Both occurrences fixed once at highest Blocking severity. Planted stale Cargo.lock and generated absence assertion retained. Entire driver version/generation/hooks/format path now runs through C2 shared generate_owned -> owned_process, with regular-file capture and physical tree cleanup; existing second render uses the same owner. Canonical helper/owner/witness/ordinary runner byte-equal to C2 c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f. Added causal timeout and failure pipe-writer witnesses. Product driver/template/crate source unchanged." ;
+ triage:verification "17 focused tests pass; format and just lint gates pass; ordinary script-mode discovery resolves 151 tests without PYTHONPATH (discovery only). Exact source/exit receipts: /tmp/c5-qa3-validation.receipt.json and /tmp/c5-qa3-source-equivalence.json. No current-head full-suite or native run claimed; no CI wait." .

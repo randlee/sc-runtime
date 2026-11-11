@@ -1,0 +1,134 @@
+{
+  "sprint": "phase-c",
+  "task": "phase-c-plan-qa1",
+  "branch": "plan/phase-c",
+  "commit": "1217978e257ed8db9508a5422d4de889286e913e",
+  "pr": 114,
+  "verdict": "FAIL",
+  "deliverables": {
+    "complete": 5,
+    "total": 5,
+    "percent": 100.0
+  },
+  "findings": {
+    "blocking": 5,
+    "important": 2,
+    "minor": 0
+  },
+  "blocking_ids": [
+    "REQ-QA-001",
+    "REQ-QA-002",
+    "REQ-QA-003",
+    "ARCH-C-001",
+    "ARCH-C-002",
+    "RBQA-C-001",
+    "CQA-C-001"
+  ],
+  "merge_readiness": "not ready",
+  "merge_reason": "Seven reviewer outputs are complete; five Blocking and two Important findings remain, including unfinished live Plan Anchor verification.",
+  "next_action": "triage_and_fix",
+  "owner": "parent-orchestrator",
+  "reviewer_spawn_gate": "pass",
+  "reviewer_manifest": [
+    {
+      "agent": "req-qa",
+      "task_id": "/root/phase_c_qa_req",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "FAIL",
+      "findings": {
+        "blocking": 3,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "arch-qa",
+      "task_id": "/root/phase_c_qa_arch",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "FAIL",
+      "findings": {
+        "blocking": 2,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "extensibility-qa",
+      "task_id": "/root/phase_c_qa_extensibility",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "PASS",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "ruthless-boundary-qa",
+      "task_id": "/root/phase_c_qa_boundary",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "findings",
+      "findings": {
+        "blocking": 0,
+        "important": 1,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "rust-best-practices-agent",
+      "task_id": "/root/phase_c_qa_practices",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "pass",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "rust-service-hardening-agent",
+      "task_id": "/root/phase_c_qa_service",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "pass",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "ceremony-qa",
+      "task_id": "/root/phase_c_qa_ceremony",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "findings",
+      "findings": {
+        "blocking": 0,
+        "important": 1,
+        "minor": 0
+      }
+    }
+  ],
+  "evidence_chain": {
+    "qa_pass": "qa-1",
+    "commit": "1217978e257ed8db9508a5422d4de889286e913e",
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/114#issuecomment-6594574410",
+    "coordinator_task_id": "/root/phase_c_quality_manager",
+    "triage": {
+      "ttl_paths": [],
+      "screen_path": "/tmp/sc-runtime-phase-c-review/qa1/screen.json"
+    },
+    "todo_scan": {
+      "status": "not_applicable",
+      "reason": "Plan review only; no implementation sprint-end or integration TODO scan is required."
+    }
+  },
+  "missing_reviewers": [],
+  "unparsed_reviewers": []
+}

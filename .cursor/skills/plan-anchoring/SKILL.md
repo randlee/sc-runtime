@@ -2,7 +2,7 @@
 name: plan-anchoring
 description: Capture the facts a user states while planning as numbered anchors (ANC-001...), one clear, testable requirement each, with the user's verbatim words kept as provenance, alongside existing requirements (REQ) and ADRs. Turn them into Jev-judged questions, tune and test the questions per anchor, and enforce them at two gates with a triage-apply-rerun loop. The planning gate checks each plan bead still says what the user said; the development gate checks the delivered sprint work followed it. Use when planning a phase or sprint with beads, when the user says "anchor this", "lock this", "don't let this drift", or "remember I said", when re-opening a plan after context compression, or when reviewing a sprint against its plan. Not for general code review, and not a replacement for plan hardening.
 metadata:
-  version: "0.8.6"
+  version: "0.8.7"
 ---
 
 # Plan Anchoring
@@ -24,7 +24,7 @@ python3 "$T" resolve > /tmp/anchor-tracker.json; jq '{success, error: .error.cod
 ANCHOR_TRACKER="$(jq -r '.data.tracker // empty' /tmp/anchor-tracker.json)"
 which "$ANCHOR_TRACKER" && "$ANCHOR_TRACKER" --version
 which sc-compose && sc-compose --version    # 1.7.0 or newer
-test -n "$TYPESAFE_API_KEY" && echo "TYPESAFE_API_KEY set" || echo "TYPESAFE_API_KEY missing"
+test -n "$TYPESAFE_API_KEY" && echo "TYPESAFE_API_KEY set (preferred)" || echo "TYPESAFE_API_KEY absent; live Jev may use the documented platform credential store"
 python3 "<this skill's directory>/scripts/plan_anchor_settings.py" show | jq '.data.allow_remote_judge'   # true, false, or null (never asked)
 ```
 

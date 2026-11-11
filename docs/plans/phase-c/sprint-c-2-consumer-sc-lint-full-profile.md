@@ -1,7 +1,7 @@
 ---
 id: c-2
 phase: c
-status: planned
+status: complete
 closure_type: integration
 target_boundary: generated-consumer-lint
 track: lint
@@ -10,26 +10,40 @@ branch: sprint/c-2-consumer-sc-lint-full-profile
 worktree: sprint/c-2-consumer-sc-lint-full-profile
 requirements:
   - REQ-RUN-0004
+  - REQ-RUN-0301
   - REQ-RUN-0307
   - REQ-RUN-0503
   - REQ-RUN-0701
   - NFR-RUN-0006
+  - NFR-RUN-0005
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
 adrs:
   - ADR-RUN-0005
+  - ADR-RUN-0303
   - ADR-RUN-0401
   - ADR-RUN-0402
 owned_paths:
   - template/sc-lint.toml
-  - .github/workflows/template-consumer-lint.yml
+  - template/boundaries/
+  - template/.sc-lint/bootstrap.py
+  - template/Justfile
+  - template/justfile
   - tests/unit/generation/test_consumer_sc_lint_profile.py
 must_follow: [c-1]
-parallel_safe: [c-3]
+parallel_safe: [c-3, c-5, c-6]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: The generated consumer has no independent lint boundary; its config, bootstrap, standard recipes, and generated-fixture proof are one consumer contract. Splitting them would leave an unprovable configuration-only sprint.
 ---
 
 # Sprint c-2 — consumer sc-lint full profile
+
+Dependency execution: consume `c-1`'s REQ-RUN-0307/NFR-RUN-0006 and
+ADR-RUN-0005 contract amendments by merging each parent development push
+before every development/fix round. Parent QA is not a start barrier;
+the parent PR merges before this PR completes.
 
 ## Goal
 
@@ -43,8 +57,10 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
 
 1. Implement the binding REQ-RUN-0307/NFR-RUN-0006/ADR-RUN-0005 amendment
    produced by `c-1`; this sprint does not reinterpret it. The exception is
-   limited to sc-lint's declared consumer profile and never permits a template
-   `boundaries/`, clippy, rustfmt, or deny policy.
+   limited to sc-lint's declared consumer profile and the fresh-install
+   boundary policy derived from selected project configuration. It never
+   permits copying the maintainer boundary policy or adding clippy, rustfmt,
+   or deny policy.
 2. Extend `template/sc-lint.toml` from its current fmt/clippy-only profiles
    using the exact 0.8.4 contract below. Both `default` and `full` contain all
    three analyzer entries; `full` is a superset of `default`. The bootstrap's
@@ -72,23 +88,31 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
    full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
    ```
 
-3. `c-1` records whether the supported 0.8.4 boundary analyzer succeeds with
-   no consumer manifest or needs a documented consumer-neutral mode. This
-   sprint uses that exact mode. It must not substitute a no-op wrapper,
-   suppress a failure, or copy this repository's manifest.
+3. Render `template/boundaries/` from the c-1 configuration-to-policy mapping
+   for the generated application crate graph. Only selected crates and
+   allowed edges appear; disabled stores and MCP components do not. Run the
+   supported 0.8.4 analyzer against that policy. On completion of setup the
+   policy belongs to the consumer; subsequent setup/init/upgrade preserves
+   consumer edits. It must not substitute a no-op wrapper, suppress a failure,
+   or copy this repository's maintainer manifests.
 4. Preserve bootstrap idempotence. `just setup` installs the pinned release,
    verifies `sc-lint version --json`, and leaves the template's checked-in
    sources unchanged. A second `sc-lint init --just` still preserves
    `db-prepare` and the configured analyzer entries.
-5. Add a focused generation test and a dedicated consumer-lint CI receipt. They
-   generate `sqlite-mcp`, run `just setup`, verify the single installed
+5. Add a focused generation regression executed through the existing test and
+   template-fixture CI venues. Generate `sqlite-mcp`, run `just setup`, verify the single installed
    `sc-lint` launcher reports 0.8.4, and run ordinary/default/full lint
-   profiles. The receipt must demonstrate the three analyzer subcommand
-   invocations rather than merely discovering TOML entries.
+   profiles. Existing CI logs must demonstrate actual analyzer subcommand
+   execution rather than merely discovering TOML entries; no extra workflow
+   or separate receipt artifact is required.
 
 ## Acceptance criteria
 
 Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
+
+C-2 is the sole phase acceptance owner for REQ-RUN-0503. C-1's amendment,
+c-3's checkout fixture and c-4's registry repetition are supporting constraints
+and evidence; they do not create additional requirement roots or change the DAG.
 
 - A generated `sqlite-mcp` project completes `just setup` with no source
   change, and `sc-lint version --json` reports **0.8.4**.
@@ -103,11 +127,15 @@ Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
 - `just --list` still exposes `setup`, `lint`, `test`, `upgrade`, and
   `db-prepare`; after `sc-lint init --just`, `db-prepare` and the complete
   configured profile remain present.
-- The rendered consumer still contains no `boundaries/`, `clippy.toml`,
-  `rustfmt.toml`, or `deny.toml` policy file. Its only lint policy input is
-  `sc-lint.toml` plus sc-lint-managed bootstrap content.
-- The dedicated consumer-lint CI workflow runs this proof on an actual generated consumer,
-  not only against the unrendered `template/` tree.
+- The rendered consumer contains the configuration-derived fresh boundary
+  policy and no `clippy.toml`, `rustfmt.toml`, or `deny.toml`. Tests cover
+  SQLite-only and combined store selections, with MCP on/off, asserting the
+  generated policy follows actual selected crates/edges. A consumer policy
+  edit survives repeated setup/init/upgrade. Removing an allowed-edge rule or
+  adding a forbidden dependency is detected by the actual boundary analyzer.
+- The focused regression and existing template fixture CI execute this proof
+  on an actual generated consumer, using their ordinary logs for invocation
+  evidence rather than adding a dedicated consumer-lint workflow.
 
 ## Required validation
 
@@ -124,3 +152,18 @@ Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
   repository's boundary manifests. Those remain root policy.
 - New analyzer behavior or rule implementation in sc-lint itself.
 - RMCP, Utoipa, or package-version changes; `c-3` owns them.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.

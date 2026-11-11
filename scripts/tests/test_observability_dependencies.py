@@ -5,6 +5,10 @@ from pathlib import Path
 import unittest
 from unittest import mock
 import subprocess
+import json
+import os
+import shutil
+import tempfile
 
 SPEC = importlib.util.spec_from_file_location(
     "observability_dependencies", Path(__file__).resolve().parents[1] / "check_observability_dependencies.py",
@@ -28,6 +32,27 @@ def graph(owner, package, transitive=False, kind=None):
 
 
 class ObservabilityDependencies(unittest.TestCase):
+    def test_isolated_cron_logging_consumer(self):
+        fixture = CHECK.ROOT / "crates/sc-cron/tests/fixtures/logging_consumer"
+        with tempfile.TemporaryDirectory(prefix="cron-logging-consumer-") as directory:
+            root = Path(directory)
+            shutil.copytree(fixture / "tests", root / "tests")
+            manifest = (fixture / "Cargo.toml").read_text().replace(
+                '"../../.."', json.dumps(str(CHECK.ROOT / "crates/sc-cron")))
+            (root / "Cargo.toml").write_text(manifest)
+            metadata = CHECK.run_metadata(
+                ["cargo", "metadata", "--offline", "--format-version", "1"],
+                root, "isolated logging consumer")
+            CHECK.check_isolated_graph(metadata)
+            consumer = next(p for p in metadata["packages"] if p["name"] == "cron-logging-consumer")
+            self.assertNotIn("sc-command", [d["name"] for d in consumer["dependencies"]])
+            env = os.environ.copy()
+            env.setdefault("CARGO_TARGET_DIR", str(CHECK.ROOT / "target/cron-logging-consumer"))
+            result = CHECK._owned.run(
+                ["cargo", "test", "--offline"], cwd=root, env=env, timeout=300,
+                stdin=subprocess.DEVNULL, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_actual_workspace_normal_and_build_graph_for_all_libraries(self):
         metadata = CHECK.resolved_metadata()
         for owner in CHECK.OWNERS:
@@ -66,10 +91,11 @@ class ObservabilityDependencies(unittest.TestCase):
 
     def test_cron_contract_edge_is_exact(self):
         import copy
-        edge = {"version": "0.1.1", "path": "../sc-command", "default-features": False}
+        edge = {"version": "0.2.0", "path": "../sc-command", "default-features": False}
         good = {"dependencies": {"sc-command": edge}}
         CHECK.check_cron_manifest(good)
         variants = [
+            {"dependencies": {"sc-command": {**edge, "version": "0.1.1"}}},
             {"dependencies": {"sc-command": {**edge, "features": ["server"]}}},
             {"dependencies": {"sc-command": {**edge, "default-features": True}}},
             {"dependencies": {"alias": {**edge, "package": "sc-command"}}},
@@ -81,9 +107,18 @@ class ObservabilityDependencies(unittest.TestCase):
             with self.subTest(variant=variant), self.assertRaises(ValueError):
                 CHECK.check_cron_manifest(variant)
 
+    def test_cron_dev_command_follows_affected_package_version(self):
+        edge = {"version": "0.2.0", "path": "../sc-command", "default-features": False}
+        good = {"dependencies": {"sc-command": edge},
+                "dev-dependencies": {"sc-command": {**edge, "features": ["test-util"]}}}
+        CHECK.check_cron_manifest(good)
+        good["dev-dependencies"]["sc-command"]["version"] = "0.1.1"
+        with self.assertRaisesRegex(ValueError, "frozen package version"):
+            CHECK.check_cron_manifest(good)
+
     def test_only_checkout_dev_self_may_omit_path_version(self):
         import copy
-        good = {"dependencies": {"sc-command": {"version": "0.1.1", "path": "../sc-command", "default-features": False}},
+        good = {"dependencies": {"sc-command": {"version": "0.2.0", "path": "../sc-command", "default-features": False}},
                 "dev-dependencies": {"sc-cron": {"path": ".", "features": ["test-utils"]}}}
         CHECK.check_cron_manifest(good)
         for spec in ({"path": "."}, {"path": ".", "features": ["test-utils", "monty"]},
@@ -116,6 +151,53 @@ class ObservabilityDependencies(unittest.TestCase):
         for name in ("axum", "rmcp"):
             with self.subTest(name=name), self.assertRaisesRegex(ValueError, name):
                 CHECK.check_isolated_graph(graph("sc-cron", name, transitive=True))
+
+    def test_adapter_is_enforced_by_main_owner_loop(self):
+        for kind in (None, "build", "dev"):
+            metadata = graph("sc-cron-commands", "sc-observability-otlp", True, kind)
+            for owner in CHECK.OWNERS:
+                if owner != "sc-cron-commands":
+                    metadata["packages"].append({"id": owner, "name": owner})
+                    metadata["resolve"]["nodes"].append({"id": owner, "deps": []})
+            with self.subTest(kind=kind), mock.patch.object(CHECK, "resolved_metadata", return_value=metadata), \
+                 mock.patch.object(CHECK, "check_isolated_features"), mock.patch("builtins.print"):
+                if kind == "dev":
+                    CHECK.main()
+                else:
+                    with self.assertRaisesRegex(ValueError, "sc-cron-commands.*sc-observability-otlp"):
+                        CHECK.main()
+
+    def test_isolated_adapter_preserves_optional_scheduler_and_lean_defaults(self):
+        owner = "sc-cron-commands"
+        for name in ("sc-cron", "rusqlite", "tokio", "monty"):
+            for features in ((), ("schema",)):
+                with self.subTest(name=name, features=features), self.assertRaisesRegex(ValueError, name):
+                    CHECK.check_isolated_graph(graph(owner, name, True), owner, features)
+            CHECK.check_isolated_graph(graph(owner, name, True), owner, ("scheduler",))
+        for features in ((), ("scheduler",), ("schema", "monty")):
+            for name in ("axum", "rmcp", "sc-runtime"):
+                with self.subTest(name=name, features=features), self.assertRaisesRegex(ValueError, name):
+                    CHECK.check_isolated_graph(graph(owner, name, True), owner, features)
+            metadata = graph(owner, "sc-command")
+            metadata["resolve"]["nodes"][2]["features"] = ["server"]
+            with self.assertRaisesRegex(ValueError, "activates command"):
+                CHECK.check_isolated_graph(metadata, owner, features)
+
+    def test_isolated_feature_runner_covers_adapter_configurations(self):
+        seen = []
+        def resolve(_command, root, _context):
+            import tomllib
+            manifest = tomllib.loads((root / "Cargo.toml").read_text())
+            owner, spec = next(iter(manifest["dependencies"].items()))
+            seen.append((owner, tuple(spec["features"])))
+            return graph(owner, "sc-command")
+        with mock.patch.object(CHECK, "run_metadata", side_effect=resolve):
+            CHECK.check_isolated_features()
+        adapter = {features for owner, features in seen if owner == "sc-cron-commands"}
+        self.assertEqual(adapter, {(), ("schema",), ("scheduler",), ("schema", "scheduler"),
+                                   ("monty",), ("schema", "monty")})
+        self.assertIn(("sc-cron", ()), seen)
+        self.assertIn(("sc-cron", ("monty",)), seen)
 
     def test_metadata_timeout_uses_validated_tree_owner(self):
         with mock.patch.object(CHECK._owned, "run", side_effect=subprocess.TimeoutExpired("cargo", 1)) as run:

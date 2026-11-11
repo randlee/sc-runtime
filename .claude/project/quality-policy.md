@@ -56,6 +56,13 @@ their own prompts.
 
 ## Validation Policy
 
+Tests must use causal synchronization and retain ownership of their processes,
+tasks, and cleanup until physical completion. Unbounded waits and correctness
+assertions based on scheduling races are prohibited. A test that can hang or
+race must be redesigned; retries, skips, serialization, or increased timeouts
+are not fixes. Bounded failure guards may detect a failed handshake or cleanup,
+but must report failure accurately and reclaim the owned work.
+
 **Phase B implementation (waves 1–3, `integrate/phase-b` → `develop`):**
 phase-end artifact command is `just lint && just test` on the integration PR
 head commit. `quality-mgr` treats GitHub Actions check **`just lint and just
@@ -86,7 +93,7 @@ in `doc_review` or pre-implementation sprints.
 
 ## Boundary Enforcement
 
-**Product:** sc-lint **0.8.0** (`minimum_version` in root `sc-lint.toml`).
+**Product:** sc-lint **0.8.6** (`minimum_version` in root `sc-lint.toml`).
 
 **Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
 and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
@@ -139,3 +146,13 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 Phase ids progress as sequential single letters: `a`, `b`, `c`, then the next
 unused letter. A phase uses its declared identifier consistently across its
 plan paths, branch names, sprint identifiers, triage records, and QA evidence.
+
+The sole generated-policy exception is ADR-RUN-0005/REQ-RUN-0307: fresh
+configuration-derived selected application crate/edge inventory, consumer-owned
+after setup. No copied maintainer manifests or lint rules. Execution receipts
+prove all three analyzers ran; a configured TOML row alone is insufficient.
+
+Repeated native `sc-lint init --just` after customized SDK files must succeed
+and preserve consumer bytes. Regression coverage uses the released 0.8.6 product
+pin and proves all three analyzer/profile paths and the external policy remain
+intact.

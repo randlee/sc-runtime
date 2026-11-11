@@ -1,0 +1,45 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:PR115_QA2_REQ_QA_002 a triage:Finding ;
+ triage:id "REQ-QA-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "69bc1b083f04d3ac8fe79b0de71707c578528822" ;
+ triage:file "see references" ;
+ triage:issue "Required native Linux lint/test proof fails at reviewed head69bc1b083f04d3ac8fe79b0de71707c578528822. Actual just lint invokes just adr-run-0011 / python3 scripts/adr_run_0011_grep.py, which rejects the three added std::thread::sleep(POLL) calls because they lack a recognized test-only cfg reachability or reasoned same-line allow. Lint exits1 and CI skips Test. Windows success resolves the original platform-proof gap but cannot establish the separately required Linux success." ;
+ triage:action "Make the three bounded test polling calls comply with ADR-RUN-0011 point4/6 using a valid test-only cfg inclusion or reasoned same-line test allowance, preserving deadlines, physical ownership and all assertions. Rerun existing native Linux lint/test CI at the repaired reviewed head and require success; retain successful native Windows execution for that head. No new process artifact or broader C5 implementation is required." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878" .
+
+triage:PR115_QA2_QA_001 a triage:Finding ;
+ triage:id "QA-001" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "69bc1b083f04d3ac8fe79b0de71707c578528822" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_windows.rs" ;
+ triage:issue "Carry QA-001 is only partially resolved. The assigned head now has successful native Windows execution, but the required Linux lint/test job fails ADR-RUN-0011 on three newly added polling sleeps and therefore never executes its Test step." ;
+ triage:action "Make the existing test-only polling helpers visibly satisfy the existing ADR-RUN-0011 scanner through an appropriate test cfg or reasoned same-line allow at owned_child_windows.rs:41/112 and owned_child_windows_tests.rs:17. Preserve deadlines/assertions and rerun the existing required Linux lint/test job to success; retain native Windows success at the resulting merge head." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878" .
+
+triage:PR115_QA2_QA_002 a triage:Finding ;
+ triage:id "QA-002" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "69bc1b083f04d3ac8fe79b0de71707c578528822" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_windows.rs" ;
+ triage:issue "The repaired outer owner treats bridge-leader exit as physical completion of the whole owned Windows job. After start_kill requests job termination, stop returns as soon as inner_mut().try_wait observes the leader, even though descendants can still be terminating. Actual output's completed callback is empty; only the stall witness supplies a separate descendant wait after stop returns." ;
+ triage:action "Within the existing cleanup deadline, observe physical completion of every owned-job process as well as the leader, propagate failure when completion is unproven, and make the stall witness inspect that invariant at the real owner completion boundary. Avoid reintroducing consumed completion-port waits. Consolidate this overlapping source finding with flaky-test-qa FTQ-001." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878" .
+
+triage:PR115_QA2_FTQ_001 a triage:Finding ;
+ triage:id "FTQ-001" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "69bc1b083f04d3ac8fe79b0de71707c578528822" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_windows.rs" ;
+ triage:issue "The hard outer deadline fixes the original indefinite bridge wait, but the actual owner still reports cleanup complete after observing only the bridge leader. A Windows job termination request does not wait for every descendant to exit. If the leader terminates before a descendant, output can return and release the fixture/request files while that descendant remains active. The stall witness can pass because its observer separately waits for descendant termination after stop has already returned; that waiting is absent from the actual caller." ;
+ triage:action "Within the existing cleanup deadline, observe all owned-job processes physically exited as well as reaping the leader, and propagate a failure if that completion cannot be established. Preserve the avoidance of consumed completion-port notifications; use a bounded job-accounting or equivalent identity-handle completion observation. Make the stall witness check that invariant at the real owner completion boundary, without supplying its own compensating post-stop descendant wait." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878" .

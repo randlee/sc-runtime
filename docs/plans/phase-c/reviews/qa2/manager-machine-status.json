@@ -1,0 +1,98 @@
+{
+  "sprint": "phase-c",
+  "task": "phase-c-plan-qa2",
+  "branch": "plan/phase-c",
+  "commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+  "pr": 114,
+  "verdict": "FAIL",
+  "deliverables": {
+    "complete": 5,
+    "total": 5,
+    "percent": 100.0
+  },
+  "findings": {
+    "blocking": 1,
+    "important": 0,
+    "minor": 0
+  },
+  "blocking_ids": [
+    "ARCH-C-002"
+  ],
+  "merge_readiness": "not ready",
+  "merge_reason": "Six prior plan findings are reviewer-verified fixed. Live Plan Anchor readiness finding ARCH-C-002 remains open. CI snapshot is green.",
+  "next_action": "triage_and_fix",
+  "owner": "parent-orchestrator",
+  "reviewer_spawn_gate": "pass",
+  "reviewer_manifest": [
+    {
+      "agent": "req-qa",
+      "task_id": "/root/phase_c_qa_req",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "PASS",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "arch-qa",
+      "task_id": "/root/phase_c_qa_arch",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "FAIL",
+      "findings": {
+        "blocking": 1,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "ruthless-boundary-qa",
+      "task_id": "/root/phase_c_qa_boundary",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "pass",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    },
+    {
+      "agent": "ceremony-qa",
+      "task_id": "/root/phase_c_qa_ceremony",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "pass",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      }
+    }
+  ],
+  "evidence_chain": {
+    "qa_pass": "qa-2",
+    "commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/114#issuecomment-6594624146",
+    "coordinator_task_id": "/root/phase_c_quality_manager",
+    "triage": {
+      "ttl_paths": [
+        ".triage/c/findings/qa-1-plan-readiness-pr114.ttl"
+      ],
+      "screen_path": "/tmp/sc-runtime-phase-c-review/qa2/screen.json"
+    },
+    "todo_scan": {
+      "status": "not_applicable",
+      "reason": "Scoped docs-only plan QA; no implementation TODO scan triggered."
+    },
+    "ci_snapshot": {
+      "pending_or_failing": 0,
+      "checked_at": "2026-11-03T03:23:23.436637+00:00"
+    }
+  },
+  "missing_reviewers": [],
+  "unparsed_reviewers": []
+}

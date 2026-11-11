@@ -1,0 +1,15 @@
+[package]
+name = "application-control-contract"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.94.1"
+publish = false
+
+[workspace]
+resolver = "3"
+
+[dependencies]
+sc-cron = { version = "=0.2.0", path = "../../../../crates/sc-cron", default-features = false }
+tokio = { version = "1", features = ["macros", "rt", "time"] }
+sc-cron-commands = { version = "=0.2.0", path = "../../../../crates/sc-cron-commands", default-features = false, features = ["schema"] }
+rmcp = { version = "=3.8.0", default-features = false, features = ["server"] }

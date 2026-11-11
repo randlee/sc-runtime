@@ -1,0 +1,421 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:C5_QA1_REQ_C5_001 a triage:Finding ;
+ triage:id "REQ-C5-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/lib.rs:96; tests/integration/cron-consumer/tests/execution.rs:2" ;
+ triage:issue "The public sc_cron::observability module is absent at the reviewed head. The committed isolated execution consumer imports it and does not compile (E0432 in /tmp/c5-consumer-facade-blocked.log). Actual Rust/Python/Monty/custom-host and attached/launched/finished receiver acceptance therefore remains unproved. Separate PR115 source is not part of PR118." ;
+ triage:action "Consume the qualified public facade, reconcile its exact exported names with the frozen compatibility contract, and execute both default and explicit Monty isolated consumer suites plus normal graph guard at the resulting source. Do not introduce another trait or direct sc-command consumer dependency." ;
+ triage:fix_disposition "Canonical nominal facade consumed; isolated Rust/Python and Monty custom-host execution plus bounded normal graph guards." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_002 a triage:Finding ;
+ triage:id "REQ-C5-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs:127; crates/sc-cron/src/scheduler/consumer.rs:161" ;
+ triage:issue "request_stop is synchronous and independent, but Controller::stop silently omits all future G/K timer notifications when called from a normal thread without an entered Tokio handle. With native COMMIT held after admission, a stop issued from that thread records future G/K and Draining but cannot publish DeadlineExceeded at grace independently of physical completion/join: try_current returns Err and the sole timer is never spawned. Cooperative checks do not repair the held native interval." ;
+ triage:action "Own timer/notification execution on the worker lifecycle runtime (or an equivalent retained independent owner), rather than the calling thread ambient runtime. Add a causal regression issuing request_stop from an ordinary std thread while admitted native work is held, proving grace status before release/join and second-stop shortening without extending K." ;
+ triage:fix_disposition "Retained owning runtime schedules stop expiry independently of ordinary caller thread; held admitted native COMMIT regression and original-behavior negative." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_003 a triage:Finding ;
+ triage:id "REQ-C5-003" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs:17; crates/sc-cron/src/sqlite_cooperative_tests.rs:39; crates/sc-cron/src/sqlite_cooperative_tests.rs:81; tests/integration/cron-consumer/tests/execution.rs:89; tests/integration/cron-consumer/tests/application_schema.rs:120" ;
+ triage:issue "The Windows helper is repaired, but its non-Windows Drop still calls an unbounded wait. New proof fixtures also contain readiness waits outside failure guards and do not consistently retain physical joins on assertion failure: hold uses entered.recv(), most callers retain raw holder JoinHandles instead of the HeldConnection guard, the external execution test waits unbounded for ManualClock readiness, and the forwarding-provider test drops its physical JoinHandle if a preceding assertion fails. The new explicit no-hang/no-race ownership policy is not yet satisfied." ;
+ triage:action "Complete the shared Unix ownership redesign; bound readiness as failure detection, retain cancellation/release and physical joins through every assertion/error path, and use causal negative witnesses that intentionally fail each handshake/cleanup stage. Reuse the proven ownership helper where suitable; no retry, skip, serialization, or timeout padding." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_004 a triage:Finding ;
+ triage:id "REQ-C5-004" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/scheduler/consumer.rs:102; crates/sc-cron/src/scheduler/consumer.rs:111; crates/sc-cron/src/scheduler.rs:603" ;
+ triage:issue "The new Result-returning spawn_worker_cooperative delegates to spawn_worker_mode, whose duplicate-worker compare_exchange failure asserts. Calling the cooperative method twice while the first worker is alive panics instead of returning CronError. The legacy public spawn_worker documentation does not waive the active no-public-panic requirement for this new fallible API." ;
+ triage:action "Claim cooperative worker ownership through a fallible internal path and return a fixed typed CronError for an already-running worker; preserve the legacy signature separately if compatibility requires it. Add a deterministic second-call refusal test and verify the original worker remains usable and physically joined." ;
+ triage:fix_disposition "Fallible runtime validation and atomic worker claim return fixed typed startup errors; duplicate/no-runtime regressions fail original behavior and preserve original worker ownership." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_005 a triage:Finding ;
+ triage:id "REQ-C5-005" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "validation-pending" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "tests/integration/cron-consumer/tests/execution.rs:2; sc-lint.toml" ;
+ triage:issue "Required validation remains open. The available exact full-workspace receipt is for dd99d52 and reports lint0/test5, not a successful reviewed-head run. New focused receipts prove default278/Monty336 and causal14, but do not establish complete f7d58b1 isolated consumer execution or full just lint && just test. CI may remain pending during review; pending is not success." ;
+ triage:action "After source fixes, obtain actual source-bound complete required validation and isolated consumer/graph results; track pending CI separately and let the manager report IN-FLIGHT until required checks finish. Do not delay source review or fabricate an exact-head whole-suite pass from focused or earlier-head receipts." ;
+ triage:fix_disposition "Required final source-bound gates run after source push; scoped success is not a full-suite pass." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_006 a triage:Finding ;
+ triage:id "REQ-C5-006" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md:11" ;
+ triage:issue "C5 changes production Rust source, including splitting worker store calls to retain the configured source-length bound, but its requirements list omits binding NFR-RUN-0008. The requirement applies directly to owned crates/sc-cron/src production files." ;
+ triage:action "Add NFR-RUN-0008 to C5 requirement coverage and retain actual released sc-lint source-length enforcement; this is traceability correction, not an analyzer waiver." ;
+ triage:fix_disposition "Binding NFR-RUN-0008 added; released sc-lint source bounds retained." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_REQ_C5_007 a triage:Finding ;
+ triage:id "REQ-C5-007" ;
+ triage:severity "Minor" ;
+ triage:reviewer "req-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/README.md:9; crates/sc-cron/Cargo.toml" ;
+ triage:issue "The README introduction says the sole workspace-crate dependency is sc-observability-types. That crate is a registry dependency, while the actual temporary workspace edge is defaults-off sc-command for its nominal canonical logging contract. This contradicts the public integration explanation." ;
+ triage:action "Describe the actual temporary defaults-off sc-command contract edge and registry event values, without claiming a parallel logging trait or server dependency." ;
+ triage:fix_disposition "README states temporary defaults-off sc-command nominal contract edge and registry event values." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_ARCH_C5_001 a triage:Finding ;
+ triage:id "ARCH-C5-001" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md" ;
+ triage:issue "The governing ADR list omits ADR-RUN-0019 although the sprint implements Scheduler as CronOperations and documents consumer replacement of that port. docs/sc-cron/architecture.md explicitly identifies ADR-RUN-0019 as the governing Phase C public-port decision." ;
+ triage:action "List ADR-RUN-0019 in C5 governing ADRs and retain its native-port/no-reverse-adapter constraints; update coverage for any further genuinely applicable ADRs." ;
+ triage:fix_disposition "Governing ADR-RUN-0019 and public panic ADR-RUN-0006 added to C5 frontmatter." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_ARCH_C5_002 a triage:Finding ;
+ triage:id "ARCH-C5-002" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "Independent expiry ownership is conditional on the request_stop caller having an entered Tokio runtime. A public stop request from an ordinary synchronous thread records a future budget but skips the only future expiry-notification task. With a blocked native provider and no join, live cutoffs may be checked later but G/K status and interrupts are not independently scheduled. This violates the approved owned shutdown/typed expiry architecture; the stop API documents no caller-runtime precondition." ;
+ triage:action "Capture/use the owning runtime or another lifecycle-owned notification mechanism independently of caller thread context. Prove an ordinary-thread stop while physical work is held publishes expiry without waiting for join; retain cancellation and notifier ownership." ;
+ triage:fix_disposition "Retained owning runtime schedules stop expiry independently of ordinary caller thread; held admitted native COMMIT regression and original-behavior negative." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_ARCH_C5_003 a triage:Finding ;
+ triage:id "ARCH-C5-003" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/lib.rs" ;
+ triage:issue "The pinned core adds cooperative operation ports but still exposes no public sc_cron::observability facade. Its logger signature refers to the nominal sc-command receiver internally, so the required consumer-facing nominal logging port in ADR-RUN-0018 is absent on this branch. The separate PR115 source is not present in this reviewed commit." ;
+ triage:action "Merge the qualified canonical logging-facade implementation and its complete export inventory into this branch; preserve the same nominal receiver and types without creating a second trait or making consumers depend directly on command." ;
+ triage:fix_disposition "Canonical nominal facade consumed; isolated Rust/Python and Monty custom-host execution plus bounded normal graph guards." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_ARCH_C5_004 a triage:Finding ;
+ triage:id "ARCH-C5-004" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
+ triage:issue "The Unix test owner destructor calls ChildWrapper::wait without a bound after start_kill. A failed handshake or timeout therefore enters an unbounded cleanup wait instead of a failure path that retains and reclaims the whole process tree. The new project Validation Policy expressly prohibits this test design. Passing child-run deadlines do not bound its destructor." ;
+ triage:action "Use an owned whole-session cleanup design with causal readiness and actual physical completion on success and failure. Bound and report failed cleanup honestly; no sleep/padding/retry or leader-only substitute." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_ARCH_C5_005 a triage:Finding ;
+ triage:id "ARCH-C5-005" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-command/src/envelope.rs" ;
+ triage:issue "The full PR diff introduces reachable expect calls in public sc-command schema trait implementations. ADR-RUN-0006 point3 explicitly prohibits reachable expect in public functions and permits no invariant-comment exception; ADR-RUN-0017 only records the separate fixed-Noop exception. The same pattern appears in both Schemars and Utoipa canonical error schema implementations. Static generated JSON does not create an approved exception." ;
+ triage:action "Have the schema owner replace the conversions with infallible native schema construction while preserving the exact wire/schema meaning, then merge forward. Do not add a panic-policy waiver or change public trait signatures." ;
+ triage:fix_disposition "Owner schemas construct native infallible Schemars maps and Utoipa builders; real typed path macro regression and exact wire tests; no panic-policy exception." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_EXT_C5_001 a triage:Finding ;
+ triage:id "EXT-C5-001" ;
+ triage:severity "important" ;
+ triage:reviewer "extensibility-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "See reviewer source and target references in the published QA report." ;
+ triage:issue "The advertised custom CronOperations override cannot obtain its required production context without a framework worker." ;
+ triage:action "Provide the smallest supported production way to obtain/control the live context independently of a Scheduler worker, or an equivalent constructor/composition path for application-owned CronOperations that preserves earliest-deadline and cancellation semantics. Document ownership responsibilities and prove it in a normal-feature external consumer implementing its own operations/shutdown without spawning a dummy framework worker or enabling test-utils. Do not replace this missing seam with a framework registry or duplicate DTO." ;
+ triage:fix_disposition "Production WorkerStopControl factory and explicit application completion acknowledgement documented/frozen; ordinary-feature external custom CronOperations proof without framework worker/test-utils." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBQA_C5_001 a triage:Finding ;
+ triage:id "RBQA-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/lib.rs" ;
+ triage:issue "The required nominal logging receiver facade is absent, so a cron-only consumer cannot name or implement the receiver accepted by cron public constructors." ;
+ triage:action "Consume the canonical nominal reexports through public sc_cron::observability, update the exact boundary/composition inventory, and prove the existing isolated consumer in default and Monty configurations without adding a direct sc-command SDK dependency. Do not introduce a second logging trait." ;
+ triage:fix_disposition "Canonical nominal facade consumed; isolated Rust/Python and Monty custom-host execution plus bounded normal graph guards." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBQA_C5_002 a triage:Finding ;
+ triage:id "RBQA-C5-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs" ;
+ triage:issue "The advertised replaceable CronOperations boundary retains a hidden concrete framework-worker dependency for production context construction." ;
+ triage:action "Provide and document a minimal normal-feature worker-independent context/control composition path for application-owned CronOperations, preserving live cancellation, earliest deadlines and explicit ownership. Prove a custom provider can compose the standard executor without a dummy Scheduler worker or enabling test-utils." ;
+ triage:fix_disposition "Production WorkerStopControl factory and explicit application completion acknowledgement documented/frozen; ordinary-feature external custom CronOperations proof without framework worker/test-utils." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBQA_C5_003 a triage:Finding ;
+ triage:id "RBQA-C5-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "Public DTO Debug implementations move confidential payload, source and environment data across the diagnostic boundary without redaction." ;
+ triage:action "Implement value-free Debug on the sensitive DTO family and nested environment/target variants, retaining kinds/names/counts as allowed. Preserve exact Serialize/Deserialize wire shapes and add nested diagnostic canary tests. Apply the owner fix to inherited C1 declarations rather than adding a second DTO family." ;
+ triage:fix_disposition "Sensitive DTO Debug omits free-form source/payload/path/environment/reference values; direct nested diagnostic canary preserves wire serialization." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_001 a triage:Finding ;
+ triage:id "QA-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "A stop requested from an ordinary synchronous thread can silently omit future deadline/interrupt publication." ;
+ triage:action "Create the deadline notifier through an owned execution mechanism independent of the request caller entering a Tokio runtime; preserve earliest cutoffs and prove a synchronous-thread stop while native work remains blocked publishes expiry before physical release." ;
+ triage:fix_disposition "Retained owning runtime schedules stop expiry independently of ordinary caller thread; held admitted native COMMIT regression and original-behavior negative." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_002 a triage:Finding ;
+ triage:id "QA-C5-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/scheduler/consumer.rs" ;
+ triage:issue "The new Result-returning cooperative worker constructor can panic for ordinary caller/environment states." ;
+ triage:action "Use a fallible worker claim/runtime validation path returning CronError for an already-live worker or missing runtime, before spawning or loading rows; add direct duplicate-start and no-runtime regressions." ;
+ triage:fix_disposition "Fallible runtime validation and atomic worker claim return fixed typed startup errors; duplicate/no-runtime regressions fail original behavior and preserve original worker ownership." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_003 a triage:Finding ;
+ triage:id "QA-C5-003" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "The physical admission guard belongs to an async waiter task rather than the blocking operation it accounts for." ;
+ triage:action "Retain the guard within the actual spawn_blocking closure (including queued work) until its physical completion, retain join ownership separately, and add a causal regression for cancellation/shutdown of the async owner while the blocking closure remains held." ;
+ triage:fix_disposition "Physical accounting guard moves into actual blocking closure; retained join registry and runtime-worker-stop handshake prove occupied permit until native completion." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_004 a triage:Finding ;
+ triage:id "QA-C5-004" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
+ triage:issue "The reviewed test harness still has an unbounded cleanup wait, and new cooperative fixtures do not consistently retain physical cleanup ownership on assertion failure." ;
+ triage:action "Consume and independently verify the causal owned-process redesign, and give every held-thread/barrier fixture an unwind-safe release and physical completion owner. Do not replace this with retries, skipped tests, serialization, or longer timeouts." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_005 a triage:Finding ;
+ triage:id "QA-C5-005" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/worker/store_calls.rs" ;
+ triage:issue "New C5 production code and inherited owner-schema implementations contain explicitly forbidden expect calls reachable from public APIs." ;
+ triage:action "Use typed fallible state handling for cooperative lifecycle code and infallible native schema builders; remove all listed expects without adding a panic-policy waiver." ;
+ triage:fix_disposition "New worker lifecycle expects removed through typed error handling and equal-cutoff direct internal construction; owner schema expects removed." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_QA_C5_006 a triage:Finding ;
+ triage:id "QA-C5-006" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "tests/integration/cron-consumer/tests/execution.rs" ;
+ triage:issue "The required isolated execution consumer does not compile against the reviewed SDK because the nominal public logging facade is absent." ;
+ triage:action "Consume the canonical logging facade and run both default and Monty isolated execution acceptance with sc-cron as the only SDK dependency; retain actual graph and lifecycle evidence." ;
+ triage:fix_disposition "Canonical nominal facade consumed; isolated Rust/Python and Monty custom-host execution plus bounded normal graph guards." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_001 a triage:Finding ;
+ triage:id "RBP-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/scheduler/consumer.rs" ;
+ triage:issue "The new Result-returning cooperative worker constructor can panic instead of reporting a recoverable startup failure." ;
+ triage:action "Make cooperative startup check and atomically claim the worker and obtain its execution runtime through a fallible path. Return a stable classified CronError with recovery guidance for duplicate startup or missing runtime, preserving the legacy surface separately if required." ;
+ triage:fix_disposition "Fallible runtime validation and atomic worker claim return fixed typed startup errors; duplicate/no-runtime regressions fail original behavior and preserve original worker ownership." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_002 a triage:Finding ;
+ triage:id "RBP-C5-002" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/error.rs" ;
+ triage:issue "New admission and capability failures give recovery instructions for a database filesystem problem." ;
+ triage:action "Preserve a stable structured reason and return reason-appropriate recovery for capacity exhaustion, stopping, unsupported cooperative providers and nested scopes. Keep transaction evidence and avoid suggesting automatic mutation replay." ;
+ triage:fix_disposition "Structured admission/capability/startup/completion reasons give operation-specific recovery without automatic replay." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_003 a triage:Finding ;
+ triage:id "RBP-C5-003" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/sqlite_scope.rs" ;
+ triage:issue "The cooperative scope wrapper discards the underlying provider error while rebuilding classified transaction errors." ;
+ triage:action "Retain the original cause for programmatic Error::source inspection while maintaining value-free public Display/log output and the observed transaction outcome. Preserve callback installation causes as well." ;
+ triage:fix_disposition "Cooperative wrapper and callback errors retain original provider sources; value-free cooperative Display/Debug plus deep-cause canary." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_004 a triage:Finding ;
+ triage:id "RBP-C5-004" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "Shared physical-work accounting is released by the async waiter rather than by the physical blocking operation it describes." ;
+ triage:action "Tie the accounting/permit guard to the actual blocking closure or another owner that survives cancellation of the async waiter, and keep completion timestamps and join reporting attached to physical completion." ;
+ triage:fix_disposition "Physical accounting guard moves into actual blocking closure; retained join registry and runtime-worker-stop handshake prove occupied permit until native completion." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_005 a triage:Finding ;
+ triage:id "RBP-C5-005" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-command/src/envelope.rs" ;
+ triage:issue "Public owner-schema implementations express statically constructed schemas through fallible JSON conversions followed by expect." ;
+ triage:action "Construct the typed schema through native infallible map/schema/builders, preserving the canonical schema and shared wire shape. Do not waive the panic policy or replace conversion failure with a fabricated permissive schema." ;
+ triage:fix_disposition "Owner schemas construct native infallible Schemars maps and Utoipa builders; real typed path macro regression and exact wire tests; no panic-policy exception." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RBP_C5_006 a triage:Finding ;
+ triage:id "RBP-C5-006" ;
+ triage:severity "minor" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/scheduler.rs" ;
+ triage:issue "The shutdown path creates equal cutoffs through a fallible validator and then asserts that the known-infallible case succeeds." ;
+ triage:action "Use a direct internally valid ShutdownBudget construction or a small infallible equal-cutoff constructor, retaining the fallible validator for independently supplied cutoffs." ;
+ triage:fix_disposition "New worker lifecycle expects removed through typed error handling and equal-cutoff direct internal construction; owner schema expects removed." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RSH_C5_001 a triage:Finding ;
+ triage:id "RSH-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-service-hardening-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "Independent expiry notification depends on the thread calling request_stop being inside a Tokio runtime." ;
+ triage:action "Schedule deadline notification using a retained owner/runtime or another owned mechanism independent of the caller thread. Keep earlier G/K cutoffs and second-stop shortening live. Add a causal normal-thread request_stop test with a native operation held beyond G and a status subscriber that observes expiry before join or releasing the native gate." ;
+ triage:fix_disposition "Retained owning runtime schedules stop expiry independently of ordinary caller thread; held admitted native COMMIT regression and original-behavior negative." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RSH_C5_002 a triage:Finding ;
+ triage:id "RSH-C5-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-service-hardening-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/operation.rs" ;
+ triage:issue "Physical completion accounting belongs to an abortable async task rather than to the native blocking operation." ;
+ triage:action "Keep the physical accounting/permit guard alive inside the actual blocking execution or an equivalent owner that survives cancellation of the caller runtime. Retain physical completion and reconciliation until that execution ends. Add a causal SDK regression holding a native closure while its caller runtime is shut down, proving the permit stays occupied and join/status cannot claim completion until the held closure is released and actually finishes." ;
+ triage:fix_disposition "Physical accounting guard moves into actual blocking closure; retained join registry and runtime-worker-stop handshake prove occupied permit until native completion." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_RSH_C5_003 a triage:Finding ;
+ triage:id "RSH-C5-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-service-hardening-agent" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/scheduler/consumer.rs" ;
+ triage:issue "The new fallible cooperative worker startup can panic instead of returning a startup error." ;
+ triage:action "Validate and claim cooperative startup through a fallible path. Return a typed CronError for a duplicate active worker or unavailable runtime, before spawning or leaving partial startup state. Preserve the separately documented legacy constructor contract; add deterministic duplicate-worker and ordinary-thread/no-runtime tests for the new Result-returning entry point." ;
+ triage:fix_disposition "Fallible runtime validation and atomic worker claim return fixed typed startup errors; duplicate/no-runtime regressions fail original behavior and preserve original worker ownership." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_FTQ_C5_001 a triage:Finding ;
+ triage:id "FTQ-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
+ triage:issue "The Unix destructor sends start_kill, discards any error, then calls ChildWrapper::wait without a deadline. When termination or wrapper completion does not occur, the test hangs during normal cleanup or assertion unwinding despite output() having an execution deadline. The outer execution timeout does not bound this destructor." ;
+ triage:action "Consume the actual bounded Unix owner redesign from the shared parent, preserving raw OS arguments and whole-session physical cleanup. Prove timeout, panic, failed handshake and descendant cleanup through the real entry point. Do not add a larger test timeout or merely poll the leader." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_FTQ_C5_002 a triage:Finding ;
+ triage:id "FTQ-C5-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_windows.rs" ;
+ triage:issue "Cleanup returns success as soon as the std leader is reaped and job membership is empty. That is not the same boundary as all descendant process identity handles being signaled. The witness immediately queries retained identity handles, so job-list removal preceding the process-signaled observation makes the same correct test intermittently fail and makes the owner falsely claim physical completion." ;
+ triage:action "Consume the shared retained-process-identity completion redesign. Success must require leader reaping, genuine empty membership and completion signals for the owned process identities. Keep the original cleanup deadline and immediate witness; add/retain a deterministic empty-job-before-unsignaled-handle negative. Do not compensate with an observer delay, retries or deadline padding." ;
+ triage:fix_disposition "Shared Windows owners require empty membership plus signaled retained identities; Python-only supervisor fixed equivalently, native Windows applicable suite passed and deterministic unsignaled-identity negative retained." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_FTQ_C5_003 a triage:Finding ;
+ triage:id "FTQ-C5-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "crates/sc-cron/src/sqlite_cooperative_tests.rs" ;
+ triage:issue "The cancellation regression holds the real connection mutex in one thread, requests stop, then performs an unbounded physical.join before releasing that mutex. If a store path stops observing cancellation, the operation waits for the mutex while the test waits for its join, and release.send at521 is unreachable. This is a deterministic hang in exactly the regression the test is meant to report. Other new fixtures also await joins or drop raw JoinHandles on assertion failure without a bounded owning test envelope." ;
+ triage:action "Redesign the deadlock-sensitive acceptance fixtures with explicit handshake/release ownership and a bounded supervisor that can reclaim the entire test process if native work cannot complete. Ensure every failure and unwinding path releases barriers, cancels work and physically reaps it. Do not rely on unbounded Drop joins or a Tokio timeout that leaves blocking work behind. Cover the ignored-cancellation and failed-assertion paths causally." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
+
+triage:C5_QA1_FTQ_C5_004 a triage:Finding ;
+ triage:id "FTQ-C5-004" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "fixed" ;
+ triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
+ triage:file "tests/integration/cron-consumer/graph_guard.py" ;
+ triage:issue "Both Cargo invocations use subprocess.run with captured pipes and neither an execution deadline nor process-tree ownership. A Cargo process waiting indefinitely for another live Cargo owner/file lock stalls the acceptance gate; a descendant retaining a captured pipe can also keep collection open. --offline prevents network resolution, not these waits." ;
+ triage:action "Run the graph checks through the existing bounded owned-process supervisor with isolated per-run paths as appropriate, regular-file output capture and whole-tree cleanup on all failures. Apply the same rule to any retained qualification probes; temporary probes can instead be removed under the existing closeout requirement. Add a causal stalled-tool/descendant-held-output negative using the existing helper tests, not timeout padding." ;
+ triage:fix_disposition "Graph checks reuse bounded canonical Python process owner with regular-file capture and whole-tree cleanup; existing stalled-descendant failure/timeout witnesses retained, Windows identity completion repaired." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .

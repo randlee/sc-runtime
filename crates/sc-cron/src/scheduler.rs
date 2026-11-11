@@ -31,6 +31,7 @@ use crate::{
 use sc_command::observability::SharedCanonicalLog;
 use sc_observability_types::Level;
 
+mod consumer;
 mod run_due;
 
 use run_due::record_due;
@@ -59,6 +60,7 @@ struct Core<S, C, J> {
     clock: Arc<C>,
     jitter: Arc<J>,
     reload: watch::Sender<u64>,
+    controller: Arc<crate::operation::Controller>,
 }
 
 impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
@@ -66,6 +68,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     /// a future occurrence required, the jitter drawn and the next run
     /// computed. `start` and `replace_and_set_enabled` share it.
     fn new_schedule(&self, spec: ScheduleSpec) -> Result<(NewSchedule, DateTime<Utc>), CronError> {
+        self.controller.mark_started();
         encode_payload(&spec.payload)?;
         spec.validate_environment()?;
         let now = self.clock.now();
@@ -92,6 +95,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn stop(&self, id: ScheduleId, generation: Generation, reason: &str) -> Result<(), CronError> {
+        self.controller.mark_started();
         let at = Timestamp::from_datetime(self.clock.now());
         if !self.store.stop(id, generation, at, reason)? {
             return Err(CronError::Fenced { id, generation });
@@ -101,6 +105,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
+        self.controller.mark_started();
         if !self.store.set_enabled(name, enabled)? {
             return Err(CronError::NotFound(name.clone()));
         }
@@ -109,6 +114,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<(), CronError> {
+        self.controller.mark_started();
         if !self.store.set_enabled_many(flags)? {
             return Err(self.first_missing(flags.iter().map(|(name, _)| name))?);
         }
@@ -308,6 +314,7 @@ where
                 clock,
                 jitter,
                 reload: watch::channel(0).0,
+                controller: Arc::new(crate::operation::Controller::new()),
             }),
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
@@ -588,14 +595,33 @@ where
     /// still running: two workers would run every schedule twice.
     #[must_use]
     pub fn spawn_worker(&self, job: Arc<dyn Job>) -> WorkerHandle {
-        let claimed = self
-            .worker_live
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
-            .is_ok();
+        self.spawn_worker_mode(job, false)
+    }
+
+    fn spawn_worker_mode(&self, job: Arc<dyn Job>, cooperative: bool) -> WorkerHandle {
+        let runtime = tokio::runtime::Handle::current();
         assert!(
-            claimed,
+            self.claim_worker().is_ok(),
             "sc-cron: a worker for this scheduler is already running"
         );
+        self.spawn_claimed_worker(job, cooperative, runtime)
+    }
+
+    fn claim_worker(&self) -> Result<(), CronError> {
+        self.worker_live
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| crate::consumer_contract::unavailable("worker_already_running"))?;
+        self.core.controller.mark_started();
+        Ok(())
+    }
+
+    fn spawn_claimed_worker(
+        &self,
+        job: Arc<dyn Job>,
+        cooperative: bool,
+        runtime: tokio::runtime::Handle,
+    ) -> WorkerHandle {
+        self.core.controller.bind_runtime(runtime.clone());
         let live = LiveGuard(Arc::clone(&self.worker_live));
         let reload = self.core.reload.subscribe();
         let (shutdown, shutdown_rx) = oneshot::channel();
@@ -610,13 +636,19 @@ where
             #[cfg(feature = "monty")]
             Arc::clone(&self.hosts),
         );
-        let worker = worker.with_hook_environment(Arc::clone(&self.environment));
-        let task = tokio::spawn(async move {
+        let worker = worker
+            .with_hook_environment(Arc::clone(&self.environment))
+            .with_operation_controller(Arc::clone(&self.core.controller), cooperative);
+        let controller = Arc::clone(&self.core.controller);
+        let task = runtime.spawn(async move {
             let _live = live;
             worker.run(reload).await;
+            controller.worker_finished();
         });
         WorkerHandle {
             shutdown: Some(shutdown),
+            controller: Arc::clone(&self.core.controller),
+            cooperative,
             task: Some(task),
             feeds: Arc::clone(&self.coord.feeds),
             logger: Arc::clone(&self.coord.logger),
@@ -773,6 +805,7 @@ where
     /// The store's errors on the first read; later store failures are logged
     /// and do not stop the other runs.
     pub async fn run_due(&self, job: Arc<dyn Job>) -> Result<Vec<DueRun>, CronError> {
+        self.core.controller.mark_started();
         run_due::drive(self, job).await
     }
 
@@ -848,6 +881,8 @@ impl Drop for LiveGuard {
 /// process exits first.
 pub struct WorkerHandle {
     shutdown: Option<oneshot::Sender<Option<tokio::time::Instant>>>,
+    controller: Arc<crate::operation::Controller>,
+    cooperative: bool,
     task: Option<JoinHandle<()>>,
     feeds: Arc<AtomicUsize>,
     logger: SharedCanonicalLog,
@@ -877,6 +912,8 @@ impl WorkerHandle {
         (
             Self {
                 shutdown: None,
+                controller: Arc::new(crate::operation::Controller::new()),
+                cooperative: false,
                 task: Some(task),
                 feeds: Arc::new(AtomicUsize::new(outstanding_feeds)),
                 logger,
@@ -902,6 +939,13 @@ impl WorkerHandle {
     /// cooperate. Await shutdown to completion before consuming logger shutdown;
     /// dropping this future cannot finish an asynchronous join.
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
+        if self.cooperative {
+            let cutoff = deadline.into_std();
+            let _ = self.controller.stop(crate::ShutdownBudget {
+                grace: cutoff,
+                cleanup: cutoff,
+            });
+        }
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(Some(deadline));
@@ -910,6 +954,7 @@ impl WorkerHandle {
             return true;
         };
         if tokio::time::timeout_at(deadline, &mut task).await.is_ok() {
+            self.controller.join().await;
             return true;
         }
         if self.feeds.load(Ordering::Acquire) == 0 {
@@ -928,6 +973,7 @@ impl WorkerHandle {
                 let _ = self.logger.emit(event);
             }
             let _ = task.await;
+            self.controller.join().await;
             return false;
         }
         if let Some(event) = crate::component_event(
@@ -946,6 +992,7 @@ impl WorkerHandle {
             let _ = self.logger.emit(event);
         }
         let _ = task.await;
+        self.controller.join().await;
         false
     }
 
@@ -956,8 +1003,17 @@ impl WorkerHandle {
     }
 }
 
+/// Cloneable lifecycle control without physical join ownership.
+#[derive(Clone, Debug)]
+pub struct WorkerStopControl {
+    application_owned: bool,
+    controller: Arc<crate::operation::Controller>,
+}
 impl Drop for WorkerHandle {
     fn drop(&mut self) {
+        if self.cooperative && self.task.is_some() && !self.controller.stopping() {
+            self.controller.cancel();
+        }
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(None);

@@ -1,0 +1,235 @@
+{
+  "id": "ANC-003",
+  "request": {
+    "model": "jev-1.14.0",
+    "questions": {
+      "faithful": {
+        "criteria": {
+          "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+          "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+          "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+        },
+        "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+        "type": "choice"
+      },
+      "observable": {
+        "criteria": {
+          "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+          "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+          "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+        },
+        "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+        "type": "choice"
+      },
+      "scoped": {
+        "criteria": {
+          "no": "No work area or applicability set is identifiable.",
+          "unclear": "An area is named but its applicability cannot be determined.",
+          "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+        },
+        "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+        "type": "choice"
+      },
+      "self_contained": {
+        "criteria": {
+          "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+          "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+          "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+        },
+        "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+        "type": "choice"
+      },
+      "single_constraint": {
+        "criteria": {
+          "no": "At least two independently enforceable duties are joined in the statement.",
+          "unclear": "The statement leaves independence of its duties ambiguous.",
+          "yes": "All details enforce the same invariant and would be evaluated together."
+        },
+        "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+        "type": "choice"
+      }
+    },
+    "state": {
+      "anchor": {
+        "statement": "The repository and generated template must both use sc-lint 0.8.4.",
+        "quote": "both repo and templates should use 0.8.4",
+        "scope": "the c-1 consumer contract and c-2 template lint profile sprints"
+      }
+    }
+  },
+  "responses": [
+    {
+      "model": "jev-1.14.0",
+      "answers": {
+        "faithful": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.7,
+          "probabilities": {
+            "no": 0.16,
+            "unclear": 0.04,
+            "yes": 0.8
+          }
+        },
+        "observable": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.91,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.04,
+            "yes": 0.94
+          }
+        },
+        "scoped": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0,
+            "unclear": 0.03,
+            "yes": 0.97
+          }
+        },
+        "self_contained": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.64,
+          "probabilities": {
+            "no": 0.16,
+            "unclear": 0.08,
+            "yes": 0.76
+          }
+        },
+        "single_constraint": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.46,
+          "probabilities": {
+            "no": 0.64,
+            "unclear": 0.01,
+            "yes": 0.35
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1078,
+        "output_tokens": 189
+      }
+    },
+    {
+      "model": "jev-1.14.0",
+      "answers": {
+        "faithful": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.62,
+          "probabilities": {
+            "no": 0.19,
+            "unclear": 0.06,
+            "yes": 0.75
+          }
+        },
+        "observable": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.03,
+            "yes": 0.95
+          }
+        },
+        "scoped": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0,
+            "unclear": 0.02,
+            "yes": 0.98
+          }
+        },
+        "self_contained": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.68,
+          "probabilities": {
+            "no": 0.15,
+            "unclear": 0.06,
+            "yes": 0.79
+          }
+        },
+        "single_constraint": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.53,
+          "probabilities": {
+            "no": 0.69,
+            "unclear": 0.01,
+            "yes": 0.3
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1078,
+        "output_tokens": 189
+      }
+    }
+  ],
+  "attempts": 2,
+  "outcome": {
+    "verdict": "inconclusive",
+    "failing": [
+      "single_constraint"
+    ],
+    "low_confidence": [
+      "single_constraint"
+    ],
+    "unstable": [],
+    "initial_disagreements": [],
+    "resolved": {
+      "faithful": {
+        "choice": "yes",
+        "confidence": 0.62,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "observable": {
+        "choice": "yes",
+        "confidence": 0.91,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "scoped": {
+        "choice": "yes",
+        "confidence": 0.96,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "self_contained": {
+        "choice": "yes",
+        "confidence": 0.64,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "single_constraint": {
+        "choice": "no",
+        "confidence": 0.46,
+        "matching_calls": [
+          1,
+          2
+        ]
+      }
+    }
+  },
+  "rubric_digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4"
+}

@@ -1,0 +1,11 @@
+```json
+{
+  "schema_version": "1.0.0",
+  "success": false,
+  "canceled": false,
+  "aborted_by": null,
+  "data": null,
+  "error": {"code":"EVIDENCE.INCOMPLETE","message":"The recorded single_constraint answer is no (confidence 0.46; repeat no at 0.53), but the supplied approved evidence does not settle whether this is an anchor_defect or question_defect. ANC-003 v2 requires the same sc-lint 0.8.4 version on the repository and generated template. Its approved pass fixture requires both artifacts to declare and bootstrap that version; its fail fixture distinguishes a template at 0.8.0. These fixtures establish the required version and conjunctive coverage, but supply no approved expected single_constraint rubric answer. The sealed question expressly permits one invariant across several output surfaces while its no criterion counts independently enforceable duties. Repository and template version compliance can be inspected independently, yet can also be read as two applications of the same fixed-version invariant. The supplied raw response has choices/probabilities but no rationale resolving that distinction. No frozen rubric-role oracle or calibration example independently establishes which interpretation applies here. Low confidence and repeated no choices establish neither disposition; neither planner approval nor user approval of implementation fixtures alone proves an atomicity oracle mismatch. The original inconclusive testability outcome and sealed rubric remain unchanged. No live gate PASS is claimed.","recoverable":true,"suggested_action":"Preserve ANC-003 v2, the approved fixtures, the two original Jev responses, and rubric seal 96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4. Supply an existing frozen authority-derived single_constraint expectation or calibration case that resolves the shared-version versus independently enforceable-artifact distinction; otherwise obtain a user-approved clarity determination before selecting anchor_defect or question_defect. Do not change authority, tune questions, override confidence, or mark the gate passed on this triage."},
+  "metadata": {"authoritative_sources_unchanged":true,"correlation_id":"sc-runtime-phase-c-anc-003-testability-triage-087-r1","duration_ms":60642,"jev_run_ids":[],"planner_observation_trust":"untrusted","retry_count":0,"tool_calls":17}
+}
+```

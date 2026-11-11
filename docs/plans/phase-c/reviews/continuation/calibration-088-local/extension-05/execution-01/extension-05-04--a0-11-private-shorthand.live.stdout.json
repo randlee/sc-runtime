@@ -1,0 +1,247 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The deploy path must satisfy R7.",
+        "quote": "make the deploy path satisfy R7",
+        "scope": "deployment",
+        "verdict": "inconclusive",
+        "failing": [
+          "observable",
+          "self_contained",
+          "faithful"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "unclear",
+            "confidence": 0.2,
+            "probabilities": {
+              "no": 0.13,
+              "unclear": 0.47,
+              "yes": 0.4
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.01,
+              "yes": 0.02
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.03,
+              "yes": 0.97
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.02,
+              "yes": 0.01
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "b504eab6eddc09619c9252cb6aed22404f18c90eb91f84d16100ba8f12262274",
+          "request_sha256": "a2ecd476694b3210a2b6f86541255d15b483f0e46d5de865d660102110f8b13d"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.2,
+            "probabilities": {
+              "no": 0.09,
+              "unclear": 0.44,
+              "yes": 0.47
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.01,
+              "yes": 0.02
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.03,
+              "yes": 0.97
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.02,
+              "yes": 0.01
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          }
+        },
+        "answers_third": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.24,
+            "probabilities": {
+              "no": 0.1,
+              "unclear": 0.41,
+              "yes": 0.49
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.01,
+              "yes": 0.02
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.02,
+              "yes": 0.98
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.98,
+              "unclear": 0.01,
+              "yes": 0.01
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          }
+        },
+        "attempts": 3,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "observable",
+            "self_contained",
+            "faithful"
+          ],
+          "low_confidence": [
+            "faithful"
+          ],
+          "unstable": [],
+          "initial_disagreements": [
+            "faithful"
+          ],
+          "resolved": {
+            "faithful": {
+              "choice": null,
+              "confidence": null,
+              "matching_calls": []
+            },
+            "observable": {
+              "choice": "no",
+              "confidence": 0.96,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.96,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "no",
+              "confidence": 0.96,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

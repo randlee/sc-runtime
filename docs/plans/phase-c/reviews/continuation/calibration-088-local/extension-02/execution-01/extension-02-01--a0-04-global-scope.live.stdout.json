@@ -1,0 +1,190 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "Every CLI subcommand must emit a JSON object on stdout.",
+        "quote": "all CLI commands should print JSON on stdout",
+        "scope": "all CLI subcommands",
+        "verdict": "needs_work",
+        "failing": [
+          "faithful"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.66,
+            "probabilities": {
+              "no": 0.77,
+              "unclear": 0.0,
+              "yes": 0.23
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.03,
+              "yes": 0.95
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.0,
+              "yes": 0.98
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "c4d445315faaea84f2267cf5a641e26d09365754d0400f7499e6c1eaecc14f54",
+          "request_sha256": "a24efb1ac91490a6da72b68df56b15e7d5fcb8a4dadd95a1de43a6db7d650a7b"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.83,
+            "probabilities": {
+              "no": 0.89,
+              "unclear": 0.0,
+              "yes": 0.11
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.02,
+              "yes": 0.96
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.0,
+              "yes": 0.98
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "needs_work",
+          "failing": [
+            "faithful"
+          ],
+          "low_confidence": [],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "no",
+              "confidence": 0.66,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 1.0,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

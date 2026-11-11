@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "data": {
+    "qa_pass": "qa-1",
+    "reviewed_commit": "1217978e257ed8db9508a5422d4de889286e913e",
+    "source_aggregate": "/tmp/sc-runtime-phase-c-review/qa1/aggregate.json",
+    "screened": [
+      {
+        "id": "REQ-QA-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing REQ-CMD-0005 register and c-1 contract amendment ownership.",
+        "reason": "The remedy assigns an existing requirement file and corrects its obsolete RMCP version clause; no process artifact or new evidence requirement is added."
+      },
+      {
+        "id": "REQ-QA-002",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing root requirements register, c-1 amendments, and already required documentation validation.",
+        "reason": "The remedy corrects current operational version clauses and reference coverage within existing documents, preserving historical observations without introducing a new gate."
+      },
+      {
+        "id": "REQ-QA-003",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing authoritative sprint requirement lists and existing lifecycle, CLI-dependency, SQLite and registry criteria.",
+        "reason": "The remedy adds governing identifiers and traceability to existing acceptance checks; it adds no new product behavior, checklist artifact, or validation venue."
+      },
+      {
+        "id": "ARCH-C-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing ADR register and authoritative sprint/phase ADR frontmatter.",
+        "reason": "The remedy lists existing architectural constraints governing planned changes and retains their behavior; no new process artifact is requested."
+      },
+      {
+        "id": "ARCH-C-002",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Already requested Plan Anchor fixture/calibration workflow, four complete-sprint live gates, structural checks, and coverage reports.",
+        "reason": "The finding requires completing the existing user-requested Plan Anchor gate and preserving its existing outputs, rather than inventing another gate or evidence mechanism."
+      },
+      {
+        "id": "RBQA-C-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing mandatory scripts/check_observability_dependencies.py guard and existing c-3 regression venue.",
+        "reason": "The remedy assigns and updates the existing guard for the approved affected-package versions while retaining its dependency restrictions; no additional guard, manifest, or CI gate is introduced."
+      },
+      {
+        "id": "CQA-C-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing focused generation regression, template fixture matrix and root tests with CI logs.",
+        "reason": "The remedy removes an unjustified additional workflow and reuses existing execution proof, reducing process artifacts rather than adding one."
+      }
+    ],
+    "summary": {
+      "input_findings": 7,
+      "screened_findings": 7,
+      "not_applicable": 7,
+      "keep": 0,
+      "ceremony": 0,
+      "concern_valid_remedy_ceremony": 0,
+      "rejected_ids": [],
+      "retained_ids": ["REQ-QA-001", "REQ-QA-002", "REQ-QA-003", "ARCH-C-001", "ARCH-C-002", "RBQA-C-001", "CQA-C-001"]
+    }
+  },
+  "error": null
+}

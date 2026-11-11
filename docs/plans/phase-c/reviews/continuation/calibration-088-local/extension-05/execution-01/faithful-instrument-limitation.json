@@ -1,0 +1,29 @@
+{
+  "diagnosis": "Unresolved faithful instrument/evaluator behavior under unchanged frozen normalization authority. Larger pool did not converge.",
+  "oracle_changed": false,
+  "oracle_ambiguity_established": false,
+  "authority_relabeling_recommended": false,
+  "fixed_role_cells": 552,
+  "fixed_role_cells_accepted": 552,
+  "all_failures_in_role": "faithful",
+  "candidate_count": 6,
+  "complete_bundle_accepted": false,
+  "new_question_set": null,
+  "actual_confirmations": 278,
+  "initial_confirmations": 276,
+  "required_disagreement_third_calls": 2,
+  "execution_retries": 0,
+  "cross_candidate_answer_borrowing_permitted": false,
+  "failure_cases": [
+    "a0-01-valid-directive",
+    "a0-02-valid-prohibition",
+    "a0-04-global-scope",
+    "a0-08-vague-outcome",
+    "a0-10-api-key-redaction",
+    "a0-11-private-shorthand",
+    "a0-15-duplicate-first",
+    "a0-16-duplicate-second",
+    "generic-authorized-algorithm"
+  ],
+  "interpretation": "Prior semantically exact runs do not authorize confidence waiver. Current pool includes stable semantic mismatches and low-confidence agreements; two disagreement cases remain unaccepted. These facts do not by themselves establish oracle ambiguity. No role or case may be dropped, and no partial seal may be formed from different candidates."
+}

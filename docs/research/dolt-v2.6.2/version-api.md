@@ -4,7 +4,7 @@ Pinned source: `46d8805d8556599eb0a6472892e67e3bb1e0de03` (tag v2.6.2). This is 
 
 ## Findings for sc-runtime planning
 
-**Latest scope ruling:** use a reusable `sc-dolt` adapter over existing SQLx/MySQL transport. Initial implementation requires branch-aware CRUD, branch create/list/delete/rename/checkout, merge, and the previously requested remote configuration/fetch/push/pull (including ff-only). Fork and clone are investigated but outside initial implementation. For merge conflicts, fetch diagnostic diff information from Dolt SQL/native APIs first; do not implement a diff engine or auto-resolution. Surface conflict evidence for an operator/user decision. Preserve provider/server scopes and SQL session permissions as part of the contract.
+**Latest scope ruling (aligned with [sc-dolt plan](../../plans/maintenance/sc-dolt-plan.md)):** use a reusable `sc-dolt` adapter over existing SQLx/MySQL transport. **Initial implementation** requires branch-aware CRUD, branch **create**, **list**, and session **select** (`USE db/branch` or equivalent qualified routing), **merge** (fast-forward and clean three-way), and native **remote configuration/fetch/push/pull** including ff-only where the consumer opts in. Branch **delete**, **rename**, and procedure **`DOLT_CHECKOUT`** are catalogued in this evidence pack but **deferred** from the initial delivery; consumers establish targets with explicit qualification rather than depending on checkout. Fork and clone stay outside initial implementation. For merge conflicts, fetch diagnostic diff information from Dolt SQL/native APIs first; do not implement a diff engine or auto-resolution. Surface conflict evidence for an operator/user decision. Preserve provider/server scopes and SQL session permissions as part of the contract.
 
 **Clone and fork are different concepts.** Dolt SQL registers `dolt_clone`, which clones a remote into a new database, with source URL and optional directory/branch/remote/depth/ref; server mode marks it AdminOnly. There is no `dolt_fork` procedure/function/table-function in the complete SQL registration lists. “Fork” appears in Dolt source as a graph fork point / forked branch concept, not as a separate provider API. Both clone and fork are outside initial implementation; do not imply a native fork endpoint or decide that fork maps to clone. Evidence C1-C3.
 
@@ -31,7 +31,8 @@ Permission evidence: procedure registration carries `AdminOnly` metadata for clo
 | Group | v1 disposition | Why |
 |---|---|---|
 | clone/new DB | Supported, defer | Investigated API; latest ruling places clone outside initial implementation |
-| branch create/list/delete/rename; checkout | Required | Core branch-aware CRUD; list is `dolt_branches`, writes via procedure |
+| branch create/list/select (`USE db/branch`) | Required | Core branch-aware CRUD; list is `dolt_branches`, writes via procedure or qualified routing |
+| branch delete/rename; `DOLT_CHECKOUT` | Deferred | Catalogued for later delivery; initial consumers use explicit qualification |
 | SQL CRUD + add/status/commit | Required | Minimum durable user data lifecycle |
 | log/diff | Required read path | Needed to inspect branch history and changes |
 | remote config/fetch/push/pull incl ff-only | Required | User push/pull requirement; provider-backed network operations |

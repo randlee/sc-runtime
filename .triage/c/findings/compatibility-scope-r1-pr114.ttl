@@ -1,0 +1,22 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Parent-authored PR114 six-sprint scope review at e67ad9a; historical four-sprint reports remain unchanged.
+triage:COMPAT_SCOPE_001 a triage:Finding ;
+    triage:severity "Important" ;
+    triage:reviewer "plan-scope-reviewer" ;
+    triage:status "fixed-verified" ;
+    triage:author_state "corrected-pending-independent-R2" ;
+    triage:sprints "c-1,c-3,c-6" ;
+    triage:target "docs/plans/phase-c/compatibility-contract.md:167" ;
+    triage:reviewed_commit "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97" ;
+    triage:correction "Freeze one DTO identity plus executor, operation and target-binding callable contracts and dev-only double injection. Keep production linked to the real adapter; recut UI composition into its genuine integration owner if needed instead of production success stubs or hidden sibling dependencies." .
+
+triage:COMPAT_SCOPE_002 a triage:Finding ;
+    triage:severity "Important" ;
+    triage:reviewer "plan-scope-reviewer" ;
+    triage:status "fixed-verified" ;
+    triage:author_state "corrected-pending-independent-R2" ;
+    triage:sprints "c-1,c-3,c-5" ;
+    triage:target "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:63" ;
+    triage:reviewed_commit "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97" ;
+    triage:correction "Make rusqlite 0.39 hooks an explicit c-1 Cargo feature and lock prerequisite. Declare sequential ownership: c-1 enables prerequisites, then c-3 retains them while changing ecosystem versions; c-5 owns implementation and tests." .
