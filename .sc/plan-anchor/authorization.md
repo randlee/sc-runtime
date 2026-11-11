@@ -142,3 +142,30 @@ text, one complete sprint per Jev request, for plan assessment and rechecks
 after fixes. Anchor validation and independent question tuning retain their
 existing requirements. The source-code, full-diff, raw-log, credential, and
 unrelated-private-data exclusions above remain in force.
+
+### Phase D calibration recovery approval
+
+The independent tuner identified errors in its own frozen ANC-005 and ANC-012
+calibration cases. The runner correctly refused replacing the recorded oracle
+within the existing history (`TOURNAMENT.ORACLE_CHANGED`). No rejected result
+was converted to an accepted result.
+
+On November 11, 2026, the user explicitly authorized separate, versioned
+calibration lineages for correcting those cases while preserving all prior
+evidence. The approval question was:
+
+> May I start a new, explicitly versioned calibration lineage, preserving all failed cases/results, so the tuner can correct those errors?
+
+The user answered:
+
+> Approve fresh calibration; preserve prior evidence
+
+Direct provenance: `request_user_input_async`,
+`call_1bb282cd72514f579f36e1144d681cff`, question item 0.
+
+This permits new independently frozen corpora and new canonical history IDs
+with local bindings to the previous failed lineages. Original corpora,
+histories, results, and the refused correction attempt remain immutable. It
+does not authorize changing an accurate question to fit a plan, relabeling a
+past result, discarding failed evidence, or weakening production thresholds.
+The existing Jev destination and permitted payload scope remain unchanged.
