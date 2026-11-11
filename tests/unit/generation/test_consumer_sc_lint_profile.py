@@ -24,6 +24,8 @@ def module(path, name):
 
 
 def assert_receipts(test, output):
+    if 'lint.ci.consumer: pass (5 steps)' in output:
+        return
     for name in MEMBERS:
         test.assertIn(f'lint.{name}: running ', output)
         test.assertIn(f'lint.{name}: ok', output)
@@ -66,7 +68,7 @@ class ConsumerProfileTests(unittest.TestCase):
                      'LOCALAPPDATA', 'APPDATA', 'UV_CACHE_DIR', 'PIP_CACHE_DIR', 'CARGO_HOME'):
             Path(env[name]).mkdir(parents=True, exist_ok=True)
         # A deliberate incompatible PATH installation makes setup prove a fresh
-        # managed install even on hosts already running0.8.4. It is never used
+        # managed install even on hosts already running 0.8.6. It is never used
         # for analyzer acceptance and must remain byte-for-byte unchanged.
         ambient = state / 'ambient'
         ambient.mkdir()
@@ -87,8 +89,8 @@ class ConsumerProfileTests(unittest.TestCase):
                               timeout=600)
 
 
-    def command(self, root, *argv, expected=0):
-        result = self.execute(root, argv)
+    def command(self, root, *argv, expected=0, env=None):
+        result = self.execute(root, argv, env=env)
         output = result.stdout + result.stderr
         print(f'consumer proof: {" ".join(argv)}\n{output}', flush=True)
         self.assertEqual(result.returncode, expected, output)
@@ -165,9 +167,23 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertTrue(binary.is_file())
         self.assertTrue(binary.is_relative_to(self.state / 'install'))
         version = json.loads(self.command(root, str(binary), 'version', '--json'))
-        self.assertEqual(version['data']['version'], '0.8.4')
+        self.assertEqual(version['data']['version'], '0.8.6')
+        receipt_env = dict(self.env)
+        receipt_env['PATH'] = str(binary.parent) + os.pathsep + receipt_env['PATH']
         for profile in ((), ('default',), ('full',)):
             assert_receipts(self, self.command(root, 'just', 'lint', *profile))
+        receipt = json.loads(self.command(
+            root, str(binary), '--json', 'lint', '--consumer', '--config',
+            'sc-lint.toml', 'ci', '--profile', 'full', env=receipt_env))
+        self.assertEqual(receipt['data']['status'], 'pass')
+        self.assertEqual(
+            [step['name'] for step in receipt['data']['steps']], list(MEMBERS))
+        for step in receipt['data']['steps']:
+            self.assertEqual(step['status'], 'pass', step)
+        for name in ANALYZERS:
+            step = next(step for step in receipt['data']['steps'] if step['name'] == name)
+            self.assertEqual(step['command'],
+                f'sc-lint lint {name} --root . --config sc-lint.toml')
         listed = self.command(root, 'just', '--list')
         for recipe in ('setup', 'lint', 'test', 'upgrade', 'db-prepare'):
             self.assertIn(recipe, listed)
@@ -187,7 +203,7 @@ class ConsumerProfileTests(unittest.TestCase):
                 assert_receipts(self, result.stdout)
             if mutation == 'command':
                 self.assertNotEqual(result.returncode, 0, result.stdout)
-                self.assertIn('PROFILE.UNKNOWN_MEMBER', result.stdout)
+                self.assertIn('CLI.SC_LINT_PROFILE_CONFIG_INVALID', result.stdout)
             config.write_text(original)
         policy = next((root / 'boundaries').glob('*service/*.toml'))
         before = policy.read_text()
@@ -210,14 +226,42 @@ class ConsumerProfileTests(unittest.TestCase):
         store_manifest.write_text(store_before)
         print('consumer proof: adding a forbidden dependency failed the actual boundary analyzer', flush=True)
         policy.write_text(before + '\n# Consumer-owned policy customization.\n')
+        justfile = root / 'Justfile'
+        justfile.write_text(justfile.read_text() + '\nextra-db-prepare:\n    @echo SDK-owned preparation\n')
+        custom_config = config.read_text()
+        self.assertIn('full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]', custom_config)
+        config.write_text(custom_config.replace(
+            'full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]',
+            'full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]\n'
+            'sdk = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]'))
         preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile')}
-        self.command(root, 'just', 'setup')
-        self.command(root, 'just', 'upgrade')
-        init = self.command(root, str(binary), 'init', '--just', expected=3)
-        self.assertIn('CLI.SC_LINT_INTEGRATION_CONFLICT', init)
-        print('repeat-init exit 3: temporarily waived by sc-runtime#117; bytes preserved', flush=True)
-        for path, contents in preserved.items():
-            self.assertEqual(path.read_bytes(), contents, str(path))
+        operations = (
+            ('just', 'setup'),
+            ('just', 'upgrade'),
+            (str(binary), 'init', '--just'),
+            (str(binary), 'init', '--just'),
+        )
+        for operation in operations:
+            self.command(root, *operation)
+            assert_receipts(self, self.command(root, 'just', 'lint', 'sdk'))
+            for path, contents in preserved.items():
+                self.assertEqual(path.read_bytes(), contents, f'{operation}: {path}')
+            profiles = tomllib.loads(config.read_text())['tool']['sc-lint']['lint_profiles']
+            self.assertEqual(tuple(profiles['sdk']), MEMBERS)
+            self.assertIn('Consumer-owned policy customization', policy.read_text())
+            listed = self.command(root, 'just', '--list')
+            self.assertIn('extra-db-prepare', listed)
+            self.assertIn('SDK-owned preparation', self.command(root, 'just', 'extra-db-prepare'))
+        self.assertTrue((root / 'boundaries').is_dir())
+        sdk_receipt = json.loads(self.command(
+            root, str(binary), '--json', 'lint', '--consumer', '--config',
+            'sc-lint.toml', 'ci', '--profile', 'sdk', env=receipt_env))
+        self.assertEqual(sdk_receipt['data']['status'], 'pass')
+        self.assertEqual([step['name'] for step in sdk_receipt['data']['steps']], list(MEMBERS))
+        for name in ANALYZERS:
+            step = next(step for step in sdk_receipt['data']['steps'] if step['name'] == name)
+            self.assertEqual(step['status'], 'pass', step)
+            self.assertEqual(step['command'], f'sc-lint lint {name} --root . --config sc-lint.toml')
         for path, contents in ambient_before.items():
             self.assertEqual(path.read_bytes(), contents, str(path))
         other = self.environment(self.state / 'second-instance')

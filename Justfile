@@ -15,6 +15,7 @@ default:
 
 setup:
     {{python}} .sc-lint/bootstrap.py setup --config sc-lint.toml
+    {{python}} .sc-lint/bootstrap.py exec --config sc-lint.toml -- {{python}} -m pip install -r requirements-generation.txt
 
 lint *profile:
     {{python}} .sc-lint/bootstrap.py lint --config sc-lint.toml {{profile}}

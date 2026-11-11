@@ -93,7 +93,7 @@ in `doc_review` or pre-implementation sprints.
 
 ## Boundary Enforcement
 
-**Product:** sc-lint **0.8.4** (`minimum_version` in root `sc-lint.toml`).
+**Product:** sc-lint **0.8.6** (`minimum_version` in root `sc-lint.toml`).
 
 **Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
 and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
@@ -152,8 +152,7 @@ configuration-derived selected application crate/edge inventory, consumer-owned
 after setup. No copied maintainer manifests or lint rules. Execution receipts
 prove all three analyzers ran; a configured TOML row alone is insufficient.
 
-Successful repeated init after customized SDK files is temporarily waived
-only by [the user decision in #117](https://github.com/randlee/sc-runtime/issues/117),
-tracking [upstream #849](https://github.com/randlee/sc-lint/issues/849).
-Record actual exit3 and unchanged consumer bytes; keep exact0.8.4 and all
-three analyzer/profile proofs. All other quality gates remain binding.
+Repeated native `sc-lint init --just` after customized SDK files must succeed
+and preserve consumer bytes. Regression coverage uses the released 0.8.6 product
+pin and proves all three analyzer/profile paths and the external policy remain
+intact.

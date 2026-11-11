@@ -799,7 +799,7 @@ for the order in point 4.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the historical sc-lint 0.8.0 consumer install. Phase C updates the active contract to 0.8.4. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document
+**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the historical sc-lint 0.8.0 consumer install. The active consumer contract is sc-lint 0.8.6. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document
 
 ### Context
 
@@ -821,12 +821,14 @@ be upgraded.
    consumer pin. It is not a hand-written clippy, rustfmt, deny, or
    `boundaries/` policy.
 2. This repository MUST NOT build surface-snapshot or adapter-drift tooling.
-3. A generated project gets its `just` and lint install from sc-lint 0.8.4.
+3. A generated project gets its `just` and lint install from sc-lint 0.8.6.
    The install command is `sc-lint init --just`. The template commits
-   `template/sc-lint.toml` with `minimum_version` 0.8.4 and
+   `template/sc-lint.toml` with `minimum_version` 0.8.6 and
    `template/.sc-lint/bootstrap.py`.
 4. The public recipes are `setup`, `lint`, `test`, and `upgrade`. The
-   consumer-owned recipe `db-prepare` MUST survive a later `sc-lint init`.
+   consumer-owned recipe `db-prepare` MUST survive repeated `sc-lint init`.
+   SDK custom profiles and edits to external boundary policies MUST also
+   survive repeated native initialization and the public setup/upgrade flow.
    a-6 owns the generated consumer install.
 5. The placeholder `Justfile` and the prototype-handoff order are retired.
    There is no step that generates prototype repositories so the sc-lint team
@@ -859,12 +861,12 @@ a later init. a-6 owns the generated install.
 
 **Enforced by:** [NFR-RUN-0006](requirements.md), checked by inspecting the contents of
 `template/` for lint configuration, boundary rules and `just` modules;
-`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.4 consumer install); `req-qa` on
+`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.6 consumer install); `req-qa` on
 [REQ-RUN-0005](requirements.md) for point 6.
 
 ### Related Documents
 
-- [REQ-RUN-0307](requirements.md): sc-lint 0.8.4 consumer install and its recipe names.
+- [REQ-RUN-0307](requirements.md): sc-lint 0.8.6 consumer install and its recipe names.
 - [NFR-RUN-0006](requirements.md): the template carries no lint knowledge.
 - [REQ-RUN-0004](requirements.md): this repository's own `just lint`, `just test` and
   `just new <dest>`.
@@ -907,41 +909,32 @@ reporting five steps. The bootstrap receipt, exact command argv and zero exit
 status for sc-boundary/sc-portability/sc-runtime are required evidence; TOML
 inspection alone cannot certify analyzer execution.
 
-**Open capability gap:** the same released binary rejects subsequent
+**Historical 0.8.4 qualification:** the released binary rejected subsequent
 `sc-lint init --just` after adding the three declarations/profiles and
 consumer `db-prepare`, with exit 3 and
 `CLI.SC_LINT_INTEGRATION_CONFLICT`. Release source
 `crates/sc-lint/src/consumer_integration.rs` classifies only canonical files
 or version-only configuration drift as preservable; arbitrary config/Justfile
-extensions conflict. No public extension marker was found. This fails the
-original successful two-init criterion. The explicit user waiver below
-supersedes only that success condition; the passing profiles alone did not
-authorize a waiver. Never remove consumer edits or suppress analyzers
-to obtain a passing receipt. The historical qualification records this failure; the temporary executable
-is retired before C1 merge. Issue117 retains the restoration criterion until a
-supported released mechanism is qualified.
-
-
-Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
-[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
-after SDK/consumer customization. Released0.8.4 returns exit3
-`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
-Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
-result explicitly; never report init PASS, hide its error, force overwrite,
-delete consumer edits or add a workaround wrapper. This known result does not
-block current C1/C2 acceptance. Issue117 owns restoration of the successful
-repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
-all three real analyzers in ordinary/default/full profiles, causal failure
-proofs, configuration-derived fresh boundary policy and consumer ownership/
-preservation, and usable public setup/lint/test/upgrade remain binding. No
-upstream source fix, release or new pin is authorized by this waiver.
+extensions. This is retained as Phase C historical evidence; it is no longer
+the active behavior requirement. The sc-runtime#117 waiver is retired by the
+released 0.8.6 qualification below. Consumer edits must never be removed or
+analyzer execution suppressed to obtain a passing receipt.
 
 The user-waiver probe was rerun successfully on the remaining criteria:
 ordinary/default/full each reported five passing steps; the structured
 `lint.ci.consumer` full-profile receipt identified the exact three analyzer
 argv strings with status pass. Both subsequent init attempts returned the
 recorded exit3, and config/Justfile/edited boundary policy stayed byte-exact.
-This is profile/preservation evidence under #117, never an init success claim.
+This remains historical 0.8.4 profile/preservation evidence, not an init
+success claim.
+
+**Released 0.8.6 repeat-init qualification:** the published
+`sc-lint_0.8.6_aarch64-apple-darwin.tar.gz` archive passed its published
+SHA-256. In an isolated consumer using the actual SDK profiles from
+`template/sc-lint.toml`, an `extra-db-prepare` recipe, and an edited external
+boundary policy, two native `sc-lint init --just` runs exited 0. Both runs
+reported the customized files as preserved, and SHA-256 snapshots of the
+configuration, Justfile, and policy were unchanged.
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
 

@@ -391,17 +391,27 @@ mod tests {
 
     #[tokio::test]
     async fn concurrent_inserts_do_not_lock() {
-        let (_dir, store) = empty().await;
-        let mut tasks = Vec::new();
-        for index in 0..100 {
-            let store = store.clone();
-            tasks.push(tokio::spawn(async move {
-                store.insert_widget(&format!("widget-{index}")).await
-            }));
-        }
-        for task in tasks {
-            let row = task.await.expect("join").expect("insert");
-            assert!(!row.id.is_empty());
+        let (dir, store) = empty().await;
+        let second = Store::open(&OpenConfig::sqlite(db_url(dir.path())))
+            .await
+            .expect("second connection pool");
+        for round in 0..50 {
+            let barrier = std::sync::Arc::new(tokio::sync::Barrier::new(2));
+            let first_start = std::sync::Arc::clone(&barrier);
+            let second_start = std::sync::Arc::clone(&barrier);
+            let first_insert = async {
+                first_start.wait().await;
+                store.insert_widget(&format!("widget-first-{round}")).await
+            };
+            let second_insert = async {
+                second_start.wait().await;
+                second
+                    .insert_widget(&format!("widget-second-{round}"))
+                    .await
+            };
+            let (first, second) = tokio::join!(first_insert, second_insert);
+            assert!(!first.expect("first insert").id.is_empty());
+            assert!(!second.expect("second insert").id.is_empty());
         }
         assert_eq!(store.count_widgets().await.expect("count"), 100);
     }
