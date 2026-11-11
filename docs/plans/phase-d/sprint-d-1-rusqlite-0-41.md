@@ -58,6 +58,7 @@ This sprint **commits** the architecture change; it is not an optional note.
 | ADR-RUN-0012 amendment + `docs/sc-runtime-db-sqlite/architecture.md` replace 0.39 pin with ruling table above | REQ-DBSQ-0001, ADR-RUN-0012 |
 | Delete `sqlx-resolve` fixture; update crate tests accordingly | REQ-DBSQ-0001 |
 | `Cargo.lock` with single rusqlite 0.41 graph for owned crates | REQ-RUN-0002 |
+| **Optional rider:** drop unused direct `tracing` on `sc-cron` (boundary + NFR-CRON-0001 text) in the same `Cargo.toml` edit | [sweep ELIMINATE](issue-133-dependency-sweep.md#eliminate) |
 
 ### Exact `Cargo.toml` dependency lines
 
@@ -90,6 +91,7 @@ Own and adjust only if the 0.41 bump requires API changes:
 2. **boundary:BOUNDARY-sc-runtime-db-sqlite** — `cargo test -p sc-runtime-db-sqlite` passes at both ends of that same pair; no `sqlx-resolve` fixture remains.
 3. **boundary:cron-consumer** — `cargo test -p cron-consumer-proof` passes at the lockfile’s rusqlite 0.41 graph.
 4. **ADR-RUN-0012** — Architecture text matches the ruling table; 0.39 / single-`libsqlite3-sys` with sqlx 0.9 language is removed.
+5. **req:133-eliminate-sc-cron** (optional) — With the rider shipped: `cargo tree -p sc-cron --edges normal -i tracing` shows no `sc-cron` parent; boundary and NFR text match the manifest.
 
 ## Owned paths
 
@@ -101,6 +103,8 @@ Own and adjust only if the 0.41 bump requires API changes:
 - `tests/integration/cron-consumer/**`
 - `docs/sc-runtime-db-sqlite/architecture.md`
 - `docs/architecture.md` (ADR-RUN-0012 section only)
+- `boundaries/sc-cron/sc-cron.toml` (rider only)
+- `docs/sc-cron/requirements.md` (NFR-CRON-0001 rider only)
 - `Cargo.lock`
 
 ## This sprint does not close

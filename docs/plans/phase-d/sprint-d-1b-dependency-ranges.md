@@ -49,6 +49,7 @@ Implement the **non-rusqlite** portions of [#133](https://github.com/randlee/sc-
 | Template `workspace.dependencies`: ranges where kit allows (see sweep table) | #133 point 4 |
 | `Justfile` or documented CI recipe for `cargo +nightly update -Z minimal-versions` smoke | #133 point 3 |
 | `Cargo.lock` updated for range graph (coordinate merge with d-1) | REQ-RUN-0002 |
+| Remove unused direct `tracing` on `sc-runtime`; align boundary + NFR-RT-0003 / arch text | [sweep ELIMINATE](issue-133-dependency-sweep.md#eliminate) |
 
 ### rmcp target lines (initial)
 
@@ -63,12 +64,16 @@ rmcp = { version = ">=3.9.0, <4", default-features = false, features = [ /* unch
 3. **boundary:template-daemon** — template `cargo check -p daemon` (or repo-standard template recipe) with updated rmcp range.
 4. **req:133-pins** — No remaining `~` or bare `=` on **third-party** deps in owned manifests except commented exceptions listed in PR.
 5. **req:133-minimal** — Documented minimal-versions command succeeds on PR head (or records known nightly/toolchain prerequisite).
+6. **req:133-eliminate-sc-runtime** — No direct `tracing` line on `sc-runtime`; `boundaries/sc-runtime/sc-runtime.toml` and NFR-RT-0003 match; `cargo test -p sc-runtime` passes. Transitive `tracing` via `axum` / `rmcp` may remain.
 
 ## Owned paths
 
 - `crates/sc-command/Cargo.toml`
 - `crates/sc-runtime/Cargo.toml`
-- `crates/sc-cron/Cargo.toml` (optional `monty` / `monty-types` caps only — **not** rusqlite; see sweep §3)
+- `boundaries/sc-runtime/sc-runtime.toml`
+- `docs/sc-runtime/requirements.md` (NFR-RT-0003 / dependency exact-set only)
+- `docs/sc-runtime/architecture.md` (matching dependency sentence only)
+- `crates/sc-cron/Cargo.toml` (optional `monty` / `monty-types` caps only — **not** rusqlite or `tracing`; see sweep §3)
 - `crates/sc-cron-commands/Cargo.toml` (utoipa/schemars only)
 - `template/Cargo.toml`
 - `template/crates/daemon/Cargo.toml`

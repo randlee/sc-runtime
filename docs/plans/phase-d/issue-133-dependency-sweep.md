@@ -209,3 +209,60 @@ Evidence is the manifest comment, the crates.io dependency requirement, or the f
    This is a process block, not an sqlx block. `"0.41"` cannot resolve 0.42.0. d-1 either proves 0.42 (hooks / `InterruptHandle` / progress and commit hooks) and publishes `>=0.41.0`, or publishes `>=0.41.0, <0.42` with the failing compile as the comment. Shipping another bare `"0.41"` fails #133's done-when for this dependency.
 
 Not on this list: **rmcp 3.9.0** (that *is* latest; the work is to leave `~3.8`), **utoipa 6 / schemars 1.2.3 / sc-observability 1.5.0 / axum 0.8.9 / tokio 1.54.1** (already latest; the work is to delete `=` and to stop bare carets from collapsing under minimal-versions).
+
+## Low-hanging fruit: dependency elimination
+
+**Ask:** delete dependencies from published normal graphs (`cargo tree -p <crate> --edges normal` at `c3144cf`), separate from the `>=` floors above. Only high-confidence, small diffs. Published crates: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`.
+
+**ELIMINATE count: 2.**
+
+The section 2 row that floors `tracing` at `>=0.1.44` still applies to the **template** workspace (`template/crates/daemon/src/routes.rs` calls `tracing::info_span`). It does not apply to `sc-runtime` or `sc-cron` if the deletions below land: those two crates have no `tracing` token outside `Cargo.toml`.
+
+### Default direct edges (normal, depth 1)
+
+| Crate | Direct normal deps |
+| --- | --- |
+| `sc-config` | `serde`, `serde_json` |
+| `sc-transport` | `reqwest`, `serde`, `serde_json`, `tokio` (`axum` only with `server`) |
+| `sc-command` | `sc-observability-types` `=1.5.0`, `serde`, `serde_json` (`axum`+`rmcp` with `server`; `schemars`+`utoipa` with `schema`) |
+| `sc-runtime` | `sc-transport` (`server`), `sc-command` (`server`), `sc-observability-types`, `axum`, `tokio`, `fd-lock`, `utoipa`, `utoipa-axum`, `serde`, `rmcp`, `tracing` (`tempfile` with `test-util`) |
+| `sc-cron` | `sc-command` (defaults off), `sc-observability-types`, `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite`, `serde`, `serde_json`, `tempfile`, `tokio`, `tracing` (`monty`+`monty-types` with `monty`) |
+| `sc-cron-commands` | `sc-command`, `serde`, `serde_json` (`schemars`+`utoipa` with `schema`; `sc-cron` with `scheduler`) |
+
+`cargo tree -p sc-cron -i tracing` shows `sc-cron` as the only parent. `cargo tree -p sc-runtime -i tracing` also shows `axum`, `rmcp`, `hyper-util`, and `reqwest`.
+
+### ELIMINATE
+
+| Item | Cargo.toml edit | Risk | Sprint | Why it is safe |
+| --- | --- | --- | --- | --- |
+| `sc-cron` direct `tracing` | Delete `tracing = "0.1"` in `crates/sc-cron/Cargo.toml`. Drop `"tracing"` from `boundaries/sc-cron/sc-cron.toml` `allowed_dependencies` and from the NFR-CRON-0001 sentence in `docs/sc-cron/requirements.md`. | low | **defer** (rider on d-1's `crates/sc-cron/Cargo.toml` edit, or the commit after d-1). Keep it out of d-1b: that sprint does not own this file, and d-1 already edits it for rusqlite. | b-15 removed the calls; the phase-b plan left the manifest for a later cleanup. Removing the line drops `tracing`, `tracing-attributes`, and `tracing-core` from a consumer's `sc-cron` normal tree. |
+| `sc-runtime` direct `tracing` | Delete `tracing = "0.1"` in `crates/sc-runtime/Cargo.toml`. Drop `"tracing"` from `boundaries/sc-runtime/sc-runtime.toml`. Update the NFR-RT-0003 exact list and the "request-id span" row in `docs/sc-runtime/requirements.md`, plus the matching sentence in `docs/sc-runtime/architecture.md`. | low | **d-1b** (`crates/sc-runtime/Cargo.toml` is already an owned path). Ship the boundary and NFR edits in the same change so the exact-set text matches the manifest. | b-14 replaced the span with canonical request events. The resolved daemon tree still contains `tracing` through `axum` and `rmcp`; this removes the unused direct edge and the stale NFR row. |
+
+### DEFER (API or feature change)
+
+| Item | What would have to change | Risk | Sprint |
+| --- | --- | --- | --- |
+| Reqwest on the daemon graph | `sc-runtime` enables `sc-transport` `server` and therefore links unconditional `reqwest` 0.13 (`tower-http`, `url`, `hyper-util`) beside `axum`. Production `sc-runtime` calls `bind` and the resolver. `Client` is used in `testing.rs` (`test-util`). Split `client = ["dep:reqwest"]` into `default`, `#[cfg(feature = "client")]` on `mod client` and `pub use client::Client`, then set sc-runtime to `default-features = false, features = ["server"]` and add `sc-transport/client` to `test-util`. `serde_json` is referenced only from `client.rs`, so it moves with `client`; NFR-TRN-0001's default direct set (`tokio`, `reqwest`, `serde`, `serde_json`) stays true while `client` remains a default feature. `tests/dependencies.rs` asserts those exact direct names. ADR-TRN-0001 keeps `Client` on reqwest. | med | defer |
+| `async-trait` on `sc-cron` | Public `Job` and the other async traits are `#[async_trait]`. Native async fn in traits (rust-version 1.94) drops the proc-macro and changes downstream impls. | med | defer |
+| One schema stack | `schema` on `sc-command` and `sc-cron-commands` implements both `schemars::JsonSchema` and `utoipa::ToSchema` (`envelope.rs`, `error.rs`, `contract.rs`, all `#[cfg(feature = "schema")]`). Dropping either crate removes a published schema impl. d-1b only widens the existing floors. | med | defer |
+
+### BLOCKED (boundary or ADR)
+
+| Edge | Why it stays |
+| --- | --- |
+| `sc-cron` → `sc-command` (defaults off) and `sc-command`'s `sc-observability-types = "=1.5.0"` | ADR-RUN-0017 and issue #97. Both Cargo.toml comments say to restore the forbidden cron→command edge after upstream proof. `error.rs` uses the types on the default envelope path. |
+| `sc-cron` → `sc-observability-types` | Same ADR lists it as a required edge. `observability.rs` re-exports the crate, so the direct dep is the public surface. |
+| `sc-runtime` `utoipa` + `utoipa-axum` | NFR-RT-0003. The routes closure returns `OpenApiRouter`, and `router.rs` names `utoipa::openapi::OpenApi` for `/openapi.json`. This is the daemon API, including the template. |
+| `rmcp` on `sc-runtime` and `sc-command` `server` (`axum` + `rmcp`) | `.mcp(StreamableHttpService)` and sealed `IntoMcp`. `rmcp` 3.8 also pulls `schemars` into the `sc-runtime` tree with `schema` left off; that transitive crate is upstream. |
+| `rusqlite` on `sc-cron` | The scheduler store. The sqlx 0.9 same-process cap stays with d-1. |
+| Three direct `axum` edges (`sc-runtime`, `sc-transport` `server`, `sc-command` `server`) plus `utoipa-axum` | One resolved `axum` 0.8.9. Each crate names axum types in its own API (`Router` / `serve::Listener` / `IntoResponse`). Reqwest stays the CLI client (ADR-TRN-0001). |
+
+### Checked, no elimination
+
+- `sc-config` is already `serde` + `serde_json`.
+- `sc-cron-commands` default graph stops at `sc-command`, `serde`, and `serde_json`. `schema` and `scheduler` are off by default. `tokio` is dev-only.
+- `utoipa` and `schemars` are already off the default graphs of `sc-command` and `sc-cron-commands`.
+- Dev-dependencies stay off `--edges normal`. `sc-runtime`'s `reqwest`, `tower`, and `serde_json` are dev-only (`tower::ServiceExt` is inside `#[cfg(test)]` in `mcp_input.rs`). `sc-cron`'s `libc`, `win32job`, and `waitpid-any` are dev-only. `tempfile` on `sc-runtime` is `test-util`. `tempfile` on `sc-cron` is production (`TempCwd` in `process.rs`).
+- `sc-transport` `[dev-dependencies]` repeats `reqwest`, `serde`, and `serde_json` with the same features and adds `rt-multi-thread` on `tokio` for tests. Deleting the identical lines leaves the published normal graph unchanged.
+- Template `async-trait` is already behind the `cron` feature. Template `tracing` stays (see the floor note at the top of this section).
+- Workspace `path` + `0.2.0` edges are the publish coupling in the pin inventory above. The deprecated edge is the ADR-RUN-0017 cron→command path, which stays blocked until #97.

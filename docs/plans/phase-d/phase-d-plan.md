@@ -38,7 +38,9 @@ Close maintenance gaps after Phase C **0.2.0**:
    [registry-doc-audit.md](registry-doc-audit.md) (crates.io framework blurb; no PyPI).
 4. **[Issue #133](https://github.com/randlee/sc-runtime/issues/133)** — dependency
    `>=` tested floors (not `~` / `=` pins); **rmcp ≥ 3.9** and dual lockfile CI.
-   Sweep inventory: [issue-133-dependency-sweep.md](issue-133-dependency-sweep.md).
+   Sweep inventory: [issue-133-dependency-sweep.md](issue-133-dependency-sweep.md)
+   (including **ELIMINATE** rows for unused `tracing` on `sc-cron` / `sc-runtime`;
+   reqwest feature-split stays deferred).
    **Blocked upgrades** (sqlx major, rusqlite vs sqlx same-process) stay explicit in
    that doc and d-1 ruling — not every dep can move to crates.io latest in 0.2.1.
 
