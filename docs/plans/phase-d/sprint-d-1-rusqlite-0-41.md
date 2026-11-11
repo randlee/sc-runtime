@@ -9,7 +9,7 @@ wave: 1
 branch: sprint/d-1-rusqlite-0-41
 worktree: sprint/d-1-rusqlite-0-41
 pr_target: integrate/phase-d
-vertical_rationale: Issue #132 needs one lockfile and rusqlite 0.41 graph across BOUNDARY-sc-cron and BOUNDARY-sc-runtime-db-sqlite plus the cron-consumer harness before 0.2.1; splitting crates would fork the advisory fix.
+vertical_rationale: Issue #132 needs one lockfile and rusqlite 0.41 graph across BOUNDARY-sc-cron and BOUNDARY-sc-runtime-db-sqlite plus cron-consumer-proof; splitting crates would fork the advisory fix. d-2 README paths are parallel_safe and disjoint.
 recommended_agent: rust-developer
 recommended_model: grok-4.7-high-fast
 requirements:
@@ -24,7 +24,8 @@ adrs:
   - ADR-RUN-0013
 github_issues:
   - 132
-parallel_safe: []
+parallel_safe:
+  - d-2
 must_follow: []
 ---
 

@@ -127,9 +127,9 @@ Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under 
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
 | c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |
 
-Phase d is the post-0.2.0 patch track: **rusqlite 0.41** / RUSTSEC advisory
-clearance ([#132](https://github.com/randlee/sc-runtime/issues/132)), README truth
-for all workspace crates, and an authorized **0.2.1** release. Issue
+Phase d is the post-0.2.0 patch track: **rusqlite 0.41** ([#132](https://github.com/randlee/sc-runtime/issues/132)),
+dependency **>= floor** sweep ([#133](https://github.com/randlee/sc-runtime/issues/133)),
+README truth, and authorized **0.2.1** release. Issue
 [#131](https://github.com/randlee/sc-runtime/issues/131) (`testing::instrument_router`)
 is merged on `develop`; documentation and release closure live in d-2. See
 [Phase d plan](plans/phase-d/phase-d-plan.md).
@@ -137,4 +137,5 @@ is merged on `develop`; documentation and release closure live in d-2. See
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | d-1 rusqlite 0.41 floor | [sprint-d-1](plans/phase-d/sprint-d-1-rusqlite-0-41.md) | planned | `sprint/d-1-rusqlite-0-41` |
+| d-1b dependency ranges (#133) | [sprint-d-1b](plans/phase-d/sprint-d-1b-dependency-ranges.md) | planned | `sprint/d-1b-dependency-ranges` |
 | d-2 READMEs and 0.2.1 release | [sprint-d-2](plans/phase-d/sprint-d-2-readme-and-release.md) | planned | `sprint/d-2-readme-and-release` |

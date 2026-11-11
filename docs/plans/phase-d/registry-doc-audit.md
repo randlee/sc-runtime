@@ -2,7 +2,7 @@
 
 **Scope:** Published crate docs for the sc-runtime workspace vs crates.io (HTTP API + published crate artifacts).  
 **Authority for publish set:** [`release/sc-publish-consumer-input.json`](../../release/sc-publish-consumer-input.json).  
-**Planning consumer:** [sprint d-2 — README truth and 0.2.1 release](sprint-d-2-readme-and-release.md).  
+**Planning authority:** deliverables and acceptance criteria live only in [sprint d-2](sprint-d-2-readme-and-release.md); this file is evidence/inventory.  
 **Evidence run:** [Composer registry doc audit](8e70524e-4434-4614-a2de-a8184248a41b) (confirmed README tarball byte-match @ 0.2.0).
 
 ## Method
@@ -109,15 +109,6 @@ Keep README as primary; if descriptions are touched at publish time:
 (Stay within crates.io description length norms.)
 
 ---
-
-## Phase d — d-2 actions (from audit)
-
-1. Add **Part of sc-runtime** (scaffolding blurb) to all six published crate READMEs.
-2. Normalize version banners to **0.2.x** (and **0.2.1** after release); remove false **0.1.0 published on crates.io** lines where 0.2.0 is live.
-3. Set `readme = "README.md"` on `crates/sc-cron-commands/Cargo.toml`.
-4. Update root `README.md`: six-crate table, **0.2.x**, template/wizard, MSRV **1.94.1**; align one-liner with `project.description` in consumer input.
-5. Refresh `crates/sc-runtime-db-sqlite/README.md` as **workspace-only** (no crates.io publish claim).
-6. Post-**0.2.1** publish: spot-check each `https://crates.io/crates/<name>` page for README render and description text (UI pass; API `readme` field may stay null).
 
 ---
 
