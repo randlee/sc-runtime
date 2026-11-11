@@ -37,6 +37,3 @@ template/Cargo.lock
 
 # Python bytecode caches, including nested tooling directories.
 __pycache__/
-
-# atm-bd-orchestration installer --overwrite backups
-.backup/
