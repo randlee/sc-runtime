@@ -43,7 +43,7 @@ rmcp = { version = "~3.8", default-features = false, features = [
     "server",
     "transport-streamable-http-server",
 ] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time", "test-util"] }
 utoipa = "=6.0.0"
 utoipa-axum = "=0.3.0"
 

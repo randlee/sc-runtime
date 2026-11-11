@@ -5,7 +5,7 @@ name = "sc-runtime"
 
 [public]
 facade = "Daemon, DaemonBuilder, DaemonConfig, RuntimeError, mcp_request_body, testing"
-notes = "testing::DaemonFixture is behind the non-default test-util feature. There is no sc_runtime::AppName. NeedStores, NeedRoutes, and Ready are doc(hidden) typestate markers in the builder signature."
+notes = "testing::DaemonFixture and testing::instrument_router are behind the non-default test-util feature. The helper instruments an ordinary Axum router with existing timeout and tracking/logger middleware. There is no sc_runtime::AppName. NeedStores, NeedRoutes, and Ready are doc(hidden) typestate markers in the builder signature."
 
 [implementation]
 type = "library"

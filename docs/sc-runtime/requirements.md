@@ -852,7 +852,8 @@ machine, never on a developer's host
 - The public surface MUST be limited to the following kinds of item. The
   names are pinned. `Daemon::builder` takes `&sc_transport::AppName`. This
   crate does not define or re-export `sc_runtime::AppName`. The `testing`
-  module and `DaemonFixture` sit behind the non-default `test-util` feature.
+  module, `DaemonFixture`, and `instrument_router` sit behind the non-default
+  `test-util` feature.
   `#[doc(hidden)]` typestate markers `NeedStores`, `NeedRoutes`, and `Ready`
   appear in the builder signature and are not facade items.
 
@@ -862,12 +863,13 @@ machine, never on a developer's host
 | Builder type with exactly seven public methods: three project closure setters, one optional all-phase logger setter, and three alternative ready-state terminal run methods | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`, `run_with_cleanup_and_bound`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
-| Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
+| Public module for tests, containing the fixture and router instrumentation helper, behind `test-util` | one | `testing` (`testing::DaemonFixture`, `testing::instrument_router`) |
 | Read-only original MCP request body accessor | one | `mcp_request_body(&axum::http::request::Parts) -> Option<&[u8]>` |
 
 - The crate MUST NOT have any other public item: no public trait, no public
-  free function beyond `mcp_request_body`, no public macro, and no `pub use` of an item from another
-  crate.
+  free function beyond `mcp_request_body` and the `test-util`-gated
+  `testing::instrument_router`, no public macro, and no `pub use` of an item
+  from another crate.
 
 The generated `daemon` and `service` crates take `sc-command` directly as
 fixed by [REQ-RUN-0301](../requirements.md). `sc-runtime` does not re-export
@@ -891,13 +893,17 @@ libraries, and would be code every project has to learn.
    list `AppName`. It contains exactly one entry type, one builder type, one
    configuration struct, one error enum, the one read-only raw-body accessor and one test module, and nothing else.
    `just lint` (which runs `sc-lint lint sc-boundary`) is clean. A default
-   build does not expose `testing`.
+   build does not expose `testing`. With `test-util`, the module exposes
+   `DaemonFixture` and `instrument_router`; the latter accepts and returns an
+   ordinary `axum::Router`, and accepts `sc_command::observability::SharedCanonicalLog`,
+   a request limit, a shutdown watch receiver and a drain limit.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
    --no-deps`, and again with `--features test-util`): the builder type has
    exactly seven public methods (`stores`, `routes`, `mcp`, `logger`, `run`,
    `run_with_cleanup`, `run_with_cleanup_and_bound`), the entry
    type has exactly one public function (`builder`), and the index does not
-   list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
+   list `sc_runtime::AppName`. `testing` appears only when `test-util` is on;
+   its helper composes the existing timeout and tracking/logger middleware.
    The terminal run methods exist only in Ready; logger remains same-phase.
    Cleanup and bound receipt reuse the fixed runner; no additional public
    setter, registry, macro, wrapper, typestate or callback mechanism is allowed.
