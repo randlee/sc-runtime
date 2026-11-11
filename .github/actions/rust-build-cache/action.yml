@@ -44,15 +44,15 @@ runs:
       id: compose-cache
       with:
         path: ${{ runner.temp }}/sc-compose
-        key: sc-compose-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.toolchains }}-1.7.0-locked
+        key: sc-compose-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.toolchains }}-1.8.0-locked
     - name: Install sc-compose
       if: inputs.compose == 'true' && steps.compose-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: cargo install sc-compose --version '=1.7.0' --locked --root "$RUNNER_TEMP/sc-compose"
+      run: cargo install sc-compose --version '=1.8.0' --locked --root "$RUNNER_TEMP/sc-compose"
     - name: Verify sc-compose and expose binary
       if: inputs.compose == 'true'
       shell: bash
       run: |
         set -euo pipefail
-        "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx 'sc-compose 1.7.0'
+        "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx 'sc-compose 1.8.0'
         echo "$RUNNER_TEMP/sc-compose/bin" >> "$GITHUB_PATH"

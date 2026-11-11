@@ -29,7 +29,7 @@ limit cache size. Cache misses run the same checks; caches never decide whether
 to test. The cache action saves after successful jobs and scopes entries by
 branch as documented by [actions/cache](https://github.com/actions/cache).
 
-A separate exact-version cache installs sc-compose 1.7.0 with `--locked` into a
+A separate exact-version cache installs sc-compose 1.8.0 with `--locked` into a
 runner-temporary tool root. Every restored binary must report the exact version
 before entering PATH. No Cargo credentials, generated application source,
 databases, logs or Python environments are cached. Jobs have separate runner
