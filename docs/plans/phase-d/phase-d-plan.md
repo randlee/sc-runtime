@@ -5,103 +5,106 @@ requirements:
   - REQ-RUN-0702
   - REQ-DBSQ-0001
   - REQ-CRON-0001
-  - NFR-CRON-0001
-  - NFR-RT-0001
+  - NFR-RUN-0007
 adrs:
+  - ADR-RUN-0002
   - ADR-RUN-0003
   - ADR-RUN-0012
   - ADR-RUN-0013
-  - ADR-RUN-0002
+  - ADR-RUN-0017
 ---
 
-# Phase d — 0.2.1 advisory fix and documentation truth
+# Phase d — easy adoption and compatible dependency upgrades
 
-## Phase id
+**Intent:** [intent.md](intent.md). **Target:** all six public crates at 0.2.1.
+**Plan branch:** `plan/phase-d` → `develop`. **Implementation branch:**
+`integrate/phase-d`. **Beads:** `run-ajx`.
 
-`d`. Integration branch: **`integrate/phase-d`**. Plan branch: `plan/phase-d`.
+## Consumer outcome and scope
 
-**Readiness:** **hardening in flight.** `/plan-hardening` steps 1–6 and plan QA-1
-must PASS before implementation. No sprint branches until this plan merges to
-`develop`.
+Unblock beads-cache on the published SQLite security fix (#132), clear the
+rmcp advisory and remove avoidable dependency restrictions (#133), and document
+the restored test helper from merged PR131. Consumers can build the supported
+configuration and select compatible dependency fixes without another framework
+release. README and template guidance describe the actual published product.
 
-**Beads:** epic `run-ajx` (Phase D).
+Use tested floors with normal Cargo-compatible ranges. Extra restrictions need
+an observed API/native-link/toolchain incompatibility and an owning manifest
+comment. Separately validate any broader compatibility envelope. A normal
+caret is not an exact pin; arbitrary future breaking versions are not promised.
+This is the approved clarification of #133's earlier blanket-`>=` wording.
 
-## Objective
+## Boundary map
 
-Close maintenance gaps after Phase C **0.2.0**:
+Read from `boundaries/<crate>/<crate>.toml`. Arrows below are the manifests'
+allowed dependency/dependent sets, including external budgets; existing
+feature-specific companion checks remain authoritative. No new boundary edge,
+first-party trait, schema, wire field, or error contract is introduced.
 
-1. **[Issue #132](https://github.com/randlee/sc-runtime/issues/132)** — `rusqlite`
-   0.41+ with tested minimum/latest range; RUSTSEC-2026-0459 clearance.
-2. **[Issue #131](https://github.com/randlee/sc-runtime/issues/131)** — code merged;
-   document `test-util` / `instrument_router` for consumers.
-3. **Registry documentation** — root and crate READMEs match 0.2.x reality and
-   [registry-doc-audit.md](registry-doc-audit.md) (crates.io framework blurb; no PyPI).
-4. **[Issue #133](https://github.com/randlee/sc-runtime/issues/133)** — dependency
-   `>=` tested floors (not `~` / `=` pins); **rmcp ≥ 3.9** and dual lockfile CI.
-   Sweep inventory: [issue-133-dependency-sweep.md](issue-133-dependency-sweep.md)
-   (including **ELIMINATE** rows for unused `tracing` on `sc-cron` / `sc-runtime`;
-   reqwest feature-split stays deferred).
-   **Blocked upgrades** (sqlx major, rusqlite vs sqlx same-process) stay explicit in
-   that doc and d-1 ruling — not every dep can move to crates.io latest in 0.2.1.
-
-## Boundary map (phase touch set)
-
-| Boundary / crate | Manifest | Manifest edges (this phase) | Contract change |
+| Crate / boundary manifest | Allowed dependencies | Allowed dependents | Phase change |
 | --- | --- | --- | --- |
-| `sc-cron` | `boundaries/sc-cron/sc-cron.toml` | `allowed_dependencies`: `rusqlite`, workspace crates as today | `rusqlite` 0.41; hook/interrupt call sites if needed |
-| `sc-runtime-db-sqlite` | `boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml` | `allowed_dependencies`: `rusqlite` only; `allowed_dependents`: `[]` | `rusqlite` 0.41; **delete** sqlx-resolve fixture; ADR: no sqlx 0.9 same-process writer |
-| `cron-consumer-proof` | (integration member) | Depends on `sc-cron` / path pins | Align test manifest to rusqlite 0.41 |
-| Published README surfaces | — | — | Doc-only; six crates.io READMEs + root |
-| Release kit | `release/sc-publish-consumer-input.json` | — | 0.2.1 publish; no new crates |
+| sc-config / boundaries/sc-config/sc-config.toml | serde, serde_json | none | compatible floors only |
+| sc-transport / boundaries/sc-transport/sc-transport.toml | tokio, reqwest, serde, serde_json | sc-runtime | compatible floors; preserve server feature gating |
+| sc-command / boundaries/sc-command/sc-command.toml | serde, serde_json, sc-observability-types | sc-cron-commands, sc-runtime, sc-cron | rmcp/schema/floors; preserve optional server/schema contracts and ADR-RUN-0017 exception |
+| sc-runtime / boundaries/sc-runtime/sc-runtime.toml | sc-observability-types, sc-transport, sc-command, axum, tokio, fd-lock, utoipa, utoipa-axum, serde, rmcp, tracing | none | floors and rmcp; remove unused direct tracing with matching NFR/boundary text |
+| sc-cron / boundaries/sc-cron/sc-cron.toml | sc-command, sc-observability-types, async-trait, chrono, cron, getrandom, process-wrap, rusqlite, serde_json, serde, tempfile, tokio, tracing | sc-cron-commands | rusqlite/hooks/floors; optional Monty toolchain cap; remove unused direct tracing |
+| sc-cron-commands / boundaries/sc-cron-commands/sc-cron-commands.toml | sc-command, sc-cron, serde, serde_json, schemars, utoipa | none | floors; preserve schema/scheduler feature graph |
+| sc-runtime-db-sqlite / boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml | rusqlite | none | rusqlite/writer compatibility; ADR amendment; delete sqlx-resolve |
 
-No new workspace members. d-1 **requires** ADR-RUN-0012 / crate-architecture
-amendment and removal of the sqlx-resolve fixture (ruling frozen in
-[sprint-d-1](sprint-d-1-rusqlite-0-41.md)).
+The generated template and separate consumer fixtures are outside these crate
+boundaries and get their own dependency resolves. They preserve the same
+compatible-update policy. The snapshot inventory is
+[issue-133-dependency-sweep.md](issue-133-dependency-sweep.md).
 
-## Tracks and wave table
+## Sprint cut and wave table
 
-One track, three wave-1 work streams in isolated sprint branches; publish is the
-serial tail on d-2. Shared manifest sections have explicit owners in the sprint
-docs. Merge-forward shared files before integration; one writer updates the
-integrated lockfiles at a time.
+No contract sprint is needed: there is no new first-party interface to split
+between implementers/consumers. The maintenance defect must update shared
+manifests, native-link identities, and CI together, so d-1 is one integration
+sprint with an explicit vertical rationale. README content is substantial,
+independent documentation work in d-2. d-3 consumes the qualified packages and
+their README bodies to close the released-consumer capability.
 
-| Wave | Sprint | `closure_type` | `target_boundary` | Branch | `owned_paths` (summary) |
+The earlier d-1/d-1b split overlapped Cargo.toml/Cargo.lock and treated sections
+of a file as independent paths. It is replaced by one manifest owner. The old
+hybrid d-2 doc/publish wave is split into a docs sprint and a release sprint.
+Only unmerged planning identifiers are renamed; merged history is unchanged.
+
+| Wave | Track | Sprint / closure | Target | Branch and worktree | Owned paths summary |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [d-1](sprint-d-1-rusqlite-0-41.md) | `boundary` | `BOUNDARY-sc-cron` (+ vertical sqlite) | `sprint/d-1-rusqlite-0-41` | rusqlite 0.41, sqlite writer, cron-consumer-proof, ADR |
-| 1 | [d-1b](sprint-d-1b-dependency-ranges.md) | `boundary` | `BOUNDARY-sc-command` (+ runtime/template MCP) | `sprint/d-1b-dependency-ranges` | rmcp ≥3.9, utoipa/schemars ranges, template daemon, `Justfile` minimal-versions |
-| 1 | [d-2](sprint-d-2-readme-and-release.md) doc wave | `integration` | `runtime-ecosystem-release-0-2-1` | `sprint/d-2-readme-and-release` | README surfaces, `#131` doc |
-| 2 | [d-2](sprint-d-2-readme-and-release.md) publish tail | `integration` | same | same | 0.2.1 versions, `Cargo.lock`, kit publish (#133 done-when) |
+| 1 | dependency-compatibility | [d-1](sprint-d-1-dependency-compatibility.md), integration | runtime-ecosystem-dependency-compatibility | sprint/d-1-dependency-compatibility | all existing manifests/locks, affected code/tests, CI/tooling, boundaries and architecture/NFR text |
+| 1 | consumer-docs | [d-2](sprint-d-2-consumer-docs.md), docs | runtime-ecosystem-consumer-docs | sprint/d-2-consumer-docs | root and seven crate READMEs only |
+| 2 | consumer-release | [d-3](sprint-d-3-release.md), integration | runtime-ecosystem-release-0-2-1 | sprint/d-3-release | registry consumer proof, release notes, project status and required release benchmark reports |
 
-| Metric | Value | Note |
-| --- | --- | --- |
-| **critical_path** | 2 | d-2 publish tail waits on d-1 + d-1b lockfile (merge-forward) |
-| **width** | 3 | d-1, d-1b, d-2 doc wave in parallel; coordinate `Cargo.lock` |
-| **sprint count** | 3 | d-1b added for #133; publish stays in d-2 |
+**Critical path:** 2 sprints. **Usable width:** 2. **Sprint count:** 3.
+No sprint was added: the same three units now have disjoint file ownership,
+correct numeric IDs, and one closure type each. Authoritative `owned_paths`
+are frontmatter in each sprint doc; within a wave, no file matches two owners.
+Single-layer development tracks can run as independent stacks; shared source
+artifacts are integrated before the release stack. No shared-file serial edge
+is manufactured. d-3's dependencies name actual API/manifest and README artifacts.
 
-## Out of scope
+## Acceptance ownership
 
-- sc-dolt (`plan/sc-dolt` on hold).
-- sqlx major bump beyond #132 coexistence decision.
-- Template layout or sc-lint pin changes unless lockfile-only fallout from d-1.
+- d-1 closes source dependency/API/tooling qualification and required endpoint CI.
+- d-2 closes README accuracy and consumer instructions.
+- d-3 alone closes published security clearance, compatible registry updates,
+  packaged README verification, published helper proof, and #132/#133.
 
-## Plan anchoring
+Versions, readme manifest keys and publish-input source changes belong to d-1;
+d-3 publishes the candidate without editing those files. A failed release
+validation returns a defect to its source owner and invalidates affected checks.
 
-Phase d intent and locked anchors: [intent.md](intent.md) (`plan_dir`:
-`docs/plans/phase-d`). Captures **registry consumer floors**, **CI hermetic
-external CLIs**, and **downstream tool/version independence**; gates run after
-plan hardening per `/plan-anchoring`.
+## Limits and readiness
 
-## Orchestration
+SQLx 0.9's SQLite link window cannot share a process with the upgraded rusqlite
+writer or sc-cron scheduler. The architecture and consumer docs must identify
+supported configurations and the unsupported combined graph. The beads-cache
+registry proof must use its actual affected configuration; deleting a fixture
+or auditing a source-path consumer is insufficient. SQLx major upgrades,
+sc-dolt, and unrelated features are outside this maintenance phase.
 
-- Plan hardening: [plan-hardening-rounds.md](plan-hardening-rounds.md).
-- Implementation: `.cursor/skills/cursor-orchestration/SKILL.md`; enforcer
-  **`cursor-quality-mgr`** only.
-- Beads epic **`run-ajx`** (children filed at dev dispatch).
-
-## Risks
-
-| Risk | Owner sprint |
-| --- | --- |
-| sqlx 0.9 vs rusqlite 0.41 same-process | **Ruled in d-1** — not supported on 0.2.1; sqlx bump out of phase |
-| Minimum/latest CI across root, generated apps, and separate consumers | d-1b; combined qualification before d-2 publication |
-| README / crates.io drift | d-2 + [registry-doc-audit.md](registry-doc-audit.md) |
+The plan remains **planned**. Final human approval, normal plan hardening/QA,
+and merge to develop precede implementation branch dispatch. Jev anchor
+validation does not itself certify release readiness or publication.
+The current alignment work produces the requested HTML diff for approval.

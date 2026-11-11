@@ -127,15 +127,16 @@ Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under 
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
 | c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |
 
-Phase d is the post-0.2.0 patch track: **rusqlite 0.41** ([#132](https://github.com/randlee/sc-runtime/issues/132)),
-dependency **>= floor** sweep ([#133](https://github.com/randlee/sc-runtime/issues/133)),
-README truth, and authorized **0.2.1** release. Issue
-[#131](https://github.com/randlee/sc-runtime/issues/131) (`testing::instrument_router`)
-is merged on `develop`; documentation and release closure live in d-2. See
+Phase d makes the framework easier to adopt and maintain: the rusqlite advisory
+fix ([#132](https://github.com/randlee/sc-runtime/issues/132)), tested compatible
+dependency ranges ([#133](https://github.com/randlee/sc-runtime/issues/133)),
+consumer documentation, and a qualified **0.2.1** release. Merged
+[PR #131](https://github.com/randlee/sc-runtime/pull/131)'s public test helper is
+documented by d-2 and verified on the published SDK by d-3. See the
 [Phase d plan](plans/phase-d/phase-d-plan.md).
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
-| d-1 rusqlite 0.41 floor | [sprint-d-1](plans/phase-d/sprint-d-1-rusqlite-0-41.md) | planned | `sprint/d-1-rusqlite-0-41` |
-| d-1b dependency ranges (#133) | [sprint-d-1b](plans/phase-d/sprint-d-1b-dependency-ranges.md) | planned | `sprint/d-1b-dependency-ranges` |
-| d-2 READMEs and 0.2.1 release | [sprint-d-2](plans/phase-d/sprint-d-2-readme-and-release.md) | planned | `sprint/d-2-readme-and-release` |
+| d-1 dependency compatibility | [d-1](plans/phase-d/sprint-d-1-dependency-compatibility.md) | planned | `sprint/d-1-dependency-compatibility` |
+| d-2 consumer documentation | [d-2](plans/phase-d/sprint-d-2-consumer-docs.md) | planned | `sprint/d-2-consumer-docs` |
+| d-3 published consumer closure | [d-3](plans/phase-d/sprint-d-3-release.md) | planned | `sprint/d-3-release` |

@@ -1,8 +1,7 @@
 # Intent — Phase D: easy adoption and compatible upgrades
 
-Updated 2026-11-11 following the user's planning handover. This is the working
-intent for revising [the phase plan](phase-d-plan.md); sprint and anchor
-reconciliation follows this revision.
+Updated 2026-11-11 following the user's planning handover. This governs [the revised phase plan](phase-d-plan.md) and its consumer
+acceptance criteria. Final approval of the HTML diff remains pending.
 
 ## Purpose
 
@@ -42,7 +41,7 @@ that prevents the same avoidable restriction from recurring.
 
 ## Dependency policy direction
 
-The proposed default is a tested minimum with Cargo's normal SemVer-compatible
+The adopted default is a tested minimum with Cargo's normal SemVer-compatible
 upgrade range. Exact pins, narrower ranges, and toolchain restrictions need a
 specific compatibility reason. Reproducibility belongs in application/CI
 lockfiles and immutable tool installs while published library requirements leave
@@ -55,17 +54,22 @@ versions cross Cargo compatibility boundaries. Public dependency types and
 native-library `links` constraints also require attention when widening a range;
 see [dependency resolution](https://doc.rust-lang.org/cargo/reference/resolver.html).
 
-The existing #133 wording and [sweep inventory](issue-133-dependency-sweep.md)
-request blanket `>=` ranges. Reconcile that prescription with this consumer
-compatibility goal before finalizing manifest changes and acceptance criteria.
+The earlier #133 prescription of blanket `>=` ranges is clarified by the
+user-adopted ANC-016 and ANC-019: permit newer Cargo-compatible releases and
+justify extra upper bounds beside the requirement. The
+[sweep inventory](issue-133-dependency-sweep.md) and sprint acceptance criteria
+now use that policy.
 Support across a Cargo compatibility boundary, including rusqlite 0.41 / 0.42,
 requires explicit validation of the affected APIs and dependency graph.
 
 The rusqlite/sqlx native-library conflict needs an explicit supported
-configuration and consumer migration guidance. The current d-1 proposal drops
-same-process coexistence with sqlx 0.9. Its adequacy must be checked against the
-actual beads-cache unblock; deleting the coexistence fixture alone cannot prove
-that outcome.
+configuration and consumer migration guidance. Generated SQLx-SQLite graphs
+retain the link-compatible cron-family 0.2.0 floors; they do not receive the
+0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1.
+The release sprint must prove the actual beads-cache configuration uses the
+fixed released graph. Deleting the coexistence fixture alone cannot prove that
+outcome. This compatibility path is planned qualification work, not a completed
+consumer test.
 
 ## Proof and scope
 
@@ -90,6 +94,7 @@ The user stated during the 2026-11-11 planning handover:
 > we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
 
 Existing [anchors](anchors.json) and [their rendered register](anchors.md) retain
-their prior records, including retired ANC-008. This intent revision does not
-re-lock anchors or certify existing sprint plans. Reconcile their wording and
-acceptance criteria with this intent before implementation begins.
+their prior records, including retired ANC-008. The user adopted ANC-016, ANC-017, ANC-019 and ANC-020 on November 11. Eight
+locked anchors now govern the three revised sprints. Anchor gates and the scoped
+sprint-guidelines review are documented in the approval report; implementation,
+registry proof, publication and normal plan QA remain separate requirements.

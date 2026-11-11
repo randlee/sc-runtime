@@ -1,24 +1,22 @@
 @prefix triage: <urn:atm:triage:> .
 
-# Wave 1: d-1 rusqlite, d-1b #133 ranges, d-2 docs (parallel); d-2 publish after supply-chain.
-
 triage:PhaseD a triage:Phase .
 
 triage:d-1 a triage:Sprint ;
   triage:inPhase triage:PhaseD ;
   triage:order 1 ;
-  triage:branch "sprint/d-1-rusqlite-0-41" ;
-  triage:criteria "docs/plans/phase-d/sprint-d-1-rusqlite-0-41.md" .
-
-triage:d-1b a triage:Sprint ;
-  triage:inPhase triage:PhaseD ;
-  triage:order 1 ;
-  triage:branch "sprint/d-1b-dependency-ranges" ;
-  triage:criteria "docs/plans/phase-d/sprint-d-1b-dependency-ranges.md" .
+  triage:branch "sprint/d-1-dependency-compatibility" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-1-dependency-compatibility.md" .
 
 triage:d-2 a triage:Sprint ;
-  triage:dependsOn triage:d-1, triage:d-1b ;
+  triage:inPhase triage:PhaseD ;
+  triage:order 1 ;
+  triage:branch "sprint/d-2-consumer-docs" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-2-consumer-docs.md" .
+
+triage:d-3 a triage:Sprint ;
+  triage:dependsOn triage:d-1, triage:d-2 ;
   triage:inPhase triage:PhaseD ;
   triage:order 2 ;
-  triage:branch "sprint/d-2-readme-and-release" ;
-  triage:criteria "docs/plans/phase-d/sprint-d-2-readme-and-release.md" .
+  triage:branch "sprint/d-3-release" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-3-release.md" .

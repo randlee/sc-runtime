@@ -1276,12 +1276,11 @@
           "item": "d-1",
           "reason": "d-1 uses normal compatibility boundaries for separately qualified rusqlite0.41/0.42 lines; its range is broader than the default0.41 range and adds no tighter upper bound. Extra caps such as the Monty toolchain limit are owned by d-1b; d-2 verifies packaged comments. This exclusion removes no range-testing or compatibility obligation.",
           "replaced": false
-        }
-      ],
-      "exclude": [
+        },
         {
-          "item": "d-1",
-          "reason": "d-1 uses normal compatibility boundaries for separately qualified rusqlite0.41/0.42 lines; its range is broader than the default0.41 range and adds no tighter upper bound. Extra caps such as the Monty toolchain limit are owned by d-1b; d-2 verifies packaged comments. This exclusion removes no range-testing or compatibility obligation."
+          "at": "2026-11-11T22:05:31+00:00",
+          "event": "exclusion_removed",
+          "item": "d-1"
         }
       ]
     },

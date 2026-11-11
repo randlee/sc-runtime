@@ -2,7 +2,7 @@
 
 **Scope:** Published crate docs for the sc-runtime workspace vs crates.io (HTTP API + published crate artifacts).  
 **Authority for publish set:** [`release/sc-publish-consumer-input.json`](../../release/sc-publish-consumer-input.json).  
-**Planning authority:** deliverables and acceptance criteria live only in [sprint d-2](sprint-d-2-readme-and-release.md); this file is evidence/inventory.  
+**Planning authority:** deliverables and acceptance criteria live only in [sprint d-2](sprint-d-2-consumer-docs.md); published-artifact proof belongs to [d-3](sprint-d-3-release.md); this file is evidence/inventory.
 **Evidence run:** [Composer registry doc audit](8e70524e-4434-4614-a2de-a8184248a41b) (confirmed README tarball byte-match @ 0.2.0).
 
 ## Method

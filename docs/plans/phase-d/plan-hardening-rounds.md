@@ -13,3 +13,11 @@
 | 6 | 6 | cursor-quality-mgr | pending | pending | — | — | — | — | — | Plan QA-1 after steps 1–5 PASS |
 
 Cycle limits (default 3): `plan_scope_review_cycle_limit`, `critical_review_cycle_limit`, `plan_qa_cycle_limit`.
+
+## November 11 intent and anchor alignment
+
+The three revised sprint documents passed the live planning anchor gate. The
+independent scoped guidelines recheck closed four structural findings; the final
+HTML report records exact runs and limits. These checks do not change the
+historical pending rows above or certify formal QA-1. Human approval, normal plan
+QA and merge to develop remain prerequisites to implementation.

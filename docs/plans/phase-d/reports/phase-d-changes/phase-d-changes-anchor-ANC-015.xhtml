@@ -1,0 +1,106 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-015">
+  <div class="section-head">
+    <h2>ANC-015 <span class="status status-locked">locked</span> <span class="small">bead run-tngz</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-tngz&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.&quot;,
+      &quot;before&quot;: &quot;Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a &gt;= floor, not an exact version match.&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Changes a skill script or skill instruction that checks the sc-compose CLI version; excludes CI selection of a reproducible binary and Rust crate version requirements.&quot;,
+      &quot;before&quot;: &quot;plan-anchoring change_report.py and orchestration skills&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.&quot;,
+      &quot;before&quot;: &quot;change_report.py rejects sc-compose below minimum_version; SKILL step 1 documents &gt;= floor&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;The skill requires sc-compose &gt;=1.8.0 and accepts installed sc-compose 1.8.1.&quot;,
+      &quot;before&quot;: &quot;change_report.py rejects sc-compose below minimum_version; accepts 1.9.0 when floor is 1.8.0.&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;The skill rejects installed sc-compose 1.8.1 because its configured minimum is exactly 1.8.0.&quot;,
+      &quot;before&quot;: &quot;Skills require sc-compose --version to match exactly 1.8.0 and reject 1.9.0.&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-11T20:49:53+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;statement\&quot;, \&quot;scope\&quot;, \&quot;summary\&quot;, \&quot;deterministic_check\&quot;, \&quot;fixtures\&quot;]; previous_statement: Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a &gt;= floor, not an exact version match.&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-015&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;grep all skills and verify they are tolerant of sc-compose &gt;= a floor threshold&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;locked&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;2&quot;,
+  &quot;version_now&quot;: &quot;3&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-015 (locked v2 -&gt; locked v3)
+Statement: Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.
+Quote: grep all skills and verify they are tolerant of sc-compose &gt;= a floor threshold
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a &gt;= floor, not an exact version match.&#x27; -&gt; &#x27;Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.&#x27;
+Changed scope: &#x27;plan-anchoring change_report.py and orchestration skills&#x27; -&gt; &#x27;Changes a skill script or skill instruction that checks the sc-compose CLI version; excludes CI selection of a reproducible binary and Rust crate version requirements.&#x27;
+Changed deterministic_check: &#x27;change_report.py rejects sc-compose below minimum_version; SKILL step 1 documents &gt;= floor&#x27; -&gt; &#x27;Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.&#x27;
+Changed fixture pass: &#x27;change_report.py rejects sc-compose below minimum_version; accepts 1.9.0 when floor is 1.8.0.&#x27; -&gt; &#x27;The skill requires sc-compose &gt;=1.8.0 and accepts installed sc-compose 1.8.1.&#x27;
+Changed fixture fail: &#x27;Skills require sc-compose --version to match exactly 1.8.0 and reject 1.9.0.&#x27; -&gt; &#x27;The skill rejects installed sc-compose 1.8.1 because its configured minimum is exactly 1.8.0.&#x27;
+2026-11-11T20:49:53+00:00 updated: fields: [&quot;statement&quot;, &quot;scope&quot;, &quot;summary&quot;, &quot;deterministic_check&quot;, &quot;fixtures&quot;]; previous_statement: Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a &gt;= floor, not an exact version match.">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.</p>
+  <p class="quote">&#x201C;grep all skills and verify they are tolerant of sc-compose &gt;= a floor threshold&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>2</td><td>3</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff">Repository skills <del>that invoke</del><ins>invoking</ins> sc-compose MUST enforce <del>minimum_version</del><ins>the</ins> <del>from</del><ins>declared</ins> <del>.sc/generation-tools.json</del><ins>minimum</ins> as a <del>&gt;=</del><ins>lower</ins> <del>floor,</del><ins>bound</ins> <del>not</del><ins>rather than</ins> an <del>exact version</del><ins>exact-version</ins> match.</div>
+  <p><b>scope</b></p>
+  <div class="diff"><del>plan-anchoring</del><ins>Changes</ins> <del>change_report.py</del><ins>a skill script or skill instruction that checks the sc-compose CLI version; excludes CI selection of a reproducible binary</ins> and <del>orchestration</del><ins>Rust</ins> <del>skills</del><ins>crate version requirements.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><del>change_report.py</del><ins>Plan:</ins> <del>rejects</del><ins>specifies</ins> <del>sc-compose</del><ins>lower-bound</ins> <del>below</del><ins>CLI</ins> <del>minimum_version;</del><ins>validation.</ins> <del>SKILL</del><ins>Development:</ins> <del>step</del><ins>controlled</ins> <del>1</del><ins>version-output</ins> <del>documents</del><ins>inputs</ins> <del>&gt;=</del><ins>below,</ins> <del>floor</del><ins>equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><del>change_report.py</del><ins>The</ins> <del>rejects</del><ins>skill requires</ins> sc-compose <del>below</del><ins>&gt;=1.8.0</ins> <del>minimum_version;</del><ins>and</ins> accepts <del>1.9.0</del><ins>installed</ins> <del>when</del><ins>sc-compose</ins> <del>floor is 1.8.0.</del><ins>1.8.1.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><del>Skills</del><ins>The</ins> <del>require</del><ins>skill rejects installed</ins> sc-compose <del>--version</del><ins>1.8.1</ins> <del>to</del><ins>because</ins> <del>match</del><ins>its configured minimum is</ins> exactly <del>1.8.0 and reject 1.9.0.</del><ins>1.8.0.</ins></div>
+
+  <details>
+    <summary>History since the baseline (1)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-11T20:49:53+00:00</td><td>updated</td><td>fields: [&quot;statement&quot;, &quot;scope&quot;, &quot;summary&quot;, &quot;deterministic_check&quot;, &quot;fixtures&quot;]; previous_statement: Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a &gt;= floor, not an exact version match.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</section>

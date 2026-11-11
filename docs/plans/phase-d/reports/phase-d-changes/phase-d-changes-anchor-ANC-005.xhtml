@@ -1,0 +1,106 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-005">
+  <div class="section-head">
+    <h2>ANC-005 <span class="status status-locked">locked</span> <span class="small">bead run-7ahk</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-7ahk&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.&quot;,
+      &quot;before&quot;: &quot;.sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version &gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Changes the repository sc-compose CLI requirement in .sc/generation-tools.json, generation-tool setup instructions, or plan-anchoring dependency checks; excludes the sc-compose Rust crate graph.&quot;,
+      &quot;before&quot;: &quot;generation-tools.json, boundary lint, plan-anchoring skills&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Plan: declares a CLI minimum &gt;=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.&quot;,
+      &quot;before&quot;: &quot;generation-tools.json exists with minimum_version 1.8.0; boundaries reject production sc-compose crate deps.&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Repository tooling declares sc-compose CLI minimum_version 1.8.0 in .sc/generation-tools.json.&quot;,
+      &quot;before&quot;: &quot;generation-tools.json sets minimum_version 1.8.0; boundaries forbid production sc-compose crate deps.&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Repository tooling declares sc-compose CLI minimum_version 1.7.0.&quot;,
+      &quot;before&quot;: &quot;sc-runtime adds sc-compose as a production crate dependency.&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-11T20:49:52+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;statement\&quot;, \&quot;scope\&quot;, \&quot;summary\&quot;, \&quot;deterministic_check\&quot;, \&quot;fixtures\&quot;]; previous_statement: .sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version &gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-005&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;locked&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;2&quot;,
+  &quot;version_now&quot;: &quot;3&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-005 (locked v2 -&gt; locked v3)
+Statement: Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.
+Quote: you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;.sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version &gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.&#x27; -&gt; &#x27;Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.&#x27;
+Changed scope: &#x27;generation-tools.json, boundary lint, plan-anchoring skills&#x27; -&gt; &#x27;Changes the repository sc-compose CLI requirement in .sc/generation-tools.json, generation-tool setup instructions, or plan-anchoring dependency checks; excludes the sc-compose Rust crate graph.&#x27;
+Changed deterministic_check: &#x27;generation-tools.json exists with minimum_version 1.8.0; boundaries reject production sc-compose crate deps.&#x27; -&gt; &#x27;Plan: declares a CLI minimum &gt;=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.&#x27;
+Changed fixture pass: &#x27;generation-tools.json sets minimum_version 1.8.0; boundaries forbid production sc-compose crate deps.&#x27; -&gt; &#x27;Repository tooling declares sc-compose CLI minimum_version 1.8.0 in .sc/generation-tools.json.&#x27;
+Changed fixture fail: &#x27;sc-runtime adds sc-compose as a production crate dependency.&#x27; -&gt; &#x27;Repository tooling declares sc-compose CLI minimum_version 1.7.0.&#x27;
+2026-11-11T20:49:52+00:00 updated: fields: [&quot;statement&quot;, &quot;scope&quot;, &quot;summary&quot;, &quot;deterministic_check&quot;, &quot;fixtures&quot;]; previous_statement: .sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version &gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.</p>
+  <p class="quote">&#x201C;you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>2</td><td>3</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><del>.sc/generation-tools.json</del><ins>Repository tooling</ins> MUST <del>pin</del><ins>declare</ins> <del>the</del><ins>a</ins> sc-compose CLI <ins>minimum version of </ins>at <del>minimum_version</del><ins>least</ins> <del>&gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.</del><ins>1.8.0.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><del>generation-tools.json,</del><ins>Changes</ins> <del>boundary</del><ins>the</ins> <del>lint,</del><ins>repository sc-compose CLI requirement in .sc/generation-tools.json, generation-tool setup instructions, or</ins> plan-anchoring <del>skills</del><ins>dependency checks; excludes the sc-compose Rust crate graph.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><del>generation-tools.json</del><ins>Plan:</ins> <del>exists</del><ins>declares</ins> <del>with</del><ins>a CLI minimum &gt;=1.8.0. Development: inspect .sc/generation-tools.json</ins> minimum_version <del>1.8.0;</del><ins>and</ins> <del>boundaries</del><ins>the setup checks that consume it;</ins> reject <del>production</del><ins>a</ins> <del>sc-compose</del><ins>declared</ins> <del>crate</del><ins>minimum</ins> <del>deps.</del><ins>below 1.8.0.</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><del>generation-tools.json</del><ins>Repository</ins> <del>sets</del><ins>tooling declares sc-compose CLI</ins> minimum_version <del>1.8.0;</del><ins>1.8.0</ins> <del>boundaries</del><ins>in</ins> <del>forbid production sc-compose crate deps.</del><ins>.sc/generation-tools.json.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><del>sc-runtime</del><ins>Repository</ins> <del>adds</del><ins>tooling declares</ins> sc-compose <del>as</del><ins>CLI</ins> <del>a</del><ins>minimum_version</ins> <del>production crate dependency.</del><ins>1.7.0.</ins></div>
+
+  <details>
+    <summary>History since the baseline (1)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-11T20:49:52+00:00</td><td>updated</td><td>fields: [&quot;statement&quot;, &quot;scope&quot;, &quot;summary&quot;, &quot;deterministic_check&quot;, &quot;fixtures&quot;]; previous_statement: .sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version &gt;= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</section>

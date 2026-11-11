@@ -1,0 +1,178 @@
+{
+  "scope": "Live Jev plan gates and independent scoped guidelines recheck; no implementation or registry proof",
+  "threshold": 0.6,
+  "items": {
+    "d-1": {
+      "run_id": "plan-20261111T221955Z-d-1",
+      "run_sha256": "d5f984f4cc46714bd3e9297484ffa2da23a593532d8a6a0b67b730d4e6500edc",
+      "source": "sprint-d-1-dependency-compatibility.md",
+      "source_sha256": "2d35262b0c8cc2ac7b862591c8e3e43cbc15704018599d6025b3056aad05c753",
+      "model_answered": "jev-1.14.0",
+      "truncated": false,
+      "verdicts": {
+        "ANC-003": "satisfied",
+        "ANC-005": "satisfied",
+        "ANC-012": "satisfied",
+        "ANC-015": "satisfied",
+        "ANC-016": "satisfied",
+        "ANC-017": "satisfied",
+        "ANC-019": "satisfied",
+        "ANC-020": "satisfied"
+      }
+    },
+    "d-2": {
+      "run_id": "plan-20261111T221546Z-d-2",
+      "run_sha256": "23f7aecd26faf5b9a7f2a5a7ca10a96467831e66d542d669a06360ecb5d2871e",
+      "source": "sprint-d-2-consumer-docs.md",
+      "source_sha256": "072f9d08316d1d0ba4c961f8dce096c503d0bdc10f319f4b76966c11c3808c04",
+      "model_answered": "jev-1.14.0",
+      "truncated": false,
+      "verdicts": {
+        "ANC-003": "not_applicable",
+        "ANC-005": "not_applicable",
+        "ANC-012": "not_applicable",
+        "ANC-015": "not_applicable",
+        "ANC-016": "not_applicable",
+        "ANC-017": "not_applicable",
+        "ANC-019": "not_applicable",
+        "ANC-020": "not_applicable"
+      }
+    },
+    "d-3": {
+      "run_id": "plan-20261111T221603Z-d-3",
+      "run_sha256": "4934b2cc6760ab3da0d48e38f4673acf40a573c726b05bcc3172d667749bb0bc",
+      "source": "sprint-d-3-release.md",
+      "source_sha256": "350ca4dff12b4994d5fecbc88327a733635944312a33f071f28a68d4c38de2b8",
+      "model_answered": "jev-1.14.0",
+      "truncated": false,
+      "verdicts": {
+        "ANC-012": "satisfied",
+        "ANC-016": "satisfied",
+        "ANC-017": "satisfied",
+        "ANC-019": "satisfied",
+        "ANC-003": "not_applicable",
+        "ANC-005": "not_applicable",
+        "ANC-015": "not_applicable",
+        "ANC-020": "not_applicable"
+      }
+    }
+  },
+  "guidelines": {
+    "pass": true,
+    "scope": "Recheck only G-001 through G-004 plus requested d-1 producer/d-3 registry-CI consumer handoff.",
+    "findings": [],
+    "minor_wording": [
+      {
+        "id": "W-001",
+        "classification": "wording",
+        "affects_ac": false,
+        "file": "docs/plans/phase-d/sprint-d-1-dependency-compatibility.md",
+        "section": "integration:endpoints",
+        "exact_rule_quote": "Frontmatter `status` describes the sprint, not the plan: an unimplemented sprint is `planned`, never `complete`.",
+        "finding": "The sentence \"Existing .github/workflows/crates.yml exposes a proof dispatch input\" reads as current implementation. The current workflow has only pull_request/push events; the following sentence correctly assigns new wiring to d-1. The intended producer/consumer contract is nevertheless explicit.",
+        "concrete_fix": "Use \"Extend the existing .github/workflows/crates.yml to expose a proof dispatch input\" so the future work is clear."
+      }
+    ],
+    "rechecked_findings": [
+      {
+        "id": "G-001",
+        "status": "closed",
+        "evidence": "d-1 owns template/workspace.template.toml, template/crates/**/Cargo.*.toml and tests/unit/generation/**. Deliverables explicitly require updating actual generated inputs and existing0.2.1/0.41/native-link regression contracts without weakening negative assertions."
+      },
+      {
+        "id": "G-002",
+        "status": "closed",
+        "evidence": "ADR-RUN-0203 is in d-1 authoritative frontmatter. A named deliverable amends its frozen matrix and repeats runtime/schema qualification while preserving negative router/type-identity tests."
+      },
+      {
+        "id": "G-003",
+        "status": "closed",
+        "evidence": "REQ-RUN-0501,REQ-RUN-0502 andREQ-RUN-0701 appear in d-1 authoritative requirements list."
+      },
+      {
+        "id": "G-004",
+        "status": "closed",
+        "evidence": "d-2 doc:validation supplies exact git diff --check and bounded stdlib relative-file-link commands, plus source/API review. Python command parses successfully. It adds no invented existing linter or permanent CI gate."
+      }
+    ],
+    "verified": [
+      "All currently tracked paths were checked with repository-rooted PurePosixPath.full_match against all three owned sets across all waves: zero collisions. Root README.md does not match nested README paths.",
+      "The previously unowned rendered template/adaptor variants and existing runtime-ecosystem regression test now match d-1 ownership.",
+      "Registry CI handoff is actionable at plan level: d-1 owns workflow wiring with source/registry modes; registry mode consumes d-3 tests/registry/phase-d workspace, fails if consumer/release is missing, and ordinary source CI makes no registry-proof claim. d-3 owns the standalone consumer, invokes registry mode after publication and requires actual minimum/latest consumer tests plus recorded post-publication CI results. No second workflow owner or source-test substitute is introduced.",
+      "Dedicated registry dispatch has named consumers/capability/observed defect and an explicit retirement condition when normal kit post-publish hooks cover the same endpoint checks.",
+      "Earlier failed review is preserved unchanged at /tmp/phase-d-guidelines-review-before.json."
+    ],
+    "limits": [
+      "Scoped document recheck, not broader QA or formal QA-1 certification.",
+      "No Jev gate, implementation test, generated consumer resolve/build, advisory audit, registry CI run or publication was executed or certified.",
+      "The registry dispatch remains planned implementation work; this review verifies the specified handoff, not an existing implemented dispatch mode.",
+      "No new boundary/requirements/architecture audit beyond the four findings was performed. Final HTML-diff human approval remains separate."
+    ]
+  },
+  "coverage": {
+    "gate": "plan",
+    "items": [
+      "d-1",
+      "d-2",
+      "d-3"
+    ],
+    "anchors": [
+      "ANC-003",
+      "ANC-005",
+      "ANC-012",
+      "ANC-015",
+      "ANC-016",
+      "ANC-017",
+      "ANC-019",
+      "ANC-020"
+    ],
+    "matrix": {
+      "ANC-003": {
+        "d-2": "not_applicable",
+        "d-3": "not_applicable",
+        "d-1": "satisfied"
+      },
+      "ANC-005": {
+        "d-2": "not_applicable",
+        "d-3": "not_applicable",
+        "d-1": "satisfied"
+      },
+      "ANC-012": {
+        "d-2": "not_applicable",
+        "d-3": "satisfied",
+        "d-1": "satisfied"
+      },
+      "ANC-015": {
+        "d-2": "not_applicable",
+        "d-3": "not_applicable",
+        "d-1": "satisfied"
+      },
+      "ANC-016": {
+        "d-2": "not_applicable",
+        "d-3": "satisfied",
+        "d-1": "satisfied"
+      },
+      "ANC-017": {
+        "d-2": "not_applicable",
+        "d-3": "satisfied",
+        "d-1": "satisfied"
+      },
+      "ANC-019": {
+        "d-2": "not_applicable",
+        "d-3": "satisfied",
+        "d-1": "satisfied"
+      },
+      "ANC-020": {
+        "d-2": "not_applicable",
+        "d-3": "not_applicable",
+        "d-1": "satisfied"
+      }
+    },
+    "uncovered_anchors": [],
+    "contradicted": {},
+    "excluded": {},
+    "runs_considered": 3,
+    "carried_from_earlier_run": {},
+    "exclusion_removed_rejudge": {}
+  }
+}

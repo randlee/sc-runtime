@@ -399,9 +399,6 @@ Scope: Adds or retains an explicit third-party dependency upper bound beyond Car
 
 Deterministic check to pair with the development gate: Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.
 
-Excluded from (not judged; the cell passes as `excluded`):
-- `d-1`: d-1 uses normal compatibility boundaries for separately qualified rusqlite0.41/0.42 lines; its range is broader than the default0.41 range and adds no tighter upper bound. Extra caps such as the Monty toolchain limit are owned by d-1b; d-2 verifies packaged comments. This exclusion removes no range-testing or compatibility obligation.
-
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
 Fixtures:
