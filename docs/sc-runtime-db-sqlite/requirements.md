@@ -1,5 +1,7 @@
 # sc-runtime-db-sqlite Requirements
 
+**Amended 2026-11-11.** See the note at the top of [architecture.md](architecture.md): PRD-STO-3 puts this writer behind `Storage<T>` with an async input.
+
 **Status:** Active as of 2026-10-25. The contract is [architecture.md](architecture.md) and [ADR-RUN-0012](../architecture.md). Sprint `b-1` implements these items.
 
 ## REQ-DBSQ-0001: Workspace member

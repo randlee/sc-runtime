@@ -1,5 +1,7 @@
 # sc-runtime-db-sqlite Architecture
 
+**Amended 2026-11-11.** [PRD v2.0](../prd/sc-runtime-prd.md) PRD-STO-3 makes this writer the SQLite implementation behind `Storage<T>`, with the async input atm-core uses (a bounded async channel and an awaited reply) and its reader pool. The blocking `open`, `execute` and `transaction` handle described here is the code as it is today, not the target.
+
 **Status:** Active as of 2026-10-25. Binding decision: [ADR-RUN-0012](../architecture.md). Sprint `b-1` implements this file. It replaces the withdrawn `StorageBackend` text.
 
 ## What this crate is
