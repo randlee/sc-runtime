@@ -51,13 +51,7 @@ already on the sprint docs.
 
 ## Anchors
 
-Locked anchors will be recorded in `anchors.json` after capture. **Proposed
-candidates** from the 2026-11-11 session (confirm or edit before lock):
-
-| # | User quote (verbatim) | Testable statement (draft) |
-| --- | --- | --- |
-| 1 | “we need a robust model both for ci and for downstream consumers (which could not upgrade rusqlite w/ had a security violation)” | Phase d MUST document and implement separate **registry-floor** policy (CI proves low/high resolve) and **consumer lag** policy (explicit caps and ADR text when security fix cannot ride latest). |
-| 2 | “sc-runtime is not tolerant of 'upgrades' which occur outside of itself” | CI MUST NOT compile pinned external CLIs from crates.io when GitHub release binaries exist for that pin. |
-| 3 | “A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue” | Generation driver MUST remain compatible with `SC_COMPOSE` override; this repo pins the **CLI** at ≥ 1.8.0 in `.sc/generation-tools.json` without forcing downstream to match. |
-| 5 | “you need to make sure this repo pins sc-compose tool at 1.8+ … sc-compose crates … is a separate concern” | `.sc/generation-tools.json` MUST pin `sc-compose` CLI ≥ 1.8.0 for CI and docs; production manifests MUST NOT treat that as a crate dependency pin. |
-| 4 | “If there is an issue w/ sc-compose release/distribution process, there needs to be a clear gh issue” | Phase d MUST link [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041) (filed 2026-11-11); locked anchor cites that URL. |
+Fifteen anchors were locked on 2026-11-11 (ANC-001–ANC-015). The record of truth
+is [`anchors.json`](anchors.json); the human-readable register is
+[`anchors.md`](anchors.md). Jev gates judge beads against those statements, not
+this intent page.

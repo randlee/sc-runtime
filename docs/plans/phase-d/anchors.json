@@ -1,0 +1,887 @@
+{
+  "schema": "plan-anchoring/anchors/1",
+  "plan": "phase-d",
+  "intent_ref": "docs/plans/phase-d/intent.md",
+  "anchors": [
+    {
+      "id": "ANC-001",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase d MUST document and implement tested registry dependency floors with CI proving low and high resolve, and explicit consumer-lag caps with ADR text when a security fix cannot use crates.io latest.",
+      "quote": "we need a robust model both for ci and for downstream consumers (which could not upgrade rusqlite w/ had a security violation)",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Registry floors and consumer lag policy",
+      "scope": "d-1, d-1b, d-2, and issue-133-dependency-sweep.md",
+      "deterministic_check": "The sweep doc and sprint plans name >= floors, < caps, and minimal-versions recipe; cargo update smoke is cited in d-1b acceptance.",
+      "fixtures": {
+        "pass": [
+          "Phase d MUST document tested registry dependency floors with CI low/high resolve: issue-133-dependency-sweep.md names >= floors and caps and sprint d-1b acceptance cites minimal-versions smoke."
+        ],
+        "fail": [
+          "Phase d ships bare carets with no minimal-versions recipe."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-a4wv",
+        "plan_questions": "run-a4wv.1",
+        "dev_questions": "run-a4wv.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:39+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:52:55+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:12+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-a4wv",
+            "plan_questions": "run-a4wv.1",
+            "dev_questions": "run-a4wv.2"
+          }
+        },
+        {
+          "at": "2026-11-11T19:54:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:57+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-002",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "CI MUST install pinned external CLIs from immutable GitHub release binaries, not cargo install, when release artifacts exist for that tool pin.",
+      "quote": "sc-runtime is not tolerant of 'upgrades' which occur outside of itself",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Hermetic external CLI install",
+      "scope": "rust-build-cache and docs/development/ci.md",
+      "deterministic_check": "rust-build-cache action.yml installs sc-compose from release tarballs with checksums.txt; no cargo install sc-compose step.",
+      "fixtures": {
+        "pass": [
+          "rust-build-cache installs sc-compose from a GitHub release tarball verified with checksums.txt."
+        ],
+        "fail": [
+          "CI runs cargo install sc-compose on cache miss."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-r85j",
+        "plan_questions": "run-r85j.1",
+        "dev_questions": "run-r85j.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:39+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:13+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-r85j",
+            "plan_questions": "run-r85j.1",
+            "dev_questions": "run-r85j.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-003",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "scripts/new_project.py MUST honor SC_COMPOSE when set; this repository's CI sc-compose pin MUST NOT require downstream generated apps to use the same CLI version.",
+      "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "SC_COMPOSE override independence",
+      "scope": "template generation driver and .sc/generation-tools.json",
+      "deterministic_check": "new_project.py resolves SC_COMPOSE before PATH; generation-tools.json documents tool pin separate from consumer choice.",
+      "fixtures": {
+        "pass": [
+          "Generation honors SC_COMPOSE while CI uses generation-tools.json version pin."
+        ],
+        "fail": [
+          "The driver ignores SC_COMPOSE and hard-codes one global sc-compose path."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-d4yq",
+        "plan_questions": "run-d4yq.1",
+        "dev_questions": "run-d4yq.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:14+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-d4yq",
+            "plan_questions": "run-d4yq.1",
+            "dev_questions": "run-d4yq.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-004",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase d MUST link sc-compose#1041 for upstream distribution improvements serving multiple consumer version pins.",
+      "quote": "If there is an issue w/ sc-compose release/distribution process, there needs to be a clear gh issue",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Upstream sc-compose distribution issue",
+      "scope": "phase-d intent and maintenance docs",
+      "deterministic_check": "intent.md links https://github.com/randlee/sc-compose/issues/1041",
+      "fixtures": {
+        "pass": [
+          "docs/plans/phase-d/intent.md links https://github.com/randlee/sc-compose/issues/1041 for sc-compose consumer install drift."
+        ],
+        "fail": [
+          "Phase d plan docs include no URL or reference to sc-compose GitHub issue 1041."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-lhqu",
+        "plan_questions": "run-lhqu.1",
+        "dev_questions": "run-lhqu.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:16+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-lhqu",
+            "plan_questions": "run-lhqu.1",
+            "dev_questions": "run-lhqu.2"
+          }
+        },
+        {
+          "at": "2026-11-11T19:54:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-005",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": ".sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version >= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.",
+      "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "CLI pin separate from crate graph",
+      "scope": "generation-tools.json, boundary lint, plan-anchoring skills",
+      "deterministic_check": "generation-tools.json exists with minimum_version 1.8.0; boundaries reject production sc-compose crate deps.",
+      "fixtures": {
+        "pass": [
+          "generation-tools.json sets minimum_version 1.8.0; boundaries forbid production sc-compose crate deps."
+        ],
+        "fail": [
+          "sc-runtime adds sc-compose as a production crate dependency."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-7ahk",
+        "plan_questions": "run-7ahk.1",
+        "dev_questions": "run-7ahk.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:17+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-7ahk",
+            "plan_questions": "run-7ahk.1",
+            "dev_questions": "run-7ahk.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-006",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Plan QA-1 MUST pass and the phase-d plan MUST merge to develop before any sprint/d-* implementation branch opens.",
+      "quote": "No sprint branches until this plan merges to develop.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Plan gate before implementation",
+      "scope": "phase-d-plan.md readiness section",
+      "deterministic_check": "phase-d-plan states hardening in flight and no sprint branches until plan merges; QA-1 recorded in plan-hardening-rounds.md",
+      "fixtures": {
+        "pass": [
+          "phase-d-plan.md forbids sprint/d-* branches until the plan merges to develop; plan-hardening-rounds.md records QA-1 PASS before any sprint branch opens."
+        ],
+        "fail": [
+          "sprint/d-1 opens while phase-d plan QA-1 is still failing."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-tx9g",
+        "plan_questions": "run-tx9g.1",
+        "dev_questions": "run-tx9g.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:18+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-tx9g",
+            "plan_questions": "run-tx9g.1",
+            "dev_questions": "run-tx9g.2"
+          }
+        },
+        {
+          "at": "2026-11-11T19:54:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-007",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Sprint d-1 MUST ship rusqlite >=0.41.0 with tested low/high resolve and close GitHub issue #132 including RUSTSEC-2026-0459 clearance.",
+      "quote": "Close maintenance gaps after Phase C 0.2.0: Issue #132 — rusqlite 0.41+ with tested minimum/latest range; RUSTSEC-2026-0459 clearance.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Rusqlite #132 clearance",
+      "scope": "sprint d-1 and sc-cron/sqlite writer crates",
+      "deterministic_check": "d-1 acceptance includes cargo test at rusqlite floor and highest 0.41.x; issue #132 closable on deliver.",
+      "fixtures": {
+        "pass": [
+          "Sprint d-1 closes issue #132 by upgrading rusqlite to 0.41 and Cargo.lock resolves rusqlite 0.41.x, clearing RUSTSEC-2026-0459."
+        ],
+        "fail": [
+          "Phase d stays on rusqlite 0.39 with open RUSTSEC-2026-0459."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-49x2",
+        "plan_questions": "run-49x2.1",
+        "dev_questions": "run-49x2.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:20+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-49x2",
+            "plan_questions": "run-49x2.1",
+            "dev_questions": "run-49x2.2"
+          }
+        },
+        {
+          "at": "2026-11-11T19:54:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-008",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase d MUST NOT support sqlx 0.9 and rusqlite 0.41 in the same process writer on 0.2.1; the sqlx-resolve fixture is deleted and ADR-RUN-0012 is amended.",
+      "quote": "Blocked upgrades (sqlx major, rusqlite vs sqlx same-process) stay explicit in that doc and d-1 ruling — not every dep can move to crates.io latest in 0.2.1.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Frozen sqlx vs rusqlite ruling",
+      "scope": "d-1 sqlite vertical and ADR-RUN-0012",
+      "deterministic_check": "sqlx-resolve fixture absent; architecture text documents no same-process sqlx 0.9 writer with rusqlite 0.41",
+      "fixtures": {
+        "pass": [
+          "sqlx-resolve fixture is deleted; ADR-RUN-0012 forbids same-process sqlx 0.9 writer with rusqlite 0.41."
+        ],
+        "fail": [
+          "Phase d keeps sqlx-resolve and claims same-process sqlx 0.9 + rusqlite 0.41 is supported."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-lo0p",
+        "plan_questions": "run-lo0p.1",
+        "dev_questions": "run-lo0p.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:21+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-lo0p",
+            "plan_questions": "run-lo0p.1",
+            "dev_questions": "run-lo0p.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-009",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Sprint d-1b MUST add a documented minimal-versions validation recipe and replace third-party ~ and = pins with >= tested floors per issue #133.",
+      "quote": "Issue #133 — dependency >= tested floors (not ~ / = pins); rmcp ≥ 3.9 and dual lockfile CI.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "#133 floor sweep",
+      "scope": "d-1b owned Cargo.toml files and Justfile",
+      "deterministic_check": "Justfile or CI doc names minimal-versions command; sprint acceptance req:133-pins passes review",
+      "fixtures": {
+        "pass": [
+          "d-1b Justfile documents minimal-versions command and removes third-party ~ pins."
+        ],
+        "fail": [
+          "d-1b leaves rmcp pinned at ~3.8 without documented exception."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-yypr",
+        "plan_questions": "run-yypr.1",
+        "dev_questions": "run-yypr.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:22+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-yypr",
+            "plan_questions": "run-yypr.1",
+            "dev_questions": "run-yypr.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-010",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The d-2 publish tail MUST not run until d-1 and d-1b lockfile changes merge-forward and required quality gates pass.",
+      "quote": "Compatibility precedes publication",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Publish after dependency sprints",
+      "scope": "sprint d-2 publish tail and release kit",
+      "deterministic_check": "d-2 plan orders publish after d-1 and d-1b merge-forward; version bumps only in publish tail",
+      "fixtures": {
+        "pass": [
+          "d-2 version bumps run only after d-1 and d-1b merge-forward with green gates."
+        ],
+        "fail": [
+          "0.2.1 tags ship before rusqlite and rmcp floors land."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-gyab",
+        "plan_questions": "run-gyab.1",
+        "dev_questions": "run-gyab.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:01+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:24+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-gyab",
+            "plan_questions": "run-gyab.1",
+            "dev_questions": "run-gyab.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-011",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Sprint d-1b MUST raise rmcp to >=3.9.0 with tested low and highest <4 resolve and document RUSTSEC-2026-0462 clearance.",
+      "quote": "Phase C checks the released rmcp versions and upgrades rmcp to its latest release.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "rmcp >=3.9 floor",
+      "scope": "d-1b MCP manifests in sc-runtime sc-command template daemon",
+      "deterministic_check": "Cargo.toml rmcp lines use >=3.9.0; tests pass at 3.9.0 floor",
+      "fixtures": {
+        "pass": [
+          "sc-runtime Cargo.toml sets rmcp >=3.9.0 and tests pass at 3.9.0 floor."
+        ],
+        "fail": [
+          "Phase d keeps rmcp 3.8 with open RUSTSEC-2026-0462."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-vepv",
+        "plan_questions": "run-vepv.1",
+        "dev_questions": "run-vepv.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:40+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:02+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-vepv",
+            "plan_questions": "run-vepv.1",
+            "dev_questions": "run-vepv.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase d sprints MUST NOT add sc-compose or agent-team-mail production crate dependencies to release crates.",
+      "quote": "sc-compose and atm crates should be blocked from any production release crate.",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Production tool boundary",
+      "scope": "every phase-d sprint touching Cargo.toml",
+      "deterministic_check": "cargo tests/dependencies.rs and boundary lint stay green on production crates",
+      "fixtures": {
+        "pass": [
+          "No phase-d PR adds sc-compose as a production dependency in release crates."
+        ],
+        "fail": [
+          "sc-runtime adds sc-compose crate to sc-cron production dependencies."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-2ucg",
+        "plan_questions": "run-2ucg.1",
+        "dev_questions": "run-2ucg.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:41+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:02+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:26+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-2ucg",
+            "plan_questions": "run-2ucg.1",
+            "dev_questions": "run-2ucg.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-013",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Sprint d-2 MUST document test-util instrument_router for consumers per merged issue #131.",
+      "quote": "document test-util / instrument_router for consumers",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "#131 consumer router docs",
+      "scope": "d-2 README wave",
+      "deterministic_check": "sc-runtime README or crate README names instrument_router and test-util usage from #131",
+      "fixtures": {
+        "pass": [
+          "Sprint d-2 MUST document test-util instrument_router for consumers: the d-2 README adds a section explaining instrument_router behind test-util per issue #131."
+        ],
+        "fail": [
+          "Sprint d-2 plan defers issue #131 and ships 0.2.1 without adding README consumer guidance for instrument_router or test-util."
+        ]
+      },
+      "question_overrides": {},
+      "version": 7,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-pddk",
+        "plan_questions": "run-pddk.1",
+        "dev_questions": "run-pddk.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:41+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:02+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:28+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-pddk",
+            "plan_questions": "run-pddk.1",
+            "dev_questions": "run-pddk.2"
+          }
+        },
+        {
+          "at": "2026-11-11T19:54:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:57+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:55:03+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:55:07+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:55:11+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-014",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase d planning MUST stay on branch plan/phase-d and ship through a dedicated pull request to develop separate from sprint implementation PRs.",
+      "quote": "have a separate pull request targeting develop.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Dedicated plan PR",
+      "scope": "plan/phase-d branch and phase-d-plan.md",
+      "deterministic_check": "Open PR targets develop from plan/phase-d; sprint branches are separate",
+      "fixtures": {
+        "pass": [
+          "Phase d planning merges via a dedicated PR to develop; implementation uses sprint branches."
+        ],
+        "fail": [
+          "Sprint implementation commits land on plan/phase-d mixed with plan prose."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-zn66",
+        "plan_questions": "run-zn66.1",
+        "dev_questions": "run-zn66.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:41+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:02+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:29+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-zn66",
+            "plan_questions": "run-zn66.1",
+            "dev_questions": "run-zn66.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-015",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a >= floor, not an exact version match.",
+      "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "summary": "Skills use CLI floor not exact pin",
+      "scope": "plan-anchoring change_report.py and orchestration skills",
+      "deterministic_check": "change_report.py rejects sc-compose below minimum_version; SKILL step 1 documents >= floor",
+      "fixtures": {
+        "pass": [
+          "change_report.py rejects sc-compose below minimum_version; accepts 1.9.0 when floor is 1.8.0."
+        ],
+        "fail": [
+          "Skills require sc-compose --version to match exactly 1.8.0 and reject 1.9.0."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-tngz",
+        "plan_questions": "run-tngz.1",
+        "dev_questions": "run-tngz.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-11T19:52:41+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-11T19:53:02+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-11T19:54:30+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-tngz",
+            "plan_questions": "run-tngz.1",
+            "dev_questions": "run-tngz.2"
+          }
+        }
+      ]
+    }
+  ]
+}
