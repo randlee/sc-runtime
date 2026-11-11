@@ -241,6 +241,8 @@ command adapter is permitted by ADR-RUN-0019.
 
 ## REQ-CRON-0020: Public receiver and cooperative owned shutdown
 
+**Under review 2026-11-11.** This target contract is written against `ScheduleStore` and `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned.
+
 The crate exposes the same nominal canonical logging receiver and supporting
 values through `sc_cron::observability`; no parallel trait is introduced.
 Existing constructors and legacy store implementations remain source compatible.

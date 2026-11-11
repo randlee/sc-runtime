@@ -457,6 +457,8 @@ and transitive edges. Direct-depth normal-only checks below are historical
 minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §4, §6).** The edge tables below describe the code as it is and stay enforced until the code changes. PRD v2.0 changes these edges when it is implemented ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` and stores its table through `Storage<CronRow>`, and the SQLite writer is no longer forbidden to the template and the runtime.
+
 
 ### Requirement Statement
 
@@ -1453,6 +1455,8 @@ item.
 ## REQ-RUN-0301: Layout of the workspace rendered from `template/`
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** This layout is the interim, hand-written form. `store-sqlite` on sqlx, the per-layout service files and the adaptor crates are not the target; see PRD §3 and §4.
+
 
 ### Requirement Statement
 
@@ -1620,6 +1624,8 @@ REST and MCP have exactly one place to call.
 ## REQ-RUN-0302: Template example operations `widget.create`, `widget.get`
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §9).** The widget example is the interim, hand-written form of the command pattern. "Typed query functions" in `store-sqlite` and "one service function is the only path to SQL" describe that interim form; the target is `Tcli`, `Tsql`, a transform and `Storage<Tsql>`.
+
 **Amended:** 2026-10-25 by [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
 ### Requirement Statement
@@ -4059,6 +4065,8 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 ## NFR-RUN-0003: Standard crates, used the documented way
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** The prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) "A command or operation registry" does not forbid the shared command path of PRD §3. (2) "A portable query layer" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) "A macro system" and "a code generator of its own" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD §9). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.
+
 
 ### Requirement Statement
 

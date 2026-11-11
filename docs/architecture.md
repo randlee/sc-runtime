@@ -60,7 +60,7 @@ remain release predicates; the source change is under verification.
 | Standalone crates | config loading; listener and client connector; response envelope | this repo, public release artifacts | `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` |
 | Assembly crate | singleton lock, router merge, serve, graceful shutdown, test fixture | this repo, public release artifact | `crates/sc-runtime` |
 | Optional reusable scheduler | SQLite-backed Rust/Python/Monty cron hooks | this repo, public release artifact | `crates/sc-cron` |
-| Internal SQLite writer building block | one rusqlite writer connection/thread | this repo, unpublished | `crates/sc-runtime-db-sqlite` |
+| SQLite writer behind `Storage<T>` (PRD-STO-3, amended 2026-11-11) | one rusqlite writer connection/thread; atm-core design | this repo | `crates/sc-runtime-db-sqlite` |
 | Application layer | operations, routes, MCP tools, CLI commands, stores, schemas | the generated project | rendered from `template/` |
 | Generation tooling | options contract, fixtures, driver, wizard | this repo, not published | `wizard/`, `scripts/`, `tests/unit/` |
 
@@ -87,6 +87,8 @@ flowchart LR
   S --> A[(store-sqlite)]
   S --> B[(store-postgres, later)]
 ```
+
+**Amended 2026-11-11 (PRD §3, §4).** The diagram and paragraph here show the interim, hand-written path. The target is the PRD §3 command pattern over `Storage<T>`.
 
 Request path for one operation: the CLI posts `CreateWidget` JSON to
 `/ops/widget.create`; the handler calls `service::create_widget(stores,
@@ -547,6 +549,8 @@ authorization remain binding; no hand-written workflow bypass is allowed.
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §4, §6).** The edges in this ADR describe the code as it is and stay enforced until the code changes. Implementing PRD v2.0 changes them ([code-alignment.md](prd/code-alignment.md)).
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; the `server` feature is stated in the design's repository layout. That the feature is off by default, the forbidden-edge lists, the testing rule in point 7 and the build-selection scope in point 8 are decided in this document  
 
@@ -1147,6 +1151,8 @@ criterion for the request paths of `crates/sc-transport` and
 ## ADR-RUN-0008: Requirements must mean less code; prefer standard designs
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** The owner's principle stands: requirements must mean less code. The prohibited-construct list in point 4 is amended in [NFR-RUN-0003](requirements.md): it does not forbid the shared command path or `Storage<T>`, and a generator is undecided. Hand-writing every operation through 22 files is more code, not less.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: stated by the owner as the design's third principle ("standardise below the application layer, with general code, not extra requirements") and as "prefer standard designs over hand-rolled pieces"  
 
@@ -2747,6 +2753,8 @@ All production release crates (`sc-config`, `sc-transport`, `sc-command`, `sc-ru
 ## ADR-RUN-0014: Optional embedder-supplied schedule row limit
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-CRON-2).** The limit and its meaning stand. Its enforcement moves from the SQLite store's count check into cron's own logic when the table is stored through `Storage<CronRow>`.
+
 **Decision Date:** 2026-10-27  
 **Source:** Owner, 2026-10-27. Recorded in [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
 
