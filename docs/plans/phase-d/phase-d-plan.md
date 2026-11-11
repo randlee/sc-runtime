@@ -81,6 +81,13 @@ One track, two **parallel_safe** wave-1 sprints; publish is the serial tail on d
 - sqlx major bump beyond #132 coexistence decision.
 - Template layout or sc-lint pin changes unless lockfile-only fallout from d-1.
 
+## Plan anchoring
+
+Phase d intent and locked anchors: [intent.md](intent.md) (`plan_dir`:
+`docs/plans/phase-d`). Captures **registry consumer floors**, **CI hermetic
+external CLIs**, and **downstream tool/version independence**; gates run after
+plan hardening per `/plan-anchoring`.
+
 ## Orchestration
 
 - Plan hardening: [plan-hardening-rounds.md](plan-hardening-rounds.md).
