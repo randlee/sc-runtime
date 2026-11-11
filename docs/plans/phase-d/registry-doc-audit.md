@@ -2,7 +2,8 @@
 
 **Scope:** Published crate docs for the sc-runtime workspace vs crates.io (HTTP API + published crate artifacts).  
 **Authority for publish set:** [`release/sc-publish-consumer-input.json`](../../release/sc-publish-consumer-input.json).  
-**Planning consumer:** [sprint d-2 — README truth and 0.2.1 release](sprint-d-2-readme-and-release.md).
+**Planning consumer:** [sprint d-2 — README truth and 0.2.1 release](sprint-d-2-readme-and-release.md).  
+**Evidence run:** [Composer registry doc audit](8e70524e-4434-4614-a2de-a8184248a41b) (confirmed README tarball byte-match @ 0.2.0).
 
 ## Method
 

@@ -35,7 +35,47 @@ Integration closure for issues **#131** and **#132**: consumer-facing docs,
 registry truth, and authorized **0.2.1** publication after d-1 merges to
 `integrate/phase-d`.
 
-Authority: [registry-doc-audit.md](registry-doc-audit.md).
+## Documentation registry audit
+
+Evidence: [registry-doc-audit.md](registry-doc-audit.md) (crates.io HTTP API and
+0.2.0 `.crate` tarballs, 2026-11-11). Repo READMEs match those tarballs. Fix
+the content gaps below; do not treat this as publish drift.
+
+- **Six crates.io packages** at **0.2.0**, not yanked: `sc-config`,
+  `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`.
+  `description` matches each `Cargo.toml`. None of those lines, and no README,
+  says the crate is part of sc-runtime, a Rust scaffolding framework.
+- **Zero PyPI.** `python_packages` and `python_distributions` are `[]`. No
+  PyPI docs or publish work.
+- **Root README is stale 0.1.0.** It still describes four crates and says
+  crates.io publication needs authorization. `sc-config`, `sc-transport`,
+  `sc-command`, and `sc-runtime` READMEs still open with a **0.1.0** publish
+  banner. `sc-cron-commands` only mentions selecting `cron=true` when
+  generating from sc-runtime (partial). `sc-cron` has no ecosystem framing.
+- **`sc-cron-commands` Cargo.toml has no `readme` key.** The 0.2.0 tarball
+  still contains `README.md` via Cargo default discovery. Set
+  `readme = "README.md"` so the manifest matches the other five published
+  crates.
+- **`sc-runtime-db-sqlite`** is not on crates.io (`publish = false`; API:
+  crate does not exist). Its README claims publication at 0.1.0.
+- Version JSON `readme` is null, and `static.crates.io/readmes/...` 404s.
+  README truth is the crate page or the `.crate` tarball.
+
+**crates.io blurb** required on all six published READMEs (after the title,
+or in place of the stale publish banner):
+
+```markdown
+## Part of sc-runtime
+
+This crate is part of [sc-runtime](https://github.com/randlee/sc-runtime), a Rust
+scaffolding framework for JSON-first daemons, CLIs, generated stores, and optional
+MCP. Publish order and template usage are documented in the repository README.
+```
+
+The `sc-runtime` README also points at the template / `just new` path (it is
+the kit `readme_dependency_crate`). An optional `description` suffix, "Part of
+the sc-runtime Rust scaffolding framework.", does not replace the README
+section.
 
 ## Deliverables
 
@@ -66,9 +106,21 @@ Authority: [registry-doc-audit.md](registry-doc-audit.md).
 
 1. **req:131** — `sc-runtime` README documents `instrument_router` behind `test-util`.
 2. **req:132** — Published 0.2.1 clears RUSTSEC-2026-0459 for a documented consumer path.
-3. **req:RUN-0702** — All six crates.io READMEs include the standard scaffolding section from the audit.
-4. **integration:publish** — Kit publish completes; `release/sc-publish-consumer-input.json` unchanged in intent except versions produced by kit.
-5. **integration:qa** — Sprint QA-1 PASS, `reviewer_spawn_gate: pass`, required CI green.
+3. **crates.io blurb (REQ-RUN-0702)** — Each of `sc-config`, `sc-transport`,
+   `sc-command`, `sc-runtime`, `sc-cron`, and `sc-cron-commands` README includes
+   the **Part of sc-runtime** section from Documentation registry audit and
+   names sc-runtime as a Rust scaffolding framework. The `sc-runtime` README
+   also points at template generation. Root README lists those six crates at
+   0.2.x and does not present four crates or 0.1.0 as the current release.
+   The `sc-runtime-db-sqlite` README does not claim crates.io publication.
+4. **crates.io page** — `crates/sc-cron-commands/Cargo.toml` sets
+   `readme = "README.md"`. After authorized **0.2.1** publication, each
+   `https://crates.io/crates/<name>` page for that version renders a README
+   that includes the scaffolding sentence. Judge the crate page or the
+   published `.crate` tarball. A null API `readme` field is not a failure.
+   `sc-runtime-db-sqlite` stays unpublished. `python_packages` stays empty.
+5. **integration:publish** — Kit publish completes; `release/sc-publish-consumer-input.json` unchanged in intent except versions produced by kit.
+6. **integration:qa** — Sprint QA-1 PASS, `reviewer_spawn_gate: pass`, required CI green.
 
 ## Owned paths
 
@@ -90,8 +142,10 @@ Authority: [registry-doc-audit.md](registry-doc-audit.md).
 
 - `rusqlite` code changes (**d-1**).
 - sc-dolt planning.
+- PyPI (no packages in the publish manifest).
 
 ## Validation
 
-- Post-publish spot-check each `https://crates.io/crates/<name>` README render.
+- Post-0.2.1, each of the six crates.io crate pages (or the `.crate` tarball
+  README) includes the Part of sc-runtime sentence.
 - `cargo deny` smoke documented in release notes.
