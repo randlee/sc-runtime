@@ -13,7 +13,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-005 | locked | CLI pin separate from crate graph | 2026-11-11 |
 | ANC-006 | locked | Plan gate before implementation | 2026-11-11 |
 | ANC-007 | locked | Rusqlite #132 clearance | 2026-11-11 |
-| ANC-008 | locked | Frozen sqlx vs rusqlite ruling | 2026-11-11 |
+| ANC-008 | retired | Frozen sqlx vs rusqlite ruling | 2026-11-11 |
 | ANC-009 | locked | #133 floor sweep | 2026-11-11 |
 | ANC-010 | locked | Publish after dependency sprints | 2026-11-11 |
 | ANC-011 | locked | rmcp >=3.9 floor | 2026-11-11 |
@@ -168,7 +168,7 @@ Anchor: Phase d MUST NOT support sqlx 0.9 and rusqlite 0.41 in the same process 
 
 > Blocked upgrades (sqlx major, rusqlite vs sqlx same-process) stay explicit in that doc and d-1 ruling — not every dep can move to crates.io latest in 0.2.1.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: Frozen sqlx vs rusqlite ruling
 

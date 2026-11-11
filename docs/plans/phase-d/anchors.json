@@ -438,8 +438,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-lo0p",
@@ -467,6 +467,12 @@
             "plan_questions": "run-lo0p.1",
             "dev_questions": "run-lo0p.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:29:10+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-007",
+          "reason": "Mis-captured from hardened plan text: sqlx/rusqlite same-process limit belongs in sprint d-1 + ADR-RUN-0012, not a standalone user anchor."
         }
       ]
     },
