@@ -32,6 +32,9 @@ must_follow: [d-1]
 
 ## Deliverables
 
+Registry audit input: [registry-doc-audit.md](registry-doc-audit.md) (crates.io +
+PyPI scope, framework blurb template, `sc-cron-commands` readme key).
+
 ### README updates (all required)
 
 | Path | Must reflect |
@@ -47,6 +50,11 @@ must_follow: [d-1]
 
 Remove stale "0.1.0 only" or "four crates" claims unless marked historical in a
 **Prior releases** subsection.
+
+Every **published** crate README must include a **Part of sc-runtime** section
+(scaffolding framework blurb per audit). Add `readme = "README.md"` to
+`crates/sc-cron-commands/Cargo.toml`. Refresh `sc-runtime-db-sqlite/README.md`
+as workspace-only (no false crates.io publish claim).
 
 ### Release
 
@@ -67,6 +75,8 @@ Remove stale "0.1.0 only" or "four crates" claims unless marked historical in a
 
 - `README.md`
 - `crates/*/README.md` (seven workspace crates listed above)
+- `crates/sc-cron-commands/Cargo.toml` (`readme` key)
+- `docs/plans/phase-d/registry-doc-audit.md` (close audit when d-2 lands)
 - `docs/releases/v0.2.1.md`
 - `docs/project-plan.md` (phase d sprint status)
 - Publish manifests / kit inputs only as required by sc-publish (no hand-written
