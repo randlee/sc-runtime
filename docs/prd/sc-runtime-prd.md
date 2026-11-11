@@ -100,11 +100,12 @@ Monty is part of sc-runtime and is already implemented.
 | PRD-ENG-2 | Sync-over-async is not used. It "sounds like an unsound architecture." |
 | PRD-ENG-3 | sc-runtime is built by copying code that already works. "We will worry about synchronization once [we] copy the code we already have to build sc-runtime." |
 | PRD-ENG-4 | Keep it simple. "What I want is very simple." |
-| PRD-ENG-5 | No requirement forbids async. Code that is synchronous today may stay synchronous; a document may describe that, but may not prohibit making it async. On `sc-config`: "I don't have a huge issue w/ it being synchronous today, I have issue w/ there being requirements forbidding async." |
+| PRD-ENG-5 | A requirement says what is built. It does not take an option away from a consumer, and leaving an option open creates no work. On `sc-config`: "I don't have a huge issue w/ it being synchronous today, I have issue w/ there being requirements forbidding async." "All I asked for is the option and not to have the option taken from a consumer." |
+| PRD-ENG-6 | An open option is not a work item. Nothing is specified, built or tested for it until the owner asks. "Once you remove the requirement limiting something, then agents will get wrapped around the axle defining and testing every possible thing that could happen at run-time." |
 
 ## 9. Deferred and undecided
 
-Nothing in this section is a requirement. No document may bind a mechanism for these until the owner decides.
+Nothing in this section is a requirement. No document may bind a mechanism for these until the owner decides, and no work is done on them until the owner asks (PRD-ENG-6).
 
 | Item | State |
 |---|---|
@@ -113,5 +114,5 @@ Nothing in this section is a requirement. No document may bind a mechanism for t
 | Hand-written code between CLI and storage | Interim. Owner: "most likely where the 'hand write everything between cli and storage' came from, it is because we would need a sophisticated attribute based code generator to get to mvp." Hand-written commands are the stand-in until that exists; they follow the shape of section 3 and are not the target. |
 | Code generation for the command pattern | Owner intent: "It would be easy to write a code generator that generates this code using sc-compose at the consumer end, or better yet, build a syn based generator." Not decided. |
 | Repository shape | Owner: "I really think sc-runtime is too big and I need to start writing one crate per repo." Not decided. |
-| Configuration reload | Owner: "adding a file watcher and reload after a delay would be something we may want." Not decided. "`sc-config` loads once at start-up" is an assumption in ADR-CFG-0003, not an owner statement. `sc-config` being synchronous today is accepted; no requirement may forbid it becoming async (PRD-ENG-5). |
+| Configuration reload | Not built and not forbidden. Owner: "adding a file watcher and reload after a delay would be something we may want." `sc-config` stays as it is: synchronous, no watcher, no reload. A consumer keeps the option (PRD-ENG-5). No work follows (PRD-ENG-6). |
 | The exact `Storage<T>` method set, how `T` maps to a table, who owns migrations | Open; see ADR-RUN-0020. |

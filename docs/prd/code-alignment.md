@@ -92,6 +92,6 @@ The widget entity appears in 22 non-test source files. The target is two structs
 | Per-interface permissions | wanted (PRD-CMD-7) but not specified; today only transport-level access control exists (`sc-transport`, ADR-TRN-0005). |
 | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime` | not examined against the PRD beyond what is listed here. |
 
-## 6. `sc-config` (PRD-ENG-5)
+## 6. `sc-config` (PRD-ENG-5, PRD-ENG-6)
 
-No code change is required: the crate may stay synchronous today. One mechanical prohibition on async remains and should go when reload is taken up, or sooner if the owner prefers: `boundaries/sc-config/sc-config.toml` allows only `serde` and `serde_json` (line 25) and a cargo-tree check keeps `tokio` out, mirrored in the REQ-RUN-0005 and ADR-RUN-0003 edge tables.
+No change. The crate stays synchronous with no watcher and no reload, and its boundary manifest stays as it is. Nothing is to be built or tested for reload unless the owner asks.

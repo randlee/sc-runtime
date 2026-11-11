@@ -699,7 +699,7 @@ circular: logging is configured from the values this crate loads.
 ## NFR-CFG-0003: `sc-config` API is synchronous in v0.1
 
 **Status:** Active  
-**Amended 2026-11-11 (PRD §9, PRD-ENG-1).** "Reads its configuration once at start-up" is this document's assumption, not an owner statement. The owner's 2026-09-19 design noted reload, change notification and async interop for later, "possibly" as a separate crate, and on 2026-11-11 said a file watcher with a delayed reload may be wanted. The no-watch and no-reload rules bind v0.1 only. The rule that these features can never live in `sc-config`, even behind a feature, was a design choice and does not bind the later decision. Owner ruling, 2026-11-11 (PRD-ENG-5): "I don't have a huge issue w/ it being synchronous today, I have issue w/ there being requirements forbidding async." `sc-config` stays synchronous today. Every clause here that forbids async, a file watcher, reload, change notification or a `tokio` dependency is withdrawn as a prohibition and stands only as a description of the code as it is.
+**Amended 2026-11-11 (PRD-ENG-5, PRD-ENG-6).** Scope is unchanged: `sc-config` is synchronous, with no file watcher, no reload and no change notification, and nothing more is to be specified, built or tested here. What changes is one thing only: this document does not take the option away. A consumer may reload or use async around `sc-config`, and the owner may ask for it later. "Reads its configuration once at start-up" and "never in `sc-config`, even behind a feature" were this document's own additions and bind nobody.
 
 
 ### Requirement Statement
