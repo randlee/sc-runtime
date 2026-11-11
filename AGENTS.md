@@ -120,9 +120,9 @@ bd prime                # Refresh Beads context
 
 Read [.sc/plan-anchor/authorization.md](.sc/plan-anchor/authorization.md) before
 invoking or delegating Jev reviews. The committed `allow_remote_judge: true`
-setting and the recorded human approval cover Phase C plan and development
-reviews, including normal PR and concise validation evidence and routine
-rechecks. Pass the record's commit and approved payload scope to every leaf
+setting and the recorded human approvals cover Phase C plan and development
+reviews and Phase D anchor validation, each within its recorded payload scope,
+including routine rechecks. Pass the record's commit and approved scope to every leaf
 agent; do not ask again for the same authorization across sessions or worktrees.
 Only a materially new destination or payload outside that scope, or revocation,
 requires a new decision. Respect automatic approval review and report any actual

@@ -95,3 +95,38 @@ The receipt preserves proposal digests and scope. Delegate with this committed
 record and the actual human approval provenance. Respect automatic approval
 review; this approval resolves the earlier expanded-payload scope gap without
 changing destination or bypassing review.
+
+## Phase D anchor validation approval — November 11, 2026
+
+The user authorizes validation of the rewritten Phase D anchors through the same
+TypeSafe Jev endpoint, `POST https://api.typesafe.ai/v1/systemone`, including
+testability checks, independent question tuning, fixture checks, and routine
+rechecks after corrections.
+
+Permitted Phase D payloads are anchor statements, verbatim source quotes and
+scopes, intent excerpts, candidate questions, and fictional pass/fail, boundary,
+and evidence cases used to validate those anchors. Send one anchor or test case
+per request. This approval persists across sessions, worktrees, and delegated
+agents for this payload scope; do not request the same approval again.
+
+Full source files, full diffs, raw diagnostic logs, credentials, and unrelated
+private Beads data remain excluded. Phase D implementation evidence, publication,
+and exports beyond the payload scope above are not authorized by this record.
+Keep authentication in the existing credential provider. Respect automatic
+approval review and report any actual rejection; never bypass it.
+
+Direct human provenance is this conversation on November 11, 2026. The concrete
+anchor packet was committed as `95e86db534e6c06a858449550a93bc55a4128544` on
+`plan/phase-d`, PR #135 targeting `develop`.
+
+The approval question was:
+
+> May I send Phase D anchor text, intent excerpts, candidate questions, and fictional test cases to Jev/TypeSafe for validation and rechecks?
+
+The user answered:
+
+> yes. make sure jev approval is committed and in pr to develop
+
+This is export authorization, not adoption of the five proposed anchors or a
+claim that validation passed. Existing approval and independent-verification
+requirements for anchor adoption remain in force.
