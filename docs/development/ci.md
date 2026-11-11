@@ -29,12 +29,23 @@ limit cache size. Cache misses run the same checks; caches never decide whether
 to test. The cache action saves after successful jobs and scopes entries by
 branch as documented by [actions/cache](https://github.com/actions/cache).
 
-A separate exact-version cache installs sc-compose 1.8.0 with `--locked` into a
-runner-temporary tool root. Every restored binary must report the exact version
-before entering PATH. No Cargo credentials, generated application source,
-databases, logs or Python environments are cached. Jobs have separate runner
-filesystems; competing saves of the same immutable tool key cannot share a live
-build directory. Windows skips this POSIX generation tool cache.
+A separate exact-version cache installs the pinned `sc-compose` release binary
+from [randlee/sc-compose](https://github.com/randlee/sc-compose) GitHub
+Releases (default `compose-version` `1.7.0` on `rust-build-cache`), with
+`checksums.txt` verification, into a runner-temporary tool root. CI does not run
+`cargo install sc-compose`: that path recompiles the crate against the current
+crates.io index, so an unrelated upstream release (for example a newer
+`sc-composer`) can break a pin that still targets `sc-compose` 1.7.0. Release
+binaries are immutable at publish time; bump `compose-version` only when this
+repository deliberately moves generation to a newer CLI. Generated applications
+and downstream templates may install another `sc-compose` release locally via
+`SC_COMPOSE` or `PATH`; that choice does not require this pin to change unless
+this repo adopts the newer tool for its own generation jobs. Every restored
+binary must report the exact version before entering PATH. No Cargo credentials,
+generated application source, databases, logs or Python environments are cached.
+Jobs have separate runner filesystems; competing saves of the same immutable tool
+key cannot share a live build directory. Windows skips this POSIX generation tool
+cache.
 
 Measured baseline at `d224c62` ([Crate CI 41236706275](https://github.com/randlee/sc-runtime/actions/runs/41236706275)):
 Linux job 56m25s, lint 3m49s, test 49m26s. The test step's buffered output does
