@@ -3836,7 +3836,7 @@
       "stated_at": "2026-11-12",
       "context": "storage contract direction: atomic transactions, cron feature withdrawn",
       "summary": "public storage functions do not panic",
-      "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+      "scope": "plan items that write or change public storage functions in this phase, in any crate: storage traits and engine backends (such as sc-storage and sc-runtime-db-sqlite), domain stores built on generic storage (such as sc-cron's CronStore/CronStorage), and template stores",
       "deterministic_check": "sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
       "fixtures": {
         "pass": [
@@ -3847,7 +3847,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -3900,6 +3900,13 @@
           "at": "2026-11-12T09:47:17+00:00",
           "event": "exclusion_removed",
           "item": "run-d-9"
+        },
+        {
+          "at": "2026-11-12T09:59:22+00:00",
+          "event": "updated",
+          "fields": [
+            "scope"
+          ]
         }
       ]
     },

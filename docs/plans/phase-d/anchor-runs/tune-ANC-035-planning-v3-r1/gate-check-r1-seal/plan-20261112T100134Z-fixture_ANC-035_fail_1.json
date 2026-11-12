@@ -1,0 +1,149 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261112T100134Z-fixture_ANC-035_fail_1",
+  "gate": "plan",
+  "created_at": "2026-11-12T10:01:34+00:00",
+  "anchors_path": "docs/plans/phase-d/anchors.json",
+  "plan": "phase-d",
+  "item": {
+    "id": "fixture:ANC-035:fail:1",
+    "title": "fixture",
+    "source": "fixtures",
+    "chars": 111,
+    "truncated": false
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "extra_questions": [],
+  "results": [
+    {
+      "anchor_id": "ANC-035",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Public storage functions MUST NOT panic.",
+      "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 3,
+      "deterministic_check": "sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
+      "kind": "prohibition",
+      "leaning": "contradicted",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "983f22a71c82506623d9417af589c8694dc21f572ccc364a530782432d28579a",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item touches none of them, including public functions that do not read or write stored data.",
+            "unclear": "The item is too vague to tell.",
+            "yes": "The item touches public functions of sc-storage, sc-runtime-db-sqlite or another storage engine backend, of a domain store built on generic storage such as sc-cron's CronStore/CronStorage, or of a template store."
+          },
+          "instructions": "Does `item.text` touch the public storage functions described in `anchor.scope`? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No: the item is silent about panics, only generally topical about errors, or plans a panic.",
+            "unclear": "Whether the item commits to not panicking cannot be determined.",
+            "yes": "Yes: the item states the public storage functions do not panic."
+          },
+          "instructions": "Does `item.text` state that the public storage functions it touches avoid panicking (returning typed errors instead of panicking, or denying unwrap/expect/panic)? Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No such outcome is stated, including when the item is silent about panics.",
+            "unclear": "It may let a public storage function panic but cannot be determined.",
+            "yes": "A public storage function is stated to panic on some path."
+          },
+          "instructions": "Does `item.text` plan for a public sc-storage, sc-runtime-db-sqlite or template store function to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Silence about panics is not conflict; unwrap in tests and panics outside storage code are outside `anchor.statement`. Judge conflict only.",
+          "type": "choice"
+        }
+      },
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.16,
+          "probabilities": {
+            "no": 0.3,
+            "unclear": 0.26,
+            "yes": 0.44
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.38,
+          "probabilities": {
+            "no": 0.24,
+            "unclear": 0.17,
+            "yes": 0.59
+          }
+        }
+      },
+      "min_confidence": 0.16,
+      "explanation": "Jev was not confident (min confidence 0.16); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 876,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "relevance",
+          "question_id": "relevant",
+          "choice": "yes",
+          "confidence": 0.16
+        },
+        {
+          "ask": "first",
+          "role": "conflict",
+          "question_id": "contradicted",
+          "choice": "yes",
+          "confidence": 0.38
+        }
+      ],
+      "attempts": 1,
+      "item_chars_sent": 111,
+      "item_shortened": false,
+      "request_bytes": 2275
+    }
+  ],
+  "summary": {
+    "counts": {
+      "underspecified": 1
+    },
+    "failing": [
+      "ANC-035"
+    ],
+    "leaning_counts": {
+      "contradicted": 1
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [],
+    "shortened": [],
+    "pass": false
+  }
+}

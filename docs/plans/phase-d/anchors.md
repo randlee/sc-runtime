@@ -862,11 +862,11 @@ Anchor: Public storage functions MUST NOT panic.
 
 > public storage functions return `Result<T, E>` with a typed error and do not panic
 
-Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 3.
 
 Summary: public storage functions do not panic
 
-Scope: plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)
+Scope: plan items that write or change public storage functions in this phase, in any crate: storage traits and engine backends (such as sc-storage and sc-runtime-db-sqlite), domain stores built on generic storage (such as sc-cron's CronStore/CronStorage), and template stores
 
 Deterministic check to pair with the development gate: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates
 
