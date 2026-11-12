@@ -1761,6 +1761,40 @@
           "status": "locked"
         }
       ]
+    },
+    {
+      "id": "ADR-RUN-0011",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0011",
+      "statement": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
+      "quote": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "planning session",
+      "summary": "block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e)",
+      "scope": "plan items that change async/blocking rules, the SQLite writer or reader pool, or code that bridges sync and async",
+      "deterministic_check": "grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:44:29+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
     }
   ]
 }

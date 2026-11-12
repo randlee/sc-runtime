@@ -38,6 +38,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-030 | locked | cron keeps one active row per schedule name | 2026-11-11 |
 | ANC-031 | locked | cron keeps caller-supplied row limit | 2026-11-11 |
 | ANC-032 | locked | SQLite/Postgres/MySQL implement one Storage<T> | 2026-11-11 |
+| ADR-RUN-0011 | locked | block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e) | 2026-11-11 |
 
 ## ANC-001
 
@@ -604,3 +605,17 @@ Summary: SQLite/Postgres/MySQL implement one Storage<T>
 Scope: plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend
 
 Deterministic check to pair with the development gate: grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path
+
+## ADR-RUN-0011
+
+Anchor: Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.
+
+> Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.
+
+Said by randlee, planning session, 2026-11-11. Status: locked. Version 1.
+
+Summary: block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e)
+
+Scope: plan items that change async/blocking rules, the SQLite writer or reader pool, or code that bridges sync and async
+
+Deterministic check to pair with the development gate: grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module
