@@ -5,12 +5,12 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 1411,
+      &quot;after_chars&quot;: 3337,
       &quot;before_chars&quot;: 1085,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 5105,
+      &quot;after_chars&quot;: 7720,
       &quot;before_chars&quot;: 2942,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
@@ -20,7 +20,73 @@
       &quot;field&quot;: &quot;design&quot;
     }
   ],
-  &quot;exclusions&quot;: [],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+      &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+      &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+      &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+      &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+      &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    }
+  ],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:45:17+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -43,15 +109,68 @@
   },
   &quot;id&quot;: &quot;run-d-11&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
-    &quot;excluded&quot;: [],
+    &quot;created_at&quot;: &quot;2026-11-12T23:33:45+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+        &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+        &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+        &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+        &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+        &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+        &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+      }
+    ],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-11&quot;,
-    &quot;score&quot;: &quot;1/1&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T233345Z-run-d-11&quot;,
+    &quot;score&quot;: &quot;34/34&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 18,
+  &quot;runs&quot;: 24,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -518,14 +637,396 @@
       &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-11&quot;,
       &quot;score&quot;: &quot;1/1&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T22:52:55+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-044&quot;,
+        &quot;ANC-050&quot;,
+        &quot;ANC-054&quot;,
+        &quot;ANC-060&quot;,
+        &quot;ANC-062&quot;,
+        &quot;ANC-063&quot;,
+        &quot;ANC-039&quot;,
+        &quot;ANC-040&quot;,
+        &quot;ANC-043&quot;,
+        &quot;ANC-045&quot;,
+        &quot;ANC-046&quot;,
+        &quot;ANC-047&quot;,
+        &quot;ANC-048&quot;,
+        &quot;ANC-052&quot;,
+        &quot;ANC-053&quot;,
+        &quot;ANC-056&quot;,
+        &quot;ANC-059&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T225255Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;25/42&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:06:02+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;,
+        &quot;ANC-055&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T230602Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;32/34&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:18:00+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-022&quot;,
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T231800Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;32/34&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:25:05+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-051&quot;,
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T232505Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;32/34&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:29:04+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T232904Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;33/34&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:33:45+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T233345Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;34/34&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-11: d-11: generated-app-composition
-Gate FAIL 12/22 -&gt; PASS 1/1 over 18 runs.
+Gate FAIL 12/22 -&gt; PASS 34/34 over 24 runs.
 Failing at first run: ANC-036, ANC-003, ANC-012, ANC-016, ANC-019, ANC-025, ANC-027, ANC-028, ANC-031, ANC-033.
 Failing now: none.
+Excluded ANC-015: d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.
+Excluded ANC-024: Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
+Excluded ANC-025: Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
+Excluded ANC-036: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.
+Excluded ANC-038: d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.
+Excluded ANC-039: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-040: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-044: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-045: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-046: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-047: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-052: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded ANC-062: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
 Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     </div>
   </div>
@@ -534,12 +1035,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>12/22</td><td>ANC-036, ANC-003, ANC-012, ANC-016, ANC-019, ANC-025, ANC-027, ANC-028, ANC-031, ANC-033</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>34/34</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 18 runs</summary>
+    <summary>All 24 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -561,20 +1062,45 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T092117Z-run-d-11</code></td><td>2026-11-12T09:21:17+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/19</td><td>ANC-037, ANC-038</td></tr>
         <tr><td><code>plan-20261112T094150Z-run-d-11</code></td><td>2026-11-12T09:41:50+00:00</td><td><span class="status status-pass">PASS</span></td><td>18/18</td><td></td></tr>
         <tr><td><code>plan-20261112T100339Z-run-d-11</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+        <tr><td><code>plan-20261112T225255Z-run-d-11</code></td><td>2026-11-12T22:52:55+00:00</td><td><span class="status status-fail">FAIL</span></td><td>25/42</td><td>ANC-044, ANC-050, ANC-054, ANC-060, ANC-062, ANC-063, ANC-039, ANC-040, ANC-043, ANC-045, ANC-046, ANC-047, ANC-048, ANC-052, ANC-053, ANC-056, ANC-059</td></tr>
+        <tr><td><code>plan-20261112T230602Z-run-d-11</code></td><td>2026-11-12T23:06:02+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/34</td><td>ANC-054, ANC-055</td></tr>
+        <tr><td><code>plan-20261112T231800Z-run-d-11</code></td><td>2026-11-12T23:18:00+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/34</td><td>ANC-022, ANC-054</td></tr>
+        <tr><td><code>plan-20261112T232505Z-run-d-11</code></td><td>2026-11-12T23:25:05+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/34</td><td>ANC-051, ANC-054</td></tr>
+        <tr><td><code>plan-20261112T232904Z-run-d-11</code></td><td>2026-11-12T23:29:04+00:00</td><td><span class="status status-fail">FAIL</span></td><td>33/34</td><td>ANC-054</td></tr>
+        <tr><td><code>plan-20261112T233345Z-run-d-11</code></td><td>2026-11-12T23:33:45+00:00</td><td><span class="status status-pass">PASS</span></td><td>34/34</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-015">ANC-015</a></th><td>d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-036">ANC-036</a></th><td>Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-038">ANC-038</a></th><td>d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-039">ANC-039</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-040">ANC-040</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-044">ANC-044</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-045">ANC-045</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-046">ANC-046</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-047">ANC-047</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-052">ANC-052</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-062">ANC-062</a></th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>this round</td></tr>
+    </tbody>
+  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="eq">1. Wire real generated service/storage/cron in daemon/CLI/schema/config/hooks/wizard for SQLite/Postgres/MySQL and supported combined layouts. SQLite app data and cron rows default to one app file and the same SqliteDatabase/channel writer; remove cron.db/database_path and SQLx SQLite driver — REQ-RUN-0328; ANC-021/028/032.</div><div class="eq">2. Reject db=none+cron=true before generation. Invoke d-9 migration only on an explicitly supplied legacy cron file, preserving existing rows; no ongoing second cron database — REQ-RUN-0326; ANC-029.</div><div class="eq">3. Exercise actual CLI/HTTP/MCP read/write paths with real Python/Monty transforms and live claimed engines; update generation/getting-started docs and generation tests with the shipped0.3.0 interfaces — REQ-RUN-0201/0302/0702; ADR-RUN-0021.</div><div class="eq"></div><div class="ad">+ </div><div class="ad">+ </div><div class="ad">+ 4. Invoke d-3&#x27;s single manifest checker on the real generated outputs; Every registry requirement in the template manifests changed here is &gt;= its tested floor with no upper bound (ANC-037); no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.</div><div class="ad">+ </div><div class="eq">## This sprint does not close</div><div class="eq">Eight-crate publication and actual upstream beads-cache migration/registry-only proof are d-12. This sprint runs development-source generated consumers and may not call them registry proof. No synchronization/code generator/config reload/unspecified permissions feature.</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="eq">1. Wire real generated service/storage/cron in daemon/CLI/schema/config/hooks/wizard for SQLite/Postgres/MySQL and supported combined layouts. SQLite app data and cron rows default to one app file and the same SqliteDatabase/channel writer; remove cron.db/database_path and SQLx SQLite driver — REQ-RUN-0328; ANC-021/028/032.</div><div class="eq">2. Reject db=none+cron=true before generation. Invoke d-9 migration only on an explicitly supplied legacy cron file, preserving existing rows; no ongoing second cron database — REQ-RUN-0326; ANC-029.</div><div class="eq">3. Exercise actual CLI/HTTP/MCP read/write paths with real Python/Monty transforms and live claimed engines; update generation/getting-started docs and generation tests with the shipped0.3.0 interfaces — REQ-RUN-0201/0302/0702; ADR-RUN-0021.</div><div class="eq"></div><div class="ad">+ </div><div class="ad">+ </div><div class="ad">+ 4. Invoke d-3&#x27;s single manifest checker on the real generated outputs; Every registry requirement in the template manifests changed here is &gt;= its tested floor with no upper bound (ANC-037); no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.</div><div class="ad">+ </div><div class="eq">## This sprint does not close</div><div class="rm">- Eight-crate publication and actual upstream beads-cache migration/registry-only proof are d-12. This sprint runs development-source generated consumers and may not call them registry proof. No synchronization/code generator/config reload/unspecified permissions feature.</div><div class="ad">+ Nine-crate publication and actual upstream beads-cache migration/registry-only proof are d-12. This sprint runs development-source generated consumers and may not call them registry proof. No synchronization/code generator/config reload/unspecified permissions feature.</div><div class="ad">+ Monty selection is independent of cron: remove template feature coupling monty -&gt; cron. Actual generated no-cron Postgres service executes a runtime-loaded Monty transform through sc-monty; cron-selected profiles use that same implementation and their JSON-enrichment command path. Preserve existing hook/integration tests. D-5 registers template service dependencies; this sprint owns daemon/CLI/wizard feature selection and real wiring (owner items 1/3/5/7).</div><div class="ad">+ </div><div class="ad">+ After d-9&#x27;s sc-cron-commands handoff and d-10&#x27;s common helper delivery, integrate the complete user cron command set: cron.start and cron.end use storage_write; cron.list uses storage_read. A library-provided policy adapter delegates to existing CronStorage domain operations, retaining active-name, row-limit and generation checks; consumers need no app-written storage action. After d-3&#x27;s completed daemon-manifest handoff, remove monty -&gt; cron coupling in template/crates/daemon/Cargo.toml; a no-cron app selects sc-monty independently. No parallel edits to this manifest.</div><div class="ad">+ </div><div class="ad">+ The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054).</div><div class="ad">+ </div><div class="ad">+ The sc-cron-commands handoff is source/tests/README only. Its dependency manifest remains d-9-owned until d-12 takes release-version lines; this sprint does not edit crates/sc-cron-commands/Cargo.toml and introduces no new dependency there.</div><div class="ad">+ </div><div class="ad">+ In generated SQLite+cron profiles, application writes, cron command writes and scheduler persistence all use Storage&lt;T&gt; backed by the same SqliteDatabase instance, its single bounded write channel, dedicated writer thread and sole write-mode connection. Cron policy atomic operations submit through that same writer; there is no second SQLite write path. Preserve the d-9 scheduler operations and their existing tests (ANC-022/023/033).</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="ch">req:REQ-RUN-0328/shared-storage — Live generated SQLite app+cron rows use the same database/handle, one writer owning its only write connection, <del>queued</del><ins>per</ins> <del>transactions</del><ins>root</ins> <del>with</del><ins>writer</ins> <del>replies after commit.</del><ins>constraints.</ins> Async callers await without blocking/spawn_blocking. cargo metadata/tree shows one patched libsqlite3-sys&gt;=0.39 and no SQLx SQLite driver, for cron on/off and selected combined layouts; cargo deny check advisories clears target SQLite/rmcp advisories. <del>Readers</del><ins>Reader blocking_recv runs only on dedicated non-async worker threads with no runtime; async storage callers never block or</ins> use <del>blocking_recv</del><ins>spawn_blocking</ins> <del>and</del><ins>to</ins> <del>no</del><ins>submit</ins> <del>runtime.</del><ins>writes (ANC-027).</ins> Other engines implement shared Storage&lt;T&gt; without SQLite exposure unless selected.</div><div class="eq">req:REQ-CRON-0004/app-db — Preserve one active schedule per name, caller-supplied row limits including unlimited, stable IDs and per-row (id,generation) FENCED rejection; atomic set_enabled_many/replace_and_set_enabled remain all-or-nothing. Port actual two-process assertions with controlled process/channel barriers; preserve source crosswalk semantics. Populated cron.db migration retains every schedule field in app DB and reruns safely.</div><div class="eq">req:REQ-RUN-0326/layouts — db=none+cron rejected before any generated output; supported layouts render/build and actual cron uses app storage, no cron.db default setting.</div><div class="eq">req:REQ-RUN-0201/transforms — Actual CLI/HTTP/MCP service read/write runs the real Python/Monty transform; failures retain typed errors. Live SQLite/Postgres/MySQL services and selected combined layouts execute actual end-to-end procedures; no doubles stand in for engine/transport proof.</div><div class="ch">Required: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; full generation unittest suite, tests/integration/storage-v2 live engine/transport procedures and target advisory checks on fresh generated resolves. <del>Required minimum/latest generated CI jobs run, driven by d-3 recipes. </del>Docs/links match actual generated APIs. No publication proof claimed.</div><div class="eq">Run the ONE shared async CronStorage conformance suite on actual generic SQLite/Postgres/MySQL providers through sc-cron CronStore; deterministic two-process providers port active-name/limit/fencing/atomic cases. Backends contain no CronRow type/schema/SQL. Legacy migration is d-9 app-owned code invoked by composition. Public storage failure/panic tests use typed Result semantics and real waiting callers, not a delay heuristic.</div><div class="rm">- Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies plus patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. No-Panic/await analyzer actual external gates apply to changed storage code; blocked external rules remain visible, no fabricated pass.</div><div class="ad">+ Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies selecting no SQLite feature, so no sqlx SQLite driver is in any graph, plus the patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. Actual sc-lint#931 no-panic and transaction-body analyzer checks apply to changed template storage code; until delivered and passing, closure remains blocked. Record their actual commands and external state when available; runtime tests never substitute for static analysis.</div><div class="ad">+ req:REQ-RUN-0328/mixed-dependencies — Direct sqlx-core/engine/macros requirements select NO SQLite feature; cargo tree -i sqlx-sqlite selects no package in sqlite-postgres/sqlite-mysql too. Generated/production crates gain no sc-compose or ATM dependency, enforced by existing boundary lint (ANC-012/028).</div><div class="ad">+ req:REQ-CRON-0004/limit — The live shared app database refuses new schedule rows at the embedding app&#x27;s configured row limit; exercise the ported case against real providers (ANC-031). The conformance suite executes the generic atomic multi-row operation on SQLite, Postgres and MySQL, proving all-or-nothing behavior (ANC-033).</div><div class="ad">+ req:REQ-RUN-0328/selected-native-tree — The cargo tree of EVERY selected layout (SQLite alone, cron on/off, sqlite-postgres and sqlite-mysql) contains NO sqlx SQLite driver crate. SQLx direct core/driver/macros crates are selected only for Postgres/MySQL; cargo tree -i sqlx-sqlite must select nothing in every case (ANC-028).</div><div class="ad">+ req:REQ-RUN-0328/generator-compatibility — Generation/setup instructions declare the repository sc-compose CLI minimum as &gt;=1.8.0, using .sc/generation-tools.json as the source. Run the supported layout generation procedures with CLI1.8.0 and compatible CLI commands; generation succeeds at that floor. d-4 owns that declared tool requirement and executable-selection check; d-11 updates the layout instructions and generation tests using it (ANC-003/005).</div><div class="ad">+ req:REQ-RUN-0328/lifecycle — Using controlled shutdown and writer-failure signals, stop HTTP/MCP intake and scheduler work, drain/cancel in-flight work under the existing grace budget, await SqliteDatabase::shutdown and join its writer before releasing runtime/logger ownership (ADR-RT-0005). Every admitted write commits or returns a typed failure; writer failure stops intake instead of leaving a healthy-looking daemon. Use existing runtime shutdown control, not a new health endpoint.</div></div>
+    <div class="diff"><div class="ch">req:REQ-RUN-0328/shared-storage — Live generated SQLite app+cron rows use the same database/handle, one writer owning its only write connection, <del>queued</del><ins>per</ins> <del>transactions</del><ins>root</ins> <del>with</del><ins>writer</ins> <del>replies after commit.</del><ins>constraints.</ins> Async callers await without blocking/spawn_blocking. cargo metadata/tree shows one patched libsqlite3-sys&gt;=0.39 and no SQLx SQLite driver, for cron on/off and selected combined layouts; cargo deny check advisories clears target SQLite/rmcp advisories. <del>Readers</del><ins>Reader blocking_recv runs only on dedicated non-async worker threads with no runtime; async storage callers never block or</ins> use <del>blocking_recv</del><ins>spawn_blocking</ins> <del>and</del><ins>to</ins> <del>no</del><ins>submit</ins> <del>runtime.</del><ins>writes (ANC-027).</ins> Other engines implement shared Storage&lt;T&gt; without SQLite exposure unless selected.</div><div class="eq">req:REQ-CRON-0004/app-db — Preserve one active schedule per name, caller-supplied row limits including unlimited, stable IDs and per-row (id,generation) FENCED rejection; atomic set_enabled_many/replace_and_set_enabled remain all-or-nothing. Port actual two-process assertions with controlled process/channel barriers; preserve source crosswalk semantics. Populated cron.db migration retains every schedule field in app DB and reruns safely.</div><div class="eq">req:REQ-RUN-0326/layouts — db=none+cron rejected before any generated output; supported layouts render/build and actual cron uses app storage, no cron.db default setting.</div><div class="eq">req:REQ-RUN-0201/transforms — Actual CLI/HTTP/MCP service read/write runs the real Python/Monty transform; failures retain typed errors. Live SQLite/Postgres/MySQL services and selected combined layouts execute actual end-to-end procedures; no doubles stand in for engine/transport proof.</div><div class="ch">Required: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; full generation unittest suite, tests/integration/storage-v2 live engine/transport procedures and target advisory checks on fresh generated resolves. <del>Required minimum/latest generated CI jobs run, driven by d-3 recipes. </del>Docs/links match actual generated APIs. No publication proof claimed.</div><div class="eq">Run the ONE shared async CronStorage conformance suite on actual generic SQLite/Postgres/MySQL providers through sc-cron CronStore; deterministic two-process providers port active-name/limit/fencing/atomic cases. Backends contain no CronRow type/schema/SQL. Legacy migration is d-9 app-owned code invoked by composition. Public storage failure/panic tests use typed Result semantics and real waiting callers, not a delay heuristic.</div><div class="rm">- Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies plus patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. No-Panic/await analyzer actual external gates apply to changed storage code; blocked external rules remain visible, no fabricated pass.</div><div class="ad">+ Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies selecting no SQLite feature, so no sqlx SQLite driver is in any graph, plus the patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. Actual sc-lint#931 no-panic and transaction-body analyzer checks apply to changed template storage code; until delivered and passing, closure remains blocked. Record their actual commands and external state when available; runtime tests never substitute for static analysis.</div><div class="ad">+ req:REQ-RUN-0328/mixed-dependencies — Direct sqlx-core/engine/macros requirements select NO SQLite feature; cargo tree -i sqlx-sqlite selects no package in sqlite-postgres/sqlite-mysql too. Generated/production crates gain no sc-compose composition-crate or ATM dependency; sc-sha remains permitted, enforced by existing boundary lint (ANC-061/028).</div><div class="ad">+ req:REQ-CRON-0004/limit — The live shared app database refuses new schedule rows at the embedding app&#x27;s configured row limit; exercise the ported case against real providers (ANC-031). The conformance suite executes the generic atomic multi-row operation on SQLite, Postgres and MySQL, proving all-or-nothing behavior (ANC-033).</div><div class="ad">+ req:REQ-RUN-0328/selected-native-tree — The cargo tree of EVERY selected layout (SQLite alone, cron on/off, sqlite-postgres and sqlite-mysql) contains NO sqlx SQLite driver crate. SQLx direct core/driver/macros crates are selected only for Postgres/MySQL; cargo tree -i sqlx-sqlite must select nothing in every case (ANC-028).</div><div class="ad">+ req:REQ-RUN-0328/generator-compatibility — Generation/setup instructions declare the repository sc-compose CLI minimum as &gt;=1.8.0, using .sc/generation-tools.json as the source. Run the supported layout generation procedures with CLI1.8.0 and compatible CLI commands; generation succeeds at that floor. d-4 owns that declared tool requirement and executable-selection check; d-11 updates the layout instructions and generation tests using it (ANC-003/005).</div><div class="ad">+ req:REQ-RUN-0328/lifecycle — Using controlled shutdown and writer-failure signals, stop HTTP/MCP intake and scheduler work, drain/cancel in-flight work under the existing grace budget, await SqliteDatabase::shutdown and join its writer before releasing runtime/logger ownership (ADR-RT-0005). Every admitted write commits or returns a typed failure; writer failure stops intake instead of leaving a healthy-looking daemon. Use existing runtime shutdown control, not a new health endpoint.</div><div class="ad">+ </div><div class="ad">+ req:REQ-RUN-0201/shared-interpreter — Generate Monty with Postgres and cron disabled, build and run its real transform, change source without rebuilding and observe the new value. A cron-selected generated app invokes cron.start/end through storage_write and cron.list through storage_read; these are all cron commands and none bypasses the shared path. The app modifies user JSON before persistence; sc-cron converts it to Monty values, never JSON strings, before passing it to hooks. Widget.create/delete use storage_write and widget.get uses storage_read; the direct-conversion example needs no hand-written transform or app-written storage action. No second Monty host is generated. Existing selected-layout and hook integration assertions remain in force.</div><div class="ad">+ </div><div class="ad">+ req:REQ-RUN-0201/cron-integration — The actual generated app stores cron rows in its app SQLite file by default, rejects a second active schedule of the same name and a new schedule at the configured row limit through cron.start, and preserves fenced cron.end. Run the ported sc-cron-commands suite and generated CLI/HTTP/MCP integration on the same policy adapter. The generated usage docs state that Transform/storage_read/storage_write are provisional, not yet stable in0.3.0 (ANC-021/030/031/050).</div><div class="ad">+ </div><div class="ad">+ req:REQ-RUN-0201/cron-submit — cron.start rejects non-compiling source at schedule write, before any tick, through the delivered sc-cron policy API; retain that assertion when routing commands (ANC-048).</div><div class="ad">+ </div><div class="ad">+ boundary:cron-start-transform — For the implemented Phase D cron.start flow, the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. Transform/storage_read/storage_write remain provisional: this current flow does not prohibit later adding a second transform input, a typed Ok outcome with no write distinct from Err, or a transform inside an atomic transaction. Those three behaviors are not implemented in Phase D; the extensible seam delivered by d-10 preserves their later addition. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043).</div></div>
   </details>
   <details>
     <summary>design</summary>

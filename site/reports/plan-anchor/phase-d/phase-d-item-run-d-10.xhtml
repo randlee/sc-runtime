@@ -5,22 +5,133 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 1459,
+      &quot;after_chars&quot;: 2849,
       &quot;before_chars&quot;: 1038,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 2660,
+      &quot;after_chars&quot;: 4647,
       &quot;before_chars&quot;: 2198,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
     {
-      &quot;after_chars&quot;: 3639,
+      &quot;after_chars&quot;: 4358,
       &quot;before_chars&quot;: 2886,
       &quot;field&quot;: &quot;design&quot;
     }
   ],
-  &quot;exclusions&quot;: [],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+      &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+      &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+      &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+      &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+      &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+      &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+      &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+      &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+      &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+      &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+      &quot;reason&quot;: &quot;This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    }
+  ],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:44:01+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -41,15 +152,104 @@
   },
   &quot;id&quot;: &quot;run-d-10&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
-    &quot;excluded&quot;: [],
+    &quot;created_at&quot;: &quot;2026-11-12T23:32:36+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+        &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+        &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+        &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+        &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+        &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+        &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+        &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+        &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+        &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+        &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+        &quot;reason&quot;: &quot;This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+        &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+      }
+    ],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-10&quot;,
-    &quot;score&quot;: &quot;1/1&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T233236Z-run-d-10&quot;,
+    &quot;score&quot;: &quot;19/19&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 14,
+  &quot;runs&quot;: 19,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -624,14 +824,492 @@
       &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-10&quot;,
       &quot;score&quot;: &quot;1/1&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T22:51:55+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+          &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-021&quot;,
+        &quot;ANC-030&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-039&quot;,
+        &quot;ANC-040&quot;,
+        &quot;ANC-042&quot;,
+        &quot;ANC-044&quot;,
+        &quot;ANC-045&quot;,
+        &quot;ANC-047&quot;,
+        &quot;ANC-048&quot;,
+        &quot;ANC-061&quot;,
+        &quot;ANC-062&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T225155Z-run-d-10&quot;,
+      &quot;score&quot;: &quot;18/30&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:05:28+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+          &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-053&quot;,
+        &quot;ANC-054&quot;,
+        &quot;ANC-055&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T230528Z-run-d-10&quot;,
+      &quot;score&quot;: &quot;15/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:17:20+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+          &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-046&quot;,
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T231720Z-run-d-10&quot;,
+      &quot;score&quot;: &quot;18/20&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:24:32+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+          &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T232432Z-run-d-10&quot;,
+      &quot;score&quot;: &quot;18/19&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:32:36+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-10 does not touch the SQLite backend or its writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-028&quot;,
+          &quot;reason&quot;: &quot;The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-10 touches no storage backend crate; its application stores live in the application layer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-039&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-040&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-042&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-045&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-046&quot;,
+          &quot;reason&quot;: &quot;This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-047&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-048&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-062&quot;,
+          &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T233236Z-run-d-10&quot;,
+      &quot;score&quot;: &quot;19/19&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-10: d-10: shared-service-transforms
-Gate FAIL 3/11 -&gt; PASS 1/1 over 14 runs.
+Gate FAIL 3/11 -&gt; PASS 19/19 over 19 runs.
 Failing at first run: ANC-032, ANC-033, ANC-003, ANC-017, ANC-022, ANC-028, ANC-029, ANC-034.
 Failing now: none.
+Excluded ANC-003: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.
+Excluded ANC-021: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-022: d-10 does not touch the SQLite backend or its writer, which d-6 owns.
+Excluded ANC-026: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.
+Excluded ANC-027: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.
+Excluded ANC-028: The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.
+Excluded ANC-029: d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.
+Excluded ANC-030: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-031: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-032: d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.
+Excluded ANC-033: d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.
+Excluded ANC-034: d-10 touches no storage backend crate; its application stores live in the application layer.
+Excluded ANC-038: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.
+Excluded ANC-039: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-040: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-042: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-044: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-045: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-046: This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.
+Excluded ANC-047: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-048: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded ANC-062: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
 Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     </div>
   </div>
@@ -640,12 +1318,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>3/11</td><td>ANC-032, ANC-033, ANC-003, ANC-017, ANC-022, ANC-028, ANC-029, ANC-034</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>19/19</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 14 runs</summary>
+    <summary>All 19 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -663,23 +1341,56 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T094141Z-run-d-10</code></td><td>2026-11-12T09:41:41+00:00</td><td><span class="status status-fail">FAIL</span></td><td>3/4</td><td>ANC-037</td></tr>
         <tr><td><code>plan-20261112T094952Z-run-d-10</code></td><td>2026-11-12T09:49:52+00:00</td><td><span class="status status-pass">PASS</span></td><td>4/4</td><td></td></tr>
         <tr><td><code>plan-20261112T100339Z-run-d-10</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+        <tr><td><code>plan-20261112T225155Z-run-d-10</code></td><td>2026-11-12T22:51:55+00:00</td><td><span class="status status-fail">FAIL</span></td><td>18/30</td><td>ANC-021, ANC-030, ANC-031, ANC-039, ANC-040, ANC-042, ANC-044, ANC-045, ANC-047, ANC-048, ANC-061, ANC-062</td></tr>
+        <tr><td><code>plan-20261112T230528Z-run-d-10</code></td><td>2026-11-12T23:05:28+00:00</td><td><span class="status status-fail">FAIL</span></td><td>15/18</td><td>ANC-053, ANC-054, ANC-055</td></tr>
+        <tr><td><code>plan-20261112T231720Z-run-d-10</code></td><td>2026-11-12T23:17:20+00:00</td><td><span class="status status-fail">FAIL</span></td><td>18/20</td><td>ANC-046, ANC-054</td></tr>
+        <tr><td><code>plan-20261112T232432Z-run-d-10</code></td><td>2026-11-12T23:24:32+00:00</td><td><span class="status status-fail">FAIL</span></td><td>18/19</td><td>ANC-054</td></tr>
+        <tr><td><code>plan-20261112T233236Z-run-d-10</code></td><td>2026-11-12T23:32:36+00:00</td><td><span class="status status-pass">PASS</span></td><td>19/19</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-003">ANC-003</a></th><td>d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-021">ANC-021</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-10 does not touch the SQLite backend or its writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-026">ANC-026</a></th><td>d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-028">ANC-028</a></th><td>The generated SQLite app&#x27;s cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-030">ANC-030</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-031">ANC-031</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-032">ANC-032</a></th><td>d-10 consumes Storage&lt;T&gt; through the shared double and implements no engine backend.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-033">ANC-033</a></th><td>d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-034">ANC-034</a></th><td>d-10 touches no storage backend crate; its application stores live in the application layer.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-038">ANC-038</a></th><td>d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-039">ANC-039</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-040">ANC-040</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-042">ANC-042</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-044">ANC-044</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-045">ANC-045</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-046">ANC-046</a></th><td>This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-047">ANC-047</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-048">ANC-048</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-062">ANC-062</a></th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>this round</td></tr>
+    </tbody>
+  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="eq"></div><div class="eq">1. Implement the real generated service boundary using sc-storage Storage&lt;Tsql&gt;; implement the two default sc-command storage_read/storage_write combinators once and provide the application read/write path for existing CLI/MCP/HTTP service entrypoints with application-owned Tcli/Tsql conversions and WidgetStore&lt;S&gt; wrapper. — REQ-RUN-0201/0302; PRD-CMD-2/3/4.</div><div class="eq">2. Add a real Python/Monty-authored transform caller on that path, reusing existing hosting patterns without inventing a generator or permissions system. Blocking interpreter/I/O work stays off Tokio request workers. — PRD-CMD-5; NFR-RUN-0002.</div><div class="eq">3. Document sc-command default helper API/exports in its README, then replace per-layout widget-specific backend calls with the agreed Storage trait and port service behavior/error tests against the contract storage double. — REQ-RUN-0328; ADR0021.</div><div class="eq"></div><div class="ch">## <del>This</del><ins>Boundaries</ins> <del>sprint</del><ins>and</ins> <del>does not close</del><ins>handoffs</ins></div><div class="eq">Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.</div><div class="ad">+ After d-3&#x27;s compiled rmcp3.9 server/schema and public envelope/error compatibility lands, add sc-storage &gt;=0.2.0 (&gt;=0.3.0 at release), with no upper bound, in the handed-off command manifest without changing its already-open registry floors. Define Transform and StorageCommandError beside the plain generic async storage_read/storage_write functions; no StorageCommands wrapper (REQ-CMD-0002; REQ-RUN-0203/0331; ANC-037).</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="eq"></div><div class="ch">1. Implement the real generated service boundary using sc-storage Storage&lt;Tsql&gt;; implement the two default sc-command storage_read/storage_write combinators once and provide the application read/write path for existing CLI/MCP/HTTP service entrypoints with <del>application-owned</del><ins>default plain</ins> Tcli/Tsql <del>conversions</del><ins>conversions, replaceable by application rules</ins> and WidgetStore&lt;S&gt; wrapper. — REQ-RUN-0201/0302; PRD-CMD-2/3/4.</div><div class="ch">2. Add a real Python/Monty-authored transform caller on that path, <del>reusing</del><ins>calling</ins> <del>existing</del><ins>sc-monty</ins> <del>hosting</del><ins>directly,</ins> <del>patterns</del><ins>with</ins> <del>without</del><ins>runtime-loaded</ins> <del>inventing</del><ins>replaceable</ins> <del>a</del><ins>source and no second interpreter host,</ins> generator or permissions system. Blocking interpreter/I/O work stays off Tokio request workers. — PRD-CMD-5; NFR-RUN-0002.</div><div class="eq">3. Document sc-command default helper API/exports in its README, then replace per-layout widget-specific backend calls with the agreed Storage trait and port service behavior/error tests against the contract storage double. — REQ-RUN-0328; ADR0021.</div><div class="eq"></div><div class="rm">- ## This sprint does not close</div><div class="ad">+ 4. Route widget.create and widget.delete through storage_write and widget.get through storage_read, preserving WidgetStorage/StoresView domain behavior. A Tcli convertible directly to Tsql uses the default plain conversion without a hand-written transform; custom rules can replace it. — owner items 6/7.</div><div class="ad">+ 5. Document Transform/storage_read/storage_write as provisional in0.3.0. Use an extensible input/context and typed outcome seam with constructors/defaults so later second input, Ok with nothing written (distinct from Err), and atomic-transaction transforms can be added without breaking consumers. Build none of those three behaviors now and prohibit none. — owner item 4.</div><div class="ad">+ </div><div class="ad">+ ## Boundaries and handoffs</div><div class="eq">Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.</div><div class="ad">+ After d-3&#x27;s compiled rmcp3.9 server/schema and public envelope/error compatibility lands, add sc-storage &gt;=0.2.0 (&gt;=0.3.0 at release), with no upper bound, in the handed-off command manifest without changing its already-open registry floors. Define Transform and StorageCommandError beside the plain generic async storage_read/storage_write functions; no StorageCommands wrapper (REQ-CMD-0002; REQ-RUN-0203/0331; ANC-037).</div><div class="ad">+ </div><div class="ad">+ Transform source comes from an application-owned UTF-8 script file whose path is supplied when configuring the daemon&#x27;s Monty transform. Read that file at invocation; replacing its contents changes the next invocation without rebuilding. File-read/UTF-8 failures are typed transform errors. Source loading/value conversion are application adapters; all compile/session/host/limits behavior remains solely in sc-monty (ANC-049).</div><div class="ad">+ </div><div class="ad">+ The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054).</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="eq">boundary:template-service — service tests cover real common write/read and Python/Monty transform execution against the contract storage double; typed errors and existing DTO behavior hold; no unfinished branch. Run generated service crate tests/lints and workspace/boundary validation under the configured generation harness. This does not claim production database, transport or release integration; d-11 owns those.</div><div class="eq"></div><div class="eq">## Required validation commands</div><div class="eq">Generate a development-source consumer using just new &lt;temp-dir&gt; --var-file wizard/fixtures/postgres.json (no cron selected). Run cargo test --manifest-path &lt;temp-dir&gt;/crates/service/Cargo.toml and cargo clippy --manifest-path &lt;temp-dir&gt;/crates/service/Cargo.toml --all-targets -- -D warnings with required interpreter prerequisites; service contract tests use the controlled storage double and actual Python/Monty transform execution. Then build the generated workspace and run its configured sc-boundary profile. Existing legacy wrappers keep unrelated consumer code compiling until d-11 wiring; no live database or transport proof is claimed here.</div><div class="eq">Run cargo test -p sc-command --test storage_combinators with the real default combinators and controlled storage/transform errors; no per-app duplicate generic pipeline. No ATM/sc-compose or SQLx dependency in the shared storage/command seam.</div><div class="ch">boundary:template-service/preserved-crud — Existing create/get/delete/row-delete service behavior, generated IDs and typed errors are unchanged against shared double; default helper implementation/exports and README match the real sc-storage trait. <del>Prototype</del><ins>Implement the d-5-frozen, owner-ratified option (a)</ins> extension <del>remains explicitly pending user ratification,</del><ins>with</ins> no<del> silent</del> operation removal.</div><div class="eq">boundary:template-service/nonblocking — On a controlled single-thread runtime, interpreter worker signals entered then holds on a barrier. While held, an independent async task completes/acknowledges; only that acknowledgment releases the worker. Both success and panic map to typed Results; no sleeps, elapsed deadlines or load races establish correctness. Test cancellation/channel closure deterministically. Storage submission is never wrapped in spawn_blocking. cargo build --workspace passes at closure.</div><div class="ad">+ boundary:template-service/transform-limits — Before spawn_blocking, acquire a bounded transform permit or return a typed saturation error. Hold that permit until the worker actually exits, including caller cancellation. Apply the published Monty resource/deadline limits to computation itself, map expiry/errors/panic to typed transform errors, and test expiry/saturation/cancellation with controlled inputs. Timing out the JoinHandle alone is not termination proof.</div></div>
+    <div class="diff"><div class="eq">boundary:template-service — service tests cover real common write/read and Python/Monty transform execution against the contract storage double; typed errors and existing DTO behavior hold; no unfinished branch. Run generated service crate tests/lints and workspace/boundary validation under the configured generation harness. This does not claim production database, transport or release integration; d-11 owns those.</div><div class="eq"></div><div class="eq">## Required validation commands</div><div class="eq">Generate a development-source consumer using just new &lt;temp-dir&gt; --var-file wizard/fixtures/postgres.json (no cron selected). Run cargo test --manifest-path &lt;temp-dir&gt;/crates/service/Cargo.toml and cargo clippy --manifest-path &lt;temp-dir&gt;/crates/service/Cargo.toml --all-targets -- -D warnings with required interpreter prerequisites; service contract tests use the controlled storage double and actual Python/Monty transform execution. Then build the generated workspace and run its configured sc-boundary profile. Existing legacy wrappers keep unrelated consumer code compiling until d-11 wiring; no live database or transport proof is claimed here.</div><div class="ch">Run cargo test -p sc-command --test storage_combinators with the real default combinators and controlled storage/transform errors; no per-app duplicate generic pipeline. No ATM/sc-compose <ins>composition-crate </ins>or SQLx dependency in the shared storage/command <del>seam.</del><ins>seam; sc-sha is permitted (ANC-061).</ins></div><div class="ch">boundary:template-service/preserved-crud — Existing create/get/delete/row-delete service behavior, generated IDs and typed errors are unchanged against shared double; default helper implementation/exports and README match the real sc-storage trait. <del>Prototype</del><ins>Implement the d-5-frozen, owner-ratified option (a)</ins> extension <del>remains explicitly pending user ratification,</del><ins>with</ins> no<del> silent</del> operation removal.</div><div class="eq">boundary:template-service/nonblocking — On a controlled single-thread runtime, interpreter worker signals entered then holds on a barrier. While held, an independent async task completes/acknowledges; only that acknowledgment releases the worker. Both success and panic map to typed Results; no sleeps, elapsed deadlines or load races establish correctness. Test cancellation/channel closure deterministically. Storage submission is never wrapped in spawn_blocking. cargo build --workspace passes at closure.</div><div class="ad">+ boundary:template-service/transform-limits — Before spawn_blocking, acquire a bounded transform permit or return a typed saturation error. Hold that permit until the worker actually exits, including caller cancellation. Apply the published Monty resource/deadline limits to computation itself, map expiry/errors/panic to typed transform errors, and test expiry/saturation/cancellation with controlled inputs. Timing out the JoinHandle alone is not termination proof.</div><div class="ad">+ </div><div class="ad">+ boundary:shared-command-path — Existing widget.create/delete use storage_write and widget.get uses storage_read. The default command uses direct conversion and Storage&lt;T&gt;, with neither a hand-written transform nor an app-written storage action. Run cargo test -p sc-command --test storage_combinators; cron command routing and its tests are integrated by d-11 after its existing d-9/d-10 prerequisites (ANC-056/059/060/063).</div><div class="ad">+ </div><div class="ad">+ boundary:runtime-monty-source — Execute a transform through sc-monty, replace its source at run time and invoke again without rebuilding; observe the new result. Exercise the no-cron Postgres generated service; d-11 owns cron-command enrichment integration. The service/sc-command/sc-cron contain no duplicated Monty host. API/README mark the command seam provisional in0.3.0 and explain the three future extensions; no second-input, no-write or atomic-transform behavior is built in phase-d.</div><div class="ad">+ </div><div class="ad">+ boundary:production-dependencies — The changed normal/build dependency graphs of published sc-command and the generated service contain no ATM crate and no crate from the sc-compose repository except permitted sc-sha; check those existing graph/boundary inputs as well as the seam itself (ANC-061).</div><div class="ad">+ </div><div class="ad">+ boundary:cron-start-transform — For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043).</div></div>
   </details>
   <details>
     <summary>design</summary>
-    <div class="diff"><div class="rm">- Consumes only d-5 Storage&lt;T&gt;/mapping/error/extension contract. The service boundary owns typed command/transform behavior and can be tested independently with the contract double, not actual engine implementation. Proposed flow:</div><div class="ad">+ Consumes d-3&#x27;s compiled sc-command server/schema/envelope/error implementation with rmcp&gt;=3.9 and matching registry identities, plus d-5 Storage/row contracts.</div><div class="ad">+ Its storage/mapping/error/extension contract comes from d-5. The service boundary owns typed command/transform behavior and can be tested independently with the contract double, not actual engine implementation. Proposed flow:</div><div class="eq">write: decode Tcli -&gt; await app transform(Tcli)-&gt;Tsql -&gt; await storage.write(&amp;row) -&gt; existing envelope/error projection;</div><div class="eq">read: await storage.read(key)-&gt;Option&lt;Tsql&gt; -&gt; await app transform(Tsql)-&gt;Tcli -&gt; existing envelope/error projection.</div><div class="ch">Preserve the existing public widget DTO/error contract unless explicitly changed in d-5. Python/Monty function execution is real in service tests, storage is the controlled test double. No generator, registry or specified permission policy is added. Daemon/CLI/wizard wiring belongs to d-11, backend row codecs to d-6/7/8. <del>Existing</del><ins>Use the published</ins> Monty <ins>interpreter directly; preserve existing cron </ins>hook <del>internals are reused rather than rewritten as collateral work.</del><ins>code.</ins></div><div class="eq"></div><div class="rm">- Version is approved coordinated0.3.0; publication still requires all release gates. Source authority is PRD2 and proposed ADR0020/0021; scope B is selected by user.</div><div class="rm">- Consumes real d-5 sc-storage StorageCommands/Transform signatures; implement them once in sc-command/src/storage.rs, exported with the actual implementation. Application service supplies Tcli/Tsql transforms, including real Python/Monty execution, and uses controlled Storage&lt;T&gt; double. No runtime block_on/Handle/futures bridge or sleep in production. Service boundary manifests are generated by d-5 renderer at boundaries/&lt;prefixed-service&gt;/&lt;prefixed-service&gt;.toml; criteria target that emitted boundary/ADR0021.</div><div class="rm">- Interpreter mechanism: tokio::task::spawn_blocking for synchronous Monty/Python evaluation, following crates/sc-cron/src/monty_run.rs:183 execute_feed_with_logger pattern. It is explicitly allowed for interpreter execution, never to submit/wait for SQLite storage. Transform::apply awaits the JoinHandle and maps interpreter error/panic to typed transform error; no block_on or sleep. Transaction bodies may not call this mechanism or await interpreter/I/O; transformation completes before entering named atomic storage.</div><div class="rm">- Use schema::WidgetRow/WidgetId, WidgetStorage extension and StoresView exact contracts. Preserve CreateWidget/GetWidget/DeleteWidget/DeleteRow DTO behavior and error codes against the shared double, including store-generated IDs. Common commands come from real sc-storage trait definitions, not cloned contract signatures. Extension design is pending randlee ratification and builds at risk until sign-off.</div><div class="ad">+ Consumes real d-5 sc-storage Storage/row signatures; implement them once in sc-command/src/storage.rs, exported with the actual implementation. Application service supplies Tcli/Tsql transforms, including real Python/Monty execution, and uses controlled Storage&lt;T&gt; double. No runtime block_on/Handle/futures bridge or sleep in production. Service boundary manifests are generated by d-5 renderer at boundaries/&lt;prefixed-service&gt;/&lt;prefixed-service&gt;.toml; criteria target that emitted boundary/ADR0021.</div><div class="ad">+ Interpreter mechanism: tokio::task::spawn_blocking for synchronous Monty/Python evaluation, using published Monty ResourceLimits/ResourceTracker with the existing bounded feed pattern. It is explicitly allowed for interpreter execution, never to submit/wait for SQLite storage. Transform::apply awaits the JoinHandle and maps interpreter error/panic to typed transform error; no block_on or sleep. Transaction bodies may not call this mechanism or await interpreter/I/O; transformation completes before entering named atomic storage.</div><div class="ad">+ Use schema::WidgetRow/WidgetId, WidgetStorage extension and StoresView exact contracts. Preserve CreateWidget/GetWidget/DeleteWidget/DeleteRow DTO behavior and error codes against the shared double, including store-generated IDs. Common functions consume the real sc-storage Storage&lt;T&gt;/atomic contracts; Transform and command errors are local sc-command types. Consume the option (a) extension frozen and ratified at d-5 closure.</div><div class="eq">Own the WidgetStore&lt;S&gt; application wrapper over generic Storage&lt;schema::WidgetRow&gt;: map typed errors to existing StoreError, implement WidgetStorage/StoresView and preserve create-with-generated-id/get/delete. The per-layout application factory translates schema::OpenConfig to table-neutral engine config; d-11 injects concrete stores. No table-specific widget code is placed in generic engine crates.</div><div class="ad">+ Transform hosting uses the existing published monty ResourceLimits/ResourceTracker APIs directly, including the maximum feed duration pattern already used by sc-cron. Service code is only its application-specific input/output and bounded blocking adapter; do not copy the scheduler feed/session/host machinery or add a sc-cron dependency to no-cron layouts. sc-cron retains its scheduler-specific host. Generic command composition is two free async functions in sc-command; Transform is intentionally open for application implementations.</div><div class="ad">+ </div><div class="ad">+ Public API shape: storage_write(store, transform, input) and storage_read(store, transform, key) are plain generic async functions returning typed StorageCommandError; no DefaultStorageCommands type.</div></div>
+    <div class="diff"><div class="rm">- Consumes only d-5 Storage&lt;T&gt;/mapping/error/extension contract. The service boundary owns typed command/transform behavior and can be tested independently with the contract double, not actual engine implementation. Proposed flow:</div><div class="rm">- write: decode Tcli -&gt; await app transform(Tcli)-&gt;Tsql -&gt; await storage.write(&amp;row) -&gt; existing envelope/error projection;</div><div class="rm">- read: await storage.read(key)-&gt;Option&lt;Tsql&gt; -&gt; await app transform(Tsql)-&gt;Tcli -&gt; existing envelope/error projection.</div><div class="rm">- Preserve the existing public widget DTO/error contract unless explicitly changed in d-5. Python/Monty function execution is real in service tests, storage is the controlled test double. No generator, registry or specified permission policy is added. Daemon/CLI/wizard wiring belongs to d-11, backend row codecs to d-6/7/8. Existing Monty hook internals are reused rather than rewritten as collateral work.</div><div class="ad">+ Consumes d-3&#x27;s compiled sc-command server/schema/envelope/error implementation with rmcp&gt;=3.9 and matching registry identities, plus d-5 Storage/row contracts.</div><div class="ad">+ Its storage/mapping/error/extension contract comes from d-5. The service boundary owns typed command/transform behavior and can be tested independently with the contract double, not actual engine implementation. Proposed flow:</div><div class="ad">+ write: decode Tcli -&gt; await default plain conversion or app transform(Tcli)-&gt;Tsql -&gt; await storage.write(&amp;row) -&gt; existing envelope/error projection;</div><div class="ad">+ read: await storage.read(key)-&gt;Option&lt;Tsql&gt; -&gt; await default plain conversion or app transform(Tsql)-&gt;Tcli -&gt; existing envelope/error projection.</div><div class="ad">+ Preserve the existing public widget DTO/error contract unless explicitly changed in d-5. Python/Monty function execution is real in service tests, storage is the controlled test double. No generator, registry or specified permission policy is added. Daemon/CLI/wizard wiring belongs to d-11, backend row codecs to d-6/7/8. Call sc-monty directly; sc-cron also uses it and retains only cron/JSON policy adapters.</div><div class="eq"></div><div class="rm">- Version is approved coordinated0.3.0; publication still requires all release gates. Source authority is PRD2 and proposed ADR0020/0021; scope B is selected by user.</div><div class="rm">- Consumes real d-5 sc-storage StorageCommands/Transform signatures; implement them once in sc-command/src/storage.rs, exported with the actual implementation. Application service supplies Tcli/Tsql transforms, including real Python/Monty execution, and uses controlled Storage&lt;T&gt; double. No runtime block_on/Handle/futures bridge or sleep in production. Service boundary manifests are generated by d-5 renderer at boundaries/&lt;prefixed-service&gt;/&lt;prefixed-service&gt;.toml; criteria target that emitted boundary/ADR0021.</div><div class="rm">- Interpreter mechanism: tokio::task::spawn_blocking for synchronous Monty/Python evaluation, following crates/sc-cron/src/monty_run.rs:183 execute_feed_with_logger pattern. It is explicitly allowed for interpreter execution, never to submit/wait for SQLite storage. Transform::apply awaits the JoinHandle and maps interpreter error/panic to typed transform error; no block_on or sleep. Transaction bodies may not call this mechanism or await interpreter/I/O; transformation completes before entering named atomic storage.</div><div class="rm">- Use schema::WidgetRow/WidgetId, WidgetStorage extension and StoresView exact contracts. Preserve CreateWidget/GetWidget/DeleteWidget/DeleteRow DTO behavior and error codes against the shared double, including store-generated IDs. Common commands come from real sc-storage trait definitions, not cloned contract signatures. Extension design is pending randlee ratification and builds at risk until sign-off.</div><div class="ad">+ Consumes real d-5 sc-storage Storage/row signatures; implement them once in sc-command/src/storage.rs, exported with the actual implementation. Application service supplies Tcli/Tsql transforms, including real Python/Monty execution, and uses controlled Storage&lt;T&gt; double. No runtime block_on/Handle/futures bridge or sleep in production. Service boundary manifests are generated by d-5 renderer at boundaries/&lt;prefixed-service&gt;/&lt;prefixed-service&gt;.toml; criteria target that emitted boundary/ADR0021.</div><div class="ad">+ Interpreter mechanism: tokio::task::spawn_blocking for synchronous Monty/Python evaluation, calling sc-monty for all interpreter limits/session/host behavior. It is explicitly allowed for interpreter execution, never to submit/wait for SQLite storage. Transform::apply awaits the JoinHandle and maps interpreter error/panic to typed transform error; no block_on or sleep. Phase-d completes interpreter transformation before entering named atomic storage; in-transaction transforms are not built in this phase. The provisional seam must allow a later atomic transform without breaking consumers.</div><div class="ad">+ Use schema::WidgetRow/WidgetId, WidgetStorage extension and StoresView exact contracts. Preserve CreateWidget/GetWidget/DeleteWidget/DeleteRow DTO behavior and error codes against the shared double, including store-generated IDs. Common functions consume the real sc-storage Storage&lt;T&gt;/atomic contracts; Transform and command errors are local sc-command types. Consume the option (a) extension frozen and ratified at d-5 closure.</div><div class="eq">Own the WidgetStore&lt;S&gt; application wrapper over generic Storage&lt;schema::WidgetRow&gt;: map typed errors to existing StoreError, implement WidgetStorage/StoresView and preserve create-with-generated-id/get/delete. The per-layout application factory translates schema::OpenConfig to table-neutral engine config; d-11 injects concrete stores. No table-specific widget code is placed in generic engine crates.</div><div class="ad">+ Transform execution calls sc-monty directly. Service code contains only application value conversion, runtime source selection and the bounded blocking adapter; no second compile/session/host/limits implementation exists in sc-command, sc-cron or the template. No-cron layouts can select Monty independently, with no sc-cron dependency. Source is loaded at run time and replacing it changes the next invocation without rebuilding. Generic command composition is two free async functions in sc-command; Transform is intentionally open for application implementations.</div><div class="ad">+ </div><div class="ad">+ Public API shape: storage_write(store, transform, input) and storage_read(store, transform, key) are plain generic async functions over Storage&lt;T&gt;, returning typed StorageCommandError. Built-in read/write behavior and plain conversion cover the default command; no app-written storage action is required. Only cron uses a library-provided policy adapter in sc-cron-commands that delegates to CronStorage; the raw backend stays private and no policy is duplicated. No DefaultStorageCommands type. Transform has compatible default methods and constructor-built, non-exhaustive input/context and outcome types so later second-input/no-write/atomic-transform support does not change these signatures. Only the existing one-input read/write behavior is implemented now.</div></div>
   </details>
 </section>

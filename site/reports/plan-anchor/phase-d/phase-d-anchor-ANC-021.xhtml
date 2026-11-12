@@ -36,6 +36,12 @@
       &quot;item&quot;: &quot;run-d-9&quot;,
       &quot;item_url&quot;: &quot;&quot;,
       &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-10&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
     }
   ],
   &quot;fixtures_after&quot;: &quot;-&quot;,
@@ -125,6 +131,11 @@
       &quot;at&quot;: &quot;2026-11-12T09:47:17+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-8; reason: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.; replaced: false&quot;,
       &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-021&quot;,
@@ -149,6 +160,7 @@ Excluded for run-d-6: d-6 is generic SQLite storage with no cron; default cron p
 Excluded for run-d-7: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.
 Excluded for run-d-8: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.
 Excluded for run-d-9: Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.
+Excluded for run-d-10: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
 2026-11-12T03:43:10+00:00 excluded: item: run-d-5; reason: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.; replaced: false
 2026-11-12T03:43:17+00:00 excluded: item: run-d-6; reason: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.; replaced: false
 2026-11-12T03:43:37+00:00 excluded: item: run-d-7; reason: Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.; replaced: false
@@ -165,7 +177,8 @@ Excluded for run-d-9: Defaulting cron rows into the app&#x27;s SQLite file is ge
 2026-11-12T06:40:50+00:00 excluded: item: run-d-5; reason: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-6; reason: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-7; reason: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.; replaced: true
-2026-11-12T09:47:17+00:00 excluded: item: run-d-8; reason: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.; replaced: false">&#x2398;</button>
+2026-11-12T09:47:17+00:00 excluded: item: run-d-8; reason: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false">&#x2398;</button>
     </div>
   </div>
   <p class="statement">In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app&#x27;s SQLite database file.</p>
@@ -186,7 +199,7 @@ Excluded for run-d-9: Defaulting cron rows into the app&#x27;s SQLite file is ge
   <p class="small">Text unchanged.</p>
 
   <details>
-    <summary>History since the baseline (17)</summary>
+    <summary>History since the baseline (18)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -207,12 +220,13 @@ Excluded for run-d-9: Defaulting cron rows into the app&#x27;s SQLite file is ge
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-6; reason: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-7; reason: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.; replaced: true</td></tr>
         <tr><td>2026-11-12T09:47:17+00:00</td><td>excluded</td><td>item: run-d-8; reason: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false</td></tr>
       </tbody>
     </table>
   </details>
 
   <details open="open">
-    <summary>Exclusions (5)</summary>
+    <summary>Exclusions (6)</summary>
     <table>
       <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
       <tbody>
@@ -221,6 +235,7 @@ Excluded for run-d-9: Defaulting cron rows into the app&#x27;s SQLite file is ge
         <tr><th scope="row">run-d-7</th><td>Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.</td><td>added</td></tr>
         <tr><th scope="row">run-d-8</th><td>d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.</td><td>added</td></tr>
         <tr><th scope="row">run-d-9</th><td>Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-10</th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>added</td></tr>
       </tbody>
     </table>
   </details>

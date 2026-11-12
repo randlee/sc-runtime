@@ -5,7 +5,13 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;bead&quot;: &quot;run-q03u&quot;,
   &quot;bead_url&quot;: &quot;&quot;,
-  &quot;changes&quot;: [],
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;sc-runtime-db-sqlite implements Storage&lt;T&gt; generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction. | sc-cron&#x27;s compiled-hook blob table is sc-cron&#x27;s own row type stored through Storage&lt;T&gt;; no backend gains code for it.&quot;,
+      &quot;before&quot;: &quot;sc-runtime-db-sqlite implements Storage&lt;T&gt; generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction.&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    }
+  ],
   &quot;exclusions&quot;: [
     {
       &quot;added&quot;: true,
@@ -58,6 +64,11 @@
       &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-3; reason: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.; replaced: true&quot;,
       &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:22+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-034&quot;,
@@ -70,13 +81,14 @@
   &quot;status_before&quot;: &quot;locked&quot;,
   &quot;tuning&quot;: [],
   &quot;version_before&quot;: &quot;2&quot;,
-  &quot;version_now&quot;: &quot;2&quot;
+  &quot;version_now&quot;: &quot;3&quot;
 }">{}</button>
-      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-034 (locked v2 -&gt; locked v2)
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-034 (locked v2 -&gt; locked v3)
 Statement: Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer&#x27;s table (for example cron rows).
 Quote: No storage backend contains code for a specific consumer&#x27;s table.
 Fixture checks: - -&gt; -.
 Questions: default - -&gt; tuned - oracle cases.
+Changed fixture pass: &#x27;sc-runtime-db-sqlite implements Storage&lt;T&gt; generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction.&#x27; -&gt; &quot;sc-runtime-db-sqlite implements Storage&lt;T&gt; generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction. | sc-cron&#x27;s compiled-hook blob table is sc-cron&#x27;s own row type stored through Storage&lt;T&gt;; no backend gains code for it.&quot;
 Excluded for run-d-3: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.
 Excluded for run-d-10: d-10 touches no storage backend crate; its application stores live in the application layer.
 Excluded for run-d-12: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.
@@ -85,7 +97,8 @@ Excluded for run-d-12: Backend neutrality is owned by d-5 through d-8 and verifi
 2026-11-12T03:54:17+00:00 excluded: item: run-d-3; reason: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.; replaced: false
 2026-11-12T06:40:50+00:00 excluded: item: run-d-10; reason: d-10 touches no storage backend crate; its application stores live in the application layer.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-12; reason: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.; replaced: true
-2026-11-12T06:40:50+00:00 excluded: item: run-d-3; reason: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.; replaced: true">&#x2398;</button>
+2026-11-12T06:40:50+00:00 excluded: item: run-d-3; reason: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.; replaced: true
+2026-11-12T22:42:22+00:00 updated: fields: [&quot;fixtures&quot;]">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer&#x27;s table (for example cron rows).</p>
@@ -95,7 +108,7 @@ Excluded for run-d-12: Backend neutrality is owned by d-5 through d-8 and verifi
     <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
     <tbody>
       <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
-      <tr><th scope="row">Version</th><td>2</td><td>2</td></tr>
+      <tr><th scope="row">Version</th><td>2</td><td>3</td></tr>
       <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
       <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
     </tbody>
@@ -103,10 +116,11 @@ Excluded for run-d-12: Backend neutrality is owned by d-5 through d-8 and verifi
 
 
   <h3>Record changes</h3>
-  <p class="small">Text unchanged.</p>
+  <p><b>fixture pass</b></p>
+  <div class="diff">sc-runtime-db-sqlite implements Storage&lt;T&gt; generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction.<ins> | sc-cron&#x27;s compiled-hook blob table is sc-cron&#x27;s own row type stored through Storage&lt;T&gt;; no backend gains code for it.</ins></div>
 
   <details>
-    <summary>History since the baseline (6)</summary>
+    <summary>History since the baseline (7)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -116,6 +130,7 @@ Excluded for run-d-12: Backend neutrality is owned by d-5 through d-8 and verifi
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-10; reason: d-10 touches no storage backend crate; its application stores live in the application layer.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-12; reason: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-3; reason: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.; replaced: true</td></tr>
+        <tr><td>2026-11-12T22:42:22+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
       </tbody>
     </table>
   </details>

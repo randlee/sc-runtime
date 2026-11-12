@@ -15,7 +15,13 @@
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     }
   ],
-  &quot;exclusions&quot;: [],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+      &quot;reason&quot;: &quot;Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.&quot;
+    }
+  ],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:39:53+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -29,15 +35,20 @@
   },
   &quot;id&quot;: &quot;run-d-4&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
-    &quot;excluded&quot;: [],
+    &quot;created_at&quot;: &quot;2026-11-12T23:06:48+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+        &quot;reason&quot;: &quot;Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.&quot;
+      }
+    ],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-4&quot;,
-    &quot;score&quot;: &quot;0/0&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T230648Z-run-d-4&quot;,
+    &quot;score&quot;: &quot;5/5&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 8,
+  &quot;runs&quot;: 10,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -130,14 +141,40 @@
       &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-4&quot;,
       &quot;score&quot;: &quot;0/0&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T22:53:02+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-057&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T225302Z-run-d-4&quot;,
+      &quot;score&quot;: &quot;5/6&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:06:48+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+          &quot;reason&quot;: &quot;Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T230648Z-run-d-4&quot;,
+      &quot;score&quot;: &quot;5/5&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-4: d-4: generation-tooling
-Gate FAIL 4/6 -&gt; PASS 0/0 over 8 runs.
+Gate FAIL 4/6 -&gt; PASS 5/5 over 10 runs.
 Failing at first run: ANC-017.
 Failing now: none.
+Excluded ANC-057: Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.
 Changed fields: description, acceptance_criteria.">&#x2398;</button>
     </div>
   </div>
@@ -146,12 +183,12 @@ Changed fields: description, acceptance_criteria.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>4/6</td><td>ANC-017</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>0/0</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 8 runs</summary>
+    <summary>All 10 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -163,10 +200,19 @@ Changed fields: description, acceptance_criteria.">&#x2398;</button>
         <tr><td><code>plan-20261112T091946Z-run-d-4</code></td><td>2026-11-12T09:19:46+00:00</td><td><span class="status status-pass">PASS</span></td><td>4/4</td><td></td></tr>
         <tr><td><code>plan-20261112T094027Z-run-d-4</code></td><td>2026-11-12T09:40:27+00:00</td><td><span class="status status-pass">PASS</span></td><td>4/4</td><td></td></tr>
         <tr><td><code>plan-20261112T100339Z-run-d-4</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>0/0</td><td></td></tr>
+        <tr><td><code>plan-20261112T225302Z-run-d-4</code></td><td>2026-11-12T22:53:02+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/6</td><td>ANC-057</td></tr>
+        <tr><td><code>plan-20261112T230648Z-run-d-4</code></td><td>2026-11-12T23:06:48+00:00</td><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-057">ANC-057</a></th><td>Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.</td><td>this round</td></tr>
+    </tbody>
+  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>

@@ -56,6 +56,12 @@
     },
     {
       &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-6&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.&quot;
+    },
+    {
+      &quot;added&quot;: true,
       &quot;item&quot;: &quot;run-d-9&quot;,
       &quot;item_url&quot;: &quot;&quot;,
       &quot;reason&quot;: &quot;d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.&quot;
@@ -130,6 +136,11 @@
       &quot;at&quot;: &quot;2026-11-12T09:47:17+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-9; reason: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.; replaced: false&quot;,
       &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-6; reason: This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-038&quot;,
@@ -158,6 +169,7 @@ Changed deterministic_check: &#x27;&#x27; -&gt; &#x27;Generate an application; a
 Changed fixture pass: &#x27;&#x27; -&gt; &#x27;Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested, matching the shipped Cargo.lock, in a machine-readable form a later revert or upgrade tool can read.&#x27;
 Changed fixture fail: &#x27;&#x27; -&gt; &#x27;The generated application records no tested dependency versions; upgrades rely only on cargo update.&#x27;
 Excluded for run-d-5: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.
+Excluded for run-d-6: This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.
 Excluded for run-d-9: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.
 Excluded for run-d-10: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.
 Excluded for run-d-11: d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.
@@ -171,7 +183,8 @@ Excluded for run-d-11: d-11 composes application code and invokes the manifest c
 2026-11-12T09:24:21+00:00 excluded: item: run-d-11; reason: d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.; replaced: false
 2026-11-12T09:31:44+00:00 excluded: item: run-d-5; reason: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.; replaced: true
 2026-11-12T09:31:44+00:00 excluded: item: run-d-10; reason: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.; replaced: true
-2026-11-12T09:47:17+00:00 excluded: item: run-d-9; reason: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.; replaced: false">&#x2398;</button>
+2026-11-12T09:47:17+00:00 excluded: item: run-d-9; reason: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-6; reason: This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.; replaced: false">&#x2398;</button>
     </div>
   </div>
   <p class="statement">The generated application MUST record the release&#x27;s tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.</p>
@@ -207,7 +220,7 @@ Excluded for run-d-11: d-11 composes application code and invokes the manifest c
   <div class="diff"><ins>The generated application records no tested dependency versions; upgrades rely only on cargo update.</ins></div>
 
   <details>
-    <summary>History since the baseline (11)</summary>
+    <summary>History since the baseline (12)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -222,16 +235,18 @@ Excluded for run-d-11: d-11 composes application code and invokes the manifest c
         <tr><td>2026-11-12T09:31:44+00:00</td><td>excluded</td><td>item: run-d-5; reason: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.; replaced: true</td></tr>
         <tr><td>2026-11-12T09:31:44+00:00</td><td>excluded</td><td>item: run-d-10; reason: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.; replaced: true</td></tr>
         <tr><td>2026-11-12T09:47:17+00:00</td><td>excluded</td><td>item: run-d-9; reason: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-6; reason: This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.; replaced: false</td></tr>
       </tbody>
     </table>
   </details>
 
   <details open="open">
-    <summary>Exclusions (4)</summary>
+    <summary>Exclusions (5)</summary>
     <table>
       <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
       <tbody>
         <tr><th scope="row">run-d-5</th><td>d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-6</th><td>This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.</td><td>added</td></tr>
         <tr><th scope="row">run-d-9</th><td>d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.</td><td>added</td></tr>
         <tr><th scope="row">run-d-10</th><td>d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.</td><td>added</td></tr>
         <tr><th scope="row">run-d-11</th><td>d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.</td><td>added</td></tr>

@@ -1,0 +1,168 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-043">
+  <div class="section-head">
+    <h2>ANC-043 <span class="status status-locked">locked</span> <span class="small">bead run-zerf</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-zerf&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;plan items that change how sc-cron passes data to Monty hooks&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;locked&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    },
+    {
+      &quot;after&quot;: &quot;directive&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;kind&quot;
+    },
+    {
+      &quot;after&quot;: &quot;JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;quote&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-cron hook calls pass Monty values; no hook entry receives a str/String of JSON&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-cron converts the schedule&#x27;s JSON to Monty values and passes those to the hook.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-cron passes the hook its JSON data as a string for the script to parse.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-12&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.&quot;
+    }
+  ],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:10+00:00&quot;,
+      &quot;detail&quot;: &quot;status: locked&quot;,
+      &quot;event&quot;: &quot;created&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:10+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:38+00:00&quot;,
+      &quot;detail&quot;: &quot;beads: {\&quot;anchor\&quot;: \&quot;run-zerf\&quot;, \&quot;plan_questions\&quot;: \&quot;run-zerf.1\&quot;, \&quot;dev_questions\&quot;: \&quot;run-zerf.2\&quot;}&quot;,
+      &quot;event&quot;: &quot;beads_set&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:14:19+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-12; reason: Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-043&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;absent&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;-&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-043 (absent v- -&gt; locked v2)
+Statement: sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.
+Quote: JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;&#x27; -&gt; &#x27;sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.&#x27;
+Changed scope: &#x27;&#x27; -&gt; &#x27;plan items that change how sc-cron passes data to Monty hooks&#x27;
+Changed status: &#x27;&#x27; -&gt; &#x27;locked&#x27;
+Changed kind: &#x27;&#x27; -&gt; &#x27;directive&#x27;
+Changed quote: &#x27;&#x27; -&gt; &#x27;JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.&#x27;
+Changed deterministic_check: &#x27;&#x27; -&gt; &#x27;sc-cron hook calls pass Monty values; no hook entry receives a str/String of JSON&#x27;
+Changed fixture pass: &#x27;&#x27; -&gt; &quot;sc-cron converts the schedule&#x27;s JSON to Monty values and passes those to the hook.&quot;
+Changed fixture fail: &#x27;&#x27; -&gt; &#x27;sc-cron passes the hook its JSON data as a string for the script to parse.&#x27;
+Excluded for run-d-12: Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.
+2026-11-12T22:42:10+00:00 created: status: locked
+2026-11-12T22:42:10+00:00 updated: fields: [&quot;fixtures&quot;]
+2026-11-12T22:42:38+00:00 beads_set: beads: {&quot;anchor&quot;: &quot;run-zerf&quot;, &quot;plan_questions&quot;: &quot;run-zerf.1&quot;, &quot;dev_questions&quot;: &quot;run-zerf.2&quot;}
+2026-11-12T23:14:19+00:00 excluded: item: run-d-12; reason: Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.; replaced: false">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.</p>
+  <p class="quote">&#x201C;JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>absent</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>-</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><ins>sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><ins>plan items that change how sc-cron passes data to Monty hooks</ins></div>
+  <p><b>status</b></p>
+  <div class="diff"><ins>locked</ins></div>
+  <p><b>kind</b></p>
+  <div class="diff"><ins>directive</ins></div>
+  <p><b>quote</b></p>
+  <div class="diff"><ins>JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><ins>sc-cron hook calls pass Monty values; no hook entry receives a str/String of JSON</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><ins>sc-cron converts the schedule&#x27;s JSON to Monty values and passes those to the hook.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><ins>sc-cron passes the hook its JSON data as a string for the script to parse.</ins></div>
+
+  <details>
+    <summary>History since the baseline (4)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T22:42:10+00:00</td><td>created</td><td>status: locked</td></tr>
+        <tr><td>2026-11-12T22:42:10+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
+        <tr><td>2026-11-12T22:42:38+00:00</td><td>beads_set</td><td>beads: {&quot;anchor&quot;: &quot;run-zerf&quot;, &quot;plan_questions&quot;: &quot;run-zerf.1&quot;, &quot;dev_questions&quot;: &quot;run-zerf.2&quot;}</td></tr>
+        <tr><td>2026-11-12T23:14:19+00:00</td><td>excluded</td><td>item: run-d-12; reason: Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.; replaced: false</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details open="open">
+    <summary>Exclusions (1)</summary>
+    <table>
+      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">run-d-12</th><td>Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.</td><td>added</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>

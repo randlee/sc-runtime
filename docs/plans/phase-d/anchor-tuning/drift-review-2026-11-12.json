@@ -1,7 +1,7 @@
 {
   "schema": "plan-anchoring/drift-review/1",
-  "reviewed_at": "2026-11-12",
-  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'. Range 3 (c8596c0..a00e86f): c8596c0..a00e86f (origin/plan/phase-d), worktree anchors-phase-d. Inputs: git log; anchors.json diff; phase-d.jsonl, docs/architecture.md, docs/requirements.md and intent.md diffs; word diffs of gate-items-c8596c0 vs gate-items-1b0dabc for run-d-3..run-d-12, plus gate-items-1b0dabc vs gate-items-c46b1f7 for run-d-10 (identical); run-d-5 .bead.json snapshots for the ratification wording; current ADR-RUN-0017, ADR-RUN-0203, REQ-RUN-0309 and NFR-RUN-0007 text; .github/workflows listing. Range 4 (0d5e491..83943f5): 0d5e491..83943f5 (single commit 83943f5). Composed sprint text gate-items-f5d0013 (d-3,5,7,8,9,11,12) and gate-items-1b0dabc (d-4,6,10) vs gate-items-83943f5 (all ten), including owned_paths/requirements/adrs in the .bead.json snapshots; docs/plans/phase-d.jsonl DAG diff; docs/requirements.md (new REQ-RUN-0703); anchors.json exclusions (unchanged in range) for ANC-003/015/037/038 and all exclusion reasons mentioning moved items; push.md per-finding table; current manifests (crates/*/Cargo.toml, template manifests, template/cargo-generate.toml, boundaries/*.toml) and docs/architecture.md ADR-RUN-0017/0203 Phase D amendments. | range 5: 979400e..3bf0988 (single commit 3bf0988). The composed sprint text is gate-items-83943f5 vs gate-items-3bf0988 for all ten sprints (run-d-{3..12}.txt). In the .bead.json snapshots I compared metadata (owned_paths, requirements, adrs, pr_target) and the root description/design. Also compared: docs/plans/phase-d.jsonl depends_on; anchors.json and anchors.md exclusions and their history (ANC-003 d-12, ANC-035 d-9, ANC-038 d-5/d-10/d-11); triage-gate-83943f5.json for the d-9 ANC-035 cell; the earlier drift-review-2026-11-12.json m2 ruling on the same exclusion. I checked the current crates/sc-command, crates/sc-cron and crates/sc-cron-commands Cargo.toml, boundaries/*.toml, and template/cargo-generate.toml with its hooks against the ownership claims, and checked that REQ-RT-0005, ADR-RT-0005, REQ-RUN-0005, ADR-RUN-0005, REQ-CRON-0005 and NFR-RUN-0009 exist. docs/requirements.md and docs/architecture.md are unchanged in this range. | range 6: d5b9e1f..f1fdeb8 (single commit f1fdeb8). Composed sprint text gate-items-3bf0988 vs gate-items-f1fdeb8 for all ten sprints (run-d-{3..12}.txt), compared sentence by sentence. Changed: d-3, d-5, d-6, d-7, d-8, d-9, d-10, d-12. Unchanged: d-4, d-11. The .bead.json snapshots were also compared. Only description, acceptance_criteria, revision and updated_at changed. owned_paths, requirements, adrs and pr_target are identical. git diff of docs/plans/phase-d/anchors.json and anchors.md shows only exclusion changes: ANC-021 adds run-d-8, ANC-038 adds run-d-9, and the ANC-035 run-d-9 exclusion is removed with an exclusion_removed event. No statement, quote, scope, question or version changed. docs/plans/phase-d.jsonl is unchanged in range. The d-8/ANC-021 and d-9/ANC-038 failing cells in triage-gate-3bf0988.json were checked, including the full answer sets. Checked against the current crates/sc-cron/Cargo.toml, crates/sc-cron-commands/Cargo.toml and the root [workspace.dependencies]. Searched docs/architecture.md, docs/requirements.md and docs/sc-cron/* for any Monty, process-wrap or getrandom pin mandate. None found.",
+  "reviewed_at": "2026-11-12T23:41:56Z",
+  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'. Range 3 (c8596c0..a00e86f): c8596c0..a00e86f (origin/plan/phase-d), worktree anchors-phase-d. Inputs: git log; anchors.json diff; phase-d.jsonl, docs/architecture.md, docs/requirements.md and intent.md diffs; word diffs of gate-items-c8596c0 vs gate-items-1b0dabc for run-d-3..run-d-12, plus gate-items-1b0dabc vs gate-items-c46b1f7 for run-d-10 (identical); run-d-5 .bead.json snapshots for the ratification wording; current ADR-RUN-0017, ADR-RUN-0203, REQ-RUN-0309 and NFR-RUN-0007 text; .github/workflows listing. Range 4 (0d5e491..83943f5): 0d5e491..83943f5 (single commit 83943f5). Composed sprint text gate-items-f5d0013 (d-3,5,7,8,9,11,12) and gate-items-1b0dabc (d-4,6,10) vs gate-items-83943f5 (all ten), including owned_paths/requirements/adrs in the .bead.json snapshots; docs/plans/phase-d.jsonl DAG diff; docs/requirements.md (new REQ-RUN-0703); anchors.json exclusions (unchanged in range) for ANC-003/015/037/038 and all exclusion reasons mentioning moved items; push.md per-finding table; current manifests (crates/*/Cargo.toml, template manifests, template/cargo-generate.toml, boundaries/*.toml) and docs/architecture.md ADR-RUN-0017/0203 Phase D amendments. | range 5: 979400e..3bf0988 (single commit 3bf0988). The composed sprint text is gate-items-83943f5 vs gate-items-3bf0988 for all ten sprints (run-d-{3..12}.txt). In the .bead.json snapshots I compared metadata (owned_paths, requirements, adrs, pr_target) and the root description/design. Also compared: docs/plans/phase-d.jsonl depends_on; anchors.json and anchors.md exclusions and their history (ANC-003 d-12, ANC-035 d-9, ANC-038 d-5/d-10/d-11); triage-gate-83943f5.json for the d-9 ANC-035 cell; the earlier drift-review-2026-11-12.json m2 ruling on the same exclusion. I checked the current crates/sc-command, crates/sc-cron and crates/sc-cron-commands Cargo.toml, boundaries/*.toml, and template/cargo-generate.toml with its hooks against the ownership claims, and checked that REQ-RT-0005, ADR-RT-0005, REQ-RUN-0005, ADR-RUN-0005, REQ-CRON-0005 and NFR-RUN-0009 exist. docs/requirements.md and docs/architecture.md are unchanged in this range. | range 6: d5b9e1f..f1fdeb8 (single commit f1fdeb8). Composed sprint text gate-items-3bf0988 vs gate-items-f1fdeb8 for all ten sprints (run-d-{3..12}.txt), compared sentence by sentence. Changed: d-3, d-5, d-6, d-7, d-8, d-9, d-10, d-12. Unchanged: d-4, d-11. The .bead.json snapshots were also compared. Only description, acceptance_criteria, revision and updated_at changed. owned_paths, requirements, adrs and pr_target are identical. git diff of docs/plans/phase-d/anchors.json and anchors.md shows only exclusion changes: ANC-021 adds run-d-8, ANC-038 adds run-d-9, and the ANC-035 run-d-9 exclusion is removed with an exclusion_removed event. No statement, quote, scope, question or version changed. docs/plans/phase-d.jsonl is unchanged in range. The d-8/ANC-021 and d-9/ANC-038 failing cells in triage-gate-3bf0988.json were checked, including the full answer sets. Checked against the current crates/sc-cron/Cargo.toml, crates/sc-cron-commands/Cargo.toml and the root [workspace.dependencies]. Searched docs/architecture.md, docs/requirements.md and docs/sc-cron/* for any Monty, process-wrap or getrandom pin mandate. None found. Ranges 7-13 (19672f7..d668b38): the owner's nine requirement changes plus two later owner statements; an independent read-only review per range (share/run/drift-range7..13.json) with lead rulings; findings M23-M32 and m23-m35 merged below.",
   "not_reviewed": "Jev was not run and no network call was made, so the beads-cache source and crates.io were not inspected. Intermediate gate-items folders between 964095d and c8596c0 were used only to date when the '>=0.41, <0.43' form appeared. Bead design fields were compared only for d-5, d-6 and d-12, plus targeted searches for ratification, rehearsal and migration text. phase-d-dag.html and the raw run JSON bodies were not reviewed beyond verdicts and answers. triage-fe81543 was read for its failures and fix rows, not audited line by line. The anchor-tuning question files were not compared beyond confirming none changed in range. No code was read beyond the manifests and scripts/adr_run_0011_grep.py. Nothing was verified by a second independent reviewer, and the M1/M2/M3/m2/m3/m5 fixes were verified by this reviewer from text only. Range 3: Jev plan-*.json run outputs and their verdicts; anchor-tuning triage-*.json files; site/reports/plan-anchor HTML/XHTML and phase-d.json; phase-d-dag.html; anchors.md bodies beyond the status table. bd show was not run; bead fields came from the committed gate-items .bead.json snapshots. Implementation feasibility of per-profile recommended lockfiles was not assessed. Range 4: docs/plans/phase-d/anchor-tuning/plan-qa-r1-fixes.json beyond what push.md summarises; phase-d-dag.html; root/phase bead design text (no root.bead.json in gate-items-83943f5); the full text of the ADR-RUN-0020/0021 and REQ amendments (they are deliverables, not yet written); plan-qa-r1.md beyond the findings push.md quotes; Jev verdict runs. No code was run.",
   "findings": [
     {
@@ -458,6 +458,305 @@
       "suggested_fix": "Move each positive obligation into a numbered deliverable, or retitle the section (e.g. 'Boundaries and handoffs').",
       "status": "fixed",
       "fix_note": "f1fdeb8: The heading 'This sprint does not close' is retitled 'Boundaries and handoffs' in d-3, d-5, d-6, d-9, d-10 and d-12, which are the sections holding positive obligations. The remaining 'This sprint does not close' sections (d-4, d-7, d-8, d-11) hold only negative or handoff statements, for example d-8: 'Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.' No obligation text was removed."
+    },
+    {
+      "id": "M23",
+      "severity": "material",
+      "location": "range 7: run-d-11 'This sprint does not close': 'Monty selection is independent of cron: remove template feature coupling monty -> cron ... this sprint owns daemon/CLI/wizard feature selection'; run-d-11 metadata.owned_paths has template/crates/daemon/src/** and template/crates/daemon/tests/** but not template/crates/daemon/Cargo*.toml; the only owner of that file is d-3 ('template/crates/daemon/Cargo*.toml', pin removal). The coupling lives there: template/crates/daemon/Cargo.toml:21 'monty = [\"cron\", \"sc-cron/monty\", \"sc-cron-commands?/monty\"]'. d-5 says it hands 'daemon selection to d-11' but d-5 does not own that manifest either.",
+      "what_changed": "The exact line the owner cited for item 1 is not in the file fence of the sprint that is told to remove it. As written, d-11 cannot edit it without going outside its fence, and d-3 has no instruction to edit it. Item 1's no-cron-Postgres-with-Monty example is therefore not deliverable inside the plan's ownership rules.",
+      "authority": {
+        "ref": "owner 2026-11-12 item 1: \"Today Monty exists only inside sc-cron and the template enables it with `monty = [\"cron\", ...]`, so that app cannot have it.\"; root run-phase-d: \"Sprint metadata.owned_paths is the authoritative full file fence\"",
+        "quote": "Today Monty exists only inside sc-cron and the template enables it with `monty = ["
+      },
+      "suggested_fix": "One sprint owns template/crates/daemon/Cargo*.toml for the monty feature line (d-11 after d-3's pin edit, with a stated handoff) and its deliverable removes the cron coupling.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M24",
+      "severity": "material",
+      "location": "range 7: run-d-10 deliverable 2: 'calling sc-monty directly, with runtime-loaded replaceable source'; design: 'Service code contains only application value conversion, runtime source selection ... Source is loaded at run time'; boundary:runtime-monty-source. No sprint names where the source is stored or how it is replaced.",
+      "what_changed": "Item 3 is partly applied. The behaviour (replace without rebuild) is now required and tested. But the specific reason the owner gave for failing d-10 still holds: d-10 still does not say where the transform source comes from (file, config value, a storage row as cron does, or a request). d-11 says only 'change source without rebuilding'.",
+      "authority": {
+        "ref": "owner 2026-11-12 item 3: \"Will not pass against: d-10, which does not say where transform source comes from.\"; ANC-049",
+        "quote": "Will not pass against: d-10, which does not say where transform source comes from."
+      },
+      "suggested_fix": "d-10 names one concrete run-time source location for the generated service's transform and how it is replaced. Use the simplest option (PRD-ENG-4). Other locations stay open.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M25",
+      "severity": "material",
+      "location": "range 7: run-d-10 design 'Public API shape': 'storage_write(action, transform, input) and storage_read(action, transform, key) ... The typed async action is supplied by the application: widget actions call Storage<T> through WidgetStorage, cron actions call policy-checked CronStorage'; docs/architecture.md ADR-RUN-0021 proposed contract point 1 (same); before: 'storage_write(store, transform, input) and storage_read(store, transform, key)'. run-d-10 deliverable 1 still says 'implement the generic service boundary using sc-storage Storage<Tsql>'.",
+      "what_changed": "The shared helpers no longer take Storage<T>. Every command must now supply an application-written async storage action as well as Tcli, Tsql and an optional transform. The owner did not ask for this. It was introduced to fit cron policy. It adds a fourth hand-written piece to every command, including the plain-conversion case that item 6 says needs no hand-written code. It contradicts PRD-CMD-3's definition of a command and d-10's own deliverable 1. It is also placed in the contract the owner is asked to ratify.",
+      "authority": {
+        "ref": "PRD-CMD-3 \"A command is defined by `Tcli`, `Tsql` and the transform between them.\"; owner item 6 \"A command whose Tcli converts directly to Tsql needs no hand-written transform.\"; owner item 4 example \"storage_write(store, transform, input)\"; PRD-ENG-4",
+        "quote": "A command is defined by `Tcli`, `Tsql` and the transform between them."
+      },
+      "suggested_fix": "A plain command needs only Tcli/Tsql and a Storage<T>. The default helpers operate on Storage<T> directly. Cron's policy-checked path is reached without making every app write an action, for example by CronStore exposing the write capability the helper consumes. The ADR-RUN-0021 proposed contract states whichever shape is chosen, and d-10 deliverable 1 and the design agree.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M26",
+      "severity": "material",
+      "location": "range 7: docs/requirements.md NFR-RUN-0003 Requirement Statement. Removed: '- a command or operation registry;' and '- a macro system of its own: no crate with `proc-macro = true`, and no `macro_rules!` macro that defines operations, routes or tools;'. Added: '- public framework wrappers that hide the standard command interfaces;'. Success Criteria 1 ('grep -rn \"proc-macro\" ... prints nothing') and 4 ('macro_rules!') are unchanged. docs/architecture.md ADR-RUN-0001 point 4: 'MUST NOT contain a command registry, a proc-macro, a code generator, ...' was replaced by 'do not implement a command generator in Phase D ...', while 'Enforced by' still cites 'its `proc-macro` and `macro_rules!` greps'.",
+      "what_changed": "Item 6 asked only that no REQ/ADR bind hand-writing or forbid consumer-side generators. Two other changes go further. (a) The repository-internal macro-system ban was deleted, although the 2026-11-11 amendment had left it 'undecided, not prohibited ... Success criterion 1 stands until that decision'. (b) A new, undefined prohibition was added ('public framework wrappers that hide the standard command interfaces'). Each requirement now contradicts itself: the statement no longer bans proc-macros, but the success criteria and enforcement still grep for them.",
+      "authority": {
+        "ref": "owner item 6 \"No ADR or REQ may state that the command path must be hand-written ... Scan the REQ/ADR set for any other wording that binds hand-writing or forbids generators.\"; NFR-RUN-0003 2026-11-11 amendment \"'A macro system' and 'a code generator of its own' are undecided, not prohibited ... Success criterion 1 stands until that decision.\"; PRD §9",
+        "quote": "No ADR or REQ may state that the command path must be hand-written ... Scan the REQ/ADR set for any other wording that binds hand-writing or forbids generators."
+      },
+      "suggested_fix": "Limit the NFR-RUN-0003 and ADR-RUN-0001 edits to the generator and hand-writing wording. Leave the macro clause in its prior 'undecided, success criterion 1 stands' state. Add no new prohibition. The statement, success criteria and enforcement then agree.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m23",
+      "severity": "minor",
+      "location": "range 7: docs/plans/phase-d.jsonl: '{\"sprint\": \"d-10\", \"depends_on\": [\"d-3\", \"d-5\", \"d-9\"]}' (was [\"d-3\",\"d-5\"]); root wave table before: d-10 wave 2, d-11/d-12 wave 3; after: 'd-10 | 3', 'd-11 | 4', 'd-12 | 4', 'critical path4, width6'; d-12 design 'prepares in the third wave' -> 'fourth wave'.",
+      "what_changed": "The new edge lengthens the critical path from 3 to 4 waves. d-10 and both final sprints now wait for d-9, the hardest storage sprint. Width stays 6. Given that d-10 now owns cron routing, the edge is needed: d-9 changes CronStorage and sc-cron-commands, which d-10 then edits. But the routing could have gone to d-11, which already depends on both d-9 and d-10, at the original path length. The owner said the plan keeps its shape. The planner's 'critical path 4' is the post-change figure and does not report the increase.",
+      "authority": {
+        "ref": "owner preamble \"Phase-d keeps its shape and its sprints.\"; PRD-ENG-4",
+        "quote": "Phase-d keeps its shape and its sprints."
+      },
+      "suggested_fix": "The lead or owner accepts the +1 wave explicitly, or cron command routing moves to d-11 (which already consumes d-9 and d-10) and the d-9->d-10 edge is removed. Either way the root text states the change from 3 to 4.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m24",
+      "severity": "minor",
+      "location": "range 7: run-d-10 metadata.pr_target: 'sprint/d-3-dependency-qualification' -> 'sprint/d-9-cron-app-storage', while d-10 still 'Consumes d-3's compiled sc-command server/schema/envelope/error' ('After d-3's compiled rmcp3.9 server/schema ... lands'). d-9 -> d-5 -> integrate/phase-d; d-3 -> integrate/phase-d.",
+      "what_changed": "d-10's stack base no longer contains d-3, one of its three dependencies, unless d-3 reaches integrate/phase-d before d-5 or d-9 branch. The old target had the mirror problem with d-5. The edge change moved the gap from d-5 to d-3 without stating how d-3 reaches d-10's base.",
+      "authority": {
+        "ref": "phase-d.jsonl d-10 depends_on [d-3, d-5, d-9]",
+        "quote": "phase-d.jsonl d-10 depends_on [d-3, d-5, d-9]"
+      },
+      "suggested_fix": "State how d-10's base contains d-3's changes, for example d-3 merged to integrate/phase-d before d-5 or d-9 branch, or a rebase step.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m25",
+      "severity": "minor",
+      "location": "range 7: run-d-5 deliverable 7 'beginning with an exact copy of current sc-cron Monty code AND its unit and integration tests, passing before API extension'; boundary:sc-monty 'First preserve an exact code/test copy, including existing integration tests'; versus 'no sc-*, Tokio, serde_json, cron types' (ANC-039/040). The current integration tests are crates/sc-cron/tests/monty_hook.rs, monty_host_bridge.rs, hook_environment/monty.rs and monty_disabled.rs. They drive the scheduler and Tokio and use reserved cron_stop/cron_tick.",
+      "what_changed": "Copy-first with integration tests is stated, so the owner statement is applied in words. But the plan does not say where the copied scheduler-level integration tests compile and run while sc-monty may have no sc-*, Tokio or cron dependency. It does not say whether they are dev-dependencies (ANC-039 covers normal/build only), whether they stay in sc-cron pointed at the copy, or whether the copy commit is exempt until extraction. Without that, the integration-test half of the copy can be quietly reduced to unit tests.",
+      "authority": {
+        "ref": "owner later statement: \"monty implementation should start w/ an exact copy of current code AND tests including integration tests\"; ANC-062; ANC-039 (\"normal or build dependency\")",
+        "quote": "monty implementation should start w/ an exact copy of current code AND tests including integration tests"
+      },
+      "suggested_fix": "d-5 names, for each existing Monty integration test file, where its exact copy runs green before extension (for example sc-monty tests using dev-dependencies, or the sc-cron tests re-pointed at the copy). d-9 shows the same names still passing after the port.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m26",
+      "severity": "minor",
+      "location": "range 7: run-d-5 boundary:transaction-extensibility 'the public transaction specification can later gain a per-transaction retry policy without breaking consumer construction'; d-5 design '#[non_exhaustive] pub struct TransactionSpec { /* private name/mode; constructor and accessors */ }'; ADR-RUN-0020 proposed point 2 (same).",
+      "what_changed": "Item 8 is applied: the engine-only rule is gone and the retry wording is correct ('engine retry defaults do not preclude a later transaction-specific retry policy'). The plan goes further and makes future extensibility for an unrequested option an acceptance criterion with a design obligation. Item 8 asked only to remove the rule. This is small (non_exhaustive plus a constructor), but it specifies work for an open option.",
+      "authority": {
+        "ref": "owner item 8 \"Remove the rule that retry can only ever be engine configuration.\"; PRD-ENG-6 \"An open option is not a work item. Nothing is specified, built or tested for it until the owner asks.\"",
+        "quote": "Remove the rule that retry can only ever be engine configuration."
+      },
+      "suggested_fix": "Keep the rule removal. Drop the acceptance criterion that tests future retry extensibility, or state it as a non-tested design note. (Item 4 differs: there the owner explicitly asked for the seam shape.)",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m27",
+      "severity": "minor",
+      "location": "range 7: docs/plans/phase-d/intent.md:30-32 '**Release.** The recorded owner decision is coordinated **0.3.0** across eight crates: `sc-storage`, ... `sc-cron` and `sc-cron-commands`' (unchanged in range).",
+      "what_changed": "Only the eight-crate statement is left; every REQ, ADR and sprint now says nine with sc-monty. The plan-qa bead's '8public crates' is closed history and is not counted.",
+      "authority": {
+        "ref": "owner item 1 \"It is nine; sc-monty publishes in the first wave.\"",
+        "quote": "It is nine; sc-monty publishes in the first wave."
+      },
+      "suggested_fix": "intent.md records nine crates including sc-monty. It is owner-maintained per earlier M5, so the owner or lead edits it.",
+      "status": "fixed",
+      "fix_note": "Fixed in a2c0e20, confirmed by the independent range-8 review. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M27",
+      "severity": "material",
+      "location": "range 8: run-d-5 boundary:copy-first-tests: 'Before extending the API, the exact copied scheduler-level Monty integration tests compile and run under the existing sc-cron integration-test target with its existing cron/Tokio dependencies ... During extraction, generic interpreter tests compile in sc-monty; scheduler/JSON/capability integration assertions stay in sc-cron and exercise sc-monty after the d-9 adapter port.' run-d-5 metadata.owned_paths includes crates/sc-monty/** but not crates/sc-cron/tests/** (owned by d-9). The tests involved are crates/sc-cron/tests/monty_hook.rs, monty_host_bridge.rs, monty_disabled.rs and hook_environment/monty.rs.",
+      "what_changed": "This is the fix for range-7 m25. It now says where the integration tests run, but in that location they do not test the copy. In d-5 they run in sc-cron against sc-cron's original Monty code, because sc-cron moves onto sc-monty only in d-9. So sc-monty's first commit contains only the unit tests, and d-5 extends the API before any integration test has run against sc-monty. The phrase 'exact copied ... integration tests ... under the existing sc-cron target' also has no workable meaning. A literal copy would sit in crates/sc-cron/tests, which is outside d-5's fence. Without a copy, the existing files are not a copy. The owner's copy-first statement, about code AND integration tests, is met for the code and the unit tests only.",
+      "authority": {
+        "ref": "owner later statement: \"monty implementation should start w/ an exact copy of current code AND tests including integration tests.\"; ANC-062 \"sc-monty MUST begin as an exact copy of sc-cron's current Monty code and its unit and integration tests, passing, before its API is extended.\" (deterministic_check: \"the first sc-monty commit's Monty sources and tests match ... their unit and integration tests ... they pass before any API change\"); ANC-039 limits only normal/build dependencies",
+        "quote": "monty implementation should start w/ an exact copy of current code AND tests including integration tests."
+      },
+      "suggested_fix": "Before any API extension, the copied integration tests run against the sc-monty copy. They can sit in sc-monty with test-only dev-dependencies (ANC-039 covers normal/build only), or the sc-cron integration target can be pointed at the sc-monty copy inside a fence d-5 owns. Either way, the first sc-monty commit and ANC-062's check agree.",
+      "status": "fixed",
+      "fix_note": "Fixed in 565255d, confirmed by the independent range-9 review (copy-first residue tracked as M28). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m28",
+      "severity": "minor",
+      "location": "range 8: run-d-11 metadata.owned_paths now adds 'crates/sc-cron-commands/Cargo.toml' (and sc-cron-commands src/tests/README), moved from d-10. run-d-12 metadata.owned_paths already has 'crates/sc-cron-commands/Cargo.toml'. phase-d.jsonl has no edge between d-11 and d-12 (both wave 3). Root: 'Its layer-file handoffs are additive contract/legacy artifacts on existing dependencies, not simultaneous same-wave edits.' d-12 serializes only template/cargo-generate.toml behind the d-11 merge ('No concurrent section ownership').",
+      "what_changed": "Moving cron routing from d-10 to d-11 created a new same-wave ownership overlap. Before, d-10 and d-12 were sequential through the d-10 -> d-12 edge. Now d-11 (the policy-adapter dependencies) and d-12 (the 0.3.0 release-version conversion) both edit the sc-cron-commands manifest, with no stated order.",
+      "authority": {
+        "ref": "root run-phase-d: \"Sprint metadata.owned_paths is the authoritative full file fence\" and \"not simultaneous same-wave edits\"; drift-range7 M23 class (fence/ownership of a cited file)",
+        "quote": "Sprint metadata.owned_paths is the authoritative full file fence"
+      },
+      "suggested_fix": "One stated order for crates/sc-cron-commands/Cargo.toml. For example, d-12 applies its version conversion only after the completed d-11 merge, as it already does for cargo-generate.toml. Do not add a graph edge.",
+      "status": "fixed",
+      "fix_note": "Fixed in 565255d, confirmed by the independent range-9 review (copy-first residue tracked as M28). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M28",
+      "severity": "material",
+      "location": "range 9: run-d-5 boundary:copy-first-tests: 'First copy the current Monty implementation AND its existing unit/integration test sources into the d-5-owned crates/sc-monty tree. Before any API extension, cargo test -p sc-monty --all-targets must compile and run those integration tests against that copied implementation. Private scheduler fixtures/adapters are copied into crates/sc-monty/tests support and use dev-only dependencies as necessary; there is no dependency on sc-cron, including dev dependencies. Normal/build dependencies remain only pydantic Monty crates.' Also deliverable 7: 'beginning with an exact copy of current sc-cron Monty code AND its unit and integration tests, passing before API extension ... sc-monty production dependencies are only pydantic Monty crates'.",
+      "what_changed": "The current Monty code cannot be copied exactly and still compile with only pydantic Monty normal deps. crates/sc-cron/src/monty_host.rs imports sc_command::observability::SharedCanonicalLog, serde_json::{Map, Number, Value}, crate::{CronError, HookEvent, ScheduleName}, crate::environment and crate::worker::RunCorrelation. monty_compose.rs imports process_wrap, sc_command and crate::process. The integration tests (tests/monty_hook.rs, monty_host_bridge.rs, common/mod.rs) import sc_cron::{Scheduler, ScheduleSpec, ScheduleStore, Job, HookTarget, MontyHostRegistry, ...} and the Fixture built on the scheduler and store, plus tokio, async_trait and serde_json. With no sc-cron dependency, the 'private scheduler fixtures/adapters' are really a copy of sc-cron's scheduler, store and worker inside sc-monty/tests. The text names neither that copy nor a removal point for it. So the plan asks for three things that cannot all hold at the baseline step: an exact copy, a run before any change, and normal deps that 'remain only pydantic Monty crates'. A developer must either break exactness without saying so (edit imports, strip serde_json and sc_command, cut the tests down) or break the dependency rule without saying so. Either way ANC-062's exact-copy check and ANC-039 cannot both be shown at the first commit.",
+      "authority": {
+        "ref": "owner later statement: \"monty implementation should start w/ an exact copy of current code AND tests including integration tests ... then monty api can be extended as necessary\"; owner item 1: \"Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json, no cron types or cron-reserved names.\"; ANC-062; ANC-039; ANC-042 (no weakened hook test)",
+        "quote": "monty implementation should start w/ an exact copy of current code AND tests including integration tests ... then monty api can be extended as necessary"
+      },
+      "suggested_fix": "Make the copy-then-separate order explicit and possible. Example: the baseline copy may carry the copied code's existing dependencies and the sc-cron internals it references (dev or temporary normal deps), passes unchanged, and is recorded at a commit. Separation then removes sc-command, serde_json, process_wrap and the cron types, keeping every assertion, and ANC-039/item 1 apply at sprint closure, not at the baseline commit. Alternatively, state exactly which mechanical edits (such as import paths) the 'exact copy' allows. Say what happens to any scheduler/store copy in sc-monty/tests after d-9 ports the cron assertions, so no second scheduler stays behind without a reason.",
+      "status": "fixed",
+      "fix_note": "Fixed in 1f4e693, confirmed by the independent range-10 review (M28 residue tracked as M29/m31). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m29",
+      "severity": "minor",
+      "location": "range 9: run-d-9 new boundary:cron-manifest-floors: 'At closure verify every registry requirement in the complete sc-cron and sc-cron-commands manifests, including normal/dev/optional/target-specific entries, is >= its tested floor with no upper bound.' Compare run-d-11 '4. Invoke d-3's single manifest checker ... no second checker or policy fixture set' and run-d-12 '5. Reuse d-3's check_dependency_manifests(paths)'. phase-d.jsonl: d-9 depends_on only d-5 (no d-3 edge).",
+      "what_changed": "This new d-9 closure check does not say how the verification is done. d-11 and d-12 both point at d-3's checker and forbid a second one; d-9 says neither. d-9 also has no graph edge to d-3, so a developer may write a separate manifest-floor check for cron. That would be the second checker the owner policy forbids.",
+      "authority": {
+        "ref": "owner dependency policy (brief item 5): \"one checker (d-3's), no second checker\"; ANC-037; PRD-ENG-4",
+        "quote": "one checker (d-3's), no second checker"
+      },
+      "suggested_fix": "The d-9 floor check uses d-3's check_dependency_manifests if it is available (d-3 is wave 1), or inspection evidence. In both cases no new checking code or fixture set is added. No new graph edge is needed.",
+      "status": "fixed",
+      "fix_note": "Fixed in 1f4e693, confirmed by the independent range-10 review (M28 residue tracked as M29/m31). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m30",
+      "severity": "minor",
+      "location": "range 9: anchors.json ANC-059 exclusion for run-d-8, reason: 'The generic MySQL backend contains no widget-specific code and does not change template widget commands/service'. run-d-8 owned_paths: 'template/crates/store-mysql/src/**'; run-d-8 text: 'Preserve thin legacy wrappers until the actual consumer compiles' and 'Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema'.",
+      "what_changed": "The exclusion is right, but its stated reason is false. d-8's owned crate contains widget-specific code today: template/crates/store-mysql/src/lib.rs has insert_widget/get_widget, `INSERT INTO widgets`/`SELECT ... FROM widgets` SQL and a WidgetRow re-export. d-8 edits that code (it removes WidgetRow/table SQL from the engine and keeps thin wrappers). The real reason is that d-8 changes the MySQL store crate but not the routing of the widget commands/service through storage_read/storage_write, which ANC-059 governs.",
+      "authority": {
+        "ref": "ANC-059 scope: \"plan items that change the template's widget commands or service\"",
+        "quote": "plan items that change the template's widget commands or service"
+      },
+      "suggested_fix": "The exclusion reason gives the true basis (d-8 does not route widget create/get/delete; d-10/d-11 do). It does not claim that d-8 contains no widget code.",
+      "status": "fixed",
+      "fix_note": "Fixed in 1f4e693, confirmed by the independent range-10 review (M28 residue tracked as M29/m31). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M29",
+      "severity": "material",
+      "location": "range 10: run-d-5 boundary:copy-first-tests: 'Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets against that actual copy and record its passing commit before any API change.'",
+      "what_changed": "Stage1 keeps the copy's crate identity, so it keeps sc-cron's Cargo.toml. In that manifest the interpreter is behind features: 'monty = [\"dep:monty\", \"dep:monty-types\"]'. src/lib.rs gates the Monty modules with #[cfg(feature = \"monty\")] at lines 123-131 and 169, and line 131 is gated on monty-test-handshake. The test targets carry required-features: monty_hook needs [\"monty\",\"monty-test-handshake\"], and monty_host_bridge and sc_compose_bench need [\"monty\"]. tests/hook_environment.rs line 9 gates its monty module the same way. The named command passes no --features. It would compile no Monty code, skip every Monty integration target, and still pass. A passing commit could then be recorded that never exercised the copied Monty code or tests, which is the owner's exact-copy requirement (ANC-062/042). The same applies to the d-5 statement 'passing before API extension'. Cargo's own comment in the manifest says this: 'The default `cargo test` skips this target; `cargo test -p sc-cron --features monty` builds it.'",
+      "authority": {
+        "ref": "owner: \"monty implementation should start w/ an exact copy of current code AND tests including integration tests\"; ANC-062, ANC-042; rulings M28 point 1 (\"its tests pass at a recorded commit\")",
+        "quote": "monty implementation should start w/ an exact copy of current code AND tests including integration tests"
+      },
+      "suggested_fix": "The Stage1 baseline gate must actually build the copied Monty modules and run every copied Monty unit and integration target. That means the copy's monty and monty-test-handshake features must be enabled, and evidence must show those targets ran (they cannot be skipped by required-features). A green run that compiles no Monty code must not be able to satisfy the baseline.",
+      "status": "fixed",
+      "fix_note": "Fixed in a50a736/e441be7, confirmed by the independent range-11/12 reviews. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m31",
+      "severity": "minor",
+      "location": "range 10: run-d-5 boundary:copy-first-tests: 'copy the current implementation AND unit/integration tests exactly, retaining their current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree.'",
+      "what_changed": "'The current implementation' does not name its scope. The real Monty files cannot compile alone under their original crate identity. monty_host.rs uses crate::{CronError, HookEvent, ScheduleName}, crate::environment, crate::worker::RunCorrelation, crate::process, crate::is_identifier and crate::noop_logger. monty_compose.rs uses crate::process and process_wrap. The tests import sc_cron::{Scheduler, ...}. So an exact, crate-identity-preserving baseline is in practice a copy of the whole sc-cron package, scheduler and store included, placed at crates/sc-monty. That is feasible and is removed by Stage2. But the text does not say it, and a developer who copies only monty_*.rs breaks the 'exact' and 'crate identity' conditions without saying so. Two separate points: (1) the copy runs 'in an isolated baseline worktree' while the plan also says 'Preserve the exact baseline in Git history'. The text never says the recorded commit must be reachable from the d-5 branch or pushed, so an isolated-worktree commit could be lost. (2) Two packages named sc-cron cannot coexist in one workspace, which is presumably why the worktree is isolated. Stage2 must therefore restore the original workspace membership, and the text does not say so.",
+      "authority": {
+        "ref": "rulings M28 point 1 (baseline exact incl. dependencies, recorded commit); PRD-ENG-4 keep it simple",
+        "quote": "rulings M28 point 1 (baseline exact incl. dependencies, recorded commit); PRD-ENG-4 keep it simple"
+      },
+      "suggested_fix": "Make the baseline's scope (the whole current sc-cron package under its own name) and its recorded commit unambiguous. The commit must stay reachable in the d-5 branch history after Stage2, and Stage2 must restore the normal workspace.",
+      "status": "fixed",
+      "fix_note": "Fixed in a50a736/e441be7, confirmed by the independent range-11/12 reviews. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M30",
+      "severity": "material",
+      "location": "range 11: run-d-5 boundary:copy-first-tests: 'Normal test output must show copied Monty code and the monty_hook, monty_host_bridge and sc_compose_bench integration targets actually ran and passed.'",
+      "what_changed": "The named command cannot meet the sc_compose_bench part of this criterion. tests/sc_compose_bench.rs is '#![cfg(unix)]'. Its only test, bench_sc_compose_hook_paths (lines 698-699), is '#[ignore = \"set SC_CRON_BENCH=1 to run; needs sc_compose Python + sc-compose CLI\"]'. It returns early unless SC_CRON_BENCH=1 (line 107), and again when neither the external sc_compose Python package nor the sc-compose CLI is installed (lines 706-709). It is a benchmark that writes HTML/JSON reports, and its header says 'Default CI does not run this test'. Under 'cargo test ... --all-targets --all-features' the output for this target is '0 passed; 1 ignored', which is not 'ran and passed'. The criterion can only be met by adding --ignored, SC_CRON_BENCH=1 and external tools, none of which the current code's tests require. Otherwise the gate fails on a target that today never runs. The same pattern makes a silent pass possible in sc_compose_hook, which the copy also carries: python_hook_renders_with_sc_compose prints 'skip: sc_compose not installed' and returns Ok (tests/sc_compose_hook.rs:29-33). The plan does not name that target, so this is only context.",
+      "authority": {
+        "ref": "owner: \"monty implementation should start w/ an exact copy of current code AND tests including integration tests. It is important to preserve the current excellent work\" (preserve current behaviour, not add external requirements); rulings M29 'WHAT MUST BE TRUE ... Normal test output is enough; add no new checker'; PRD-ENG-4 keep it simple",
+        "quote": "monty implementation should start w/ an exact copy of current code AND tests including integration tests. It is important to preserve the current excellent work"
+      },
+      "suggested_fix": "Name what must run as what actually runs today: the copied Monty unit tests, monty_hook and monty_host_bridge ran and passed. For sc_compose_bench, require that it compiles and is reported as ignored, exactly as in the current code. Do not require running the benchmark or installing external sc-compose tooling.",
+      "status": "fixed",
+      "fix_note": "Fixed in e441be7, confirmed by the independent range-12 review (m32 optional: d-10 deliverable 5 already states the seam is provisional). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M31",
+      "severity": "material",
+      "location": "range 11: run-d-5 boundary:copy-first-tests: 'Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets --all-features against that actual copy, enabling monty, monty-test-handshake and test-utils.'",
+      "what_changed": "With all features on, some current code and tests are compiled out, so a single --all-features run does not exercise the full current behaviour. (1) tests/monty_disabled.rs is '#![cfg(not(feature = \"monty\"))]', so a_monty_row_without_the_feature_records_hook_failed never compiles or runs, even though it is a copied integration test. (2) The production Monty OS-call path is replaced. src/monty_run.rs:428-463 compiles the shipped 'denied_os' branch only under cfg(not(feature = \"monty-test-handshake\")), and with the handshake on, monty_test_os allowances are used instead. So the configuration that ships (monty without monty-test-handshake) is never built or tested by the baseline. src/worker.rs:126 also has a cfg(not(feature = \"monty\")) branch. The current repo tests sc-cron with no features and with '--features monty' (justfile:25 layers windows-hook-default, windows-hook-monty, windows-host-monty), and the Cargo.toml comments name '--features monty' runs. A green --all-features baseline can therefore leave copied tests unrun, which is the same defect class as range-10 M29.",
+      "authority": {
+        "ref": "owner: \"exact copy of current code AND tests including integration tests. It is important to preserve the current excellent work\"; ANC-062/042; rulings M29 'the baseline run enables the features the copied code and tests need, and the recorded evidence shows those Monty test targets actually ran'",
+        "quote": "exact copy of current code AND tests including integration tests. It is important to preserve the current excellent work"
+      },
+      "suggested_fix": "Have the baseline commit pass the copied package under each feature configuration the current tests depend on: default (no features, which covers monty_disabled), monty without the handshake (the shipped path), and all features (handshake targets). Use the same ordinary cargo invocations; add no new checker or script.",
+      "status": "fixed",
+      "fix_note": "Fixed in e441be7, confirmed by the independent range-12 review (m32 optional: d-10 deliverable 5 already states the seam is provisional). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m32",
+      "severity": "minor",
+      "location": "range 11: run-d-10 boundary:cron-start-transform (unchanged at a50a736): 'For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence.'",
+      "what_changed": "d-11 qualified this sentence because Jev judged it to read as a fixed shape (ANC-051 underspecified). d-10 still carries the identical unqualified sentence. This is not a contradiction: d-10 deliverable 5 already says 'Document Transform/storage_read/storage_write as provisional in0.3.0 ... so later second input, Ok with nothing written (distinct from Err), and atomic-transaction transforms can be added without breaking consumers. Build none of those three behaviors', and d-10 did not fail ANC-051 at 1f4e693. It is an inconsistency between the two copies of the same criterion.",
+      "authority": {
+        "ref": "ANC-051 ('Build none of these now. Forbid none of them.'); owner item 4; rulings d-11/ANC-051 weak-sentence analysis",
+        "quote": "Build none of these now. Forbid none of them."
+      },
+      "suggested_fix": "Optional. When d-10 next changes, give its copy the same 'For the implemented Phase D cron.start flow' qualifier so the two criteria read the same. No behaviour change.",
+      "status": "fixed",
+      "fix_note": "Fixed in e441be7, confirmed by the independent range-12 review (m32 optional: d-10 deliverable 5 already states the seam is provisional). Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "M32",
+      "severity": "material",
+      "location": "range 12: run-d-5 boundary:copy-first-tests: 'Run the copied package tests with the same commands/configurations as the repository runs today ... The current sc-lint.toml commands are cargo test -p sc-cron and rustup run 1.96.1 cargo test -p sc-cron --features monty ... Normal output shows the copied tests and their results in those existing configurations.'",
+      "what_changed": "The a50a736 text required 'the monty_hook, monty_host_bridge ... integration targets actually ran and passed'. The new text drops that obligation for monty_hook. Today no command in the repo runs monty_hook. Its manifest entry has required-features = [\"monty\", \"monty-test-handshake\"] (crates/sc-cron/Cargo.toml:71-73). Outside sc-cron itself, git grep finds monty-test-handshake nowhere: not in sc-lint.toml, the justfile, any workflow, or any dependent Cargo.toml. The self dev-dependency enables only test-utils (Cargo.toml:59). So both named commands skip the target without a message, as do the Windows layers (justfile:25; crates.yml:210,222,224). The Cargo.toml comment at lines 69-70 ('`cargo test -p sc-cron --features monty` builds it') is stale. As a result, 'same commands, same results' copies monty_hook's 18 tests and the handshake-gated unit tests (src/monty_run.rs:217 execute_feed tests) without ever running them. They are copied integration tests the owner named ('exact copy of current code AND tests including integration tests'), and ANC-062 requires them 'passing, before its API is extended'. A green baseline gives no evidence for them, and Stage2's 'retaining every copied assertion' cannot be shown to pass. The cause is a gap in the repo's current CI that the plan now inherits; the plan text did not create it.",
+      "authority": {
+        "ref": "ANC-062 ('exact copy of sc-cron's current Monty code and its unit and integration tests, passing, before its API is extended'); owner 'monty implementation should start w/ an exact copy of current code AND tests including integration tests. It is important to preserve the current excellent work'; ANC-042; rulings gate-a50a736 'anything that passes today passes on the copy' (monty_hook does not run today, so this rule cannot cover it)",
+        "quote": "exact copy of sc-cron"
+      },
+      "suggested_fix": "Lead decision. The lightest fix that adds no new matrix is to run monty_hook once in the configuration its own manifest declares (rustup run 1.96.1 cargo test -p sc-cron --features monty-test-handshake), on both the original and the copy, and show the same results. That is the target's own required-features, not an invented configuration. Alternatively, keep d-5 as 'same as today', state in d-5 that monty_hook and the handshake-gated tests are not run today, and file a bead to fix the current CI gap and the stale Cargo.toml comment. Do not leave the text silent on this.",
+      "status": "fixed",
+      "fix_note": "Fixed in 32c2a1d, confirmed by the independent range-13 review; existing CI gap filed separately as bead run-3oeu. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m33",
+      "severity": "minor",
+      "location": "range 12: run-d-5 boundary:copy-first-tests: 'The current sc-lint.toml commands are cargo test -p sc-cron and rustup run 1.96.1 cargo test -p sc-cron --features monty'",
+      "what_changed": "The explicit list is accurate for sc-lint.toml (:113, :149), but it is not every current configuration that tests sc-cron code. Windows CI runs 'cargo +1.94.1 test -p sc-cron --test hook_environment', '... --features monty --test hook_environment' and '... --features monty --test monty_host_bridge' (justfile:25 via crates.yml:210,222,224). sc-cron-commands also tests against sc-cron under its feature sets (crates.yml:166-172, 214, 226). The general clause 'same commands/configurations as the repository runs today' arguably covers all of these, but a reader may take the named pair as complete. This is not a contradiction and nothing is dropped.",
+      "authority": {
+        "ref": "rulings gate-a50a736 'the baseline runs the copied package's tests in the same configurations the repo runs them today'; owner 'preserve the current excellent work'",
+        "quote": "the baseline runs the copied package"
+      },
+      "suggested_fix": "Optional. Say 'including' instead of implying the list is complete, or name the Windows hook_environment/monty_host_bridge layers as existing configurations. Add no new matrix.",
+      "status": "fixed",
+      "fix_note": "Fixed in 32c2a1d, confirmed by the independent range-13 review; existing CI gap filed separately as bead run-3oeu. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m34",
+      "severity": "minor",
+      "location": "range 12: run-d-5 boundary:copy-first-tests: 'cron-specific assertions/fixtures live in sc-cron and exercise the shared interpreter' vs the same criterion 'scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9' and boundary:sc-monty 'Cron-facing integration assertions run through the shared interpreter in d-9, not a replacement host'",
+      "what_changed": "The ANC-040 edit is attached to 'At d-5 closure', so it can be read as requiring sc-cron's cron-specific Monty assertions to run against sc-monty at d-5 closure. That would pull d-9 wiring into d-5, which is added scope. The other two sentences put that switch in d-9. No assertion is dropped either way. At d-5 the originals stay in the untouched legacy sc-cron (deliverable 4 'Preserve existing legacy tests'), and the copies removed from sc-monty are cron-named ones that ANC-040 forbids there. Copy-first is not contradicted, because Stage1 keeps the exact copy in history. The only problem is when 'exercise the shared interpreter' applies.",
+      "authority": {
+        "ref": "ANC-040 (scope: sc-monty public types/names; deterministic check covers src only); ANC-042; owner copy-first statement; PRD-ENG-6 (no unrequested scope)",
+        "quote": "ANC-040 (scope: sc-monty public types/names; deterministic check covers src only); ANC-042; owner copy-first statement; PRD-ENG-6 (no unrequested scope)"
+      },
+      "suggested_fix": "Optional wording fix: 'cron-specific assertions/fixtures stay in sc-cron and are moved onto the shared interpreter in d-9'.",
+      "status": "fixed",
+      "fix_note": "Fixed in 32c2a1d, confirmed by the independent range-13 review; existing CI gap filed separately as bead run-3oeu. Lead ruling with WHY+AUTHORITY sent to the planner; plan anchor gate 10/10 at d668b38."
+    },
+    {
+      "id": "m35",
+      "severity": "minor",
+      "location": "range 13: run-d-9: 'Inspect the resolved normal/build dependency graphs of both sc-cron and sc-cron-commands: neither may contain any crate from the sc-compose repository except permitted sc-sha, and neither may contain an ATM crate.'",
+      "what_changed": "The sentence does not say which feature sets to inspect. ANC-061's deterministic check covers 'each published crate and supported feature set'. In sc-cron-commands, default = [] and sc-cron is optional behind 'scheduler'/'monty' (crates/sc-cron-commands/Cargo.toml [features]). In sc-cron, the Monty/sc-monty edges sit behind the 'monty' feature. A default-features-only inspection would therefore miss exactly the edges d-9 adds. The text can be read correctly, since 'resolved graphs' does not say default-only, so this is an ambiguity and not a contradiction. It adds no checker, and the dev-only exclusion and the sc-sha/ATM terms match the ANC-061 scope exactly.",
+      "authority": {
+        "ref": "ANC-061 deterministic_check ('cargo tree -e normal,build for each published crate and supported feature set'); ANC-061 scope",
+        "quote": "cargo tree -e normal,build for each published crate and supported feature set"
+      },
+      "suggested_fix": "Optional wording fix: 'Inspect the resolved normal/build graphs of sc-cron and sc-cron-commands under each supported feature set (e.g. --all-features and default)'. Add no checker.",
+      "status": "fixed",
+      "fix_note": "Fixed in d668b38: d-9 now inspects each supported feature set (sc-cron default/monty; sc-cron-commands default/schema/scheduler/schema+scheduler/monty/schema+monty), inspection only. Lead checked the named sets against the [features] tables in crates/sc-cron/Cargo.toml and crates/sc-cron-commands/Cargo.toml; not independently re-reviewed. d-9 gate pass plan-20261112T234041Z."
     }
   ],
   "acceptable_choices": [
@@ -680,6 +979,22 @@
     {
       "location": "run-d-12 deliverable 6 + AC release-recommendations (f5244e0)",
       "note": "Standing release process regenerates and ships tested Cargo.lock + .sc-runtime/tested-dependencies.json every release and into populated repos. Traces to ANC-038 and owner quote 2026-11-12 (\"I expect tested-dependencies.json (or equivalent) to be part of the delivered template for each release and land on generated sc-runtime populated repos.\"). No new checker; ownership/graph unchanged. Reviewed by lead; d-12 anchor gate pass plan-20261112T174403Z."
+    },
+    {
+      "location": "anchors.json ANC-012 -> ANC-061 (cf23ce0)",
+      "note": "ANC-012 retired and replaced by ANC-061 (no sc-compose-repo crate except sc-sha, no ATM) per owner item 2, which permits sc-sha. The owner pre-approved anchor wording for items 1-7."
+    },
+    {
+      "location": "anchors.json ANC-039..063 (cf23ce0)",
+      "note": "Locked by the lead from owner items 1-7 and the two later owner statements (single Monty implementation; copy-first). Owner: \"Propose anchor wording for items 1 to 7 from the text above; I approve.\""
+    },
+    {
+      "location": "bead run-6wp9.1 ANC-054 plan questions (3af1f72)",
+      "note": "The independent anchor-tuning evaluator ruled question_defect against frozen oracle a2c157171d96 (sha256 prefix); sealed set ceda3e733394 passes both fixtures and fails every known-bad probe. Evidence: docs/plans/phase-d/anchor-tuning/ANC-054/. Anchor statement, scope and fixtures unchanged."
+    },
+    {
+      "location": "anchors.json exclusions added by the planner, ranges 8-12",
+      "note": "71 + 7 + 1 exclusions and one corrected reason (d-8/ANC-059), each checked by the independent range-8/9/10 reviews; the sprint that owns each anchor's work keeps it un-excluded."
     }
   ],
   "confirmations": [
