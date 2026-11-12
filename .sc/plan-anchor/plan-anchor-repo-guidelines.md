@@ -36,3 +36,20 @@ ADR-RUN-0017 and ADR-RUN-0203 pins are removed by amendment, and the rusqlite
 0.42 widening is a d-6 deliverable.
 
 Remove this file only if the owner withdraws these guidelines.
+
+## Roles (owner ruling, 2026-11-12)
+
+|  | Planner | Lead |
+| --- | --- | --- |
+| Goal | Get the anchors to converge | Make sure nothing drifted |
+| Freedom | Change anything | Change nothing |
+| Output | A plan that passes | Accept, or reject with the reason |
+
+- The lead never diagnoses failures into fixes, dictates replacement wording or
+  chooses sprint wiring. Those are the planner's. A lead that writes the fix
+  ends up reviewing its own work, and the planner stops thinking.
+- Exclusions are the planner's. Excluding an item from an anchor is another way
+  to make a gate pass, so the drift checker must not hold that tool. The lead
+  reviews each exclusion as possible drift: it accepts or rejects it.
+- The lead runs the gates and the drift review against the owner's quotes and
+  intent, and reports the results.
