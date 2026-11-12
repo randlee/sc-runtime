@@ -1,0 +1,84 @@
+{
+  "documents": {
+    "DOC-RUN-001": {
+      "path": "docs/architecture.md"
+    },
+    "DOC-RUN-002": {
+      "path": "docs/requirements.md"
+    },
+    "DOC-RUN-003": {
+      "path": "docs/sc-command/architecture.md"
+    },
+    "DOC-RUN-004": {
+      "path": "docs/sc-command/requirements.md"
+    },
+    "DOC-RUN-005": {
+      "path": "docs/sc-config/architecture.md"
+    },
+    "DOC-RUN-006": {
+      "path": "docs/sc-config/requirements.md"
+    },
+    "DOC-RUN-007": {
+      "path": "docs/sc-cron-commands/architecture.md"
+    },
+    "DOC-RUN-008": {
+      "path": "docs/sc-cron-commands/requirements.md"
+    },
+    "DOC-RUN-009": {
+      "path": "docs/sc-cron/architecture.md"
+    },
+    "DOC-RUN-010": {
+      "path": "docs/sc-cron/requirements.md"
+    },
+    "DOC-RUN-011": {
+      "path": "docs/sc-runtime-cli/architecture.md"
+    },
+    "DOC-RUN-012": {
+      "path": "docs/sc-runtime-cli/requirements.md"
+    },
+    "DOC-RUN-013": {
+      "path": "docs/sc-runtime-core/architecture.md"
+    },
+    "DOC-RUN-014": {
+      "path": "docs/sc-runtime-core/requirements.md"
+    },
+    "DOC-RUN-015": {
+      "path": "docs/sc-runtime-daemon/architecture.md"
+    },
+    "DOC-RUN-016": {
+      "path": "docs/sc-runtime-daemon/requirements.md"
+    },
+    "DOC-RUN-017": {
+      "path": "docs/sc-runtime-db-sqlite/architecture.md"
+    },
+    "DOC-RUN-018": {
+      "path": "docs/sc-runtime-db-sqlite/requirements.md"
+    },
+    "DOC-RUN-019": {
+      "path": "docs/sc-runtime-mcp-stdio/architecture.md"
+    },
+    "DOC-RUN-020": {
+      "path": "docs/sc-runtime-mcp-stdio/requirements.md"
+    },
+    "DOC-RUN-021": {
+      "path": "docs/sc-runtime-web/architecture.md"
+    },
+    "DOC-RUN-022": {
+      "path": "docs/sc-runtime-web/requirements.md"
+    },
+    "DOC-RUN-023": {
+      "path": "docs/sc-runtime/architecture.md"
+    },
+    "DOC-RUN-024": {
+      "path": "docs/sc-runtime/requirements.md"
+    },
+    "DOC-RUN-025": {
+      "path": "docs/sc-transport/architecture.md"
+    },
+    "DOC-RUN-026": {
+      "path": "docs/sc-transport/requirements.md"
+    }
+  },
+  "identity_version": "1.0.0",
+  "repository_id": "urn:raptor:repo:sc-runtime"
+}
