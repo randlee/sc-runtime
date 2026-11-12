@@ -509,6 +509,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
 - `run-d-10`: d-10 does not touch the SQLite backend or its writer, which d-6 owns.
 - `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+- `run-d-3`: d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.
 
 Beads: anchor `run-b3q4`, plan questions `run-b3q4.1`, dev questions `run-b3q4.2`
 
@@ -563,6 +564,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
 - `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+- `run-d-11`: Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
 
 Beads: anchor `run-ox1n`, plan questions `run-ox1n.1`, dev questions `run-ox1n.2`
 
@@ -590,6 +592,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
 - `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+- `run-d-11`: Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
 
 Beads: anchor `run-g9ca`, plan questions `run-g9ca.1`, dev questions `run-g9ca.2`
 
@@ -694,6 +697,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-9`: Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.
 - `run-d-10`: d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.
 - `run-d-12`: Template rejection of cron with the no-database layout is owned and satisfied by d-11.
+- `run-d-3`: d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.
 
 Beads: anchor `run-1opo`, plan questions `run-1opo.1`, dev questions `run-1opo.2`
 
@@ -847,6 +851,7 @@ Deterministic check to pair with the development gate: grep storage backend crat
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-10`: d-10 touches no storage backend crate; its application stores live in the application layer.
 - `run-d-12`: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.
+- `run-d-3`: d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.
 
 Beads: anchor `run-q03u`, plan questions `run-q03u.1`, dev questions `run-q03u.2`
 
@@ -891,6 +896,7 @@ Deterministic check to pair with the development gate: deterministic test: a req
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-11`: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.
 - `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+- `run-d-5`: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.
 
 Beads: anchor `run-cdtx`, plan questions `run-cdtx.1`, dev questions `run-cdtx.2`
 
