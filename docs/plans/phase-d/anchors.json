@@ -231,6 +231,13 @@
           "item": "run-d-11",
           "reason": "d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T05:22:53+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -245,6 +252,10 @@
         {
           "item": "run-d-11",
           "reason": "d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4."
+        },
+        {
+          "item": "run-d-5",
+          "reason": "d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11."
         }
       ]
     },

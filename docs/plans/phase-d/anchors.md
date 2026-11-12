@@ -102,6 +102,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-8`: d-8 changes MySQL storage crate dependencies only, not template generation's sc-compose version selection.
 - `run-d-10`: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.
 - `run-d-11`: d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.
+- `run-d-5`: d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.
 
 Beads: anchor `run-d4yq`, plan questions `run-d4yq.1`, dev questions `run-d4yq.2`
 
