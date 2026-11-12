@@ -264,6 +264,13 @@
           "item": "run-d-5",
           "reason": "d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.",
           "replaced": true
+        },
+        {
+          "at": "2026-11-12T08:16:40+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -278,6 +285,10 @@
         {
           "item": "run-d-5",
           "reason": "d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work."
+        },
+        {
+          "item": "run-d-12",
+          "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
         }
       ]
     },
@@ -2559,6 +2570,13 @@
           "at": "2026-11-12T06:40:50+00:00",
           "event": "exclusion_removed",
           "item": "run-d-10"
+        },
+        {
+          "at": "2026-11-12T08:16:39+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2573,6 +2591,10 @@
         {
           "item": "run-d-9",
           "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+        },
+        {
+          "item": "run-d-10",
+          "reason": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint."
         }
       ]
     },
@@ -4056,6 +4078,30 @@
           "fields": [
             "scope"
           ]
+        },
+        {
+          "at": "2026-11-12T08:16:39+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T08:16:40+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+        },
+        {
+          "item": "run-d-10",
+          "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
         }
       ]
     }

@@ -104,6 +104,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-8`: d-8 changes MySQL storage crate dependencies only, not template generation's sc-compose version selection.
 - `run-d-10`: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.
 - `run-d-5`: d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.
+- `run-d-12`: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.
 
 Beads: anchor `run-d4yq`, plan questions `run-d4yq.1`, dev questions `run-d4yq.2`
 
@@ -611,6 +612,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-10`: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.
 
 Beads: anchor `run-x8rt`, plan questions `run-x8rt.1`, dev questions `run-x8rt.2`
 
@@ -930,6 +932,10 @@ Summary: Tested dependency combination recorded in .sc-runtime/
 Scope: Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.
 
 Deterministic check to pair with the development gate: Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12.
+- `run-d-10`: d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs.
 
 Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2`
 
