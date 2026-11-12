@@ -1368,23 +1368,43 @@
       "scope": "plan items that change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring",
       "deterministic_check": "generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "With the SQLite layout and cron enabled, the generated daemon opens one SQLite database file and creates the cron schedule table inside it by default."
+        ],
+        "fail": [
+          "With the SQLite layout and cron enabled, the generated daemon keeps app data in app.db and opens a separate cron.db file for schedule rows."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-x17o",
+        "plan_questions": "run-x17o.1",
+        "dev_questions": "run-x17o.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:06+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-x17o",
+            "plan_questions": "run-x17o.1",
+            "dev_questions": "run-x17o.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1402,23 +1422,43 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "grep: no SQLite write path outside the writer; writer API takes an async channel sender",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Every SQLite write from the app and from cron is sent as a request on the writer's tokio mpsc channel and awaited."
+        ],
+        "fail": [
+          "Cron opens its own rusqlite connection and executes its INSERT and UPDATE statements directly, while app writes go through the channel writer."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-b3q4",
+        "plan_questions": "run-b3q4.1",
+        "dev_questions": "run-b3q4.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:07+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-b3q4",
+            "plan_questions": "run-b3q4.1",
+            "dev_questions": "run-b3q4.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1428,7 +1468,7 @@
       "source_ref": null,
       "statement": "The app's only SQLite write connection MUST be owned by the SQLite writer thread.",
       "quote": "a single thread that owns the only write connection",
-      "kind": "structural",
+      "kind": "directive",
       "stated_by": "Rand Lee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session; option B storage decision",
@@ -1436,23 +1476,50 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "grep: one write-mode Connection::open in the writer thread; other connections opened read-only",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The writer's dedicated thread opens the only read-write connection; reader threads open their connections read-only."
+        ],
+        "fail": [
+          "Each request handler opens its own read-write SQLite connection to perform its update."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-wq51",
+        "plan_questions": "run-wq51.1",
+        "dev_questions": "run-wq51.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:09+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-wq51",
+            "plan_questions": "run-wq51.1",
+            "dev_questions": "run-wq51.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T02:52:00+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },
@@ -1470,23 +1537,43 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "deterministic test: reply observed only after commit hook fires",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The writer sends each caller's oneshot reply only after the transaction that contains the caller's write has committed."
+        ],
+        "fail": [
+          "The writer replies Ok to the caller as soon as the write is queued, and commits the batch later."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-ox1n",
+        "plan_questions": "run-ox1n.1",
+        "dev_questions": "run-ox1n.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:11+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ox1n",
+            "plan_questions": "run-ox1n.1",
+            "dev_questions": "run-ox1n.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1504,23 +1591,43 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "When several writes are waiting in the channel, the writer drains them and commits them together in a single transaction."
+        ],
+        "fail": [
+          "The writer opens and commits a separate transaction for every individual write, even when many are queued."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-g9ca",
+        "plan_questions": "run-g9ca.1",
+        "dev_questions": "run-g9ca.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:12+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-g9ca",
+            "plan_questions": "run-g9ca.1",
+            "dev_questions": "run-g9ca.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1538,23 +1645,43 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "grep: no spawn_blocking in callers of the SQLite writer",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Async handlers call the writer's async submit method and await the reply; no caller uses spawn_blocking."
+        ],
+        "fail": [
+          "Handlers wrap each storage write in tokio::task::spawn_blocking to call the writer."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-x8rt",
+        "plan_questions": "run-x8rt.1",
+        "dev_questions": "run-x8rt.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:15+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:14+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-x8rt",
+            "plan_questions": "run-x8rt.1",
+            "dev_questions": "run-x8rt.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1572,23 +1699,43 @@
       "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
       "deterministic_check": "grep: writer submit API is async (await on oneshot), no blocking recv in async callers",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Async callers await the writer's oneshot reply future, so their Tokio worker thread is not blocked while waiting."
+        ],
+        "fail": [
+          "Async callers use std::sync::mpsc recv_timeout to wait for the writer's reply on the Tokio worker thread."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-n4fl",
+        "plan_questions": "run-n4fl.1",
+        "dev_questions": "run-n4fl.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:16+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:15+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-n4fl",
+            "plan_questions": "run-n4fl.1",
+            "dev_questions": "run-n4fl.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:39+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1606,23 +1753,43 @@
       "scope": "plan items that change SQLite-related dependencies, the generated template's SQLite store, or sc-cron's storage dependencies",
       "deterministic_check": "cargo tree -e normal on generated SQLite app: no sqlx-sqlite",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "cargo tree for the generated SQLite app shows rusqlite and no sqlx-sqlite crate."
+        ],
+        "fail": [
+          "The generated SQLite app's store still depends on sqlx with the sqlite feature, so cargo tree lists sqlx-sqlite."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-d6no",
+        "plan_questions": "run-d6no.1",
+        "dev_questions": "run-d6no.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:06:16+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:17+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-d6no",
+            "plan_questions": "run-d6no.1",
+            "dev_questions": "run-d6no.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1640,23 +1807,43 @@
       "scope": "plan items that change template generation options, layouts, or the cron feature",
       "deterministic_check": "generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Generating a project with cron enabled and the no-database layout fails with a typed error and writes no project."
+        ],
+        "fail": [
+          "Generating a project with cron enabled and the no-database layout succeeds and gives cron its own private database."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-1opo",
+        "plan_questions": "run-1opo.1",
+        "dev_questions": "run-1opo.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:08:30+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-1opo",
+            "plan_questions": "run-1opo.1",
+            "dev_questions": "run-1opo.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1674,23 +1861,43 @@
       "scope": "plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests",
       "deterministic_check": "ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "After the move to the app database, the schedule table keeps a unique constraint on schedule name, and the ported test proves a second active row with the same name is rejected."
+        ],
+        "fail": [
+          "After the move, the schedule table drops the unique name constraint, so two active rows with the same schedule name can exist."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-z85b",
+        "plan_questions": "run-z85b.1",
+        "dev_questions": "run-z85b.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:08:30+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:20+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-z85b",
+            "plan_questions": "run-z85b.1",
+            "dev_questions": "run-z85b.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1708,23 +1915,43 @@
       "scope": "plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests",
       "deterministic_check": "ported sc-cron row-limit admission tests pass against the app-database CronStorage",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "After the move, adding a schedule row when the configured row limit is reached is refused, and the ported row-limit test passes against app-database storage."
+        ],
+        "fail": [
+          "After the move, the row-limit check is removed and schedules can be added without limit."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-9pf5",
+        "plan_questions": "run-9pf5.1",
+        "dev_questions": "run-9pf5.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:08:30+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:22+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-9pf5",
+            "plan_questions": "run-9pf5.1",
+            "dev_questions": "run-9pf5.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1734,7 +1961,7 @@
       "source_ref": null,
       "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
       "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
-      "kind": "structural",
+      "kind": "directive",
       "stated_by": "Rand Lee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session; option B storage decision",
@@ -1742,23 +1969,50 @@
       "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
       "deterministic_check": "grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The SQLite, Postgres and MySQL backends each implement sc_storage::Storage<T>."
+        ],
+        "fail": [
+          "The Postgres backend implements Storage<T>, while the SQLite and MySQL backends keep their own separate per-table store functions."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-7vxt",
+        "plan_questions": "run-7vxt.1",
+        "dev_questions": "run-7vxt.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:08:30+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:23+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-7vxt",
+            "plan_questions": "run-7vxt.1",
+            "dev_questions": "run-7vxt.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T02:52:00+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },
@@ -1776,23 +2030,43 @@
       "scope": "plan items that change async/blocking rules, the SQLite writer or reader pool, or code that bridges sync and async",
       "deterministic_check": "grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Runtime::block_on appears only in the SQLite writer thread that owns its runtime; reader threads receive with blocking_recv."
+        ],
+        "fail": [
+          "Reader-pool threads each build a current-thread runtime and call Runtime::block_on to receive requests."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-n3n7",
+        "plan_questions": "run-n3n7.1",
+        "dev_questions": "run-n3n7.2"
       },
       "history": [
         {
           "at": "2026-11-12T02:44:29+00:00",
           "event": "created",
           "status": "locked"
+        },
+        {
+          "at": "2026-11-12T02:51:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-n3n7",
+            "plan_questions": "run-n3n7.1",
+            "dev_questions": "run-n3n7.2"
+          }
+        },
+        {
+          "at": "2026-11-12T02:51:40+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     }

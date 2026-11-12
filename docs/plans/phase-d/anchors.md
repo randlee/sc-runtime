@@ -444,7 +444,7 @@ Anchor: In an app that has a SQLite database and enables cron, the default confi
 
 > When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: cron rows default to app SQLite DB
 
@@ -452,13 +452,19 @@ Scope: plan items that change sc-cron storage, cron persistence configuration, o
 
 Deterministic check to pair with the development gate: generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)
 
+Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
+
+Fixtures:
+- pass: With the SQLite layout and cron enabled, the generated daemon opens one SQLite database file and creates the cron schedule table inside it by default.
+- fail: With the SQLite layout and cron enabled, the generated daemon keeps app data in app.db and opens a separate cron.db file for schedule rows.
+
 ## ANC-022
 
 Anchor: All writes to an app's SQLite database MUST be submitted to a single writer through an async channel.
 
 > Every write to an app's SQLite database MUST go through one writer with an async channel input
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: all SQLite writes via one async-channel writer
 
@@ -466,13 +472,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: no SQLite write path outside the writer; writer API takes an async channel sender
 
+Beads: anchor `run-b3q4`, plan questions `run-b3q4.1`, dev questions `run-b3q4.2`
+
+Fixtures:
+- pass: Every SQLite write from the app and from cron is sent as a request on the writer's tokio mpsc channel and awaited.
+- fail: Cron opens its own rusqlite connection and executes its INSERT and UPDATE statements directly, while app writes go through the channel writer.
+
 ## ANC-023
 
 Anchor: The app's only SQLite write connection MUST be owned by the SQLite writer thread.
 
 > a single thread that owns the only write connection
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 3.
 
 Summary: writer thread owns the only write connection
 
@@ -480,13 +492,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: one write-mode Connection::open in the writer thread; other connections opened read-only
 
+Beads: anchor `run-wq51`, plan questions `run-wq51.1`, dev questions `run-wq51.2`
+
+Fixtures:
+- pass: The writer's dedicated thread opens the only read-write connection; reader threads open their connections read-only.
+- fail: Each request handler opens its own read-write SQLite connection to perform its update.
+
 ## ANC-024
 
 Anchor: The SQLite writer MUST reply to each write request only after the transaction containing that write has committed.
 
 > Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: writer replies after commit
 
@@ -494,13 +512,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: deterministic test: reply observed only after commit hook fires
 
+Beads: anchor `run-ox1n`, plan questions `run-ox1n.1`, dev questions `run-ox1n.2`
+
+Fixtures:
+- pass: The writer sends each caller's oneshot reply only after the transaction that contains the caller's write has committed.
+- fail: The writer replies Ok to the caller as soon as the write is queued, and commits the batch later.
+
 ## ANC-025
 
 Anchor: The SQLite writer MUST commit writes that are queued together in a single transaction.
 
 > Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: queued writes batched in one transaction
 
@@ -508,13 +532,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)
 
+Beads: anchor `run-g9ca`, plan questions `run-g9ca.1`, dev questions `run-g9ca.2`
+
+Fixtures:
+- pass: When several writes are waiting in the channel, the writer drains them and commits them together in a single transaction.
+- fail: The writer opens and commits a separate transaction for every individual write, even when many are queued.
+
 ## ANC-026
 
 Anchor: Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.
 
 > Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: no spawn_blocking to reach writer
 
@@ -522,13 +552,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: no spawn_blocking in callers of the SQLite writer
 
+Beads: anchor `run-x8rt`, plan questions `run-x8rt.1`, dev questions `run-x8rt.2`
+
+Fixtures:
+- pass: Async handlers call the writer's async submit method and await the reply; no caller uses spawn_blocking.
+- fail: Handlers wrap each storage write in tokio::task::spawn_blocking to call the writer.
+
 ## ANC-027
 
 Anchor: Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.
 
 > Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: async callers do not block awaiting writer reply
 
@@ -536,13 +572,19 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: writer submit API is async (await on oneshot), no blocking recv in async callers
 
+Beads: anchor `run-n4fl`, plan questions `run-n4fl.1`, dev questions `run-n4fl.2`
+
+Fixtures:
+- pass: Async callers await the writer's oneshot reply future, so their Tokio worker thread is not blocked while waiting.
+- fail: Async callers use std::sync::mpsc recv_timeout to wait for the writer's reply on the Tokio worker thread.
+
 ## ANC-028
 
 Anchor: The cargo tree of an app that uses SQLite MUST NOT include a sqlx SQLite driver crate.
 
 > An app with SQLite MUST link exactly one SQLite client library: cargo tree shows rusqlite, no sqlx SQLite driver, and one libsqlite3-sys version.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: no sqlx SQLite driver in SQLite app tree
 
@@ -550,13 +592,19 @@ Scope: plan items that change SQLite-related dependencies, the generated templat
 
 Deterministic check to pair with the development gate: cargo tree -e normal on generated SQLite app: no sqlx-sqlite
 
+Beads: anchor `run-d6no`, plan questions `run-d6no.1`, dev questions `run-d6no.2`
+
+Fixtures:
+- pass: cargo tree for the generated SQLite app shows rusqlite and no sqlx-sqlite crate.
+- fail: The generated SQLite app's store still depends on sqlx with the sqlite feature, so cargo tree lists sqlx-sqlite.
+
 ## ANC-029
 
 Anchor: Template generation MUST reject a project that enables cron with the no-database layout.
 
 > Cron needs a database. Generation MUST reject cron with the no-database layout.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: generation rejects cron with no-database layout
 
@@ -564,13 +612,19 @@ Scope: plan items that change template generation options, layouts, or the cron 
 
 Deterministic check to pair with the development gate: generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written
 
+Beads: anchor `run-1opo`, plan questions `run-1opo.1`, dev questions `run-1opo.2`
+
+Fixtures:
+- pass: Generating a project with cron enabled and the no-database layout fails with a typed error and writes no project.
+- fail: Generating a project with cron enabled and the no-database layout succeeds and gives cron its own private database.
+
 ## ANC-030
 
 Anchor: When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still reject a second active schedule row that has the same schedule name as an active row.
 
 > Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: cron keeps one active row per schedule name
 
@@ -578,13 +632,19 @@ Scope: plan items that move or change cron storage, CronStorage, sc-cron's sched
 
 Deterministic check to pair with the development gate: ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage
 
+Beads: anchor `run-z85b`, plan questions `run-z85b.1`, dev questions `run-z85b.2`
+
+Fixtures:
+- pass: After the move to the app database, the schedule table keeps a unique constraint on schedule name, and the ported test proves a second active row with the same name is rejected.
+- fail: After the move, the schedule table drops the unique name constraint, so two active rows with the same schedule name can exist.
+
 ## ANC-031
 
 Anchor: When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still refuse to add a schedule row once the row count reaches the row limit configured by the embedding application.
 
 > Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 2.
 
 Summary: cron keeps caller-supplied row limit
 
@@ -592,13 +652,19 @@ Scope: plan items that move or change cron storage, CronStorage, sc-cron's sched
 
 Deterministic check to pair with the development gate: ported sc-cron row-limit admission tests pass against the app-database CronStorage
 
+Beads: anchor `run-9pf5`, plan questions `run-9pf5.1`, dev questions `run-9pf5.2`
+
+Fixtures:
+- pass: After the move, adding a schedule row when the configured row limit is reached is refused, and the ported row-limit test passes against app-database storage.
+- fail: After the move, the row-limit check is removed and schedules can be added without limit.
+
 ## ANC-032
 
 Anchor: The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.
 
 > Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.
 
-Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 3.
 
 Summary: SQLite/Postgres/MySQL implement one Storage<T>
 
@@ -606,16 +672,28 @@ Scope: plan items that define the storage trait or implement a SQLite, Postgres 
 
 Deterministic check to pair with the development gate: grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path
 
+Beads: anchor `run-7vxt`, plan questions `run-7vxt.1`, dev questions `run-7vxt.2`
+
+Fixtures:
+- pass: The SQLite, Postgres and MySQL backends each implement sc_storage::Storage<T>.
+- fail: The Postgres backend implements Storage<T>, while the SQLite and MySQL backends keep their own separate per-table store functions.
+
 ## ADR-RUN-0011
 
 Anchor: Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.
 
 > Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.
 
-Said by randlee, planning session, 2026-11-11. Status: locked. Version 1.
+Said by randlee, planning session, 2026-11-11. Status: locked. Version 2.
 
 Summary: block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e)
 
 Scope: plan items that change async/blocking rules, the SQLite writer or reader pool, or code that bridges sync and async
 
 Deterministic check to pair with the development gate: grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module
+
+Beads: anchor `run-n3n7`, plan questions `run-n3n7.1`, dev questions `run-n3n7.2`
+
+Fixtures:
+- pass: Runtime::block_on appears only in the SQLite writer thread that owns its runtime; reader threads receive with blocking_recv.
+- fail: Reader-pool threads each build a current-thread runtime and call Runtime::block_on to receive requests.
