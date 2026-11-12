@@ -1496,6 +1496,11 @@
           "item": "run-d-5",
           "reason": "Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019.",
           "replaced": true
+        },
+        {
+          "at": "2026-11-12T07:16:15+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-5"
         }
       ],
       "exclude": [
@@ -1506,10 +1511,6 @@
         {
           "item": "run-d-8",
           "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes."
-        },
-        {
-          "item": "run-d-5",
-          "reason": "Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019."
         }
       ]
     },

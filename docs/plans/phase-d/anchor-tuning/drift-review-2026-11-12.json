@@ -144,8 +144,8 @@
         "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
       },
       "suggested_fix": "Revert: remove the run-d-5 entry from ANC-019's exclude list and let the gate judge d-5. The current d-5 text already states the obligation (all edited lines are normal carets, no extra upper bound, and any later bound starts at the first broken release with an adjacent comment), so no growth is expected. If it is still underspecified, make d-5 more specific instead of excluding it. Escalate only if the planner contends the anchor scope excludes pin removal; that is a scope question for the owner, not an exclusion.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Removed ANC-019/run-d-5 exclusion; existing pin removal and all-bound comments policy will be judged."
     },
     {
       "id": "m6",
@@ -170,8 +170,8 @@
         "quote": "D-5 proposed template create/delete-with-generated-id extension over atomic storage preserves current DTO behavior; PENDING USER RATIFICATION."
       },
       "suggested_fix": "Add one sentence to the d-5 description: owner ratification of option (a) and the frozen shape is pending and gates d-5 closure; ADR-RUN-0020/0021 are Proposed. Also inline the single- or multi-row-type closure rule, or replace each 'below' with a pointer the gate can see.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "d-5 description and acceptance now state pending owner ratification and the single/multi-row-type outcome; d-6/d-10 gate-read criteria explicitly require the ratified extension."
     },
     {
       "id": "m8",
@@ -183,8 +183,8 @@
         "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
       },
       "suggested_fix": "Update the root sentence to match the sprints: each owner sprint is blocked until both rules exist and pass on its changed storage code, and d-12 rechecks before upload. Record the analyzer request as an explicit external blocker with its owner.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Root now matches four sprint closure blockers and d-12 recheck; lead owns the missing analyzer request, pending owner approval to file, then external delivery. No delivered rule or date claimed."
     },
     {
       "id": "m9",
@@ -196,8 +196,8 @@
         "quote": "It temporarily pins its existing types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify with it."
       },
       "suggested_fix": "Choose one: move the two ADR amendments into d-3, or land them before dispatch, or have d-3 consume d-5's amendment. The last option adds an edge and changes the wave metrics, so it needs the owner's consent.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Previously approved Phase D ADR0017/0203 policy amendments committed before dispatch. d-5 retains shared template manifest conversions; graph unchanged."
     }
   ],
   "acceptable_choices": [

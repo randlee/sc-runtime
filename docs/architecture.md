@@ -230,6 +230,25 @@ ADR-RT-0001; REQ-RUN-0005/0309/0503/0701/0702; REQ-CMD-0002;
 REQ-CRON-0001; REQ-RT-0001; NFR-RUN-0002/0009, NFR-CMD-0001/0002/0003,
 NFR-CRON-0001 and NFR-RT-0002/0003, only as specified below.
 
+### Phase D amendment (2026-11-12; approved policy, before dispatch)
+
+For Phase D this section supersedes the historical exact-pin and version-triggered
+cleanup requirements below. Production and generated requirements for
+`sc-observability` and `sc-observability-types` use `^1.5.0`, admitting newer
+compatible releases; no protective exact pin or conditional pin-removal exception
+remains. At minimum and latest allowed selections, the isolated registry
+signature/direct `Arc<Logger>`-to-upstream `SharedCanonicalLog` probe selects
+native mode when direct compatibility passes, otherwise the existing shim only
+when its compatibility checks pass. If neither mode passes its compatibility
+checks, closure stays blocked. Native
+cleanup removes the local trait, inline adapter and temporary cron-command edge
+and restores the original boundary. A selected version alone proves no capability.
+The existing panic, error and capability constraints still apply; this amendment
+claims no successful probe, implementation or publication. d-3 owns executable
+probes and its source manifest conversions; d-5 owns shared template conversions.
+Both consume this approved amendment before dispatch, with no dependency on a
+sibling's later documentation edit (ANC-016/017/019).
+
 ### Decision
 
 The initial five-package `0.1.1` release may use actual registry observability
@@ -1603,6 +1622,23 @@ schemas in place of the typed library-native projections.
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  
 **Acceptance:** made Active, or amended, by sprint a-1
+
+### Phase D amendment (2026-11-12; approved policy, before dispatch)
+
+For Phase D the tested-floor requirements are `rmcp = "^3.9"` (patched
+floor for RUSTSEC-2026-0462), `utoipa = "^6.0.0"`,
+`utoipa-axum = "^0.3.0"` and `schemars = "^1.2.3"`. They admit newer
+Cargo-compatible releases without another ADR amendment or SDK release;
+this supersedes the Phase C freeze and dated-latest equality checks below.
+Preserve the single `(name, version, source)` identity per selected package by
+traversing `resolve.nodes[].deps[].pkg` from each runtime/daemon root, and run
+the real composition/schema/router probes at both minimum and latest allowed
+selections. A CI lockfile selection is a test identity, never a consumer pin.
+Preserve the one-struct schema decision and ordinary feature selections.
+d-3 owns executable qualification/source conversions; d-5 owns shared template
+conversions. This approved policy precedes either sprint's dispatch; successful
+qualification and coordinated 0.3.0 release remain implementation obligations,
+not claims made by this amendment (ANC-016/017/019).
 
 ### Phase C frozen runtime matrix (queried 2026-11-04)
 

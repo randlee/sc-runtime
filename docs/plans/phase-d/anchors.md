@@ -430,7 +430,6 @@ Deterministic check to pair with the development gate: Plan: each retained extra
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
 - `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
-- `run-d-5`: Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019.
 
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
