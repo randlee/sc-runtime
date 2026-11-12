@@ -1,7 +1,7 @@
 {
   "schema": "plan-anchoring/drift-review/1",
   "reviewed_at": "2026-11-12",
-  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'. Range 3 (c8596c0..a00e86f): c8596c0..a00e86f (origin/plan/phase-d), worktree anchors-phase-d. Inputs: git log; anchors.json diff; phase-d.jsonl, docs/architecture.md, docs/requirements.md and intent.md diffs; word diffs of gate-items-c8596c0 vs gate-items-1b0dabc for run-d-3..run-d-12, plus gate-items-1b0dabc vs gate-items-c46b1f7 for run-d-10 (identical); run-d-5 .bead.json snapshots for the ratification wording; current ADR-RUN-0017, ADR-RUN-0203, REQ-RUN-0309 and NFR-RUN-0007 text; .github/workflows listing. Range 4 (0d5e491..83943f5): 0d5e491..83943f5 (single commit 83943f5). Composed sprint text gate-items-f5d0013 (d-3,5,7,8,9,11,12) and gate-items-1b0dabc (d-4,6,10) vs gate-items-83943f5 (all ten), including owned_paths/requirements/adrs in the .bead.json snapshots; docs/plans/phase-d.jsonl DAG diff; docs/requirements.md (new REQ-RUN-0703); anchors.json exclusions (unchanged in range) for ANC-003/015/037/038 and all exclusion reasons mentioning moved items; push.md per-finding table; current manifests (crates/*/Cargo.toml, template manifests, template/cargo-generate.toml, boundaries/*.toml) and docs/architecture.md ADR-RUN-0017/0203 Phase D amendments.",
+  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'. Range 3 (c8596c0..a00e86f): c8596c0..a00e86f (origin/plan/phase-d), worktree anchors-phase-d. Inputs: git log; anchors.json diff; phase-d.jsonl, docs/architecture.md, docs/requirements.md and intent.md diffs; word diffs of gate-items-c8596c0 vs gate-items-1b0dabc for run-d-3..run-d-12, plus gate-items-1b0dabc vs gate-items-c46b1f7 for run-d-10 (identical); run-d-5 .bead.json snapshots for the ratification wording; current ADR-RUN-0017, ADR-RUN-0203, REQ-RUN-0309 and NFR-RUN-0007 text; .github/workflows listing. Range 4 (0d5e491..83943f5): 0d5e491..83943f5 (single commit 83943f5). Composed sprint text gate-items-f5d0013 (d-3,5,7,8,9,11,12) and gate-items-1b0dabc (d-4,6,10) vs gate-items-83943f5 (all ten), including owned_paths/requirements/adrs in the .bead.json snapshots; docs/plans/phase-d.jsonl DAG diff; docs/requirements.md (new REQ-RUN-0703); anchors.json exclusions (unchanged in range) for ANC-003/015/037/038 and all exclusion reasons mentioning moved items; push.md per-finding table; current manifests (crates/*/Cargo.toml, template manifests, template/cargo-generate.toml, boundaries/*.toml) and docs/architecture.md ADR-RUN-0017/0203 Phase D amendments. | range 5: 979400e..3bf0988 (single commit 3bf0988). The composed sprint text is gate-items-83943f5 vs gate-items-3bf0988 for all ten sprints (run-d-{3..12}.txt). In the .bead.json snapshots I compared metadata (owned_paths, requirements, adrs, pr_target) and the root description/design. Also compared: docs/plans/phase-d.jsonl depends_on; anchors.json and anchors.md exclusions and their history (ANC-003 d-12, ANC-035 d-9, ANC-038 d-5/d-10/d-11); triage-gate-83943f5.json for the d-9 ANC-035 cell; the earlier drift-review-2026-11-12.json m2 ruling on the same exclusion. I checked the current crates/sc-command, crates/sc-cron and crates/sc-cron-commands Cargo.toml, boundaries/*.toml, and template/cargo-generate.toml with its hooks against the ownership claims, and checked that REQ-RT-0005, ADR-RT-0005, REQ-RUN-0005, ADR-RUN-0005, REQ-CRON-0005 and NFR-RUN-0009 exist. docs/requirements.md and docs/architecture.md are unchanged in this range.",
   "not_reviewed": "Jev was not run and no network call was made, so the beads-cache source and crates.io were not inspected. Intermediate gate-items folders between 964095d and c8596c0 were used only to date when the '>=0.41, <0.43' form appeared. Bead design fields were compared only for d-5, d-6 and d-12, plus targeted searches for ratification, rehearsal and migration text. phase-d-dag.html and the raw run JSON bodies were not reviewed beyond verdicts and answers. triage-fe81543 was read for its failures and fix rows, not audited line by line. The anchor-tuning question files were not compared beyond confirming none changed in range. No code was read beyond the manifests and scripts/adr_run_0011_grep.py. Nothing was verified by a second independent reviewer, and the M1/M2/M3/m2/m3/m5 fixes were verified by this reviewer from text only. Range 3: Jev plan-*.json run outputs and their verdicts; anchor-tuning triage-*.json files; site/reports/plan-anchor HTML/XHTML and phase-d.json; phase-d-dag.html; anchors.md bodies beyond the status table. bd show was not run; bead fields came from the committed gate-items .bead.json snapshots. Implementation feasibility of per-profile recommended lockfiles was not assessed. Range 4: docs/plans/phase-d/anchor-tuning/plan-qa-r1-fixes.json beyond what push.md summarises; phase-d-dag.html; root/phase bead design text (no root.bead.json in gate-items-83943f5); the full text of the ADR-RUN-0020/0021 and REQ amendments (they are deliverables, not yet written); plan-qa-r1.md beyond the findings push.md quotes; Jev verdict runs. No code was run.",
   "findings": [
     {
@@ -287,8 +287,8 @@
         "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
       },
       "suggested_fix": "Either give d-3 back the rmcp/utoipa/schemars/sc-observability-types lines in crates/sc-command/Cargo.toml and restore d-10 depends_on d-3, or move the rmcp 3.9 server.rs adaptation and its AC to d-10. In d-10, name every registry line in the manifest, rmcp >=3.9 included, as >= tested floor with no upper bound.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-3 deliverable 3: 'Own pin removal in crates/sc-command/Cargo.toml and crates/sc-runtime/Cargo.toml ...'. d-3: 'In the complete command manifest convert every registry requirement, including dev/optional entries, to open floors: rmcp >=3.9, utoipa >=6.0.0, schemars >=1.2.3, sc-observability-types >=1.5.0, axum >=0.8.9 and serde/serde_json/tokio >=1.' Every registry line in the current crates/sc-command/Cargo.toml is named. d-3 owned_paths adds crates/sc-command/Cargo.toml. phase-d.jsonl has d-10 depends_on [d-3, d-5], and d-10 pr_target is sprint/d-3-dependency-qualification. d-10: 'After d-3's compiled rmcp3.9 server/schema ... lands, add sc-storage >=0.2.0 ... without changing its already-open registry floors.' d-3 can now close on its own branch, and the d-3/d-10 manifest overlap is sequenced by the DAG."
     },
     {
       "id": "M11",
@@ -301,7 +301,7 @@
       },
       "suggested_fix": "Add a d-9 deliverable converting every registry requirement in crates/sc-cron-commands/Cargo.toml (and the d-9-owned lines of crates/sc-cron/Cargo.toml) to >= tested floors with no upper bound, and repair or remove the dangling 'schema-range below' reference.",
       "status": "open",
-      "fix_note": ""
+      "fix_note": "3bf0988: sc-cron-commands is fixed. d-9: 'Convert every registry line in the owned sc-cron-commands manifest to >= tested floors, explicitly utoipa >=6.0.0 and schemars >=1.2.3, with no upper bound; preserve features (ANC-037).' The dangling pointer is replaced by 'all registry requirements changed here in sc-cron/sc-cron-commands use >= tested floors'. Still open: the range4 fix also asked for 'the d-9-owned lines of crates/sc-cron/Cargo.toml'. That manifest still has bare-caret registry lines: async-trait \"0.1\", chrono \"0.4\", cron \"0.17\", getrandom \"0.4\", tokio \"1\", tracing \"0.1\", process-wrap \"10\", monty/monty-types \"1.4.0\", tempfile \"3\", libc \"0.2\". d-3 deliverable 1 defines carets as violations ('replace exact/tilde pins, bare versions and carets with >= tested floors') but hands 'd-9 cron dependencies' to d-9. d-5 converts only the Windows lines. d-9's AC covers only lines 'changed here'. No sprint is told to convert those lines, so they would first fail at d-12's archive check."
     },
     {
       "id": "M12",
@@ -313,8 +313,8 @@
         "quote": "the guidelines say shared registry files belong to the contract or an integration sprint, never to a layer sprint"
       },
       "suggested_fix": "Have d-5 write the final 0.3.0 facades (removing the retired types) and register both test-double paths, or add the specific boundaries/<crate>.toml files to the d-6 and d-9 owned_paths and deliverables.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-5: 'Register tests/support/storage and tests/support/cron-storage as allowed_test_double_paths in the relevant storage/cron boundary manifests and sc-lint configuration ... Hand only each specific boundary facade file to d-6/d-9 after contract sanity.' d-6 owned_paths adds boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml, the file whose facade/roots list SqliteWriter/WriterConn/SqlValue/SqliteWriterError. d-9 owned_paths adds boundaries/sc-cron/sc-cron.toml, whose facade/roots list ScheduleStore/SqliteScheduleStore. The two files are disjoint, so the parallel d-6/d-9 do not overlap, and d-5 precedes both."
     },
     {
       "id": "m13",
@@ -326,8 +326,8 @@
         "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
       },
       "suggested_fix": "Reword the d-5/d-10 ANC-038 reasons to name d-12 as owner. Add an ANC-038 exclusion for d-11 citing d-12 deliverable 6. Re-state the d-12 ANC-003 reason (it changes recommendation generation hooks, not sc-compose selection or new_project.py).",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: The ANC-038 reasons for d-5 and d-10 now name d-12 ('d-12 owns all recommendation production'; 'd-12 owns the metadata path and recommendation script'). A new ANC-038 exclusion for run-d-11 matches the d-11 text ('Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned') and d-12 owned_paths (template/.sc-runtime/**, template/scripts/tested_dependencies.py). The ANC-003 d-12 reason is restated: 'd-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection ...'. All three are true of the item text."
     },
     {
       "id": "m14",
@@ -339,8 +339,8 @@
         "quote": "All dependencies"
       },
       "suggested_fix": "Change to 'root rusqlite stays d-5-owned'.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-12 package-caps: 'root rusqlite registration stays d-5-owned; d-12 changes only SDK release-version lines.' (See m21 for an ambiguity this sentence introduces.)"
     },
     {
       "id": "m15",
@@ -352,8 +352,8 @@
         "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold"
       },
       "suggested_fix": "Rename the AC root to req:REQ-RUN-0703/floor.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-4: 'req:REQ-RUN-0703/floor — Controlled inputs prove equal/newer versions ...'"
     },
     {
       "id": "m16",
@@ -365,8 +365,8 @@
         "quote": "Keep it simple. \"What I want is very simple.\""
       },
       "suggested_fix": "Add ADR-RT-0005 (and REQ-RT-0005 if governing) to d-11 metadata, or root the AC on an id already listed.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: run-d-11.bead.json metadata adds ADR-RT-0005 to adrs and REQ-RT-0005 to requirements. Both records exist (docs/sc-runtime/architecture.md:457 'Await application cleanup before releasing runtime ownership'; docs/sc-runtime/requirements.md:418 'Graceful shutdown on SIGINT and SIGTERM')."
     },
     {
       "id": "m17",
@@ -378,8 +378,8 @@
         "quote": "we should deliver cargo.lock at max version combination (recommended). This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
       },
       "suggested_fix": "State which sprint edits which cargo-generate.toml sections: d-11 owns the layout/cron conditionals, and d-12 owns the Cargo.lock ignore removal and the post-hook entry after prefixing. Otherwise sequence d-12's edit after the d-11 merge.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-12: 'Apply template/cargo-generate.toml changes only after the completed d-11 merge: preserve its existing layout/cron choices and validation hook, remove Cargo.lock suppression as needed ... and add the recommendation script after project-name prefixing. No concurrent section ownership.' d-11 owned_paths exclude the file, so there is one owner and the order is explicit. The d-11 text does not say it avoids new layout files; owned_paths enforce that."
     },
     {
       "id": "m18",
@@ -391,8 +391,8 @@
         "quote": "Everything gets extensive testing. If there was a real issue it would show up"
       },
       "suggested_fix": "Restore the single re-check of the publication predicate before the first upload.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-12 publication-gate: 'Immediately before the first upload, recheck the same publication predicate against the current source, completed d-11, ratification, safety-rule results and exact rehearsed archives.'"
     },
     {
       "id": "m19",
@@ -404,8 +404,56 @@
         "quote": "Remove upper bound"
       },
       "suggested_fix": "Restore one sentence saying d-5 converts the Windows dev-dependency lines and d-9 leaves them unchanged.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "3bf0988: d-5: 'Convert sc-cron Windows dev requirements win32job >=2.0.3 and waitpid-any >=0.3.0 here; d-9 leaves those lines unchanged (ANC-037).' d-9: 'The sc-cron Windows win32job >=2.0.3 and waitpid-any >=0.3.0 lines were converted by d-5 and are left unchanged here.'"
+    },
+    {
+      "id": "M13",
+      "severity": "material",
+      "location": "anchors.json ANC-035 exclude run-d-9 (added 2026-11-12T09:24:21); d-9 AC boundary:sc-cron/public-storage-functions ('under ANC-035' replaced by 'governed by NFR-RUN-0009 and REQ-CRON-0005')",
+      "what_changed": "This re-adds the exclusion that drift finding m2 (drift-review-2026-11-12.json) rejected with 'Do not narrow scope by exclusion'. The run lead removed it at 06:40:50 and verified the fix. The new reason again reads ANC-035's scope parenthetical '(sc-storage, sc-runtime-db-sqlite, template stores)' as an exhaustive list. The excluded cell was not failing on substance: at plan-20261112T092053Z, addressed=yes @1.0, contradicted=no @1.0 and owns=yes @0.92. Only relevance was weak (yes @0.35). The gate-fix instruction for this cell was 'Name the functions the rule covers', not 'exclude'. The planner named the functions, then also excluded the cell and removed the ANC-035 citation from the AC. d-9's own no-panic text and sc-lint#931 requirement remain, so the obligation is not lost. What is lost is the anchor-tracked development-gate check on sc-cron's public storage functions. This is gate self-weakening: a previously resolved loosening is reintroduced with no owner ruling.",
+      "authority": {
+        "ref": "ANC-035 (locked v2); owner guideline 'Where anchors conflict, take the stricter reading'; drift-review-2026-11-12 m2 suggested_fix",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+      },
+      "suggested_fix": "Remove the run-d-9 ANC-035 exclusion and restore the ANC-035 citation alongside NFR-RUN-0009/REQ-CRON-0005 in boundary:sc-cron/public-storage-functions. The named function list already answers the 'specific' weakness. If scope is really in question, ask the owner to amend ANC-035's scope; do not exclude the cell.",
+      "status": "open"
+    },
+    {
+      "id": "m20",
+      "severity": "minor",
+      "location": "d-5, d-6, d-7, d-8 deliverable 1, first sentence (added in range)",
+      "what_changed": "The ANC-032/033 carrier is restored as the first sentence of numbered deliverable 1: 'SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation ...'. As a deliverable it claims all three engines, but on its own branch d-5 (wave 1) has none of them, and d-6, d-7 and d-8 (parallel) each have only one. A per-deliverable sanity check that reads it literally cannot close it on the sprint's own branch. The lead asked to keep the cross-engine fact, so this is about wording, not content.",
+      "authority": {
+        "ref": "ANC-032 / ANC-033 (locked)",
+        "quote": "SQLite, Postgres and MySQL MUST implement the same storage trait."
+      },
+      "suggested_fix": "Keep the fact but give each sprint its own share. d-5: 'Define the one Storage<T> trait and AtomicStorage::transaction that SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement'. d-6/7/8: 'This sprint's <engine> implementation is one of the three implementations of that shared trait and transaction operation.'",
+      "status": "open"
+    },
+    {
+      "id": "m21",
+      "severity": "minor",
+      "location": "d-12 AC req:REQ-RUN-0002/package-caps, last clause",
+      "what_changed": "'d-12 changes only SDK release-version lines' (added in range to fix m14) reads as a global restriction. It contradicts d-12 deliverable 4 (converting rmcp >=3.9 and the win32job/waitpid-any lines in tests/integration/cron-consumer manifests) and deliverable 6 (cargo-generate.toml and Cargo.lock delivery).",
+      "authority": {
+        "ref": "owner statement",
+        "quote": "All dependencies"
+      },
+      "suggested_fix": "Scope it: 'in SDK crate manifests and root Cargo.toml, d-12 changes only release-version lines'.",
+      "status": "open"
+    },
+    {
+      "id": "m22",
+      "severity": "minor",
+      "location": "'This sprint does not close' sections of d-3 (full command-manifest conversion), d-5 (test-double registration, boundary handoff, Windows conversion), d-6/d-9 (boundary facade ownership), d-9 (sc-cron-commands conversion), d-12 (cargo-generate.toml sequencing)",
+      "what_changed": "The new positive obligations in range were added under a heading that says the sprint does not close them. Each is backed by an AC or required command: d-3 req:REQ-RUN-0002/compatibility; d-5/d-6/d-9 'sc-lint lint sc-boundary'; d-9 boundary:sc-cron/migration; d-12 publication-gate. So none is unowned, but a reader of the deliverables list would miss them. The pattern predates this range (d-10's manifest work sat there at 83943f5).",
+      "authority": {
+        "ref": "docs/prd/sc-runtime-prd.md PRD-ENG-4",
+        "quote": "Keep it simple. \"What I want is very simple.\""
+      },
+      "suggested_fix": "Move each positive obligation into a numbered deliverable, or retitle the section (e.g. 'Boundaries and handoffs').",
+      "status": "open"
     }
   ],
   "acceptable_choices": [
@@ -540,7 +588,17 @@
     {
       "location": "d-7/d-8 deliverable 3, d-10 transform-limits, d-11 lifecycle",
       "note": "New hardening scope, traced to RSH-001..004 and NFR-RUN-0002/0009 or ADR-RT-0005. It addresses observed defects (unbounded retry, unbounded blocking-pool use, unspecified shutdown ordering) with controlled-input tests and no sleeps. It is not an open-option work item."
-    }
+    },
+    "DAG: d-10 now depends on [d-3, d-5]. The d-3 edges were removed from d-11 and d-12 because they are transitive through d-10. d-3's checker and qualified source still reach both. Waves stay 3 and the root says 'critical path3, width6', which matches the antichain {d-4, d-6..d-10}.",
+    "d-3 now owns crates/sc-command/Cargo.toml and d-10 also owns it later. The DAG sequences the overlap (d-3 -> d-10 -> d-12), so there is no concurrent edit.",
+    "d-10 conversion obligation moved to d-3. d-10 adds only sc-storage. Its wording 'no StorageCommands wrapper' drops the word 'trait', but d-5 deliverable 2 still states 'with no StorageCommands or SqliteDatabaseFactory trait', so the prohibition is still in the plan.",
+    "The d-3 phrase 'typed public error/envelope ABI compiled against those identities' traces to the existing req:REQ-RUN-0005/source ('rmcp>=3.9 builds/tests with existing command/server/schema paths'). It adds no new scope.",
+    "Adding ADR-RUN-0005 and REQ-RUN-0005 to d-6/d-9 metadata traces their new boundary-file ownership to the boundary-manifest requirement.",
+    "The ANC-038 exclusions for d-5/d-10/d-11 have true reasons. d-12 owns template/.sc-runtime/**, template/scripts/tested_dependencies.py and template/cargo-generate.toml, and its release-recommendations AC carries ANC-038.",
+    "The ANC-003 exclusion for d-12 has a true reason. d-12 adds a recommendation post-hook and lock delivery but does not touch scripts/new_project.py, sc-compose selection or sc-compose instructions, and d-4/d-11 still hold ANC-003.",
+    "The d-11 sentence 'Every registry requirement in the template manifests changed here is >= its tested floor with no upper bound (ANC-037)' answers the gate-fix request and traces to locked ANC-037.",
+    "Growth rule: each added passage traces to locked authority that predates the failed runs. ANC-032/033 carriers; ANC-037 conversions in d-3/d-5/d-9/d-11; REQ-RUN-0005/ADR-RUN-0005 boundary ownership; ANC-038 ownership in the d-12 sequencing; REQ-RUN-0002 for the restored upload recheck. No untraced scope was found.",
+    "No upper bound, exact pin or min/latest job was reintroduced anywhere in the range."
   ],
   "confirmations": [
     {
