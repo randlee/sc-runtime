@@ -373,6 +373,9 @@ Source: sc-runtime design, 2026-09-19, section "The crates" (`Stores` is a plain
 A generated project has one or two stores, each a project-owned crate bound
 to one sqlx driver (SQLite, Postgres). `sc-runtime` sits between the code
 that opens those stores and the routes and MCP tools that use them.
+The problem is which side opens the stores: if `sc-runtime` constructed
+them itself it would need a sqlx dependency, knowledge of each backend, and
+an opinion about how many stores a project has.
 
 ### Decision
 
@@ -477,6 +480,8 @@ Source: sc-runtime design, 2026-09-19, section "The crates" (`DaemonFixture` sta
 Generated projects test each operation through REST, MCP and the CLI client.
 Test fixtures often take a shortcut, such as calling the axum router
 in-process with no listener.
+The problem is that such fixtures skip the lock, the bind, the transport and
+shutdown, so tests drift from production behaviour without anyone noticing.
 
 ### Decision
 
@@ -650,6 +655,53 @@ released before that run returns, after the successful stores owner is dropped.
 Other startup and builder decisions remain in force. ADR-RT-0003's project
 `Stores`/router/service pass-through is unchanged. The original typed errors and
 application-owned observability lifecycle remain unchanged.
+
+A replacement daemon started on the same instance root while cleanup runs
+returns `LockHeld` and does not run its stores closure, so it cannot start a
+worker that overlaps the draining one. Because the lock attempt does not wait,
+that replacement fails instead of queuing and must be started again after
+cleanup returns. Cleanup that is blocked on native or synchronous work past
+its cooperative deadline keeps the instance lock held until that work is
+joined. Each application writes its own worker drain/join and concrete logger
+shutdown, and must await the run future to completion.
+
+### Alternatives Considered
+
+#### Alternative 1: Release the instance lock when HTTP serving stops
+
+**Description:**
+
+The runtime releases `daemon.lock` as soon as HTTP serving stops, before the
+application joins the worker it started from the stores closure.
+
+**Why Rejected:**
+
+Rejected because a replacement daemon could then acquire the lock and start
+overlapping work while the old worker is still draining.
+
+#### Alternative 2: Lifecycle hooks or a registry
+
+**Description:**
+
+A startup hook, a cleanup hook on an earlier builder state, a registry or a
+JobContext through which the application registers its worker with the runtime.
+
+**Why Rejected:**
+
+Rejected because ADR-RT-0001 rejects lifecycle hooks and a plugin registry;
+cleanup is instead one Ready-only terminal method.
+
+#### Alternative 3: SDK-owned worker drain and logger shutdown
+
+**Description:**
+
+The SDK imports cron, drains and joins application workers itself, and shuts
+down the concrete logger through a wrapper.
+
+**Why Rejected:**
+
+Rejected because the SDK must provide a general cleanup boundary without
+importing cron or choosing application policy.
 
 ### Implementation
 

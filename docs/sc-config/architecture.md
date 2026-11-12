@@ -206,7 +206,9 @@ result must be the caller's own serde type, for example a generated project's
 `AppConfig` struct. The design fixes the layers and the JSON format. It does
 not say how layers are combined, and it states no naming scheme for the
 environment variables. The naming scheme `<APP>__<KEY>__<KEY>` is decided in
-this document ([REQ-CFG-0002](requirements.md)).
+this document ([REQ-CFG-0002](requirements.md)). The problem is how to combine
+the three layers into one value of the caller's own serde type, which the
+design leaves open.
 
 Layering can be done in two places. It can be done on typed structs: each
 layer is deserialised into a "partial" version of the caller's type in which
@@ -325,7 +327,10 @@ and async interop are wanted eventually. The design lists the crate's dependenci
 and `serde_json`, states that `sc-observability` and its OTel export crate
 (`sc-observability-otlp`) stay independent of `sc-config`, and records the
 reload features as a note for later, possibly as a separate
-`sc-config-tokio` crate.
+`sc-config-tokio` crate. The problem is how to provide reload, change
+notification and async interop later without bringing an async runtime
+(`tokio`) and a file watcher into every program that only reads its
+configuration once at start-up.
 
 ### Decision
 

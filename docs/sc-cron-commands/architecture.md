@@ -17,6 +17,10 @@
 
 ### Context
 
+The problem is that CLI, HTTP and selected MCP need the same start/end/list
+cron operation, result and error JSON interface, while default-off generated
+configuration must leave core usable alone.
+
 The actual ATM start/end/list API and ADR-069 are behavioral reference only; no ATM-specific identities, lifecycle or grammar are imported.
 
 ### Decision
@@ -69,9 +73,91 @@ c-1 deliverables.
 
 Owner, 2026-11-03 (ANC-015): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." Phase C objective 4: an optional standard start/end/list JSON adapter presents the same operation/result/error to CLI, HTTP and selected MCP. Default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.
 
+### Alternatives Considered
+
+#### Alternative 1: Ship the command API inside sc-cron
+
+**Description:**
+
+Add the start/end/list HTTP, MCP and CLI API to the sc-cron scheduler crate
+itself.
+
+**Why Rejected:**
+
+ADR-RUN-0013 states that sc-cron does not ship that API, and ADR-RUN-0019
+amends that restriction only for a separate adapter: the scheduler core keeps
+no binary, HTTP/MCP routes or configuration-file loading.
+
+#### Alternative 2: Each consumer wraps its own cron API
+
+**Description:**
+
+Keep the ADR-RUN-0013 arrangement in which each consumer may wrap start, stop
+and list in its own HTTP, MCP or CLI API.
+
+**Why Rejected:**
+
+ANC-015 requires supported cron user interfaces to share the standard JSON
+command contract, and REQ-CRNC-0001 requires CLI, REST and MCP projections to
+use the same request, typed result and namespaced error codes.
+
+#### Alternative 3: Mandatory cron commands in every consumer
+
+**Description:**
+
+Expose the standard cron command set in every generated consumer.
+
+**Why Rejected:**
+
+ANC-014 requires that a consumer application be able to omit the standard
+cron command set, and REQ-CRNC-0002 makes `cron_commands=false` the generation
+default.
+
+#### Alternative 4: Put the cron command DTOs and handler in sc-command or sc-runtime
+
+**Description:**
+
+Place the standard cron commands in the existing command or runtime crate,
+with no separate adapter library.
+
+**Why Rejected:**
+
+NFR-CRNC-0001 allows no sc-command→cron/adapter cycle and no
+sc-runtime→cron/adapter edge.
+
+#### Alternative 5: Schema implementations or a copied wire DTO in generated api-types
+
+**Description:**
+
+Let generated api-types implement JsonSchema/ToSchema for the adapter's types
+or define its own copy of the cron wire model.
+
+**Why Rejected:**
+
+NFR-CRNC-0001 forbids a foreign orphan impl, a second wire DTO or a generic
+schema in place of the typed canonical contract.
+
+#### Alternative 6: Import the ATM start/end/list API
+
+**Description:**
+
+Adopt ATM's cron command API, including its team/phase/mandatory-until fields
+and six-field-only grammar.
+
+**Why Rejected:**
+
+REQ-CRNC-0001 excludes ATM team/phase/mandatory-until and six-field-only
+grammar, and ADR-RUN-0019 allows no ATM package or second response envelope.
+
 ### Consequences
 
-Command and runtime gain no reverse edge. Default DTO builds exclude scheduling/server dependencies.
+Command and runtime gain no reverse edge. Default DTO builds exclude scheduling/server dependencies. The cost is a new
+crate with its own BOUNDARY-sc-cron-commands manifest and dependent-list
+updates, amending ADR-RUN-0003's workspace graph and ADR-RUN-0013's
+product-API restriction for this adapter. Consumers that replace
+CronOperations or CronExecutor do not inherit the standard cooperative
+guarantee and own their cancellation, joins, authorization and accurate
+errors/outcomes.
 
 ### Implementation
 

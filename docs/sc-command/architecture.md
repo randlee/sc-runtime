@@ -67,7 +67,9 @@ envelope `Envelope<T>`, a JSON object with keys `version`, `ok`, `data`,
 The SC logging stack already publishes the types for a stable error code and
 for remediation guidance in the crate `sc-observability-types` 1.5.0:
 `ErrorCode`, a string newtype, and `Remediation` with `RecoverableSteps`.
-Logs and diagnostics use them.
+Logs and diagnostics use them. The problem is that if `sc-command` defined its
+own versions, the same failure could carry one code in an API response and
+another in the log, and there would be two definitions to keep in step.
 
 Pulling against that: the library crates in this repository do not depend on
 the logging runtime `sc-observability`, so that each stays usable in a
