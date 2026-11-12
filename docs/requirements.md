@@ -4685,3 +4685,45 @@ identity checks cover normal/build, renamed and target-specific dependencies,
 production Rust imports, and Cargo normal/build transitive trees for supported
 production features. Dev-only fixtures remain permitted. The Monty registry
 and optional adapters are documented in [the generated example](sc-cron/monty-generated-example.md).
+
+---
+
+## REQ-RUN-0703: Skill checks use the declared sc-compose minimum
+
+**Status:** Active
+
+### Requirement Statement
+
+Definitions: Repository skills are the checked-in .claude, .codex and .cursor skill instructions and scripts. The declared minimum is the sc-compose version required by the invoking skill.
+
+**MUST statements:**
+
+- A repository skill checking the sc-compose version MUST accept versions equal to or newer than its declared minimum.
+- A repository skill checking the sc-compose version MUST reject older or malformed versions.
+
+### Rationale
+
+The owner requires skills to tolerate sc-compose >= a floor threshold (ANC-015); reproducible CI binary selection remains independent.
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] Controlled version inputs at the declared minimum and a newer version are accepted by each changed skill check.
+- [ ] Controlled older and malformed version inputs are rejected by each changed skill check.
+
+### Product Applicability
+
+**Applies To:**
+
+- Repository skill instructions and scripts that check sc-compose versions.
+
+**Does Not Apply To:**
+
+- Selection of an immutable CI binary or Cargo registry dependency requirements.
+
+### Test Strategy
+
+**Test Types:**
+
+- Deterministic unit tests and real command smoke tests
