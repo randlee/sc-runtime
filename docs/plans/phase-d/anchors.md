@@ -475,6 +475,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.
 - `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.
 - `run-d-7`: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.
+- `run-d-8`: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.
 
 Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
 
@@ -869,9 +870,6 @@ Scope: plan items that write or change public storage functions in this phase (s
 
 Deterministic check to pair with the development gate: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates
 
-Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-9`: d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required.
-
 Beads: anchor `run-vjhq`, plan questions `run-vjhq.1`, dev questions `run-vjhq.2`
 
 Fixtures:
@@ -941,6 +939,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-11`: d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.
 - `run-d-5`: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.
 - `run-d-10`: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.
+- `run-d-9`: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.
 
 Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2`
 

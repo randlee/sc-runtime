@@ -1794,6 +1794,13 @@
           "item": "run-d-7",
           "reason": "Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.",
           "replaced": true
+        },
+        {
+          "at": "2026-11-12T09:47:17+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1812,6 +1819,10 @@
         {
           "item": "run-d-7",
           "reason": "Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend."
+        },
+        {
+          "item": "run-d-8",
+          "reason": "d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database."
         }
       ]
     },
@@ -3884,12 +3895,11 @@
           "item": "run-d-9",
           "reason": "d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required.",
           "replaced": false
-        }
-      ],
-      "exclude": [
+        },
         {
-          "item": "run-d-9",
-          "reason": "d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required."
+          "at": "2026-11-12T09:47:17+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-9"
         }
       ]
     },
@@ -4157,6 +4167,13 @@
           "item": "run-d-10",
           "reason": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.",
           "replaced": true
+        },
+        {
+          "at": "2026-11-12T09:47:17+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4171,6 +4188,10 @@
         {
           "item": "run-d-10",
           "reason": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script."
+        },
+        {
+          "item": "run-d-9",
+          "reason": "d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production."
         }
       ]
     }
