@@ -22,7 +22,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-014 | retired | Dedicated plan PR | 2026-11-11 |
 | ANC-015 | locked | Skill checks accept versions above the minimum | 2026-11-11 |
 | ANC-016 | locked | Consumers can take compatible dependency upgrades | 2026-11-11 |
-| ANC-017 | locked | CI proves dependency range endpoints | 2026-11-11 |
+| ANC-017 | retired | CI proves dependency range endpoints | 2026-11-11 |
 | ANC-018 | retired | Advisory proof uses the released consumer graph | 2026-11-11 |
 | ANC-019 | retired | Additional upper bounds explain their known break | 2026-11-11 |
 | ANC-020 | locked | Pinned generation tools use release binaries | 2026-11-11 |
@@ -380,7 +380,7 @@ Anchor: Phase D dependency CI MUST test both the minimum and latest allowed vers
 
 > Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.
 
-Said by randlee, randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132., 2026-11-11. Status: locked. Version 3.
+Said by randlee, randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132., 2026-11-11. Status: retired. Version 4.
 
 Summary: CI proves dependency range endpoints
 
