@@ -2758,7 +2758,7 @@ All production release crates (`sc-config`, `sc-transport`, `sc-command`, `sc-ru
 ## ADR-RUN-0014: Optional embedder-supplied schedule row limit
 
 **Status:** Active  
-**Amended 2026-11-11 (PRD-CRON-2).** The limit and its meaning stand. Its enforcement moves from the SQLite store's count check into cron's own logic when the table is stored through `Storage<CronRow>`.
+**Amended 2026-11-11 (PRD-CRON-2).** The limit and its meaning stand. Cron owns the row-limit policy; `CronStorage: Storage<CronRow>` atomically checks the limit and admits the new row in the same storage operation, so independent callers cannot race a separate count and write. This replaces the old bundled SQLite store's count check without weakening the limit.
 
 **Decision Date:** 2026-10-27  
 **Source:** Owner, 2026-10-27. Recorded in [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
