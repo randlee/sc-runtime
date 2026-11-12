@@ -29,7 +29,7 @@
       &quot;added&quot;: true,
       &quot;item&quot;: &quot;run-d-12&quot;,
       &quot;item_url&quot;: &quot;&quot;,
-      &quot;reason&quot;: &quot;d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.&quot;
+      &quot;reason&quot;: &quot;d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.&quot;
     }
   ],
   &quot;fixtures_after&quot;: &quot;-&quot;,
@@ -79,6 +79,11 @@
       &quot;at&quot;: &quot;2026-11-12T08:16:40+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-12; reason: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.; replaced: false&quot;,
       &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T09:31:44+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-12; reason: d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.; replaced: true&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-003&quot;,
@@ -101,7 +106,7 @@ Questions: default - -&gt; tuned - oracle cases.
 Excluded for run-d-5: d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.
 Excluded for run-d-8: d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.
 Excluded for run-d-10: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.
-Excluded for run-d-12: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.
+Excluded for run-d-12: d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.
 2026-11-12T03:44:51+00:00 excluded: item: run-d-8; reason: d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.; replaced: false
 2026-11-12T03:45:14+00:00 excluded: item: run-d-10; reason: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.; replaced: false
 2026-11-12T03:46:06+00:00 excluded: item: run-d-11; reason: d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.; replaced: false
@@ -110,7 +115,8 @@ Excluded for run-d-12: d-12 refreshes recommendation inputs and runs delivered g
 2026-11-12T06:40:50+00:00 excluded: item: run-d-10; reason: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.; replaced: true
 2026-11-12T06:40:50+00:00 exclusion_removed: item: run-d-11
 2026-11-12T06:40:50+00:00 excluded: item: run-d-5; reason: d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.; replaced: true
-2026-11-12T08:16:40+00:00 excluded: item: run-d-12; reason: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.; replaced: false">&#x2398;</button>
+2026-11-12T08:16:40+00:00 excluded: item: run-d-12; reason: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.; replaced: false
+2026-11-12T09:31:44+00:00 excluded: item: run-d-12; reason: d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.; replaced: true">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.</p>
@@ -131,7 +137,7 @@ Excluded for run-d-12: d-12 refreshes recommendation inputs and runs delivered g
   <p class="small">Text unchanged.</p>
 
   <details>
-    <summary>History since the baseline (9)</summary>
+    <summary>History since the baseline (10)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -144,6 +150,7 @@ Excluded for run-d-12: d-12 refreshes recommendation inputs and runs delivered g
         <tr><td>2026-11-12T06:40:50+00:00</td><td>exclusion_removed</td><td>item: run-d-11</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-5; reason: d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.; replaced: true</td></tr>
         <tr><td>2026-11-12T08:16:40+00:00</td><td>excluded</td><td>item: run-d-12; reason: d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.; replaced: false</td></tr>
+        <tr><td>2026-11-12T09:31:44+00:00</td><td>excluded</td><td>item: run-d-12; reason: d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.; replaced: true</td></tr>
       </tbody>
     </table>
   </details>
@@ -156,7 +163,7 @@ Excluded for run-d-12: d-12 refreshes recommendation inputs and runs delivered g
         <tr><th scope="row">run-d-5</th><td>d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.</td><td>added</td></tr>
         <tr><th scope="row">run-d-8</th><td>d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.</td><td>added</td></tr>
         <tr><th scope="row">run-d-10</th><td>d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.</td><td>added</td></tr>
-        <tr><th scope="row">run-d-12</th><td>d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-12</th><td>d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.</td><td>added</td></tr>
       </tbody>
     </table>
   </details>

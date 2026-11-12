@@ -5,73 +5,22 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 1886,
+      &quot;after_chars&quot;: 3223,
       &quot;before_chars&quot;: 1529,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 3681,
+      &quot;after_chars&quot;: 3638,
       &quot;before_chars&quot;: 1236,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
     {
-      &quot;after_chars&quot;: 1673,
+      &quot;after_chars&quot;: 1677,
       &quot;before_chars&quot;: 1367,
       &quot;field&quot;: &quot;design&quot;
     }
   ],
-  &quot;exclusions&quot;: [
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-021&quot;,
-      &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-023&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-026&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
-      &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
-      &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-032&quot;,
-      &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-033&quot;,
-      &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
-    }
-  ],
+  &quot;exclusions&quot;: [],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:43:43+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -99,56 +48,15 @@
   },
   &quot;id&quot;: &quot;run-d-9&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T08:32:49+00:00&quot;,
-    &quot;excluded&quot;: [
-      {
-        &quot;anchor_id&quot;: &quot;ANC-021&quot;,
-        &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-023&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-026&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
-        &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
-        &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-032&quot;,
-        &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-033&quot;,
-        &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
-      }
-    ],
+    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+    &quot;excluded&quot;: [],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T083249Z-run-d-9&quot;,
-    &quot;score&quot;: &quot;7/7&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-9&quot;,
+    &quot;score&quot;: &quot;1/1&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 14,
+  &quot;runs&quot;: 19,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -920,24 +828,244 @@
       &quot;run_id&quot;: &quot;plan-20261112T083249Z-run-d-9&quot;,
       &quot;score&quot;: &quot;7/7&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:20:53+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-035&quot;,
+        &quot;ANC-037&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T092053Z-run-d-9&quot;,
+      &quot;score&quot;: &quot;5/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:41:30+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-035&quot;,
+          &quot;reason&quot;: &quot;d-9 implements the sc-cron CronStorage domain facade over a private Storage&lt;CronRow&gt; backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-038&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T094130Z-run-d-9&quot;,
+      &quot;score&quot;: &quot;6/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:49:33+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-035&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T094933Z-run-d-9&quot;,
+      &quot;score&quot;: &quot;6/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:53:48+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-035&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T095348Z-run-d-9&quot;,
+      &quot;score&quot;: &quot;6/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-9&quot;,
+      &quot;score&quot;: &quot;1/1&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-9: d-9: cron-app-storage
-Gate FAIL 4/19 -&gt; PASS 7/7 over 14 runs.
+Gate FAIL 4/19 -&gt; PASS 1/1 over 19 runs.
 Failing at first run: ANC-021, ANC-022, ANC-029, ANC-016, ANC-017, ANC-019, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-031, ANC-032, ANC-033, ANC-035.
 Failing now: none.
-Excluded ANC-021: Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.
-Excluded ANC-022: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-023: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-024: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-025: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-026: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-027: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
-Excluded ANC-029: Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.
-Excluded ANC-032: d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.
-Excluded ANC-033: d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.
 Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     </div>
   </div>
@@ -946,12 +1074,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>4/19</td><td>ANC-021, ANC-022, ANC-029, ANC-016, ANC-017, ANC-019, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-031, ANC-032, ANC-033, ANC-035</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 14 runs</summary>
+    <summary>All 19 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -969,39 +1097,28 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T081413Z-run-d-9</code></td><td>2026-11-12T08:14:13+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
         <tr><td><code>plan-20261112T083201Z-run-d-9</code></td><td>2026-11-12T08:32:01+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/9</td><td>ANC-012, ANC-034, ANC-036</td></tr>
         <tr><td><code>plan-20261112T083249Z-run-d-9</code></td><td>2026-11-12T08:32:49+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T092053Z-run-d-9</code></td><td>2026-11-12T09:20:53+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/7</td><td>ANC-035, ANC-037</td></tr>
+        <tr><td><code>plan-20261112T094130Z-run-d-9</code></td><td>2026-11-12T09:41:30+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/7</td><td>ANC-038</td></tr>
+        <tr><td><code>plan-20261112T094933Z-run-d-9</code></td><td>2026-11-12T09:49:33+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/7</td><td>ANC-035</td></tr>
+        <tr><td><code>plan-20261112T095348Z-run-d-9</code></td><td>2026-11-12T09:53:48+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/7</td><td>ANC-035</td></tr>
+        <tr><td><code>plan-20261112T100339Z-run-d-9</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
-  <h3>Excluded anchors (not judged)</h3>
-  <table class="exclusions">
-    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
-    <tbody>
-      <tr><th scope="row"><a href="#anchor-ANC-021">ANC-021</a></th><td>Defaulting cron rows into the app&#x27;s SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-023">ANC-023</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-026">ANC-026</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-032">ANC-032</a></th><td>d-9 consumes Storage&lt;T&gt; in sc-cron and implements no SQLite, Postgres or MySQL backend.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-033">ANC-033</a></th><td>d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.</td><td>this round</td></tr>
-    </tbody>
-  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="ch">1. Implement CronStore&lt;S:Storage&lt;CronRow&gt;&gt; and CronStorage ONCE in sc-cron using the generic atomic unit.<ins> Implement the public sc-storage::Storage&lt;CronRow&gt; supertrait for CronStore, including read/read_all/write and typed mapping to CronError.</ins> Own CronRow mapping/schema, active-name/row-limit admission, per-row generation checks, fenced record_run/set_next/stop/disable and atomic set_enabled_many/replace_and_set_enabled — REQ-CRON-0004/0020/0021; ANC-030/031/033/034.</div><div class="eq">2. Migrate scheduler/worker to awaited app-supplied storage, preserving hooks/Monty, clocks, in-flight skip, cooperative cancellation and typed FENCED behavior. Domain read/check/mutate runs in one serializable atomic body, never separate calls. Backend is table-neutral — ADR-RUN-0013/0014/0020.</div><div class="eq">3. Implement legacy cron.db-to-app-DB migration above generic storage: preserve IDs/generation/run/end/spec/hook state; idempotent import and collision/rollback refusal. Legacy source is read only as explicit migration input, no ongoing second database setting — REQ-CRON-0004.</div><div class="rm">- 4. Reuse d-5 shared async CronStorage conformance suite against its double; port, never delete, existing assertions. Retire legacy DB files/dependency only after generic suite has equivalent case IDs and double tests pass. Actual engine/two-process provider runs are d-11, not a false double claim. Adapt thin cron-command APIs and READMEs — REQ-RUN-0702; ANC-012/016/017/019/035.</div><div class="ad">+ 4. Reuse the ported async CronStorage conformance suite owned here against its double; port, never delete, existing assertions. Retire legacy DB files/dependency only after generic suite has equivalent case IDs and double tests pass. Actual engine/two-process provider runs are d-11, not a false double claim. Adapt thin cron-command APIs and READMEs — REQ-RUN-0702; ANC-012/035.</div><div class="ad">+ </div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Full real-SQLite/mixed-engine cron conformance is d-11, actual released beads-cache d-12. No storage backend imports sc-cron or specific table code. No separate duplicate cron invariant suite.</div><div class="ad">+ CronStore consumes AtomicStorage::transaction(spec, producer) from the shared Storage&lt;T&gt; contract; d-6/d-7/d-8 implement that same method for SQLite/Postgres/MySQL, while d-9 supplies only cron policy bodies (ANC-033).</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="ch">1. Implement CronStore&lt;S:Storage&lt;CronRow&gt;&gt; and CronStorage ONCE in sc-cron using the generic atomic unit.<ins> Implement only the domain CronStorage surface; keep the underlying Storage&lt;CronRow&gt; backend private and map its typed failures to CronError. Every public storage function implemented or changed here in CronStore/CronStorage, migration and cron-command storage adapters must return a typed Result and must not panic (ANC-035).</ins> Own CronRow mapping/schema, active-name/row-limit admission, per-row generation checks, fenced record_run/set_next/stop/disable and atomic set_enabled_many/replace_and_set_enabled — REQ-CRON-0004/0020/0021; ANC-030/031/033/034.</div><div class="eq">2. Migrate scheduler/worker to awaited app-supplied storage, preserving hooks/Monty, clocks, in-flight skip, cooperative cancellation and typed FENCED behavior. Domain read/check/mutate runs in one serializable atomic body, never separate calls. Backend is table-neutral — ADR-RUN-0013/0014/0020.</div><div class="eq">3. Implement legacy cron.db-to-app-DB migration above generic storage: preserve IDs/generation/run/end/spec/hook state; idempotent import and collision/rollback refusal. Legacy source is read only as explicit migration input, no ongoing second database setting — REQ-CRON-0004.</div><div class="ch">4. Reuse <del>d-5</del><ins>the</ins> <del>shared</del><ins>ported</ins> async CronStorage conformance suite<ins> owned here</ins> against its double; port, never delete, existing assertions. Retire legacy DB files/dependency only after generic suite has equivalent case IDs and double tests pass. Actual engine/two-process provider runs are d-11, not a false double claim. Adapt thin cron-command APIs and READMEs — REQ-RUN-0702; <del>ANC-012/016/017/019/035.</del><ins>ANC-012/035.</ins></div><div class="eq"></div><div class="rm">- ## This sprint does not close</div><div class="ad">+ </div><div class="ad">+ ## Boundaries and handoffs</div><div class="eq">Full real-SQLite/mixed-engine cron conformance is d-11, actual released beads-cache d-12. No storage backend imports sc-cron or specific table code. No separate duplicate cron invariant suite.</div><div class="ad">+ CronStore consumes AtomicStorage::transaction(spec, producer) from the shared Storage&lt;T&gt; contract; d-6/d-7/d-8 implement that same method for SQLite/Postgres/MySQL, while d-9 supplies only cron policy bodies (ANC-033).</div><div class="ad">+ Retire ScheduleStore/SqliteScheduleStore and legacy SQLite files in0.3.0, updating lib.rs/row.rs/storage.rs after the d-5 handoff. CronStore wraps Storage&lt;CronRow&gt; privately and exposes only policy-checked CronStorage operations. Keep per-name in-flight behavior and generation fencing under local REQ-CRON-0001 and ADR-RUN-0013; upstream crosswalk numbers are provenance, not local requirement IDs.</div><div class="ad">+ Convert every remaining registry line in crates/sc-cron/Cargo.toml and every registry line in crates/sc-cron-commands/Cargo.toml, including dev/optional entries, to &gt;= tested floors with no upper bound; preserve features. This includes async-trait, chrono, cron, getrandom, tokio, tracing, process-wrap, monty, monty-types, tempfile and libc, plus utoipa &gt;=6.0.0 and schemars &gt;=1.2.3 in sc-cron-commands (ANC-037). The sc-cron Windows win32job &gt;=2.0.3 and waitpid-any &gt;=0.3.0 lines were converted by d-5 and are left unchanged here.</div><div class="ad">+ </div><div class="ad">+ After the d-5 boundary registration handoff, own boundaries/sc-cron/sc-cron.toml for the actual public-facade/root removals matching this implementation. This is the boundary&#x27;s own facade, not a shared root registry.</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="eq">boundary:sc-cron — Shared generic CronStorage conformance passes on the controlled double; scheduler hook/Monty/clock/cancellation and command-adapter regressions pass. All current behavior cases are ported, not weakened/deleted. Per-row FENCED, configured row limits, active-name and multi-row operations are implemented once through named generic transactions, with owned replayable inputs and transaction-safe bodies.</div><div class="rm">- boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; compatible dependency ranges and adjacent known-break cap comments preserved.</div><div class="rm">- Required: cargo test -p sc-cron -p sc-cron-commands; shared conformance against double; qualified Monty job and endpoint dependency checks; cargo build --workspace at this closure; configured sc-boundary and actual analyzer/no-panic rules. d-11 executes same suite with actual engine providers and deterministic two-process scenarios; this sprint never calls the double real database proof.</div><div class="ad">+ boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; dependency requirements follow schema-range below.</div><div class="ad">+ Required: cargo test -p sc-cron -p sc-cron-commands; shared conformance against double; normal Monty tests; cargo build --workspace at this closure; sc-lint lint sc-boundary --root . --config sc-lint.toml; sc-lint#931 no-panic rule and the external transaction-body analyzer must pass on this sprint&#x27;s changed storage code once delivered; until both rules exist and pass, closure stays blocked. Record the actual rule versions and commands when available, never a fabricated pass or implicit waiver. This includes sc-cron CronStore/CronStorage, migration and changed sc-cron-commands storage adapters. d-11 executes same suite with actual engine providers and deterministic two-process scenarios; this sprint never calls the double real database proof.</div><div class="ad">+ boundary:sc-cron/row-limit — CronStore refuses to add a schedule row once its row count reaches the embedding application&#x27;s configured limit; the existing row-limit tests are ported, not deleted (ANC-031).</div><div class="ad">+ boundary:sc-cron/atomic — set_enabled_many, replace_and_set_enabled and every domain read/check/mutate body call the shared generic transaction operation; several row operations commit or roll back as one atomic unit (ANC-033).</div><div class="ad">+ boundary:sc-cron/active-name — Within the SAME AtomicStorage::transaction body, CronStore rejects a second active schedule row with the same schedule name; retain and pass the ported active-name tests against the controlled double (ANC-030).</div><div class="ad">+ boundary:sc-cron/public-storage-functions — The public sc-storage::Storage&lt;CronRow&gt; functions implemented on CronStore (read/read_all/write) and the CronStorage domain operations (create/get/list_active, record_run/set_next/stop/disable, set_enabled/set_enabled_many/replace_and_set_enabled, query/context), migration and storage adapters all return typed Results and do not panic. These are this sprint&#x27;s changed public storage functions under ANC-035; exercise their typed-error paths through the shared conformance tests and actual sc-lint#931 rule, with no missing-rule waiver (NFR-RUN-0002).</div><div class="ad">+ boundary:sc-cron/schema-range — All owned published/template registry requirements use &gt;= tested floors with no upper bound, including utoipa &gt;=6.0.0 and schemars &gt;=1.2.3 in crates/sc-cron-commands/Cargo.toml (ANC-037). Preserve defaults/features/optional status. Run the normal actual schema tests.</div><div class="ad">+ boundary:sc-cron/ADR-RUN-0011 — sc-cron and sc-cron-commands production code, including CronStore/CronStorage, migration, scheduler/worker and cron-command adapters, calls no Runtime::block_on, Handle::block_on or futures::executor::block_on. Required: python3 scripts/adr_run_0011_grep.py crates/sc-cron/src crates/sc-cron-commands/src; non-test sources must contain no block_on call or allow-comment exemption. The only ADR-RUN-0011 exception is Runtime::block_on on the SQLite writer dedicated thread, which this sprint does not own.</div></div>
+    <div class="diff"><div class="eq">boundary:sc-cron — Shared generic CronStorage conformance passes on the controlled double; scheduler hook/Monty/clock/cancellation and command-adapter regressions pass. All current behavior cases are ported, not weakened/deleted. Per-row FENCED, configured row limits, active-name and multi-row operations are implemented once through named generic transactions, with owned replayable inputs and transaction-safe bodies.</div><div class="rm">- boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; compatible dependency ranges and adjacent known-break cap comments preserved.</div><div class="rm">- Required: cargo test -p sc-cron -p sc-cron-commands; shared conformance against double; qualified Monty job and endpoint dependency checks; cargo build --workspace at this closure; configured sc-boundary and actual analyzer/no-panic rules. d-11 executes same suite with actual engine providers and deterministic two-process scenarios; this sprint never calls the double real database proof.</div><div class="ad">+ boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; every registry requirement in sc-cron/sc-cron-commands uses &gt;= its tested floor with no upper bound (ANC-037).</div><div class="ad">+ Required: cargo test -p sc-cron -p sc-cron-commands; shared conformance against double; normal Monty tests; cargo build --workspace at this closure; sc-lint lint sc-boundary --root . --config sc-lint.toml; sc-lint#931 no-panic rule and the external transaction-body analyzer must pass on this sprint&#x27;s changed storage code once delivered; until both rules exist and pass, closure stays blocked. Record the actual rule versions and commands when available, never a fabricated pass or implicit waiver. This includes sc-cron CronStore/CronStorage, migration and changed sc-cron-commands storage adapters. d-11 executes same suite with actual engine providers and deterministic two-process scenarios; this sprint never calls the double real database proof.</div><div class="ad">+ boundary:sc-cron/row-limit — CronStore refuses to add a schedule row once its row count reaches the embedding application&#x27;s configured limit; the existing row-limit tests are ported, not deleted (ANC-031).</div><div class="ad">+ boundary:sc-cron/atomic — set_enabled_many, replace_and_set_enabled and every domain read/check/mutate body call the shared generic transaction operation; several row operations commit or roll back as one atomic unit (ANC-033).</div><div class="ad">+ boundary:sc-cron/active-name — Within the SAME AtomicStorage::transaction body, CronStore rejects a second active schedule row with the same schedule name; retain and pass the ported active-name tests against the controlled double (ANC-030).</div><div class="ad">+ boundary:sc-cron/public-storage-functions — The public CronStorage domain operations (create/get/list_active, record_run/set_next/stop/disable, set_enabled/set_enabled_many/replace_and_set_enabled, query/context), migration and storage adapters all return typed Results and do not panic. These are the public storage functions governed by ANC-035, NFR-RUN-0009 and REQ-CRON-0005; exercise their typed-error paths through the shared conformance tests and actual sc-lint#931 rule, with no missing-rule waiver (NFR-RUN-0002).</div><div class="ad">+ boundary:sc-cron/ADR-RUN-0011 — sc-cron and sc-cron-commands production code, including CronStore/CronStorage, migration, scheduler/worker and cron-command adapters, calls no Runtime::block_on, Handle::block_on or futures::executor::block_on. Required: python3 scripts/adr_run_0011_grep.py crates/sc-cron/src crates/sc-cron-commands/src; non-test sources must contain no block_on call or allow-comment exemption. The only ADR-RUN-0011 exception is Runtime::block_on on the SQLite writer dedicated thread, which this sprint does not own.</div><div class="ad">+ boundary:sc-cron/policy-entry — No raw public CronStore write bypasses active-name, row-limit or fenced-generation policy; the same domain suite exercises all mutation entry points. Mapped StorageError retains typed code/source/recovery alongside stable CronError codes.</div></div>
   </details>
   <details>
     <summary>design</summary>
-    <div class="diff"><div class="ch">Consumes real CronStorage/row/operation-context and generic atomic declarations from d-5. <del>Same</del><ins>Own</ins> <del>shared</del><ins>the single</ins> tests/support/cron-storage provider <del>suite</del><ins>suite,</ins> <del>is</del><ins>ported</ins> <del>run</del><ins>from</ins> <del>by</del><ins>existing cron assertions;</ins> scheduler double <del>here</del><ins>runs</ins> <del>and</del><ins>here,</ins> actual engines in d-11.<ins> D-5 supplies only generic storage doubles without cron rows.</ins> Domain functions are transaction-safe-marked callees: active-name/row-count/read, mutate and write are one transaction, per-row (id,generation) preserves FENCED. Serializability/retry belongs to engine; caller supplies fresh-body producer with owned immutable inputs, not external I/O. No backend-specific SQL/type/schema enters generic engines; cron mapping and migration remain in sc-cron.</div><div class="eq">Current legacy DB tests/assertions are mapped to shared conformance before deletion, checked by executing the suite and retaining its cases, not by waiting for sibling d-6. d-5 has already qualified legacy code on0.41 and handed implementation files to this owner. Remove direct rusqlite only when generic CronStore and migration consumer compile. Keep upstream crosswalk REQ-CRON-0006/0007/0017 meanings alongside local requirements; no repository-wide API sync lease is added.</div><div class="rm">- Public APIs changed by this phase return typed Results without panics; storage submission follows root writer constraints. Deferred synchronization/permissions/code generation remain out of scope. ADR contract builds at risk pending randlee ratification; do not claim accepted owner sign-off.</div><div class="ad">+ Public APIs changed by this phase return typed Results without panics; storage submission follows root writer constraints. Deferred synchronization/permissions/code generation remain out of scope. Contract ratification status is defined once by d-5 and enforced at d-12 publication.</div><div class="ad">+ Windows manifest counterpart: d-5 alone converts sc-cron/Cargo.toml win32job/waitpid-any dev-dependency pins to open tested floors; d-9 takes the manifest later but leaves both lines and their purpose comments unchanged.</div></div>
+    <div class="diff"><div class="rm">- Consumes real CronStorage/row/operation-context and generic atomic declarations from d-5. Same shared tests/support/cron-storage provider suite is run by scheduler double here and actual engines in d-11. Domain functions are transaction-safe-marked callees: active-name/row-count/read, mutate and write are one transaction, per-row (id,generation) preserves FENCED. Serializability/retry belongs to engine; caller supplies fresh-body producer with owned immutable inputs, not external I/O. No backend-specific SQL/type/schema enters generic engines; cron mapping and migration remain in sc-cron.</div><div class="rm">- Current legacy DB tests/assertions are mapped to shared conformance before deletion, checked by executing the suite and retaining its cases, not by waiting for sibling d-6. d-5 has already qualified legacy code on0.41 and handed implementation files to this owner. Remove direct rusqlite only when generic CronStore and migration consumer compile. Keep upstream crosswalk REQ-CRON-0006/0007/0017 meanings alongside local requirements; no repository-wide API sync lease is added.</div><div class="rm">- Public APIs changed by this phase return typed Results without panics; storage submission follows root writer constraints. Deferred synchronization/permissions/code generation remain out of scope. ADR contract builds at risk pending randlee ratification; do not claim accepted owner sign-off.</div><div class="ad">+ Consumes real CronStorage/row/operation-context and generic atomic declarations from d-5. Own the single tests/support/cron-storage provider suite, ported from existing cron assertions; scheduler double runs here, actual engines in d-11. D-5 supplies only generic storage doubles without cron rows. Domain functions are transaction-safe-marked callees: active-name/row-count/read, mutate and write are one transaction, per-row (id,generation) preserves FENCED. Serializability/retry belongs to engine; caller supplies fresh-body producer with owned immutable inputs, not external I/O. No backend-specific SQL/type/schema enters generic engines; cron mapping and migration remain in sc-cron.</div><div class="ad">+ Current legacy DB tests/assertions are mapped to shared conformance before deletion, checked by executing the suite and retaining its cases, not by waiting for sibling d-6. d-5 has already qualified legacy code on0.41 and handed implementation files to this owner. Remove direct rusqlite only when generic CronStore and migration consumer compile. Keep upstream crosswalk REQ-CRON-0001; ADR-RUN-0013 meanings alongside local requirements; no repository-wide API sync lease is added.</div><div class="ad">+ Public APIs changed by this phase return typed Results without panics; storage submission follows root writer constraints. Deferred synchronization/permissions/code generation remain out of scope. Contract ratification status is defined once by d-5 and enforced at d-12 publication.</div><div class="ad">+ Windows manifest counterpart: d-5 alone converts sc-cron/Cargo.toml win32job/waitpid-any dev-dependency pins to open tested floors; d-9 takes the manifest later but leaves both lines and their purpose comments unchanged.</div></div>
   </details>
 </section>

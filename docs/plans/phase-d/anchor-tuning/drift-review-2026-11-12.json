@@ -593,26 +593,90 @@
       "location": "d-7/d-8 deliverable 3, d-10 transform-limits, d-11 lifecycle",
       "note": "New hardening scope, traced to RSH-001..004 and NFR-RUN-0002/0009 or ADR-RT-0005. It addresses observed defects (unbounded retry, unbounded blocking-pool use, unspecified shutdown ordering) with controlled-input tests and no sleeps. It is not an open-option work item."
     },
-    "DAG: d-10 now depends on [d-3, d-5]. The d-3 edges were removed from d-11 and d-12 because they are transitive through d-10. d-3's checker and qualified source still reach both. Waves stay 3 and the root says 'critical path3, width6', which matches the antichain {d-4, d-6..d-10}.",
-    "d-3 now owns crates/sc-command/Cargo.toml and d-10 also owns it later. The DAG sequences the overlap (d-3 -> d-10 -> d-12), so there is no concurrent edit.",
-    "d-10 conversion obligation moved to d-3. d-10 adds only sc-storage. Its wording 'no StorageCommands wrapper' drops the word 'trait', but d-5 deliverable 2 still states 'with no StorageCommands or SqliteDatabaseFactory trait', so the prohibition is still in the plan.",
-    "The d-3 phrase 'typed public error/envelope ABI compiled against those identities' traces to the existing req:REQ-RUN-0005/source ('rmcp>=3.9 builds/tests with existing command/server/schema paths'). It adds no new scope.",
-    "Adding ADR-RUN-0005 and REQ-RUN-0005 to d-6/d-9 metadata traces their new boundary-file ownership to the boundary-manifest requirement.",
-    "The ANC-038 exclusions for d-5/d-10/d-11 have true reasons. d-12 owns template/.sc-runtime/**, template/scripts/tested_dependencies.py and template/cargo-generate.toml, and its release-recommendations AC carries ANC-038.",
-    "The ANC-003 exclusion for d-12 has a true reason. d-12 adds a recommendation post-hook and lock delivery but does not touch scripts/new_project.py, sc-compose selection or sc-compose instructions, and d-4/d-11 still hold ANC-003.",
-    "The d-11 sentence 'Every registry requirement in the template manifests changed here is >= its tested floor with no upper bound (ANC-037)' answers the gate-fix request and traces to locked ANC-037.",
-    "Growth rule: each added passage traces to locked authority that predates the failed runs. ANC-032/033 carriers; ANC-037 conversions in d-3/d-5/d-9/d-11; REQ-RUN-0005/ADR-RUN-0005 boundary ownership; ANC-038 ownership in the d-12 sequencing; REQ-RUN-0002 for the restored upload recheck. No untraced scope was found.",
-    "No upper bound, exact pin or min/latest job was reintroduced anywhere in the range.",
-    "d-8/ANC-021 exclusion (reason: 'd-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.'). The reason is true of the item text. d-8 owned_paths are only template/crates/store-mysql/** and .github/workflows/store-mysql.yml. Its text says 'no WidgetRow, CronRow or consumer SQL lives in the generic engine' and 'Production engine source has no ... sc-cron import'. Its mixed-layout rusqlite probe is a dependency-tree check, and 'Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11'. The ANC-021 scope ('change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring') does not cover d-8. The failing cell had relevant=no @0.53 and contradicted=no @0.97, so it was not failing on substance. d-11 owns and states the obligation in deliverable 1: 'SQLite app data and cron rows default to one app file and the same SqliteDatabase/channel writer; remove cron.db/database_path ... ANC-021/028/032'. d-11 is not excluded from ANC-021. The exclusion matches the existing d-5/d-6/d-7 precedent.",
-    "d-9/ANC-038 exclusion (reason: 'd-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.'). The reason is true: d-9's text and owned_paths contain no .sc-runtime/ path or generation tool. Its 'migration' is the legacy cron.db import, not metadata. The ANC-038 scope says explicitly: 'Work that only sets or tests dependency ranges is outside this scope.' The cell had relevant=no @0.58 and contradicted=no @0.89. d-12 owns and states the obligation in deliverable 6 ('template/scripts/tested_dependencies.py, template/cargo-generate.toml and template/.sc-runtime/** deliver the newest tested Cargo.lock and matching .sc-runtime/tested-dependencies.json ... (ANC-038)') and in AC req:REQ-RUN-0002/release-recommendations (ANC-038), and its owned_paths include template/.sc-runtime/** and template/scripts/tested_dependencies.py. This is not a repeat of the M13 pattern: here the anchor scope's own wording excludes the work, and nothing in the cell failed on substance.",
-    "d-10/ANC-037: adding ', with no upper bound,' to the sc-storage >=0.2.0 (>=0.3.0 at release) sentence restores the dropped constraint. It traces to locked ANC-037 ('All dependencies').",
-    "d-9's widened AC ('every registry requirement in sc-cron/sc-cron-commands') also reaches lines d-9 does not author. The first is sc-observability-types.workspace, whose requirement is root \"1.5.0\". The root manifest is d-5-owned, and d-5 deliverable 4 converts 'shared SDK/backend dependencies in root ... with >= tested floors and no upper bound'. d-9 must_follow d-5 and targets the d-5 branch, so that line is converted before d-9 closes. The second is the internal path+version entries (sc-command/sc-cron \"0.2.0\"). Those are in d-9's owned manifests, so d-9 can write >=0.2.0 itself, and d-12 later changes only the release-version lines. The AC can be closed on d-9's own branch. Naming root sc-observability-types explicitly in d-5 would be clearer but is not required.",
-    "d-9's 'This includes ...' list is illustrative ('every remaining registry line' governs). It omits serde, serde_json and rusqlite, but these are covered by 'every', and direct cron rusqlite is retired under d-9 and the d-5 REQ-CRON amendments.",
-    "Converting monty/monty-types 1.4.0 and process-wrap 10 to open floors does not conflict with any ADR or requirement. No Monty, process-wrap or getrandom pin mandate exists in docs/architecture.md, docs/requirements.md or docs/sc-cron/*.",
-    "Ownership and DAG: there is no change to owned_paths or depends_on in range. crates/sc-cron/Cargo.toml and crates/sc-cron-commands/Cargo.toml are owned by both d-9 and d-12, but d-12 depends on d-9, so the edits are sequenced and never concurrent. There is no new overlap among the parallel sprints d-4 and d-6..d-10.",
-    "Growth rule: each added passage traces to locked authority. The d-9 conversions trace to ANC-037. The d-10 'no upper bound' traces to ANC-037. The d-5..d-8 per-sprint share wording traces to ANC-032/033. The ANC-035 citation in d-9 traces to locked ANC-035 and the prior m2/M13 rulings. The d-12 scoping clause traces to REQ-RUN-0002/ANC-037. The heading retitles add no scope. No untraced scope was found, and no obligation was dropped or weakened.",
-    "No upper bound, exact pin, tilde pin or min/latest job was introduced anywhere in the range.",
-    "d-12 consumes d-3 single checker and merges completed d-11 before upload (checker moved to d-3 in plan-qa round 1, accepted by lead; staged handoff per ruling 01M76W8592VZ0BAH1JHR2CJMRK)"
+    {
+      "location": "range 5/6 review",
+      "note": "DAG: d-10 now depends on [d-3, d-5]. The d-3 edges were removed from d-11 and d-12 because they are transitive through d-10. d-3's checker and qualified source still reach both. Waves stay 3 and the root says 'critical path3, width6', which matches the antichain {d-4, d-6..d-10}."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-3 now owns crates/sc-command/Cargo.toml and d-10 also owns it later. The DAG sequences the overlap (d-3 -> d-10 -> d-12), so there is no concurrent edit."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-10 conversion obligation moved to d-3. d-10 adds only sc-storage. Its wording 'no StorageCommands wrapper' drops the word 'trait', but d-5 deliverable 2 still states 'with no StorageCommands or SqliteDatabaseFactory trait', so the prohibition is still in the plan."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "The d-3 phrase 'typed public error/envelope ABI compiled against those identities' traces to the existing req:REQ-RUN-0005/source ('rmcp>=3.9 builds/tests with existing command/server/schema paths'). It adds no new scope."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "Adding ADR-RUN-0005 and REQ-RUN-0005 to d-6/d-9 metadata traces their new boundary-file ownership to the boundary-manifest requirement."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "The ANC-038 exclusions for d-5/d-10/d-11 have true reasons. d-12 owns template/.sc-runtime/**, template/scripts/tested_dependencies.py and template/cargo-generate.toml, and its release-recommendations AC carries ANC-038."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "The ANC-003 exclusion for d-12 has a true reason. d-12 adds a recommendation post-hook and lock delivery but does not touch scripts/new_project.py, sc-compose selection or sc-compose instructions, and d-4/d-11 still hold ANC-003."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "The d-11 sentence 'Every registry requirement in the template manifests changed here is >= its tested floor with no upper bound (ANC-037)' answers the gate-fix request and traces to locked ANC-037."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "Growth rule: each added passage traces to locked authority that predates the failed runs. ANC-032/033 carriers; ANC-037 conversions in d-3/d-5/d-9/d-11; REQ-RUN-0005/ADR-RUN-0005 boundary ownership; ANC-038 ownership in the d-12 sequencing; REQ-RUN-0002 for the restored upload recheck. No untraced scope was found."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "No upper bound, exact pin or min/latest job was reintroduced anywhere in the range."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-8/ANC-021 exclusion (reason: 'd-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.'). The reason is true of the item text. d-8 owned_paths are only template/crates/store-mysql/** and .github/workflows/store-mysql.yml. Its text says 'no WidgetRow, CronRow or consumer SQL lives in the generic engine' and 'Production engine source has no ... sc-cron import'. Its mixed-layout rusqlite probe is a dependency-tree check, and 'Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11'. The ANC-021 scope ('change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring') does not cover d-8. The failing cell had relevant=no @0.53 and contradicted=no @0.97, so it was not failing on substance. d-11 owns and states the obligation in deliverable 1: 'SQLite app data and cron rows default to one app file and the same SqliteDatabase/channel writer; remove cron.db/database_path ... ANC-021/028/032'. d-11 is not excluded from ANC-021. The exclusion matches the existing d-5/d-6/d-7 precedent."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-9/ANC-038 exclusion (reason: 'd-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.'). The reason is true: d-9's text and owned_paths contain no .sc-runtime/ path or generation tool. Its 'migration' is the legacy cron.db import, not metadata. The ANC-038 scope says explicitly: 'Work that only sets or tests dependency ranges is outside this scope.' The cell had relevant=no @0.58 and contradicted=no @0.89. d-12 owns and states the obligation in deliverable 6 ('template/scripts/tested_dependencies.py, template/cargo-generate.toml and template/.sc-runtime/** deliver the newest tested Cargo.lock and matching .sc-runtime/tested-dependencies.json ... (ANC-038)') and in AC req:REQ-RUN-0002/release-recommendations (ANC-038), and its owned_paths include template/.sc-runtime/** and template/scripts/tested_dependencies.py. This is not a repeat of the M13 pattern: here the anchor scope's own wording excludes the work, and nothing in the cell failed on substance."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-10/ANC-037: adding ', with no upper bound,' to the sc-storage >=0.2.0 (>=0.3.0 at release) sentence restores the dropped constraint. It traces to locked ANC-037 ('All dependencies')."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-9's widened AC ('every registry requirement in sc-cron/sc-cron-commands') also reaches lines d-9 does not author. The first is sc-observability-types.workspace, whose requirement is root \"1.5.0\". The root manifest is d-5-owned, and d-5 deliverable 4 converts 'shared SDK/backend dependencies in root ... with >= tested floors and no upper bound'. d-9 must_follow d-5 and targets the d-5 branch, so that line is converted before d-9 closes. The second is the internal path+version entries (sc-command/sc-cron \"0.2.0\"). Those are in d-9's owned manifests, so d-9 can write >=0.2.0 itself, and d-12 later changes only the release-version lines. The AC can be closed on d-9's own branch. Naming root sc-observability-types explicitly in d-5 would be clearer but is not required."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-9's 'This includes ...' list is illustrative ('every remaining registry line' governs). It omits serde, serde_json and rusqlite, but these are covered by 'every', and direct cron rusqlite is retired under d-9 and the d-5 REQ-CRON amendments."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "Converting monty/monty-types 1.4.0 and process-wrap 10 to open floors does not conflict with any ADR or requirement. No Monty, process-wrap or getrandom pin mandate exists in docs/architecture.md, docs/requirements.md or docs/sc-cron/*."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "Ownership and DAG: there is no change to owned_paths or depends_on in range. crates/sc-cron/Cargo.toml and crates/sc-cron-commands/Cargo.toml are owned by both d-9 and d-12, but d-12 depends on d-9, so the edits are sequenced and never concurrent. There is no new overlap among the parallel sprints d-4 and d-6..d-10."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "Growth rule: each added passage traces to locked authority. The d-9 conversions trace to ANC-037. The d-10 'no upper bound' traces to ANC-037. The d-5..d-8 per-sprint share wording traces to ANC-032/033. The ANC-035 citation in d-9 traces to locked ANC-035 and the prior m2/M13 rulings. The d-12 scoping clause traces to REQ-RUN-0002/ANC-037. The heading retitles add no scope. No untraced scope was found, and no obligation was dropped or weakened."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "No upper bound, exact pin, tilde pin or min/latest job was introduced anywhere in the range."
+    },
+    {
+      "location": "range 5/6 review",
+      "note": "d-12 consumes d-3 single checker and merges completed d-11 before upload (checker moved to d-3 in plan-qa round 1, accepted by lead; staged handoff per ruling 01M76W8592VZ0BAH1JHR2CJMRK)"
+    },
+    {
+      "location": "ANC-035 v2->v3 scope (3157ad2)",
+      "note": "Independent tuner widened scope from a three-crate list to public storage functions in any crate (incl. sc-cron CronStore/CronStorage), with the frozen oracle 18975d72..., resealed plan questions 1236291d..., fixtures pass/fail as intended. Matches the quote and the m2 ruling; stricter reading, no obligation dropped. Reviewed by lead."
+    }
   ],
   "confirmations": [
     {

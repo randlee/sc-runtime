@@ -1,0 +1,742 @@
+{
+  "success": true,
+  "data": {
+    "gate": "plan",
+    "items": [
+      "run-d-10",
+      "run-d-11",
+      "run-d-12",
+      "run-d-3",
+      "run-d-4",
+      "run-d-5",
+      "run-d-6",
+      "run-d-7",
+      "run-d-8",
+      "run-d-9"
+    ],
+    "anchors": [
+      "ADR-RUN-0011",
+      "ANC-003",
+      "ANC-005",
+      "ANC-012",
+      "ANC-015",
+      "ANC-020",
+      "ANC-021",
+      "ANC-022",
+      "ANC-023",
+      "ANC-024",
+      "ANC-025",
+      "ANC-026",
+      "ANC-027",
+      "ANC-028",
+      "ANC-029",
+      "ANC-030",
+      "ANC-031",
+      "ANC-032",
+      "ANC-033",
+      "ANC-034",
+      "ANC-035",
+      "ANC-036",
+      "ANC-037",
+      "ANC-038"
+    ],
+    "matrix": {
+      "ANC-003": {
+        "run-d-4": "satisfied",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "not_applicable",
+        "run-d-7": "not_applicable",
+        "run-d-8": "excluded",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "not_applicable"
+      },
+      "ANC-005": {
+        "run-d-4": "satisfied",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "not_applicable",
+        "run-d-6": "not_applicable",
+        "run-d-7": "not_applicable",
+        "run-d-8": "not_applicable",
+        "run-d-10": "not_applicable",
+        "run-d-12": "not_applicable",
+        "run-d-9": "not_applicable"
+      },
+      "ANC-015": {
+        "run-d-4": "satisfied",
+        "run-d-11": "excluded",
+        "run-d-3": "not_applicable",
+        "run-d-5": "not_applicable",
+        "run-d-6": "not_applicable",
+        "run-d-7": "not_applicable",
+        "run-d-8": "not_applicable",
+        "run-d-10": "not_applicable",
+        "run-d-12": "not_applicable",
+        "run-d-9": "not_applicable"
+      },
+      "ANC-020": {
+        "run-d-4": "satisfied",
+        "run-d-11": "not_applicable",
+        "run-d-3": "excluded",
+        "run-d-5": "not_applicable",
+        "run-d-6": "not_applicable",
+        "run-d-7": "not_applicable",
+        "run-d-8": "not_applicable",
+        "run-d-10": "not_applicable",
+        "run-d-12": "not_applicable",
+        "run-d-9": "not_applicable"
+      },
+      "ADR-RUN-0011": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "satisfied",
+        "run-d-12": "excluded",
+        "run-d-9": "satisfied"
+      },
+      "ANC-012": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "satisfied",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "satisfied",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-021": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "excluded",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "satisfied",
+        "run-d-9": "excluded"
+      },
+      "ANC-022": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "excluded",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-023": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-024": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "excluded",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-025": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "excluded",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-026": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "excluded",
+        "run-d-12": "satisfied",
+        "run-d-9": "excluded"
+      },
+      "ANC-027": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-028": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "excluded",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-029": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "excluded",
+        "run-d-5": "excluded",
+        "run-d-6": "excluded",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-030": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "excluded",
+        "run-d-5": "excluded",
+        "run-d-6": "excluded",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-031": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "excluded",
+        "run-d-5": "excluded",
+        "run-d-6": "excluded",
+        "run-d-7": "excluded",
+        "run-d-8": "excluded",
+        "run-d-10": "not_applicable",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-032": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-033": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "excluded"
+      },
+      "ANC-034": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "excluded",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "excluded",
+        "run-d-12": "excluded",
+        "run-d-9": "not_applicable"
+      },
+      "ANC-035": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "not_applicable",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "satisfied",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-036": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "excluded",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "satisfied",
+        "run-d-7": "not_applicable",
+        "run-d-8": "not_applicable",
+        "run-d-10": "not_applicable",
+        "run-d-12": "excluded",
+        "run-d-9": "not_applicable"
+      },
+      "ANC-037": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "satisfied",
+        "run-d-3": "satisfied",
+        "run-d-5": "satisfied",
+        "run-d-6": "satisfied",
+        "run-d-7": "satisfied",
+        "run-d-8": "satisfied",
+        "run-d-10": "satisfied",
+        "run-d-12": "satisfied",
+        "run-d-9": "satisfied"
+      },
+      "ANC-038": {
+        "run-d-4": "not_applicable",
+        "run-d-11": "excluded",
+        "run-d-3": "not_applicable",
+        "run-d-5": "excluded",
+        "run-d-6": "not_applicable",
+        "run-d-7": "not_applicable",
+        "run-d-8": "not_applicable",
+        "run-d-10": "excluded",
+        "run-d-12": "satisfied",
+        "run-d-9": "excluded"
+      }
+    },
+    "uncovered_anchors": [],
+    "contradicted": {},
+    "excluded": {
+      "ANC-015": {
+        "run-d-11": "d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11."
+      },
+      "ANC-024": {
+        "run-d-11": "Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
+        "run-d-5": "d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.",
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ANC-025": {
+        "run-d-11": "Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
+        "run-d-5": "d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.",
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ANC-036": {
+        "run-d-11": "Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.",
+        "run-d-5": "d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11."
+      },
+      "ANC-038": {
+        "run-d-11": "d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.",
+        "run-d-5": "d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.",
+        "run-d-10": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.",
+        "run-d-9": "d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production."
+      },
+      "ANC-020": {
+        "run-d-3": "d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose."
+      },
+      "ANC-022": {
+        "run-d-3": "d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.",
+        "run-d-5": "d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.",
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-10": "d-10 does not touch the SQLite backend or its writer, which d-6 owns.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ANC-029": {
+        "run-d-3": "d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.",
+        "run-d-5": "d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.",
+        "run-d-6": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.",
+        "run-d-7": "Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.",
+        "run-d-8": "Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.",
+        "run-d-10": "d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.",
+        "run-d-12": "Template rejection of cron with the no-database layout is owned and satisfied by d-11.",
+        "run-d-9": "Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator."
+      },
+      "ANC-030": {
+        "run-d-3": "d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.",
+        "run-d-5": "d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9.",
+        "run-d-6": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+        "run-d-7": "Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.",
+        "run-d-8": "Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code."
+      },
+      "ANC-031": {
+        "run-d-3": "d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.",
+        "run-d-5": "d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9.",
+        "run-d-6": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+        "run-d-7": "The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.",
+        "run-d-8": "The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code."
+      },
+      "ANC-034": {
+        "run-d-3": "d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.",
+        "run-d-10": "d-10 touches no storage backend crate; its application stores live in the application layer.",
+        "run-d-12": "Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates."
+      },
+      "ANC-003": {
+        "run-d-5": "d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.",
+        "run-d-8": "d-8 changes MySQL storage crate dependencies only, not template generation's sc-compose version selection.",
+        "run-d-10": "d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.",
+        "run-d-12": "d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior."
+      },
+      "ANC-021": {
+        "run-d-5": "d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.",
+        "run-d-6": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.",
+        "run-d-7": "Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.",
+        "run-d-8": "d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.",
+        "run-d-9": "Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral."
+      },
+      "ANC-023": {
+        "run-d-5": "d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.",
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ANC-027": {
+        "run-d-5": "d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.",
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-10": "d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.",
+        "run-d-12": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ADR-RUN-0011": {
+        "run-d-7": "d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.",
+        "run-d-8": "d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.",
+        "run-d-12": "d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer."
+      },
+      "ANC-026": {
+        "run-d-7": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-8": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+        "run-d-10": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.",
+        "run-d-9": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "ANC-028": {
+        "run-d-10": "The generated SQLite app's cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency."
+      },
+      "ANC-032": {
+        "run-d-10": "d-10 consumes Storage<T> through the shared double and implements no engine backend.",
+        "run-d-12": "Backend Storage<T> conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.",
+        "run-d-9": "d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend."
+      },
+      "ANC-033": {
+        "run-d-10": "d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.",
+        "run-d-12": "The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.",
+        "run-d-9": "d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8."
+      }
+    },
+    "runs_considered": 10,
+    "carried_from_earlier_run": {
+      "ANC-003": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-005": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-015": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-020": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ADR-RUN-0011": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-012": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-021": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-022": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-023": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-024": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-025": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-026": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-027": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-028": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-029": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-030": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-031": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-032": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-033": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-034": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-036": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-037": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      },
+      "ANC-038": {
+        "run-d-4": "plan-20261112T094027Z-run-d-4",
+        "run-d-11": "plan-20261112T094150Z-run-d-11",
+        "run-d-3": "plan-20261112T094852Z-run-d-3",
+        "run-d-5": "plan-20261112T094855Z-run-d-5",
+        "run-d-6": "plan-20261112T094859Z-run-d-6",
+        "run-d-7": "plan-20261112T094921Z-run-d-7",
+        "run-d-8": "plan-20261112T094930Z-run-d-8",
+        "run-d-10": "plan-20261112T094952Z-run-d-10",
+        "run-d-12": "plan-20261112T095003Z-run-d-12",
+        "run-d-9": "plan-20261112T095348Z-run-d-9"
+      }
+    },
+    "exclusion_removed_rejudge": {}
+  },
+  "error": null
+}

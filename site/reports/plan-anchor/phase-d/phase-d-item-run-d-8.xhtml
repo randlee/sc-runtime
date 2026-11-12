@@ -5,78 +5,22 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 1551,
+      &quot;after_chars&quot;: 1418,
       &quot;before_chars&quot;: 1033,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 2999,
+      &quot;after_chars&quot;: 3008,
       &quot;before_chars&quot;: 2367,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
     {
-      &quot;after_chars&quot;: 1898,
+      &quot;after_chars&quot;: 2240,
       &quot;before_chars&quot;: 2109,
       &quot;field&quot;: &quot;design&quot;
     }
   ],
-  &quot;exclusions&quot;: [
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
-      &quot;reason&quot;: &quot;d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-003&quot;,
-      &quot;reason&quot;: &quot;d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-023&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-026&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
-      &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
-      &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-030&quot;,
-      &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
-    },
-    {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-031&quot;,
-      &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
-    }
-  ],
+  &quot;exclusions&quot;: [],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:43:39+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -105,60 +49,15 @@
   },
   &quot;id&quot;: &quot;run-d-8&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T08:31:59+00:00&quot;,
-    &quot;excluded&quot;: [
-      {
-        &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
-        &quot;reason&quot;: &quot;d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-003&quot;,
-        &quot;reason&quot;: &quot;d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-023&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-026&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
-        &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
-        &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-030&quot;,
-        &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
-      },
-      {
-        &quot;anchor_id&quot;: &quot;ANC-031&quot;,
-        &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
-      }
-    ],
+    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+    &quot;excluded&quot;: [],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T083159Z-run-d-8&quot;,
-    &quot;score&quot;: &quot;7/7&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-8&quot;,
+    &quot;score&quot;: &quot;1/1&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 7,
+  &quot;runs&quot;: 11,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -524,25 +423,194 @@
       &quot;run_id&quot;: &quot;plan-20261112T083159Z-run-d-8&quot;,
       &quot;score&quot;: &quot;7/7&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:20:34+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T092034Z-run-d-8&quot;,
+      &quot;score&quot;: &quot;5/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:41:11+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-021&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T094111Z-run-d-8&quot;,
+      &quot;score&quot;: &quot;7/8&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:49:30+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T094930Z-run-d-8&quot;,
+      &quot;score&quot;: &quot;7/7&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-8&quot;,
+      &quot;score&quot;: &quot;1/1&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-8: d-8: mysql-storage
-Gate FAIL 4/20 -&gt; PASS 7/7 over 7 runs.
+Gate FAIL 4/20 -&gt; PASS 1/1 over 11 runs.
 Failing at first run: ANC-022, ADR-RUN-0011, ANC-003, ANC-016, ANC-017, ANC-019, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-029, ANC-030, ANC-031, ANC-032, ANC-033.
 Failing now: none.
-Excluded ADR-RUN-0011: d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.
-Excluded ANC-003: d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.
-Excluded ANC-022: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-023: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-024: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-025: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-026: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-027: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
-Excluded ANC-029: Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.
-Excluded ANC-030: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
-Excluded ANC-031: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
 Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     </div>
   </div>
@@ -551,12 +619,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>4/20</td><td>ANC-022, ADR-RUN-0011, ANC-003, ANC-016, ANC-017, ANC-019, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-029, ANC-030, ANC-031, ANC-032, ANC-033</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 7 runs</summary>
+    <summary>All 11 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -567,40 +635,27 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T080544Z-run-d-8</code></td><td>2026-11-12T08:05:44+00:00</td><td><span class="status status-fail">FAIL</span></td><td>9/10</td><td>ANC-038</td></tr>
         <tr><td><code>plan-20261112T081401Z-run-d-8</code></td><td>2026-11-12T08:14:01+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
         <tr><td><code>plan-20261112T083159Z-run-d-8</code></td><td>2026-11-12T08:31:59+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T092034Z-run-d-8</code></td><td>2026-11-12T09:20:34+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/7</td><td>ANC-032, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T094111Z-run-d-8</code></td><td>2026-11-12T09:41:11+00:00</td><td><span class="status status-fail">FAIL</span></td><td>7/8</td><td>ANC-021</td></tr>
+        <tr><td><code>plan-20261112T094930Z-run-d-8</code></td><td>2026-11-12T09:49:30+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T100339Z-run-d-8</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
-  <h3>Excluded anchors (not judged)</h3>
-  <table class="exclusions">
-    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
-    <tbody>
-      <tr><th scope="row"><a href="#anchor-ADR-RUN-0011">ADR-RUN-0011</a></th><td>d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-003">ANC-003</a></th><td>d-8 changes MySQL storage crate dependencies only, not template generation&#x27;s sc-compose version selection.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-023">ANC-023</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-026">ANC-026</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-030">ANC-030</a></th><td>Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.</td><td>this round</td></tr>
-      <tr><th scope="row"><a href="#anchor-ANC-031">ANC-031</a></th><td>The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.</td><td>this round</td></tr>
-    </tbody>
-  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="eq"></div><div class="eq">1. Implement the same Storage&lt;T&gt; contract on direct sqlx-core/sqlx-mysql MySQL pool/migration code with engine-specific typed mapping — REQ-RUN-0328; PRD-STO2.</div><div class="eq">2. Retain real MySQL errors/transaction semantics and replace per-table functions only with a compiling consumer path — ADR0020; REQ-RUN-0302.</div><div class="eq"></div><div class="ch">3. Implement the <del>exact</del><ins>shared</ins> <del>d-5</del><ins>sc-storage Storage&lt;T&gt; trait,</ins> generic <del>StorageRow/Store&lt;T&gt;/engine</del><ins>row mapping and engine</ins> factory contract and generated-key create/delete primitives using arbitrary conformance rows and generic atomic transaction begin/commit/retry. App supplies schema mapping; backend has no specific consumer table code — ANC-032/033/034/035.</div><div class="eq">4. Replace sqlx umbrella with direct sqlx-core + engine driver + sqlx-macros requirements, retaining only necessary features; qualify real query macros, migration/offline/CLI paths, not just a successful resolver — REQ-RUN-0002; NFR-RUN-0007.</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.</div><div class="ad">+ SQLite (d-6), Postgres (d-7) and MySQL (d-8) all implement the same sc-storage Storage&lt;T&gt; trait and its inherited generic AtomicStorage::transaction(spec, producer) operation; this single method runs several row operations as one atomic unit (ANC-032/033). This sprint implements Storage&lt;T&gt; for MysqlStore&lt;T&gt; using that shared trait, with no MySQL-specific parallel storage trait; it implements the SAME AtomicStorage::transaction(spec, producer) method with SERIALIZABLE transactions and retry.</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="rm">- </div><div class="rm">- 1. Implement the same Storage&lt;T&gt; contract on direct sqlx-core/sqlx-mysql MySQL pool/migration code with engine-specific typed mapping — REQ-RUN-0328; PRD-STO2.</div><div class="rm">- 2. Retain real MySQL errors/transaction semantics and replace per-table functions only with a compiling consumer path — ADR0020; REQ-RUN-0302.</div><div class="rm">- </div><div class="rm">- 3. Implement the exact d-5 generic StorageRow/Store&lt;T&gt;/engine factory contract and generated-key create/delete primitives using arbitrary conformance rows and generic atomic transaction begin/commit/retry. App supplies schema mapping; backend has no specific consumer table code — ANC-032/033/034/035.</div><div class="rm">- 4. Replace sqlx umbrella with direct sqlx-core + engine driver + sqlx-macros requirements, retaining only necessary features; qualify real query macros, migration/offline/CLI paths, not just a successful resolver — REQ-RUN-0002; NFR-RUN-0007.</div><div class="ad">+ 1. Implement MySQL&#x27;s share of the one shared sc-storage Storage&lt;T&gt; trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033). Implement MysqlStore&lt;T&gt;: sc-storage Storage&lt;T&gt; plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).</div><div class="ad">+ 2. Replace the sqlx umbrella with sqlx-core/sqlx-mysql/sqlx-macros &gt;=0.9, no upper bound. Qualify real live query macros, migrations/offline replacement and CLI paths, preserving typed errors and existing wrapper behavior (REQ-RUN-0002/0302/0321; ANC-037).</div><div class="ad">+ 3. Bound serialization retries and pool-acquire/statement/transaction waits in EngineConfig using finite defaults and validated configuration. Exhaustion/deadline yields typed StorageError with retryability/recovery, never an infinite loop. Controlled conflicts/timeouts test the bound; no sleeps or load races. Retry knobs are engine policy, not extra transaction properties (NFR-RUN-0002/0009).</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="eq">boundary:template-store-mysql — identical row contract passes on actual MySQL with required CI service; typed errors and transaction behavior pass target/workspace/boundary checks. d-11 owns final surfaces/template composition.</div><div class="eq"></div><div class="eq">## Required validation commands</div><div class="ch">Generate a development-source consumer with just new &lt;temp-dir&gt; --var-file wizard/fixtures/mysql.json. With a real provisioned MySQL service in MYSQL_DATABASE_URL and matching migrations applied by the test harness, run cargo test --manifest-path &lt;temp-dir&gt;/crates/store-mysql/Cargo.toml; cargo clippy --manifest-path &lt;temp-dir&gt;/crates/store-mysql/Cargo.toml --all-targets -- -D warnings; cargo build --manifest-path &lt;temp-dir&gt;/Cargo.toml --workspace; sc-lint lint sc-boundary --root &lt;temp-dir&gt; --config &lt;temp-dir&gt;/sc-lint.toml. SQLX_OFFLINE cache compilation alone is not live MySQL proof. <del>d-3</del><ins>d-8</ins> owns <del>CI</del><ins>.github/workflows/store-mysql.yml:</ins> <del>prerequisites/recipes.</del><ins>provision its real mysql service and MYSQL_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_MYSQL=1 and fail on skipped live tests; no min/latest duplication.</ins> Preserve thin legacy wrappers until the actual consumer compiles.</div><div class="ch">Boundary contract includes generic read/insert/delete primitives with generated ID and typed errors on arbitrary test rows against real engine, plus generic atomic serializable begin/commit/retry and panic-free typed Result behavior; shared contract imports real definitions. Test <del>minimum/latest direct-crate features and </del>actual live query macros, migrations, offline/sqlx-toml replacement and CLI migration procedures as applicable. A cargo check-only probe is not evidence those paths work.</div><div class="eq">Compile actual direct-crate backend + generic rusqlite writer dependency probes for selected mixed layouts. cargo tree -i libsqlite3-sys selects exactly one&gt;=0.39 and cargo tree -i sqlx-sqlite has no selected package; never grep Cargo.lock. Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11 after sibling stores close. cargo build --workspace and live generated target engine tests pass at this sprint&#x27;s closure. Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema; application service/schema wrapper supplies row descriptors. No ATM/sc-compose deps.</div><div class="rm">- Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness.</div><div class="ad">+ Wire the single sc-storage observability wrapper defined/tested by d-5 into this engine; do not reimplement it. Engine tests use controlled observer inputs (ANC-033; NFR-RUN-0002).</div><div class="ad">+ boundary:template-store-mysql/dependency-floors — sqlx-core/sqlx-mysql/sqlx-macros use &gt;=0.9 with no upper bound (ANC-037). The normal backend suite exercises the real engine.</div><div class="ad">+ boundary:template-store-mysql/atomic — MySQL implements the same generic transaction operation from the Storage&lt;T&gt; contract; a real MySQL conformance test performs several row mutations and proves they all commit or all roll back, including retry/error cases (ANC-032/033).</div></div>
+    <div class="diff"><div class="eq">boundary:template-store-mysql — identical row contract passes on actual MySQL with required CI service; typed errors and transaction behavior pass target/workspace/boundary checks. d-11 owns final surfaces/template composition.</div><div class="eq"></div><div class="eq">## Required validation commands</div><div class="ch">Generate a development-source consumer with just new &lt;temp-dir&gt; --var-file wizard/fixtures/mysql.json. With a real provisioned MySQL service in MYSQL_DATABASE_URL and matching migrations applied by the test harness, run cargo test --manifest-path &lt;temp-dir&gt;/crates/store-mysql/Cargo.toml; cargo clippy --manifest-path &lt;temp-dir&gt;/crates/store-mysql/Cargo.toml --all-targets -- -D warnings; cargo build --manifest-path &lt;temp-dir&gt;/Cargo.toml --workspace; sc-lint lint sc-boundary --root &lt;temp-dir&gt; --config &lt;temp-dir&gt;/sc-lint.toml. SQLX_OFFLINE cache compilation alone is not live MySQL proof. <del>d-3</del><ins>d-8</ins> owns <del>CI</del><ins>.github/workflows/store-mysql.yml:</ins> <del>prerequisites/recipes.</del><ins>provision its real mysql service and MYSQL_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_MYSQL=1 and fail on skipped live tests; no min/latest duplication.</ins> Preserve thin legacy wrappers until the actual consumer compiles.</div><div class="ch">Boundary contract includes generic read/insert/delete primitives with generated ID and typed errors on arbitrary test rows against real engine, plus generic atomic serializable begin/commit/retry and panic-free typed Result behavior; shared contract imports real definitions. Test <del>minimum/latest direct-crate features and </del>actual live query macros, migrations, offline/sqlx-toml replacement and CLI migration procedures as applicable. A cargo check-only probe is not evidence those paths work.</div><div class="eq">Compile actual direct-crate backend + generic rusqlite writer dependency probes for selected mixed layouts. cargo tree -i libsqlite3-sys selects exactly one&gt;=0.39 and cargo tree -i sqlx-sqlite has no selected package; never grep Cargo.lock. Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11 after sibling stores close. cargo build --workspace and live generated target engine tests pass at this sprint&#x27;s closure. Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema; application service/schema wrapper supplies row descriptors. No ATM/sc-compose deps.</div><div class="rm">- Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness.</div><div class="ad">+ Use d-5&#x27;s transaction observation wrapper with controlled observer tests (ANC-033).</div><div class="ad">+ boundary:template-store-mysql/atomic — MySQL implements the same generic transaction operation from the Storage&lt;T&gt; contract; a real MySQL conformance test performs several row mutations and proves they all commit or all roll back, including retry/error cases (ANC-032/033).</div><div class="ad">+ boundary:template-store-mysql/bounded-errors — Finite retry/acquire/statement/transaction limits are applied to real engine operations; controlled outcomes exhaust retries and yield typed conflict/timeout errors. Driver tests run in the existing live workflow; no min/latest jobs.</div></div>
   </details>
   <details>
     <summary>design</summary>
-    <div class="diff"><div class="eq">Consumes d-5 contract; does not wait for Postgres or SQLite implementation. Per-engine paths are disjoint; shared Cargo/index changes belong only to d-5.</div><div class="eq"></div><div class="rm">- Version is approved coordinated0.3.0; publication still requires all release gates. Source authority is PRD2 and proposed ADR0020/0021; scope B is selected by user.</div><div class="eq">Implement the same sc-storage Storage&lt;T&gt; contract. SQLx enables only this engine, never SQLite; production has no ATM/sc-compose dependencies. Generated boundaries are emitted by d-5 template/boundaries/render.py at boundaries/&lt;prefixed-package&gt;/&lt;prefixed-package&gt;.toml. Backend tests use actual engine services.</div><div class="eq">Real engine contract is defined/exported by d-5: generic StorageRow/Store&lt;T&gt; plus table-neutral EngineConfig and typed StorageError; async open&lt;T&gt;(&amp;EngineConfig) completes application-supplied generic schema migration before returning Store&lt;T&gt;. Service WidgetStore&lt;S&gt;/StoresView maps schema::WidgetRow/WidgetId/errors outside the backend. Backend generic mapping implements generated-key insert/delete primitives and named atomic producer/future; serializable begin/commit and engine-controlled serialization retry call a fresh owned Send+&#x27;static producer. Backend source contains no specific consumer row/schema/SQL; generic engine code is separated from application-owned mapping wrapper. Only transaction name/mode are declared properties. Public storage APIs return typed Results, never panic.</div><div class="ch">Proven dependency facts: umbrella sqlx0.9 with current macros/migrate/sqlx-toml features conflicts with rusqlite0.41/0.42 even when SQLite feature is off. Direct core+engine+macros crates resolve and cargo check; live query!/offline/sqlx-cli paths are UNVERIFIED until this sprint qualifies them. No vulnerable rusqlite downgrade or dropped feature presented as a fix. Shared manifest registration in d-5 hands this owner&#x27;s store Cargo file over after contract <del>sanity; d-3 supplies live-engine CI/endpoint recipes.</del><ins>sanity.</ins> Mixed probe here compiles this actual engine backend with generic writer crate in one graph; full generated mixed app consumes sibling SQLite wrapper only in d-11.</div></div>
+    <div class="diff"><div class="eq">Consumes d-5 contract; does not wait for Postgres or SQLite implementation. Per-engine paths are disjoint; shared Cargo/index changes belong only to d-5.</div><div class="eq"></div><div class="rm">- Version is approved coordinated0.3.0; publication still requires all release gates. Source authority is PRD2 and proposed ADR0020/0021; scope B is selected by user.</div><div class="eq">Implement the same sc-storage Storage&lt;T&gt; contract. SQLx enables only this engine, never SQLite; production has no ATM/sc-compose dependencies. Generated boundaries are emitted by d-5 template/boundaries/render.py at boundaries/&lt;prefixed-package&gt;/&lt;prefixed-package&gt;.toml. Backend tests use actual engine services.</div><div class="eq">Real engine contract is defined/exported by d-5: generic StorageRow/Store&lt;T&gt; plus table-neutral EngineConfig and typed StorageError; async open&lt;T&gt;(&amp;EngineConfig) completes application-supplied generic schema migration before returning Store&lt;T&gt;. Service WidgetStore&lt;S&gt;/StoresView maps schema::WidgetRow/WidgetId/errors outside the backend. Backend generic mapping implements generated-key insert/delete primitives and named atomic producer/future; serializable begin/commit and engine-controlled serialization retry call a fresh owned Send+&#x27;static producer. Backend source contains no specific consumer row/schema/SQL; generic engine code is separated from application-owned mapping wrapper. Only transaction name/mode are declared properties. Public storage APIs return typed Results, never panic.</div><div class="rm">- Proven dependency facts: umbrella sqlx0.9 with current macros/migrate/sqlx-toml features conflicts with rusqlite0.41/0.42 even when SQLite feature is off. Direct core+engine+macros crates resolve and cargo check; live query!/offline/sqlx-cli paths are UNVERIFIED until this sprint qualifies them. No vulnerable rusqlite downgrade or dropped feature presented as a fix. Shared manifest registration in d-5 hands this owner&#x27;s store Cargo file over after contract sanity; d-3 supplies live-engine CI/endpoint recipes. Mixed probe here compiles this actual engine backend with generic writer crate in one graph; full generated mixed app consumes sibling SQLite wrapper only in d-11.</div><div class="ad">+ Proven dependency facts: umbrella sqlx0.9 with current macros/migrate/sqlx-toml features conflicts with rusqlite0.41/0.42 even when SQLite feature is off. Direct core+engine+macros crates resolve and cargo check; live query!/offline/sqlx-cli paths are UNVERIFIED until this sprint qualifies them. No vulnerable rusqlite downgrade or dropped feature presented as a fix. Shared manifest registration in d-5 hands this owner&#x27;s store Cargo file over after contract sanity. Mixed probe here compiles this actual engine backend with generic writer crate in one graph; full generated mixed app consumes sibling SQLite wrapper only in d-11.</div><div class="ad">+ EngineConfig owns finite retry/timeout settings with validated defaults; producers remain name/mode only. This phase retains the generic engine in the generated template under the approved eight-crate release; engine-code fixes require template updates/regeneration, recorded explicitly in ADR0020 rather than promised as a registry update.</div></div>
   </details>
 </section>
