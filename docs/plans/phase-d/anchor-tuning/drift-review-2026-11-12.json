@@ -118,8 +118,8 @@
         "quote": "Use an upper bound only where a known break requires one, and say why in a comment."
       },
       "suggested_fix": "Reword the d-11 test to fail on an exact, tilde or extra-upper requirement that lacks an adjacent comment naming its demonstrated break, matching d-12's package-caps-check.",
-      "status": "fixed",
-      "fix_note": "d-11 generated-manifest regression test rejects exact/tilde/extra-upper restrictions lacking an adjacent demonstrated-break comment, matching ANC-019 and d-12."
+      "status": "owner_decision",
+      "fix_note": "Owner decision 2026-11-12: strict wording. The generated-template test fails on any exact or tilde pin, and on any extra upper bound without an adjacent comment naming the demonstrated break; such a bound starts at the first release that has the break. The drift-restored commented-pin allowance contradicted ANC-016 (d-11 r6-r8 contradicted 0.38-0.49 vs 0.73-0.80 under strict wording)."
     },
     {
       "id": "m5",
