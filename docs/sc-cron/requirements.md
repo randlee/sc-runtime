@@ -36,6 +36,8 @@ original no-sibling boundary.
 
 ### Rationale
 
+Owner, 2026-10-25 (ADR-RUN-0013): port beads-cache `crates/sc-cron` as an optional drop-in. The temporary `sc-command` edge follows the owner's 2026-10-31 shim direction (ADR-RUN-0017): "ideally the shim is not an additional crate we would need to publish to crates.io", "w/ explicit plan to remove this dependency and add a boundary once 1.5.1 ships."
+
 ### Success Criteria
 
 **Acceptance Criteria:**
@@ -55,6 +57,8 @@ original no-sibling boundary.
 A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
 
 ### Rationale
+
+The beads-cache expression parser refused a five-field string; a normal crontab string is five fields, minute first (ADR-RUN-0013 Context). Owner, 2026-10-25: schedules are cron strings.
 
 ### Success Criteria
 
@@ -84,7 +88,15 @@ The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoin
 
 ### Rationale
 
+Owner (ANC-027): "sc-cron is a general-purpose cron library." (ANC-028): "the primary requirement of being able to be extensible w/ other apps/calls is supported." ADR-RUN-0013: the hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
+
 ### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] Host registry integration tests invoke custom, sc-compose, and ATM functions through one extension interface.
+- [ ] Argument-forwarding tests cover render and non-render subcommands.
+- [ ] MVP execution requires neither signatures nor approval configuration.
 
 ## REQ-CRON-0004: One configuration table
 
@@ -99,6 +111,8 @@ The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoin
 The bundled store creates one schedule table. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ### Rationale
+
+Owner, 2026-10-25 (ADR-RUN-0013): configuration is one SQLite table. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration, and sc-cron must not depend on `sc-config` (ADR-RUN-0014).
 
 ### Success Criteria
 
@@ -166,7 +180,13 @@ Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the
 
 ### Rationale
 
+Every cross-boundary failure exposes stable codes, causes, and recovery/remediation; agents must be able to act on failures without reading source (framework charter). The variant set and codes match the beads-cache crate that sc-cron ports.
+
 ### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] The public error type in crates/sc-cron is CronError.
 
 ## REQ-CRON-0019: Explicit Python and Monty hook environment
 
@@ -229,7 +249,19 @@ remain outside an untrusted-code boundary.
 
 ### Rationale
 
+Owner (ANC-034): "python/monty having consistent settings would be least confusing" (ANC-037): "Never capture or persist inherited host values accidentally" ADR-RUN-0016: environment variables are not uniformly secrets. Durable values such as `ATM_IDENTITY` and `ATM_TEAM` belong with a schedule. API keys may instead be daemon-wide inherited values, explicit schedule values, references resolved by an application secret provider, or values loaded from an authorized absolute `.env` file.
+
 ### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] The same environment cases produce equivalent Python and Monty results.
+- [ ] An allowed daemon value is delivered and an unlisted value is absent.
+- [ ] Two schedules set distinct identities and clearing removes a prior value.
+- [ ] Ambient canaries are absent from persisted rows without explicit set input.
+- [ ] A consumer resolver supplies a referenced value without persisting the result.
+- [ ] An authorized absolute dotenv file supplies hook values.
+- [ ] A top-level getenv reads the configured snapshot before cron_stop or cron_tick.
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
@@ -247,6 +279,8 @@ is allowed; no other workspace crate is allowed.
 The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 
 ### Rationale
+
+Owner (ANC-031): "sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests" `monty` runs in-process when the host controls the code; `monty-pool` runs the interpreter in worker subprocesses for untrusted code. The Monty hook target is the trusted case, and a subprocess pool would spend the process spawn the target exists to avoid. A consumer who does not enable `monty` does not link the interpreter.
 
 ### Success Criteria
 
@@ -342,6 +376,8 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 
 ### Rationale
 
+ADR-RUN-0016: the Python hook inherited the complete daemon environment while Monty denied all OS calls. That is an inconsistent capability boundary and has caused difficult identity/team bugs when a daemon starts under one agent and later executes another agent's schedule. The library must support environment choices without silently capturing host values. Owner (ANC-037): "Never capture or persist inherited host values accidentally"
+
 ### Success Criteria
 
 **Acceptance Criteria:**
@@ -411,6 +447,8 @@ Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 
 ### Rationale
 
+Make the existing cron library consumable through its public logging facade and cooperative operation/lifecycle contract, preserving the already ported Rust, Python and optional Monty execution targets. The framework charter leaves application stores, schemas and wiring to the consumer. Owner (ANC-017): "it is not sc-runtime job to guarantee a customer can not misuse the core libraries."
+
 ### Success Criteria
 
 **Acceptance Criteria:**
@@ -472,7 +510,14 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 
 ### Rationale
 
+This completes the existing pre-submission admission/physical-ownership promise of REQ-CRON-0020/0021 and ADR-RUN-0018 under NFR-RUN-0002's nonblocking request path and the existing service-hardening production checklist section 7.
+
 ### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] Real query returns ended as well as active rows with deterministic bounded continuation; malformed limits/cursors fail; replacement races preserve generation fencing.
+- [ ] Cancellation of command waiters leaves no untracked work.
 
 ### Implementation Notes
 

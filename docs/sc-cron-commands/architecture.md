@@ -67,6 +67,8 @@ c-1 deliverables.
 
 ### Rationale
 
+Owner, 2026-11-03 (ANC-015): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." Phase C objective 4: an optional standard start/end/list JSON adapter presents the same operation/result/error to CLI, HTTP and selected MCP. Default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.
+
 ### Consequences
 
 Command and runtime gain no reverse edge. Default DTO builds exclude scheduling/server dependencies.

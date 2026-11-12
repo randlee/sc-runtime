@@ -37,6 +37,11 @@ This optional library reconciles the new human command requirement with the sche
 
 ### Success Criteria
 
+**Acceptance Criteria:**
+
+- [ ] Serialization/schema tests demonstrate one canonical versioned start/end/list and Envelope result/error across projection-neutral fixtures.
+- [ ] All invalid forms fail before scheduler/store work; no absent name means end-all.
+
 ### Implementation Notes
 
 Phase C target, planned and unimplemented.
@@ -74,6 +79,8 @@ it links the core custom-store example and describes supported replacement.
 No consumer-product migration or automatic job start is implied.
 
 ### Rationale
+
+Owner (ANC-014): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." (ANC-018): "it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries."
 
 ### Success Criteria
 
@@ -118,6 +125,8 @@ Typed Envelope<CronResponse> and all nested schema types compile under the
 same identities; no copied envelope/error model or generic response schema.
 
 ### Rationale
+
+UI CLI clients share DTOs without linking scheduler/server. Keep CLI lean: default dependency graphs stay free of server stacks (ADR-RUN-0003); agents and scripts depend on a small CLI binary.
 
 ### Success Criteria
 

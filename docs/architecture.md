@@ -258,6 +258,10 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 ### Context
 
+Owner request, 2026-10-31: "proceed w/ plan to include a shim.  ideally the shim is not an additional crate we would need to publish to crates.io.  We could add a low level dependency to sc-compose 1.5.0 and add the logging interface there today w/ explicit plan to remove this dependency and add a boundary once 1.5.1 ships." The immediate correction was: "oops, sc-observability, not sc-compose".
+
+At the baseline, runtime/cron import a local package impersonating types 1.5.1, while explicit development generation inserts an unpublished 0.0.0 adapter around the registry 1.5.0 logger.
+
 ### Decision
 
 The initial five-package `0.1.1` release may use actual registry observability
@@ -3416,6 +3420,8 @@ Sprint b-3 ports the scheduler, b-9 adds Monty, and b-10 proves production host 
 
 ### Rationale
 
+Owner ruling, 2026-10-27 (decision-sync-scheduling-at-api.md). The check runs inside the same store transaction as the insert, so two processes sharing one file cannot both pass it. The b-9 text that many names may each hold a blocking-pool thread is bounded for any consumer that sets the limit.
+
 ### Consequences
 
 Sprint **`b-12`** implements the API, store count check, template default, and doc updates in `docs/sc-cron/` ([sprint-b-12-sc-cron-schedule-row-limit.md](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md)). beads-cache may enforce its own sync semantics; that is not sc-cron's default ceiling.
@@ -3451,6 +3457,8 @@ Monty and sc-cron performance campaigns produce HTML and JSON under `site/report
 5. The platform layout is multi-subsystem: `scripts/benchmark/<subsystem>/` and `site/reports/benchmark-<subsystem>/`. The first subsystem is `monty`.
 
 ### Rationale
+
+Owner, 2026-10-27. Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority (NFR-RUN-0005).
 
 ### Consequences
 
@@ -3603,6 +3611,8 @@ exfiltration by trusted hook code.
 
 ### Context
 
+sc-runtime is a set of crates and a template for deploying a new application that can use its database immediately.
+
 ### Decision
 
 1. A layout that has a store renders general database commands on the CLI, MCP, and HTTP. The set includes `delete row <table> <id>`. The commands are on by default.
@@ -3612,7 +3622,11 @@ exfiltration by trusted hook code.
 
 ### Rationale
 
+Owner, 2026-10-25, recorded as REQ-RUN-0331. General database commands are the bootstrap. The consumer disables that public surface and adds application commands that call the same backend operations.
+
 ### Consequences
+
+Sprint `b-8` (deliverable 5) renders general database commands on the CLI, MCP, and HTTP for a layout with a store, including `delete row <table> <id>`. A flag removes them, and a no-database layout renders none of them.
 
 ## Sprint a-1 evidence record
 
@@ -3848,6 +3862,8 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 
 ### Context
 
+Phase C closes adoption gaps left after Phase b: existing cron Rust/Python/Monty registration remains usable through a public nominal logging facade and cooperative owned store/shutdown/query protocol. Cron is already ported; no new job kind or re-port is planned.
+
 ### Decision
 
 Phase C's default command intake completes this same pre-submission admission
@@ -3901,6 +3917,8 @@ NFR-RUN-0002 and the existing service-hardening checklist section 7 motivate thi
 
 ### Consequences
 
+C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves the actual admission race and persisted state after join, c-4 proves packaged behavior. This changes the prior strict physical-cutoff interpretation by the explicit human decision, not a finding waiver or implementation PASS.
+
 ### Implementation
 
 Status as recorded: Approved Phase C target; implementation planned.
@@ -3915,6 +3933,8 @@ Status as recorded: Approved Phase C target; implementation planned.
 **Decision Date:** 2026-11-02  
 
 ### Context
+
+Phase C objective 4: an optional standard start/end/list JSON adapter presents the same operation/result/error to CLI, HTTP and selected MCP. Default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.
 
 ### Decision
 
@@ -3946,7 +3966,11 @@ No new plugin framework, automatic job start or private wiring is required.
 
 ### Rationale
 
+Owner, 2026-11-03 (ANC-014, ANC-015): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." (ANC-016): "yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard"
+
 ### Consequences
+
+Core command and runtime gain no cron/adapter reverse edge. The scheduler core keeps no binary, HTTP/MCP routes or configuration-file loading. C-1 owns new manifests/shared declarations/contracts and injectable native-operation/executor/target-binding ports; c-3 generic template projections, c-5 real core operations, c-6 concrete adapter behavior, c-4 final selected-template binding and real prepublication/registry integration.
 
 ### Implementation
 
