@@ -145,7 +145,7 @@
       },
       "suggested_fix": "Revert: remove the run-d-5 entry from ANC-019's exclude list and let the gate judge d-5. The current d-5 text already states the obligation (all edited lines are normal carets, no extra upper bound, and any later bound starts at the first broken release with an adjacent comment), so no growth is expected. If it is still underspecified, make d-5 more specific instead of excluding it. Escalate only if the planner contends the anchor scope excludes pin removal; that is a scope question for the owner, not an exclusion.",
       "status": "fixed",
-      "fix_note": "Removed ANC-019/run-d-5 exclusion; existing pin removal and all-bound comments policy will be judged."
+      "fix_note": "Verified by run-lead at e018e89: exclusion removed (130603f); d-5 failed ANC-019 at plan-20261112T071933Z (relevant 0.42, addressed 0.25), then e018e89 named the exact-pin conversions and the bound-comment obligation; plan-20261112T072209Z-run-d-5 satisfies ANC-019 (relevant yes 0.94, addressed yes 0.74, contradicted no 1.0)."
     },
     {
       "id": "m6",
@@ -158,7 +158,7 @@
       },
       "suggested_fix": "Escalate to the owner to confirm the success-branch form. Then state the classification once in d-11 compatible-generation (inherited by d-12): a '>=a, <b' range whose ceiling equals the Cargo compatibility boundary of a tested, qualified line is not an extra upper bound. Back it with a passing checker fixture, and keep a fixture where a ceiling inside a compatible line fails without a comment. Alternatively, the owner directs a comment on the qualified form.",
       "status": "open",
-      "fix_note": ""
+      "fix_note": "Open pending owner answer on how the shared checker classifies '>=0.41, <0.43' (runs asked the owner)."
     },
     {
       "id": "m7",
@@ -171,7 +171,7 @@
       },
       "suggested_fix": "Add one sentence to the d-5 description: owner ratification of option (a) and the frozen shape is pending and gates d-5 closure; ADR-RUN-0020/0021 are Proposed. Also inline the single- or multi-row-type closure rule, or replace each 'below' with a pointer the gate can see.",
       "status": "fixed",
-      "fix_note": "d-5 description and acceptance now state pending owner ratification and the single/multi-row-type outcome; d-6/d-10 gate-read criteria explicitly require the ratified extension."
+      "fix_note": "Verified by run-lead at 130603f: d-5 gate-read text states pending owner ratification, Proposed ADR-RUN-0020/0021 and the single/multi-row-type outcome; d-6/d-10 consume the owner-ratified extension. d-5 072209Z, d-6 071939Z, d-10 071942Z pass."
     },
     {
       "id": "m8",
@@ -184,7 +184,7 @@
       },
       "suggested_fix": "Update the root sentence to match the sprints: each owner sprint is blocked until both rules exist and pass on its changed storage code, and d-12 rechecks before upload. Record the analyzer request as an explicit external blocker with its owner.",
       "status": "fixed",
-      "fix_note": "Root now matches four sprint closure blockers and d-12 recheck; lead owns the missing analyzer request, pending owner approval to file, then external delivery. No delivered rule or date claimed."
+      "fix_note": "Verified by run-lead at 130603f: root states d-5/d-6/d-9/d-11 closure blocked until sc-lint#931 and the transaction-body analyzer exist and pass, d-12 rechecks; analyzer request unfiled pending owner approval to file."
     },
     {
       "id": "m9",
@@ -197,7 +197,7 @@
       },
       "suggested_fix": "Choose one: move the two ADR amendments into d-3, or land them before dispatch, or have d-3 consume d-5's amendment. The last option adds an edge and changes the wave metrics, so it needs the owner's consent.",
       "status": "fixed",
-      "fix_note": "Previously approved Phase D ADR0017/0203 policy amendments committed before dispatch. d-5 retains shared template manifest conversions; graph unchanged."
+      "fix_note": "Verified by run-lead at 130603f: ADR-RUN-0017 (^1.5.0, min/latest probe) and ADR-RUN-0203 (rmcp ^3.9, utoipa ^6.0.0, utoipa-axum ^0.3.0, schemars ^1.2.3, min/latest probes) Phase D amendments committed in docs/architecture.md before dispatch; content matches the owner-approved amendments. d-3/d-5 stay parallel."
     }
   ],
   "acceptable_choices": [
