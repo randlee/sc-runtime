@@ -680,11 +680,11 @@ Fixtures:
 
 ## ADR-RUN-0011
 
-Anchor: In production code under crates/ and template/, only the SQLite writer's dedicated OS thread may call block_on (Runtime::block_on, Handle::block_on or futures::executor::block_on).
+Anchor: Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except Runtime::block_on on the SQLite writer's dedicated OS thread.
 
 > Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.
 
-Said by randlee, planning session, 2026-11-11. Status: locked. Version 3.
+Said by randlee, planning session, 2026-11-11. Status: locked. Version 4.
 
 Summary: block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e)
 
