@@ -26,6 +26,14 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-018 | retired | Advisory proof uses the released consumer graph | 2026-11-11 |
 | ANC-019 | locked | Additional upper bounds explain their known break | 2026-11-11 |
 | ANC-020 | locked | Pinned generation tools use release binaries | 2026-11-11 |
+| ANC-021 | locked | cron rows default to app SQLite DB | 2026-11-11 |
+| ANC-022 | locked | all SQLite writes via one async-channel writer | 2026-11-11 |
+| ANC-023 | locked | writer thread owns the only write connection | 2026-11-11 |
+| ANC-024 | locked | writer replies after commit | 2026-11-11 |
+| ANC-025 | locked | queued writes batched in one transaction | 2026-11-11 |
+| ANC-026 | locked | no spawn_blocking to reach writer | 2026-11-11 |
+| ANC-027 | locked | async callers do not block awaiting writer reply | 2026-11-11 |
+| ANC-028 | locked | no sqlx SQLite driver in SQLite app tree | 2026-11-11 |
 
 ## ANC-001
 
@@ -424,3 +432,115 @@ Beads: anchor `run-kaze`, plan questions `run-kaze.1`, dev questions `run-kaze.2
 Fixtures:
 - pass: The primary CI installation path fetches the selected sc-compose GitHub Release archive and verifies its checksums.txt entry.
 - fail: The primary CI installation path recompiles sc-compose with cargo install against the current crates.io index.
+
+## ANC-021
+
+Anchor: In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.
+
+> When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: cron rows default to app SQLite DB
+
+Scope: plan items that change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring
+
+Deterministic check to pair with the development gate: generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)
+
+## ANC-022
+
+Anchor: All writes to an app's SQLite database MUST be submitted to a single writer through an async channel.
+
+> Every write to an app's SQLite database MUST go through one writer with an async channel input
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: all SQLite writes via one async-channel writer
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: grep: no SQLite write path outside the writer; writer API takes an async channel sender
+
+## ANC-023
+
+Anchor: The app's only SQLite write connection MUST be owned by the SQLite writer thread.
+
+> a single thread that owns the only write connection
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: writer thread owns the only write connection
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: grep: one write-mode Connection::open in the writer thread; other connections opened read-only
+
+## ANC-024
+
+Anchor: The SQLite writer MUST reply to each write request only after the transaction containing that write has committed.
+
+> Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: writer replies after commit
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: deterministic test: reply observed only after commit hook fires
+
+## ANC-025
+
+Anchor: The SQLite writer MUST commit writes that are queued together in a single transaction.
+
+> Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: queued writes batched in one transaction
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)
+
+## ANC-026
+
+Anchor: Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.
+
+> Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: no spawn_blocking to reach writer
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: grep: no spawn_blocking in callers of the SQLite writer
+
+## ANC-027
+
+Anchor: Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.
+
+> Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: async callers do not block awaiting writer reply
+
+Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
+
+Deterministic check to pair with the development gate: grep: writer submit API is async (await on oneshot), no blocking recv in async callers
+
+## ANC-028
+
+Anchor: The cargo tree of an app that uses SQLite MUST NOT include a sqlx SQLite driver crate.
+
+> An app with SQLite MUST link exactly one SQLite client library: cargo tree shows rusqlite, no sqlx SQLite driver, and one libsqlite3-sys version.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: no sqlx SQLite driver in SQLite app tree
+
+Scope: plan items that change SQLite-related dependencies, the generated template's SQLite store, or sc-cron's storage dependencies
+
+Deterministic check to pair with the development gate: cargo tree -e normal on generated SQLite app: no sqlx-sqlite

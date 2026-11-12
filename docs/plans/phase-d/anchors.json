@@ -1353,6 +1353,278 @@
           }
         }
       ]
+    },
+    {
+      "id": "ANC-021",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.",
+      "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "cron rows default to app SQLite DB",
+      "scope": "plan items that change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring",
+      "deterministic_check": "generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-022",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "All writes to an app's SQLite database MUST be submitted to a single writer through an async channel.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "all SQLite writes via one async-channel writer",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "grep: no SQLite write path outside the writer; writer API takes an async channel sender",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-023",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The app's only SQLite write connection MUST be owned by the SQLite writer thread.",
+      "quote": "a single thread that owns the only write connection",
+      "kind": "structural",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "writer thread owns the only write connection",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "grep: one write-mode Connection::open in the writer thread; other connections opened read-only",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-024",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST reply to each write request only after the transaction containing that write has committed.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "writer replies after commit",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "deterministic test: reply observed only after commit hook fires",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-025",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST commit writes that are queued together in a single transaction.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "queued writes batched in one transaction",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-026",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "kind": "prohibition",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "no spawn_blocking to reach writer",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "grep: no spawn_blocking in callers of the SQLite writer",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:15+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-027",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "async callers do not block awaiting writer reply",
+      "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+      "deterministic_check": "grep: writer submit API is async (await on oneshot), no blocking recv in async callers",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:16+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-028",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The cargo tree of an app that uses SQLite MUST NOT include a sqlx SQLite driver crate.",
+      "quote": "An app with SQLite MUST link exactly one SQLite client library: cargo tree shows rusqlite, no sqlx SQLite driver, and one libsqlite3-sys version.",
+      "kind": "prohibition",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "no sqlx SQLite driver in SQLite app tree",
+      "scope": "plan items that change SQLite-related dependencies, the generated template's SQLite store, or sc-cron's storage dependencies",
+      "deterministic_check": "cargo tree -e normal on generated SQLite app: no sqlx-sqlite",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:06:16+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
     }
   ]
 }
