@@ -24,6 +24,12 @@
       &quot;item&quot;: &quot;run-d-9&quot;,
       &quot;item_url&quot;: &quot;&quot;,
       &quot;reason&quot;: &quot;d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-10&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.&quot;
     }
   ],
   &quot;fixtures_after&quot;: &quot;-&quot;,
@@ -68,6 +74,11 @@
       &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-10&quot;,
       &quot;event&quot;: &quot;exclusion_removed&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T08:16:39+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-10; reason: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-026&quot;,
@@ -90,6 +101,7 @@ Questions: default - -&gt; tuned - oracle cases.
 Excluded for run-d-7: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 Excluded for run-d-8: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 Excluded for run-d-9: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
+Excluded for run-d-10: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.
 2026-11-12T03:43:37+00:00 excluded: item: run-d-7; reason: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: false
 2026-11-12T03:44:52+00:00 excluded: item: run-d-8; reason: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: false
 2026-11-12T03:45:13+00:00 excluded: item: run-d-9; reason: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.; replaced: false
@@ -97,7 +109,8 @@ Excluded for run-d-9: d-9 builds sc-cron over the engine-neutral Storage&lt;Cron
 2026-11-12T06:40:50+00:00 excluded: item: run-d-7; reason: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-8; reason: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-9; reason: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.; replaced: true
-2026-11-12T06:40:50+00:00 exclusion_removed: item: run-d-10">&#x2398;</button>
+2026-11-12T06:40:50+00:00 exclusion_removed: item: run-d-10
+2026-11-12T08:16:39+00:00 excluded: item: run-d-10; reason: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.; replaced: false">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.</p>
@@ -118,7 +131,7 @@ Excluded for run-d-9: d-9 builds sc-cron over the engine-neutral Storage&lt;Cron
   <p class="small">Text unchanged.</p>
 
   <details>
-    <summary>History since the baseline (8)</summary>
+    <summary>History since the baseline (9)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -130,18 +143,20 @@ Excluded for run-d-9: d-9 builds sc-cron over the engine-neutral Storage&lt;Cron
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-8; reason: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-9; reason: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>exclusion_removed</td><td>item: run-d-10</td></tr>
+        <tr><td>2026-11-12T08:16:39+00:00</td><td>excluded</td><td>item: run-d-10; reason: d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.; replaced: false</td></tr>
       </tbody>
     </table>
   </details>
 
   <details open="open">
-    <summary>Exclusions (3)</summary>
+    <summary>Exclusions (4)</summary>
     <table>
       <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
       <tbody>
         <tr><th scope="row">run-d-7</th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>added</td></tr>
         <tr><th scope="row">run-d-8</th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>added</td></tr>
         <tr><th scope="row">run-d-9</th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-10</th><td>d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint.</td><td>added</td></tr>
       </tbody>
     </table>
   </details>

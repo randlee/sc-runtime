@@ -5,17 +5,17 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 2622,
+      &quot;after_chars&quot;: 1652,
       &quot;before_chars&quot;: 1345,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 2740,
+      &quot;after_chars&quot;: 1441,
       &quot;before_chars&quot;: 1439,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
     {
-      &quot;after_chars&quot;: 3861,
+      &quot;after_chars&quot;: 3243,
       &quot;before_chars&quot;: 3339,
       &quot;field&quot;: &quot;design&quot;
     }
@@ -67,7 +67,7 @@
   },
   &quot;id&quot;: &quot;run-d-3&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T05:34:37+00:00&quot;,
+    &quot;created_at&quot;: &quot;2026-11-12T08:31:27+00:00&quot;,
     &quot;excluded&quot;: [
       {
         &quot;anchor_id&quot;: &quot;ANC-020&quot;,
@@ -96,11 +96,11 @@
     ],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T053437Z-run-d-3&quot;,
-    &quot;score&quot;: &quot;5/5&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T083127Z-run-d-3&quot;,
+    &quot;score&quot;: &quot;2/2&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 6,
+  &quot;runs&quot;: 9,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -259,12 +259,118 @@
       &quot;run_id&quot;: &quot;plan-20261112T053437Z-run-d-3&quot;,
       &quot;score&quot;: &quot;5/5&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:04:51+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-020&quot;,
+          &quot;reason&quot;: &quot;d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-027&quot;,
+        &quot;ANC-037&quot;,
+        &quot;ANC-038&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T080451Z-run-d-3&quot;,
+      &quot;score&quot;: &quot;4/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:12:47+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-020&quot;,
+          &quot;reason&quot;: &quot;d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T081247Z-run-d-3&quot;,
+      &quot;score&quot;: &quot;3/3&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:31:27+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-020&quot;,
+          &quot;reason&quot;: &quot;d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T083127Z-run-d-3&quot;,
+      &quot;score&quot;: &quot;2/2&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-3: d-3: dependency-qualification
-Gate FAIL 4/8 -&gt; PASS 5/5 over 6 runs.
+Gate FAIL 4/8 -&gt; PASS 2/2 over 9 runs.
 Failing at first run: ANC-020, ANC-030, ANC-031.
 Failing now: none.
 Excluded ANC-020: d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.
@@ -281,12 +387,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>4/8</td><td>ANC-020, ANC-030, ANC-031</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>2/2</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 6 runs</summary>
+    <summary>All 9 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -296,6 +402,9 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T041033Z-run-d-3</code></td><td>2026-11-12T04:10:33+00:00</td><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
         <tr><td><code>plan-20261112T052159Z-run-d-3</code></td><td>2026-11-12T05:21:59+00:00</td><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
         <tr><td><code>plan-20261112T053437Z-run-d-3</code></td><td>2026-11-12T05:34:37+00:00</td><td><span class="status status-pass">PASS</span></td><td>5/5</td><td></td></tr>
+        <tr><td><code>plan-20261112T080451Z-run-d-3</code></td><td>2026-11-12T08:04:51+00:00</td><td><span class="status status-fail">FAIL</span></td><td>4/7</td><td>ANC-027, ANC-037, ANC-038</td></tr>
+        <tr><td><code>plan-20261112T081247Z-run-d-3</code></td><td>2026-11-12T08:12:47+00:00</td><td><span class="status status-pass">PASS</span></td><td>3/3</td><td></td></tr>
+        <tr><td><code>plan-20261112T083127Z-run-d-3</code></td><td>2026-11-12T08:31:27+00:00</td><td><span class="status status-pass">PASS</span></td><td>2/2</td><td></td></tr>
       </tbody>
     </table>
   </details>
@@ -317,14 +426,14 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="ch">1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: <del>remove unnecessary</del><ins>replace</ins> exact/tilde <del>caps,</del><ins>pins with tested-floor caret ranges,</ins> update rmcp to <del>patched&gt;=3.9,</del><ins>patched ^3.9,</ins> preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/016/019.</div><div class="eq">2. Implement required minimum/latest endpoint jobs in existing crates.yml/template.yml and executable Just recipes. Root/generated/separate consumer resolutions must actually run; keep existing cache/action inputs and negative API/schema/router identity fixtures — REQ-RUN-0301/0303/0701; ANC-017. Backend-specific dependency edits and tests remain d-6..d-9 owned.</div><div class="eq">3. Update sc-config/sc-transport/sc-runtime READMEs alongside changed API/dependency behavior; preserve documented test-util helper and synchronous sc-config scope — REQ-RUN-0702; NFR-CFG-0002; NFR-RT-0001.</div><div class="eq"></div><div class="ad">+ 4. Own pin removal in crates/sc-command/Cargo.toml, crates/sc-runtime/Cargo.toml (normal/dev lines), template/crates/daemon/Cargo*.toml and tests/contracts/phase-c/application-control/Cargo.toml: rmcp ^3.9, utoipa ^6.0.0, utoipa-axum ^0.3.0; command sc-observability-types ^1.5.0 and schemars ^1.2.3 (the command manifest schemars pin at line29). Set crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml utoipa-axum to ^0.2.0 with an adjacent comment naming the utoipa-5 negative fixture. Preserve feature flags and the negative assertion. Implement the ADR-RUN-0203 single-identity and ADR-RUN-0017 registry logger probes at minimum/latest selections in the existing CI jobs — ANC-016/017/019.</div><div class="ad">+ </div><div class="eq">## This sprint does not close</div><div class="eq">No Storage/CronStorage implementation, generated application wiring or registry release is closed here. d-5 owns shared root Cargo/version/lock/boundary edits, d-6 backend dependencies, d-9 cron dependencies; this sprint owns command manifest initially; d-10 follows and adds storage dependency/exports/docs. Qualified source is consumed by d-12; d-11 independently tests generated integration.</div><div class="ad">+ D-3 owns template.yml jobs postgres-minimum/postgres-latest and mysql-minimum/mysql-latest plus their Just recipes: provision live POSTGRES_DATABASE_URL/MYSQL_DATABASE_URL services, apply migrations and run cargo test on generated engine crates at minimum/latest ranges; d-7/d-8 consume these executable jobs (REQ-RUN-0301; ANC-017).</div><div class="ad">+ Own crates.yml job sqlite-rusqlite-minimum-latest, running real SQLite crate tests at both dependency endpoints with the crate version selected from its current manifest; d-6 consumes this concrete CI artifact (ANC-017).</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="rm">- 1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: remove unnecessary exact/tilde caps, update rmcp to patched&gt;=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/016/019.</div><div class="rm">- 2. Implement required minimum/latest endpoint jobs in existing crates.yml/template.yml and executable Just recipes. Root/generated/separate consumer resolutions must actually run; keep existing cache/action inputs and negative API/schema/router identity fixtures — REQ-RUN-0301/0303/0701; ANC-017. Backend-specific dependency edits and tests remain d-6..d-9 owned.</div><div class="rm">- 3. Update sc-config/sc-transport/sc-runtime READMEs alongside changed API/dependency behavior; preserve documented test-util helper and synchronous sc-config scope — REQ-RUN-0702; NFR-CFG-0002; NFR-RT-0001.</div><div class="ad">+ 1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: replace exact/tilde pins, bare versions and carets with &gt;= tested floors and no upper bound, update rmcp to patched &gt;=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/037.</div><div class="ad">+ 2. Update sc-config/sc-transport/sc-runtime READMEs alongside changed API/dependency behavior; preserve documented test-util helper and synchronous sc-config scope — REQ-RUN-0702; NFR-CFG-0002; NFR-RT-0001.</div><div class="ad">+ </div><div class="ad">+ 3. Own pin removal in crates/sc-command/Cargo.toml, crates/sc-runtime/Cargo.toml (normal/dev lines), template/crates/daemon/Cargo*.toml and tests/contracts/phase-c/application-control/Cargo.toml: rmcp &gt;=3.9, utoipa &gt;=6.0.0, utoipa-axum &gt;=0.3.0; command sc-observability-types &gt;=1.5.0 and schemars &gt;=1.2.3 (the command manifest schemars pin at line29). Preserve the unpublished compile-fail fixture crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml with incompatible utoipa-axum ^0.2.0; it is test input, not a published SDK or template dependency. Preserve feature flags and its negative assertion — ANC-037.</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">No Storage/CronStorage implementation, generated application wiring or registry release is closed here. d-5 owns shared root Cargo/version/lock/boundary edits, d-6 backend dependencies, d-9 cron dependencies; this sprint owns command manifest initially; d-10 follows and adds storage dependency/exports/docs. Qualified source is consumed by d-12; d-11 independently tests generated integration.</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="eq">req:REQ-RUN-0002/compatibility — Required CI actually runs minimum and latest admitted registry dependency selections for root, template and separate consumers; ordinary production ranges admit newer Cargo-compatible releases. Every extra upper cap has an adjacent manifest comment naming a demonstrated API/native-link/toolchain break. Preserve each selected optional feature and negative compile fixture; no pin/skip removes endpoint coverage.</div><div class="eq">req:REQ-RUN-0005/source — rmcp&gt;=3.9 builds/tests with existing command/server/schema paths; selected Windows/Monty jobs run on the supported toolchains. No sc-compose or ATM production dependency. Public0.3.0 docs describe actual crate behavior and unchanged sc-config sync API.</div><div class="eq">Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; run the implemented minimum/latest recipes and required crates/template jobs, including live claimed engines where selected. Document commands/prerequisites in docs/development/dependency-upgrades.md; a recipe existing is not a pass. No registry publication or full storage feature claimed.</div><div class="eq">Cargo build/workspace and executable endpoint checks pass in this sprint own branch at closure; no unowned manifest change is assumed. Root source/dependency compatibility behavior is req:REQ-RUN-0002/source-ranges; registry/publication behavior only d-12. Cargo.lock is not native-identity evidence.</div><div class="ad">+ req:REQ-RUN-0002/pin-probes — At minimum and latest allowed selections, the composition probe traverses resolve.nodes[].deps[].pkg from each runtime/daemon root and requires one (name, version, source) tuple for each selected rmcp/utoipa/utoipa-axum/schemars. The isolated registry signature/direct Arc&lt;Logger&gt;-to-upstream SharedCanonicalLog probe runs for minimum/latest allowed sc-observability/sc-observability-types ^1.5.0 selections. Its result selects native mode when direct compatibility passes, otherwise the existing shim only when its compatibility checks pass; neither passing means closure stays blocked. Native cleanup of local trait/inline adapter/cron-command edge follows ADR-RUN-0017; no exact pin or protective cap substitutes for the probe. Required: run these implemented probe cases in the minimum/latest crates.yml/template.yml jobs (ADR-RUN-0017/0203; ANC-016/017/019).</div><div class="ad">+ req:REQ-RUN-0002/cron-schema-endpoints — The d-3 minimum/latest crates.yml jobs resolve sc-cron-commands with schema enabled at the lowest allowed utoipa6.0.0/schemars1.2.3 and latest allowed selections and run its actual schema tests at both endpoints. d-9 delivers crates/sc-cron-commands and its schema tests as these jobs&#x27; inputs; this sprint owns executable CI wiring and lists those inputs (ANC-017).</div></div>
+    <div class="diff"><div class="ch">req:REQ-RUN-0002/compatibility — <del>Required</del><ins>Every</ins> <del>CI</del><ins>registry</ins> <del>actually</del><ins>requirement</ins> <del>runs</del><ins>written</ins> <del>minimum</del><ins>in owned published/template manifests is &gt;= its tested floor with no upper bound (ANC-037). Preserve optional features</ins> and <del>latest</del><ins>existing</ins> <del>admitted registry dependency selections for root, template and separate consumers; ordinary production ranges admit newer Cargo-compatible releases. Every extra upper cap has an adjacent manifest comment naming a demonstrated API/native-link/toolchain break. Preserve each selected optional feature and</del><ins>unpublished</ins> negative compile <del>fixture;</del><ins>fixtures.</ins> <del>no</del><ins>Consumers</ins> <del>pin/skip</del><ins>may</ins> <del>removes</del><ins>pin</ins> <del>endpoint</del><ins>their</ins> <del>coverage.</del><ins>own manifests and lockfiles; run the normal test suite.</ins></div><div class="ch">req:REQ-RUN-0005/source — rmcp&gt;=3.9 builds/tests with existing command/server/schema paths; selected Windows/Monty jobs run on the supported toolchains. No sc-compose or ATM production dependency. Public0.3.0 docs describe actual crate behavior and unchanged sc-config sync API.<ins> Phase D retains the existing sc_command::observability shim; normal observability tests cover the fixed noop ServiceName literal with the selected types, without an exact pin or registry-availability/signature probe (ADR-RUN-0017; REQ-RUN-0309).</ins></div><div class="ch">Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config <del>sc-lint.toml; run the implemented minimum/latest recipes and required crates/template jobs, including live claimed engines where selected.</del><ins>sc-lint.toml.</ins> Document<ins> ordinary</ins> commands/prerequisites in <del>docs/development/dependency-upgrades.md; a recipe existing is not a pass.</del><ins>docs/development/dependency-upgrades.md.</ins> No<ins> separate dependency endpoint CI or probes; no</ins> registry publication or full storage feature claimed.</div><div class="ch">Cargo <del>build/workspace</del><ins>workspace build</ins> and <del>executable</del><ins>normal</ins> <del>endpoint checks</del><ins>tests</ins> pass in this sprint own branch at closure; no unowned manifest change is assumed. Root source/dependency compatibility behavior is req:REQ-RUN-0002/source-ranges; registry/publication behavior only d-12. Cargo.lock is not native-identity evidence.</div></div>
   </details>
   <details>
     <summary>design</summary>
-    <div class="diff"><div class="eq">Compatible dependency policy (ANC-016/019):</div><div class="eq"></div><div class="eq">Published crate and template requirements permit every newer Cargo</div><div class="eq">SemVer-compatible dependency release under their supported API, native-link,</div><div class="eq">and Rust-toolchain contract. Consumers can use `cargo update` without another</div><div class="eq">sc-runtime release (ANC-016). Normal requirements such as `rmcp = &quot;3.9.0&quot;`</div><div class="eq">already allow compatible 3.x updates; blanket support for future breaking</div><div class="eq">versions is not promised. Preserve existing dependency features.</div><div class="eq"></div><div class="eq">Rusqlite qualification and its one manifest owner are d-6; this sprint does not repeat that work.</div><div class="eq"></div><div class="eq">Each additional upper bound tighter than the normal compatible range has a</div><div class="eq">TOML comment immediately beside the requirement naming the concrete API,</div><div class="eq">native-link, or toolchain break that requires that specific bound (ANC-019).</div><div class="eq">The actual optional Monty requirements retain their optional status:</div><div class="eq"></div><div class="eq">```toml</div><div class="eq"># Monty 1.6 requires Rust 1.98; supported Monty CI uses Rust 1.96.1.</div><div class="eq">monty = { version = &quot;&gt;=1.4.0, &lt;1.6&quot;, optional = true }</div><div class="eq"># monty-types 1.6 requires Rust 1.98; supported Monty CI uses Rust 1.96.1.</div><div class="eq">monty-types = { version = &quot;&gt;=1.4.0, &lt;1.6&quot;, optional = true }</div><div class="eq">```</div><div class="eq"></div><div class="rm">- Exact/tilde restrictions need the same demonstrated incompatibility rationale.</div><div class="rm">- Intentional negative compatibility fixtures retain their incompatible test</div><div class="rm">- identity with a manifest comment; they do not constrain production consumers.</div><div class="ad">+ Production and generated template manifests contain no exact or tilde requirements. Additional upper bounds start at the first demonstrated broken release and carry an adjacent comment naming that break. Intentional negative fixtures use a caret range on their incompatible major/minor with an adjacent explanation; they never constrain production consumers.</div><div class="eq"></div><div class="eq"></div><div class="eq">The root Cargo.toml currently declares only sc-observability-types as a workspace dependency; rmcp and other actual third-party declarations are in crate manifests. This sprint owns explicit sc-config/sc-transport/sc-runtime manifests and enumerated command/runtime compatibility source, no crates/** wildcard. d-5 owns root Cargo.toml registration; d-12 owns canonical Cargo.lock/version conversion, shared template manifests and contract versions. The contract owner applies only the agreed range edits in those shared files; d-3 owns runnable endpoint qualification, not their concurrent mutation. Local endpoint tests may use disposable locks; d-12 regenerates/commits the final canonical lock after source owners close. No hard dependency on d-5 is inferred from release baseline.</div><div class="ch">sc-command<del> Cargo.toml (d-5) and</del> lib.rs/README/storage.rs/tests/storage_combinators.rs (d-10) are explicit exclusions from this owner&#x27;s enumerated source/test paths. Current API adaptation files are enumerated, not hidden behind wildcard ownership. Existing features/schema negative fixtures remain meaningful; preserve utoipa5 rejection fixtures and narrow their incompatible identities only with existing adjacent reasons. Source adaptations do not add ATM/sc-compose production dependencies.</div><div class="eq">Closure note: integration applies to this complete independent feature, even in the first wave; its actual API/toolchain interactions and executable acceptance close here, not an unimplemented contract.</div><div class="eq">Own complete sc-command and template daemon manifest rmcp changes here; no d-5 parallel edits. Workspace remains development0.2.0; only d-12 bumps final coordinated0.3.0. d-10 consumes this manifest and follows d-3 to add sc-storage later. D-5 common command traits live in sc-storage, so this sprint needs no new storage dependency to close. Native check uses cargo tree; umbrella SQLx mixed feature conflict is handled by d-7/8 direct crates and fully integrated in d-11.</div><div class="ad">+ Pin-edit counterpart: d-5 alone edits both ADR amendments in docs/architecture.md and pins in template/Cargo.toml/workspace.template.toml; d-3 owns the command/runtime/phase-c/daemon pin lines and CI probes above, and does not re-edit d-5 lines. d-9 owns sc-cron-commands manifest pins; d-12 owns cron-consumer schema manifest pins. Existing staged manifest handoffs stay unchanged; no file moves or new dependency.</div></div>
+    <div class="diff"><div class="ch"><del>Compatible</del><ins>Open</ins> <del>dependency</del><ins>registry</ins> <del>policy</del><ins>floors</ins> <del>(ANC-016/019):</del><ins>and tested recommendations (ANC-037/038):</ins></div><div class="eq"></div><div class="rm">- Published crate and template requirements permit every newer Cargo</div><div class="rm">- SemVer-compatible dependency release under their supported API, native-link,</div><div class="rm">- and Rust-toolchain contract. Consumers can use `cargo update` without another</div><div class="rm">- sc-runtime release (ANC-016). Normal requirements such as `rmcp = &quot;3.9.0&quot;`</div><div class="rm">- already allow compatible 3.x updates; blanket support for future breaking</div><div class="rm">- versions is not promised. Preserve existing dependency features.</div><div class="ad">+ Every registry dependency requirement in published crates and templates uses &gt;= a tested floor with no upper bound, including SDK dependencies. Convert bare-version and caret requirements as well as exact/tilde pins. Consumers may pin any versions in their own manifests or lockfiles. The release recommends its tested combination instead of restricting consumer choices (owner m6 extension; ANC-037). Preserve existing dependency features.</div><div class="eq"></div><div class="eq">Rusqlite qualification and its one manifest owner are d-6; this sprint does not repeat that work.</div><div class="eq"></div><div class="rm">- Each additional upper bound tighter than the normal compatible range has a</div><div class="rm">- TOML comment immediately beside the requirement naming the concrete API,</div><div class="rm">- native-link, or toolchain break that requires that specific bound (ANC-019).</div><div class="rm">- The actual optional Monty requirements retain their optional status:</div><div class="rm">- </div><div class="rm">- ```toml</div><div class="rm">- # Monty 1.6 requires Rust 1.98; supported Monty CI uses Rust 1.96.1.</div><div class="rm">- monty = { version = &quot;&gt;=1.4.0, &lt;1.6&quot;, optional = true }</div><div class="rm">- # monty-types 1.6 requires Rust 1.98; supported Monty CI uses Rust 1.96.1.</div><div class="rm">- monty-types = { version = &quot;&gt;=1.4.0, &lt;1.6&quot;, optional = true }</div><div class="rm">- ```</div><div class="rm">- </div><div class="rm">- Exact/tilde restrictions need the same demonstrated incompatibility rationale.</div><div class="rm">- Intentional negative compatibility fixtures retain their incompatible test</div><div class="rm">- identity with a manifest comment; they do not constrain production consumers.</div><div class="ad">+ Monty and monty-types remain optional and use &gt;=1.4.0. The normal suite tests the selected versions on the documented toolchain. Intentional non-shipped negative fixtures retain their incompatible identity; they do not constrain consumers.</div><div class="eq"></div><div class="eq"></div><div class="ch">The root Cargo.toml currently declares only sc-observability-types as a workspace dependency; rmcp and other actual third-party declarations are in crate manifests. This sprint owns explicit sc-config/sc-transport/sc-runtime manifests and enumerated command/runtime compatibility source, no crates/** wildcard. d-5 owns root Cargo.toml registration; d-12 owns canonical Cargo.lock/version conversion, shared template manifests and contract versions. The contract owner applies only the agreed range edits in those shared files; d-3 owns <del>runnable</del><ins>source</ins> <del>endpoint</del><ins>adaptations</ins> <del>qualification,</del><ins>and normal tests,</ins> not <del>their</del><ins>concurrent</ins> <del>concurrent</del><ins>shared-manifest</ins> mutation. Local<del> endpoint</del> tests may use disposable locks; d-12 regenerates/commits the final canonical lock after source owners close. No hard dependency on d-5 is inferred from release baseline.</div><div class="ch">sc-command<del> Cargo.toml (d-5) and</del> lib.rs/README/storage.rs/tests/storage_combinators.rs (d-10) are explicit exclusions from this owner&#x27;s enumerated source/test paths. Current API adaptation files are enumerated, not hidden behind wildcard ownership. Existing features/schema negative fixtures remain meaningful; preserve utoipa5 rejection fixtures and narrow their incompatible identities only with existing adjacent reasons. Source adaptations do not add ATM/sc-compose production dependencies.</div><div class="eq">Closure note: integration applies to this complete independent feature, even in the first wave; its actual API/toolchain interactions and executable acceptance close here, not an unimplemented contract.</div><div class="eq">Own complete sc-command and template daemon manifest rmcp changes here; no d-5 parallel edits. Workspace remains development0.2.0; only d-12 bumps final coordinated0.3.0. d-10 consumes this manifest and follows d-3 to add sc-storage later. D-5 common command traits live in sc-storage, so this sprint needs no new storage dependency to close. Native check uses cargo tree; umbrella SQLx mixed feature conflict is handled by d-7/8 direct crates and fully integrated in d-11.</div><div class="ad">+ Pin-edit counterpart: approved pre-dispatch ADR amendments already govern both tracks; d-5 owns matching dependency conversions in template/Cargo.toml/workspace.template.toml; d-3 owns the command/runtime/phase-c/daemon pin lines and normal tests above, and does not re-edit d-5 lines. d-9 owns sc-cron-commands manifest pins; d-12 owns cron-consumer schema manifest pins. Existing staged manifest handoffs stay unchanged; no file moves or new dependency.</div></div>
   </details>
 </section>

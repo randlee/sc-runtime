@@ -1,11 +1,17 @@
 <section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-016">
   <div class="section-head">
-    <h2>ANC-016 <span class="status status-locked">locked</span> <span class="small">bead run-41jv</span></h2>
+    <h2>ANC-016 <span class="status status-retired">retired</span> <span class="small">bead run-41jv</span></h2>
     <div class="section-actions" role="group" aria-label="Copy anchor data">
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;bead&quot;: &quot;run-41jv&quot;,
   &quot;bead_url&quot;: &quot;&quot;,
-  &quot;changes&quot;: [],
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;retired&quot;,
+      &quot;before&quot;: &quot;locked&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    }
+  ],
   &quot;exclusions&quot;: [],
   &quot;fixtures_after&quot;: &quot;-&quot;,
   &quot;fixtures_before&quot;: &quot;-&quot;,
@@ -19,6 +25,11 @@
       &quot;at&quot;: &quot;2026-11-12T05:23:23+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-9&quot;,
       &quot;event&quot;: &quot;exclusion_removed&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T08:25:46+00:00&quot;,
+      &quot;detail&quot;: &quot;reason: Owner &#x27;Remove upper bound&#x27; / &#x27;All dependencies&#x27; and PRD-ENG-4/5/6: ANC-037 (no upper bound) subsumes allowing newer compatible releases; ANC-016&#x27;s min/newer endpoint check and caret fixture encode the retired ANC-017 policy (drift M8).; replaced_by: ANC-037&quot;,
+      &quot;event&quot;: &quot;retired&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-016&quot;,
@@ -27,19 +38,21 @@
   &quot;quote&quot;: &quot;we need to be following &#x27;best practices&#x27; for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.&quot;,
   &quot;removed_exclusions&quot;: [],
   &quot;statement&quot;: &quot;Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.&quot;,
-  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status&quot;: &quot;retired&quot;,
   &quot;status_before&quot;: &quot;locked&quot;,
   &quot;tuning&quot;: [],
   &quot;version_before&quot;: &quot;4&quot;,
-  &quot;version_now&quot;: &quot;4&quot;
+  &quot;version_now&quot;: &quot;5&quot;
 }">{}</button>
-      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-016 (locked v4 -&gt; locked v4)
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-016 (locked v4 -&gt; retired v5)
 Statement: Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.
 Quote: we need to be following &#x27;best practices&#x27; for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
 Fixture checks: - -&gt; -.
 Questions: default - -&gt; tuned - oracle cases.
+Changed status: &#x27;locked&#x27; -&gt; &#x27;retired&#x27;
 2026-11-12T03:45:14+00:00 excluded: item: run-d-9; reason: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.; replaced: false
-2026-11-12T05:23:23+00:00 exclusion_removed: item: run-d-9">&#x2398;</button>
+2026-11-12T05:23:23+00:00 exclusion_removed: item: run-d-9
+2026-11-12T08:25:46+00:00 retired: reason: Owner &#x27;Remove upper bound&#x27; / &#x27;All dependencies&#x27; and PRD-ENG-4/5/6: ANC-037 (no upper bound) subsumes allowing newer compatible releases; ANC-016&#x27;s min/newer endpoint check and caret fixture encode the retired ANC-017 policy (drift M8).; replaced_by: ANC-037">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.</p>
@@ -48,8 +61,8 @@ Questions: default - -&gt; tuned - oracle cases.
   <table class="scores">
     <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
-      <tr><th scope="row">Version</th><td>4</td><td>4</td></tr>
+      <tr><th scope="row">Status</th><td>locked</td><td>retired</td></tr>
+      <tr><th scope="row">Version</th><td>4</td><td>5</td></tr>
       <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
       <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
     </tbody>
@@ -57,15 +70,17 @@ Questions: default - -&gt; tuned - oracle cases.
 
 
   <h3>Record changes</h3>
-  <p class="small">Text unchanged.</p>
+  <p><b>status</b></p>
+  <div class="diff"><del>locked</del><ins>retired</ins></div>
 
   <details>
-    <summary>History since the baseline (2)</summary>
+    <summary>History since the baseline (3)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
         <tr><td>2026-11-12T03:45:14+00:00</td><td>excluded</td><td>item: run-d-9; reason: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.; replaced: false</td></tr>
         <tr><td>2026-11-12T05:23:23+00:00</td><td>exclusion_removed</td><td>item: run-d-9</td></tr>
+        <tr><td>2026-11-12T08:25:46+00:00</td><td>retired</td><td>reason: Owner &#x27;Remove upper bound&#x27; / &#x27;All dependencies&#x27; and PRD-ENG-4/5/6: ANC-037 (no upper bound) subsumes allowing newer compatible releases; ANC-016&#x27;s min/newer endpoint check and caret fixture encode the retired ANC-017 policy (drift M8).; replaced_by: ANC-037</td></tr>
       </tbody>
     </table>
   </details>

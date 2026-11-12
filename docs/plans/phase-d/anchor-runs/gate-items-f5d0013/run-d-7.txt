@@ -1,0 +1,27 @@
+# d-7: postgres-storage
+
+## Description
+
+### Deliverables
+
+1. Implement the agreed Storage<T> backend using direct sqlx-core/sqlx-postgres Postgres pool/migration code; typed row mapping stays in backend/consumer contract, no raw cross-engine query API — REQ-RUN-0328; PRD-STO2.
+2. Replace widget-specific store functions only when the typed consumer calls compile; preserve live-engine transaction/error semantics and feature gates — ADR0020; REQ-RUN-0302.
+
+3. Implement the shared sc-storage Storage<T> trait, generic row mapping and engine factory contract and generated-key create/delete primitives using arbitrary conformance rows and generic atomic transaction begin/commit/retry. App supplies schema mapping; backend has no specific consumer table code — ANC-032/033/034/035.
+4. Replace sqlx umbrella with direct sqlx-core + engine driver + sqlx-macros requirements, retaining only necessary features; qualify real query macros, migration/offline/CLI paths, not just a successful resolver — REQ-RUN-0002; NFR-RUN-0007.
+
+### This sprint does not close
+Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.
+SQLite (d-6), Postgres (d-7) and MySQL (d-8) all implement the same sc-storage Storage<T> trait and its inherited generic AtomicStorage::transaction(spec, producer) operation; this single method runs several row operations as one atomic unit (ANC-032/033). This sprint implements Storage<T> for PostgresStore<T> using that shared trait, with no Postgres-specific parallel storage trait; it implements the SAME AtomicStorage::transaction(spec, producer) method with SERIALIZABLE transactions and retry.
+
+## Acceptance criteria
+
+boundary:template-store-postgres — contract tests pass against an actual Postgres service with named CI prerequisites, write/read and typed error behavior; workspace/boundary checks pass. A fake/sqlite stand-in is not live Postgres proof. d-11 owns final surfaces/template composition.
+
+### Required validation commands
+Generate a development-source consumer with just new <temp-dir> --var-file wizard/fixtures/postgres.json. With a real provisioned PostgreSQL service in POSTGRES_DATABASE_URL and matching migrations applied by the test harness, run cargo test --manifest-path <temp-dir>/crates/store-postgres/Cargo.toml; cargo clippy --manifest-path <temp-dir>/crates/store-postgres/Cargo.toml --all-targets -- -D warnings; cargo build --manifest-path <temp-dir>/Cargo.toml --workspace; sc-lint lint sc-boundary --root <temp-dir> --config <temp-dir>/sc-lint.toml. SQLX_OFFLINE may support query-macro compilation but does not substitute for actual live-engine tests. d-7 owns .github/workflows/store-postgres.yml: provision its real postgres service and POSTGRES_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_POSTGRES=1 and fail on skipped live tests; no min/latest duplication. Preserve thin legacy wrappers until the replacement consumer compiles; do not create an artificial dependency on the service implementation.
+Boundary contract includes generic read/insert/delete primitives with generated ID and typed errors on arbitrary test rows against real engine, plus generic atomic serializable begin/commit/retry and panic-free typed Result behavior; shared contract imports real definitions. Test actual live query macros, migrations, offline/sqlx-toml replacement and CLI migration procedures as applicable. A cargo check-only probe is not evidence those paths work.
+Compile actual direct-crate backend + generic rusqlite writer dependency probes for selected mixed layouts. cargo tree -i libsqlite3-sys selects exactly one>=0.39 and cargo tree -i sqlx-sqlite has no selected package; never grep Cargo.lock. Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11 after sibling stores close. cargo build --workspace and live generated target engine tests pass at this sprint's closure. Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema; application service/schema wrapper supplies row descriptors. No ATM/sc-compose deps.
+Wire the single sc-storage observability wrapper defined/tested by d-5 into this engine; do not reimplement it. Engine tests use controlled observer inputs (ANC-033; NFR-RUN-0002).
+boundary:template-store-postgres/dependency-floors — sqlx-core/sqlx-postgres/sqlx-macros use >=0.9 with no upper bound (ANC-037). The normal backend suite exercises the real engine.
+boundary:template-store-postgres/atomic — Postgres implements the same generic transaction operation from the Storage<T> contract; a real Postgres conformance test performs several row mutations and proves they all commit or all roll back, including retry/error cases (ANC-032/033).

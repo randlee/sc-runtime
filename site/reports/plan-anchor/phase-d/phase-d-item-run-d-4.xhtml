@@ -3,14 +3,14 @@
     <h2>run-d-4 <span class="unit-title">d-4: generation-tooling</span> <span class="status status-pass">PASS</span></h2>
     <div class="section-actions" role="group" aria-label="Copy item data">
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
-  &quot;changes&quot;: [],
-  &quot;exclusions&quot;: [
+  &quot;changes&quot;: [
     {
-      &quot;added&quot;: true,
-      &quot;anchor_id&quot;: &quot;ANC-017&quot;,
-      &quot;reason&quot;: &quot;d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.&quot;
+      &quot;after_chars&quot;: 1402,
+      &quot;before_chars&quot;: 1142,
+      &quot;field&quot;: &quot;description&quot;
     }
   ],
+  &quot;exclusions&quot;: [],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:39:53+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -24,20 +24,15 @@
   },
   &quot;id&quot;: &quot;run-d-4&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T04:10:44+00:00&quot;,
-    &quot;excluded&quot;: [
-      {
-        &quot;anchor_id&quot;: &quot;ANC-017&quot;,
-        &quot;reason&quot;: &quot;d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.&quot;
-      }
-    ],
+    &quot;created_at&quot;: &quot;2026-11-12T08:13:20+00:00&quot;,
+    &quot;excluded&quot;: [],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T041044Z-run-d-4&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T081320Z-run-d-4&quot;,
     &quot;score&quot;: &quot;4/4&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 3,
+  &quot;runs&quot;: 5,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -78,16 +73,40 @@
       &quot;run_id&quot;: &quot;plan-20261112T041044Z-run-d-4&quot;,
       &quot;score&quot;: &quot;4/4&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:04:57+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-017&quot;,
+          &quot;reason&quot;: &quot;d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-015&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T080457Z-run-d-4&quot;,
+      &quot;score&quot;: &quot;3/4&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:13:20+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T081320Z-run-d-4&quot;,
+      &quot;score&quot;: &quot;4/4&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-4: d-4: generation-tooling
-Gate FAIL 4/6 -&gt; PASS 4/4 over 3 runs.
+Gate FAIL 4/6 -&gt; PASS 4/4 over 5 runs.
 Failing at first run: ANC-017.
 Failing now: none.
-Excluded ANC-017: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
-Changed fields: none.">&#x2398;</button>
+Changed fields: description.">&#x2398;</button>
     </div>
   </div>
 
@@ -100,26 +119,24 @@ Changed fields: none.">&#x2398;</button>
   </table>
 
   <details class="trail">
-    <summary>All 3 runs</summary>
+    <summary>All 5 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
         <tr><td><code>plan-20261112T033953Z-run-d-4</code></td><td>2026-11-12T03:39:53+00:00</td><td><span class="status status-fail">FAIL</span></td><td>4/6</td><td>ANC-017</td></tr>
         <tr><td><code>plan-20261112T034119Z-run-d-4</code></td><td>2026-11-12T03:41:19+00:00</td><td><span class="status status-fail">FAIL</span></td><td>4/5</td><td>ANC-017</td></tr>
         <tr><td><code>plan-20261112T041044Z-run-d-4</code></td><td>2026-11-12T04:10:44+00:00</td><td><span class="status status-pass">PASS</span></td><td>4/4</td><td></td></tr>
+        <tr><td><code>plan-20261112T080457Z-run-d-4</code></td><td>2026-11-12T08:04:57+00:00</td><td><span class="status status-fail">FAIL</span></td><td>3/4</td><td>ANC-015</td></tr>
+        <tr><td><code>plan-20261112T081320Z-run-d-4</code></td><td>2026-11-12T08:13:20+00:00</td><td><span class="status status-pass">PASS</span></td><td>4/4</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
-  <h3>Excluded anchors (not judged)</h3>
-  <table class="exclusions">
-    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
-    <tbody>
-      <tr><th scope="row"><a href="#anchor-ANC-017">ANC-017</a></th><td>d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.</td><td>this round</td></tr>
-    </tbody>
-  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
-  <p class="small">Unchanged.</p>
+  <details open="open">
+    <summary>description</summary>
+    <div class="diff"><div class="eq">Keep consumers free to select a compatible generation CLI independently of the</div><div class="eq">repository CI pin. This sprint owns the whole existing rust-build-cache action,</div><div class="eq">including its installation logic; d-3 calls its unchanged public inputs and</div><div class="eq">makes no edit to that file. No new shared workflow or Cargo change is needed.</div><div class="eq"></div><div class="eq">## Deliverables</div><div class="eq"></div><div class="eq">1. Declare CLI minimum &gt;=1.8.0, qualify selected GitHub Release archive installation and preserve action input contract — REQ-RUN-0005; ANC-005/020</div><div class="eq">2. Verify SC_COMPOSE before PATH and real generation with compatible1.8.0, independently of CI&#x27;s chosen version — REQ-RUN-0305/0501/0502; ANC-003</div><div class="ch">3. <del>Keep</del><ins>In .claude/skills/plan-anchoring/scripts/change_report.py, .codex/skills/plan-anchoring/scripts/change_report.py and .cursor/skills/plan-anchoring/scripts/change_report.py, enforce the sc-compose minimum as a lower-bound comparison, accepting equal/newer versions and rejecting older/malformed versions; keep</ins> the three <del>report/version-check </del>copies <del>aligned;</del><ins>aligned</ins> <del>enforce</del><ins>and</ins> <del>a</del><ins>run</ins> <del>lower bound with deterministic</del><ins>controlled</ins> comparison tests — REQ-RUN-0005/0305; ANC-015</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Dependency ranges and shared workflow edits are d-3; READMEs are owned beside each implemented surface; released</div><div class="eq">consumer security/upgrade proof is d-12. d-11 consumes the checked CLI action and</div><div class="eq">executable-selection behavior for kit generated-consumer preflight, so that</div><div class="eq">artifact joins its final-wave inputs. No additional serial wave is added.</div></div>
+  </details>
 </section>

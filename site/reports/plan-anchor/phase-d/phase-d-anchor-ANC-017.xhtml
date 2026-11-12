@@ -1,19 +1,18 @@
 <section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-017">
   <div class="section-head">
-    <h2>ANC-017 <span class="status status-locked">locked</span> <span class="small">bead run-qxzw</span></h2>
+    <h2>ANC-017 <span class="status status-retired">retired</span> <span class="small">bead run-qxzw</span></h2>
     <div class="section-actions" role="group" aria-label="Copy anchor data">
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;bead&quot;: &quot;run-qxzw&quot;,
   &quot;bead_url&quot;: &quot;&quot;,
-  &quot;changes&quot;: [],
-  &quot;exclusions&quot;: [
+  &quot;changes&quot;: [
     {
-      &quot;added&quot;: true,
-      &quot;item&quot;: &quot;run-d-4&quot;,
-      &quot;item_url&quot;: &quot;&quot;,
-      &quot;reason&quot;: &quot;d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.&quot;
+      &quot;after&quot;: &quot;retired&quot;,
+      &quot;before&quot;: &quot;locked&quot;,
+      &quot;field&quot;: &quot;status&quot;
     }
   ],
+  &quot;exclusions&quot;: [],
   &quot;fixtures_after&quot;: &quot;-&quot;,
   &quot;fixtures_before&quot;: &quot;-&quot;,
   &quot;history&quot;: [
@@ -46,6 +45,16 @@
       &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-10&quot;,
       &quot;event&quot;: &quot;exclusion_removed&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T08:06:30+00:00&quot;,
+      &quot;detail&quot;: &quot;reason: Owner 2026-11-12: \&quot;Everything gets extensive testing.  If there was a real issue it would show up\&quot; and \&quot;A compile error would pick that up.\&quot; Separate minimum/latest dependency jobs and probes duplicate the normal test suite (PRD-ENG-4/6).; replaced_by: null&quot;,
+      &quot;event&quot;: &quot;retired&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T08:11:22+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-4&quot;,
+      &quot;event&quot;: &quot;exclusion_removed&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-017&quot;,
@@ -54,24 +63,26 @@
   &quot;quote&quot;: &quot;Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.&quot;,
   &quot;removed_exclusions&quot;: [],
   &quot;statement&quot;: &quot;Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.&quot;,
-  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status&quot;: &quot;retired&quot;,
   &quot;status_before&quot;: &quot;locked&quot;,
   &quot;tuning&quot;: [],
   &quot;version_before&quot;: &quot;3&quot;,
-  &quot;version_now&quot;: &quot;3&quot;
+  &quot;version_now&quot;: &quot;4&quot;
 }">{}</button>
-      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-017 (locked v3 -&gt; locked v3)
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-017 (locked v3 -&gt; retired v4)
 Statement: Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.
 Quote: Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.
 Fixture checks: - -&gt; -.
 Questions: default - -&gt; tuned - oracle cases.
-Excluded for run-d-4: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
+Changed status: &#x27;locked&#x27; -&gt; &#x27;retired&#x27;
 2026-11-12T03:42:01+00:00 excluded: item: run-d-4; reason: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.; replaced: false
 2026-11-12T03:45:14+00:00 excluded: item: run-d-9; reason: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.; replaced: false
 2026-11-12T03:45:14+00:00 excluded: item: run-d-10; reason: d-10 changes no registry dependency range.; replaced: false
 2026-11-12T05:23:23+00:00 exclusion_removed: item: run-d-9
 2026-11-12T06:40:50+00:00 excluded: item: run-d-4; reason: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.; replaced: true
-2026-11-12T06:40:50+00:00 exclusion_removed: item: run-d-10">&#x2398;</button>
+2026-11-12T06:40:50+00:00 exclusion_removed: item: run-d-10
+2026-11-12T08:06:30+00:00 retired: reason: Owner 2026-11-12: &quot;Everything gets extensive testing.  If there was a real issue it would show up&quot; and &quot;A compile error would pick that up.&quot; Separate minimum/latest dependency jobs and probes duplicate the normal test suite (PRD-ENG-4/6).; replaced_by: null
+2026-11-12T08:11:22+00:00 exclusion_removed: item: run-d-4">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.</p>
@@ -80,8 +91,8 @@ Excluded for run-d-4: d-4 changes no registry dependency range; d-3 owns the dep
   <table class="scores">
     <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
-      <tr><th scope="row">Version</th><td>3</td><td>3</td></tr>
+      <tr><th scope="row">Status</th><td>locked</td><td>retired</td></tr>
+      <tr><th scope="row">Version</th><td>3</td><td>4</td></tr>
       <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
       <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
     </tbody>
@@ -89,10 +100,11 @@ Excluded for run-d-4: d-4 changes no registry dependency range; d-3 owns the dep
 
 
   <h3>Record changes</h3>
-  <p class="small">Text unchanged.</p>
+  <p><b>status</b></p>
+  <div class="diff"><del>locked</del><ins>retired</ins></div>
 
   <details>
-    <summary>History since the baseline (6)</summary>
+    <summary>History since the baseline (8)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -102,17 +114,10 @@ Excluded for run-d-4: d-4 changes no registry dependency range; d-3 owns the dep
         <tr><td>2026-11-12T05:23:23+00:00</td><td>exclusion_removed</td><td>item: run-d-9</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-4; reason: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>exclusion_removed</td><td>item: run-d-10</td></tr>
+        <tr><td>2026-11-12T08:06:30+00:00</td><td>retired</td><td>reason: Owner 2026-11-12: &quot;Everything gets extensive testing.  If there was a real issue it would show up&quot; and &quot;A compile error would pick that up.&quot; Separate minimum/latest dependency jobs and probes duplicate the normal test suite (PRD-ENG-4/6).; replaced_by: null</td></tr>
+        <tr><td>2026-11-12T08:11:22+00:00</td><td>exclusion_removed</td><td>item: run-d-4</td></tr>
       </tbody>
     </table>
   </details>
 
-  <details open="open">
-    <summary>Exclusions (1)</summary>
-    <table>
-      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">run-d-4</th><td>d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.</td><td>added</td></tr>
-      </tbody>
-    </table>
-  </details>
 </section>

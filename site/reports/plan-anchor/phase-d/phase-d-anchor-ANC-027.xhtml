@@ -33,6 +33,12 @@
     },
     {
       &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-10&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.&quot;
+    },
+    {
+      &quot;added&quot;: true,
       &quot;item&quot;: &quot;run-d-12&quot;,
       &quot;item_url&quot;: &quot;&quot;,
       &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
@@ -90,6 +96,11 @@
       &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
       &quot;detail&quot;: &quot;item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true&quot;,
       &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T08:18:51+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-10; reason: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
     }
   ],
   &quot;id&quot;: &quot;ANC-027&quot;,
@@ -113,6 +124,7 @@ Excluded for run-d-5: d-5 defines the contract only; the non-blocking async call
 Excluded for run-d-7: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 Excluded for run-d-8: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 Excluded for run-d-9: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.
+Excluded for run-d-10: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.
 Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 2026-11-12T03:43:10+00:00 excluded: item: run-d-5; reason: d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.; replaced: false
 2026-11-12T03:43:37+00:00 excluded: item: run-d-7; reason: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: false
@@ -123,7 +135,8 @@ Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 cr
 2026-11-12T06:40:50+00:00 excluded: item: run-d-7; reason: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-8; reason: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true
 2026-11-12T06:40:50+00:00 excluded: item: run-d-9; reason: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.; replaced: true
-2026-11-12T06:40:50+00:00 excluded: item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true">&#x2398;</button>
+2026-11-12T06:40:50+00:00 excluded: item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true
+2026-11-12T08:18:51+00:00 excluded: item: run-d-10; reason: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.; replaced: false">&#x2398;</button>
     </div>
   </div>
   <p class="statement">Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.</p>
@@ -144,7 +157,7 @@ Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 cr
   <p class="small">Text unchanged.</p>
 
   <details>
-    <summary>History since the baseline (10)</summary>
+    <summary>History since the baseline (11)</summary>
     <table>
       <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
       <tbody>
@@ -158,12 +171,13 @@ Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 cr
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-8; reason: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-9; reason: d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.; replaced: true</td></tr>
         <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true</td></tr>
+        <tr><td>2026-11-12T08:18:51+00:00</td><td>excluded</td><td>item: run-d-10; reason: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.; replaced: false</td></tr>
       </tbody>
     </table>
   </details>
 
   <details open="open">
-    <summary>Exclusions (5)</summary>
+    <summary>Exclusions (6)</summary>
     <table>
       <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
       <tbody>
@@ -171,6 +185,7 @@ Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 cr
         <tr><th scope="row">run-d-7</th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>added</td></tr>
         <tr><th scope="row">run-d-8</th><td>d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>added</td></tr>
         <tr><th scope="row">run-d-9</th><td>d-9 builds sc-cron over the engine-neutral Storage&lt;CronRow&gt; contract; it does not change the SQLite writer, which d-6 owns.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-10</th><td>d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage&lt;T&gt; double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.</td><td>added</td></tr>
         <tr><th scope="row">run-d-12</th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>added</td></tr>
       </tbody>
     </table>

@@ -209,8 +209,8 @@
         "quote": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound."
       },
       "suggested_fix": "Extend the ADR-RUN-0017 Phase D amendment. State that the registry signature probe and 'shim mode fail' gate are replaced by the normal build/tests at the selected versions, citing the owner quote. State that the shim stays in place for Phase D, or name the sprint that removes it. Restate the noop invariant against the tested floor, backed by a normal test. Add a matching Phase D amendment to REQ-RUN-0309 items 1/3 and Success Criterion 1 (>=1.5.0, no upper bound), as was done for NFR-RUN-0007.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Planner f5d0013: ADR-RUN-0017 Phase D amendment now supersedes the readiness/probe/forced-cleanup clauses and exact-types noop justification (normal build/tests at selected versions; shim retained for Phase D); REQ-RUN-0309 items 1/3 and SC1 amended to >=1.5.0 with no upper bound. Lead verified the diff."
     },
     {
       "id": "M8",
@@ -223,7 +223,7 @@
       },
       "suggested_fix": "Bump ANC-016 to a new version and keep its statement and quote. Replace the development check with the d-11 check_dependency_manifests open-floor check plus normal tests, change the pass fixture to 'rmcp >=3.9', and drop the leftmost-nonzero compatibility definition from the scope. Alternatively, retire ANC-016 with replaced_by ANC-037 and remove the ANC-016 citations from d-3, d-5, d-9, d-11 and d-12.",
       "status": "fixed",
-      "fix_note": "Lead retired ANC-016 with replaced_by ANC-037 (owner 'Remove upper bound', 'All dependencies'; PRD-ENG-4/5/6). Plan citations of ANC-016 in d-3/d-5/d-9/d-11/d-12 go to the planner."
+      "fix_note": "Lead retired ANC-016 with replaced_by ANC-037 (owner 'Remove upper bound', 'All dependencies'; PRD-ENG-4/5/6). Plan citations of ANC-016 in d-3/d-5/d-9/d-11/d-12 go to the planner. Planner f5d0013 removed every ANC-016 citation; lead verified zero ANC-016 in gate-items-f5d0013."
     },
     {
       "id": "M9",
@@ -235,8 +235,8 @@
         "quote": "Everything gets extensive testing. If there was a real issue it would show up"
       },
       "suggested_fix": "In d-7 and d-8, replace the d-3 pointer with self-ownership. Either update the existing store-postgres.yml/store-mysql.yml live jobs to run the d-7/d-8 contract tests, or state that the existing workflows are the CI vehicle and list the commands they run. Do not restore any min/latest job.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Planner f5d0013: d-7 owns .github/workflows/store-postgres.yml and d-8 owns store-mysql.yml; each existing live job provisions its engine, migrates, generates the consumer and runs the generated test/clippy/build/boundary commands. No min/latest job restored. Lead verified the composed items."
     },
     {
       "id": "m10",
@@ -274,8 +274,8 @@
         "quote": "keep it simple"
       },
       "suggested_fix": "Change it to 'Actual archives and the registry consumer proof must also pass the check.'",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Planner f5d0013: now 'Actual archives and the registry consumer proof must also pass the check.' Lead verified."
     }
   ],
   "acceptable_choices": [
