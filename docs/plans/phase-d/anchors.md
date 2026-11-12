@@ -24,7 +24,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-016 | locked | Consumers can take compatible dependency upgrades | 2026-11-11 |
 | ANC-017 | locked | CI proves dependency range endpoints | 2026-11-11 |
 | ANC-018 | retired | Advisory proof uses the released consumer graph | 2026-11-11 |
-| ANC-019 | locked | Additional upper bounds explain their known break | 2026-11-11 |
+| ANC-019 | retired | Additional upper bounds explain their known break | 2026-11-11 |
 | ANC-020 | locked | Pinned generation tools use release binaries | 2026-11-11 |
 | ANC-021 | locked | cron rows default to app SQLite DB | 2026-11-11 |
 | ANC-022 | locked | all SQLite writes via one async-channel writer | 2026-11-11 |
@@ -421,7 +421,7 @@ Anchor: Each additional dependency upper bound MUST have a manifest comment iden
 
 > Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.
 
-Said by randlee, randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription., 2026-11-11. Status: locked. Version 4.
+Said by randlee, randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription., 2026-11-11. Status: retired. Version 5.
 
 Summary: Additional upper bounds explain their known break
 

@@ -1359,8 +1359,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 4,
-      "status": "locked",
+      "version": 5,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-weer",
@@ -1501,6 +1501,12 @@
           "at": "2026-11-12T07:16:15+00:00",
           "event": "exclusion_removed",
           "item": "run-d-5"
+        },
+        {
+          "at": "2026-11-12T07:58:54+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-037",
+          "reason": "Contradicts PRD v2.0 PRD-ENG-5 (a requirement does not take an option away from a consumer) and PRD-ENG-4 (keep it simple): an upper bound takes the newer-release option away, and the break-comment machinery is work for an open option (PRD-ENG-6). The PRD is top authority; ANC-037 states the PRD-consistent rule."
         }
       ],
       "exclude": [
