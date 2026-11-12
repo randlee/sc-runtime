@@ -1,6 +1,6 @@
-# Change list for PRD v2.0
+# Candidate worklist for PRD v2.0
 
-Every change needed to bring the code and the descriptive documents in line with [PRD v2.0](sc-runtime-prd.md). Paths and line numbers are from `develop` at `4da05e3`, found by reading and searching. Nothing here has been compiled, run or tested, and no code has been changed. Sizes are not estimated unless a line count is given.
+Candidate changes to bring the code and the descriptive documents in line with [PRD v2.0](sc-runtime-prd.md). Paths and line numbers are from `develop` at `4da05e3`, found by reading and searching. Nothing here has been compiled, run or tested, and no code has been changed. Sizes are not estimated unless a line count is given. This is not an exhaustive or hardened implementation plan.
 
 Each item says what to do, where, which PRD requirement asks for it, what it waits on, and how to tell it is done. Items marked **Owner** cannot start until the decision in section 6 is made.
 
@@ -9,8 +9,8 @@ Each item says what to do, where, which PRD requirement asks for it, what it wai
 | Id | Change | Where | Waits on | Done when |
 |---|---|---|---|---|
 | STO-1 | Define `Storage<T>`: an async trait that reads and writes `T` (PRD-STO-1) | new | **Owner** O1, O2, O4 | the trait exists with the agreed methods and no SQL in its signature |
-| STO-2 | Give the SQLite writer an async input (PRD-STO-3). Replace `std::sync::mpsc` and the blocking wait with a bounded `tokio::sync::mpsc` channel and an awaited oneshot reply. Copy from atm-core `crates/atm-storage-rusqlite/src/writer/mod.rs` 253–340 (thread with its own current-thread runtime) and 405–458 (`submit_async`) | `crates/sc-runtime-db-sqlite/src/writer.rs` 5, 86, 102–103, 154–156, 193–199, 218; `src/batch.rs` 153–165, 479–485 | — | no `std::sync::mpsc`, `recv_timeout` or `thread::yield_now` remains in the crate; no caller uses `spawn_blocking` to reach it |
-| STO-3 | Keep the batching core as it is: 1 ms drain, `BEGIN IMMEDIATE`, savepoints, reply after commit. It already matches atm-core `writer/batch.rs` | `crates/sc-runtime-db-sqlite/src/batch.rs` 181–470 | STO-2 | the existing commit-order and batching tests pass against the async input |
+| STO-2 | Give the SQLite writer an async input (PRD-STO-3). Replace `std::sync::mpsc` and the blocking wait with a bounded `tokio::sync::mpsc` channel and an awaited oneshot reply. Use the settled rusqlite 0.41 security floor (O8 below), retaining the yield-based drain as `tokio::task::yield_now` on the dedicated worker runtime. Copy from atm-core `crates/atm-storage-rusqlite/src/writer/mod.rs` 253–340 (thread with its own current-thread runtime) and 405–458 (`submit_async`) | `crates/sc-runtime-db-sqlite/src/writer.rs` 5, 86, 102–103, 154–156, 193–199, 218; `src/batch.rs` 153–165, 479–485 | — | callers enqueue and await a oneshot without a blocking receive or `spawn_blocking`; the 1 ms yield-based drain and commit-before-reply remain. Only the dedicated SQLite worker threads may drive their own runtime with `Runtime::block_on` (ADR-RUN-0011); no Tokio request worker or caller does so |
+| STO-3 | Preserve the batching behavior: 1 ms yield-based drain, `BEGIN IMMEDIATE`, savepoints, reply after commit. It already matches atm-core `writer/batch.rs` | `crates/sc-runtime-db-sqlite/src/batch.rs` 181–470 | STO-2 | the existing commit-order and batching tests pass against the async input |
 | STO-4 | Add the reader pool. Copy from atm-core `crates/atm-storage-rusqlite/src/reader_pool.rs` (1,686 lines; it contains atm-specific lanes that need removing) | new, beside the writer | — | reads go through reader threads awaited over channels; no read uses the write connection |
 | STO-5 | SQLite implementation of `Storage<T>` over STO-2 to STO-4. Callers pass `T`; SQL stays inside | new | STO-1 to STO-4 | a row type can be written and read back through the trait with no SQL at the call site |
 | STO-6 | Postgres implementation of `Storage<T>` on sqlx (PRD-STO-2). Reuse connection and migration code; drop the per-table functions | `template/crates/store-postgres/src/lib.rs` (980 lines) | STO-1 | same test as STO-5, against Postgres |
@@ -23,13 +23,14 @@ Each item says what to do, where, which PRD requirement asks for it, what it wai
 | Id | Change | Where | Waits on | Done when |
 |---|---|---|---|---|
 | CRON-1 | Define `CronRow` (PRD-CRON-2). Its fields are the 18 columns the SQLite store checks today | columns listed in `crates/sc-cron/src/sqlite_schema.rs` 29–54 | STO-1, O2 | `CronRow` exists and round-trips through `Storage<CronRow>` |
-| CRON-2 | Move the rules that live inside the store into cron's own logic: one active schedule per name, the row limit (ADR-RUN-0014), generation fencing of run-state writes | rules are in `crates/sc-cron/src/sqlite.rs` (`create`, `record_run`, `set_next`, `stop`, `disable`, `set_enabled_many`, `replace_and_set_enabled`) | CRON-1 | the behaviours the existing tests assert hold with a plain `Storage<CronRow>` underneath |
-| CRON-3 | Make the scheduler take the application's `Storage<CronRow>`. Delete the `ScheduleStore` trait and its re-exports | `crates/sc-cron/src/store.rs` (319 lines); `src/lib.rs` 137–138, 180, 182; `Scheduler<S, C, J>` in `src/scheduler.rs` | CRON-2 | `ScheduleStore` no longer exists |
-| CRON-4 | Delete the rusqlite schedule store, the own-file guard, the path constructors and the dependency | `src/sqlite.rs` (1,205), `src/sqlite_schema.rs` (158), `src/sqlite_scope.rs` (378), three `sqlite_cooperative_*_tests.rs` (1,422); `src/scheduler.rs` 704, 741; `Cargo.toml` `rusqlite`; `boundaries/sc-cron/sc-cron.toml` 41 | CRON-3 | `cargo tree -p sc-cron` shows no `rusqlite` |
+| CRON-2 | Keep domain rules in cron, with atomic conditional and multi-row operations in a `CronStorage: Storage<CronRow>` extension (PRD-STO-5): active-name uniqueness, row-limit checks, generation fencing, `set_enabled_many` and `replace_and_set_enabled` | existing rules in `crates/sc-cron/src/sqlite.rs` and `src/store.rs` | CRON-1 | the existing behaviors hold across independent callers; conditional checks and writes are one storage operation, and multi-row changes commit atomically, never a client-side read/check/write sequence |
+| CRON-3 | Make the scheduler use the application's `Storage<CronRow>` / `CronStorage`; replace `ScheduleStore` and its re-exports only in the storage-alignment minor, with the CRON-9 consumer migration | `crates/sc-cron/src/store.rs`; `src/lib.rs`; `Scheduler<S, C, J>` in `src/scheduler.rs` | CRON-2, CRON-6, **Owner** O5 | the migrated beads-cache adapter works with the new scheduler; no `ScheduleStore` removal occurs in a 0.2.x patch |
+| CRON-4 | Replace the bundled rusqlite store and own-file guard after the cooperative contract is resolved; port schema/scope behavior tests before retiring their old implementation | `src/sqlite.rs`, `src/sqlite_schema.rs`, `src/sqlite_scope.rs`, `sqlite_cooperative_*_tests.rs`; path constructors, `Cargo.toml`, boundary manifest | CRON-3, CRON-6, **Owner** O5 | cron uses app storage without a direct rusqlite dependency; all retained schema, fencing, atomicity and cooperative guarantees have equivalent tests; only the own-file expectation is withdrawn |
 | CRON-5 | One async form of each public method; remove the sync twins and the blocking bridge (PRD-ENG-1, PRD-ENG-2) | `src/scheduler.rs` 403, 427, 472, 505 (sync), 413, 442 (`_async` wrappers), 838 (`blocking`); `src/worker/store_calls.rs` | CRON-3 | no store call in `sc-cron` goes through `spawn_blocking` |
 | CRON-6 | Decide and re-plan the Phase C cooperative-operation work, which is built on the deleted store | `src/operation.rs`, `src/consumer_contract.rs`, `src/sqlite_scope.rs`; ADR-RUN-0018, REQ-CRON-0020, REQ-CRON-0021 | **Owner** O5 | ADR-RUN-0018 is rewritten or withdrawn |
-| CRON-7 | Tests. Delete the two that test the own-file, two-process store. Port the rest to a `Storage<CronRow>` used in tests | delete `tests/sqlite_store.rs`, `tests/two_process.rs`; 13 test files across `crates/sc-cron/tests`, `crates/sc-cron-commands/tests` and `template/crates/*/tests` name `SqliteScheduleStore` or `Scheduler::open` | CRON-3, CRON-4 | `cargo test -p sc-cron -p sc-cron-commands` passes with no reference to the old store |
+| CRON-7 | Keep and port behavioral tests to the application's `Storage<CronRow>` / `CronStorage`; remove only assertions requiring an exclusive cron file | `tests/sqlite_store.rs`, `tests/two_process.rs`, `sqlite_cooperative_*_tests.rs`, and consumers naming `SqliteScheduleStore` / `Scheduler::open` | CRON-3, CRON-4, CRON-6, **Owner** O5 | generation fencing across two processes, multi-row atomicity, row limits and retained cooperative guarantees pass with controlled inputs; shared app tables are accepted; no behavioral suite is deleted merely for naming the old store |
 | CRON-8 | Descriptive docs | `crates/sc-cron/README.md` 44–45, 66, 89, 189, 296; `crates/sc-cron-commands/README.md` 31; `docs/sc-cron/architecture.md` store sections; `docs/sc-cron/monty-generated-example.md` 78; `NFR-CRON-0001` dependency list | CRON-4 | no document says cron has its own database file |
+| CRON-9 | Migrate beads-cache `CacheScheduleStore` from `ScheduleStore` to `Storage<CronRow>` / `CronStorage`, keeping schedules in the existing app database | randlee/beads-cache at `8e883ee99cb9c34dfb89fb39e25323d54ae6f2ad`, `crates/bd-cache-store/src/schedule.rs:80,164`, and its scheduler call sites | CRON-1, CRON-2, CRON-6, **Owner** O5 | the real consumer adapter and scheduler calls compile and its existing persisted rows, fencing and atomic operations pass against the new contracts before old API removal in the storage-alignment minor |
 
 Unchanged in `sc-cron`: Monty (`src/monty_run.rs`, `monty_host.rs`, `monty_compose.rs`; PRD §7), expression parsing, jitter, clock, hooks, hook environment.
 
@@ -50,18 +51,18 @@ Unchanged in `sc-cron`: Monty (`src/monty_run.rs`, `monty_host.rs`, `monty_compo
 
 | Id | Change | Where | Waits on | Done when |
 |---|---|---|---|---|
-| CMD-1 | None now. The hand-written REST handlers, MCP tools, CLI commands and per-layout service files are the interim form. They are replaced only when the owner decides how the shared path is produced | `template/crates/daemon/src/routes.rs` 59–92; `src/mcp.rs` 124–148; `template/crates/cli/src/lib.rs` (935 lines); `template/crates/service/src/layouts/*.rs` | **Owner** O7 | — |
+| CMD-1 | Implement a hand-written shared read/write path with `Tcli`, `Tsql` and an application transform (PRD-CMD-4/5), including a real Python/Monty transform caller. Only generating that wiring is deferred | `template/crates/daemon/src/routes.rs`; `src/mcp.rs`; `template/crates/cli/src/lib.rs`; `template/crates/service/src/layouts/*.rs` | STO-1, relevant storage implementation | CLI, MCP and HTTP use the shared path; a Python/Monty-authored transform runs through it and its result is stored/read through `Storage<Tsql>`; no code generator is required for this proof |
 
 ## 5. No change
 
 | What | Why |
 |---|---|
 | `sc-config` | stays synchronous, no watcher, no reload; boundary manifest unchanged (PRD-ENG-5, PRD-ENG-6) |
-| Synchronization, including `template/crates/store-adaptor*` | deferred (PRD §9). These crates depend on `EngineStore`, so TPL-6 waits on O6 |
+| Synchronization, including `template/crates/store-adaptor*` | deferred (PRD §9). Keep the existing adaptor code as interim, without implementing synchronization; these crates depend on `EngineStore`, so TPL-6 waits on O6 |
 | Per-interface permissions | wanted (PRD-CMD-7), not specified |
 | `sc-transport`, `sc-command`, `sc-runtime` | a keyword scan of their requirements found no conflict; their code was not examined beyond what is listed here |
 
-## 6. Owner decisions that block items above
+## 6. Open decisions and settled dependency floor
 
 | Id | Decision | Blocks |
 |---|---|---|
@@ -69,10 +70,10 @@ Unchanged in `sc-cron`: Monty (`src/monty_run.rs`, `monty_host.rs`, `monty_compo
 | O2 | How `T` names its table, columns and key | STO-1, CRON-1 |
 | O3 | Who creates and migrates tables | TPL-5 |
 | O4 | Where the trait and each implementation live (this repo, or one crate per repo) | STO-1 |
-| O5 | Keep, rewrite or drop the Phase C cooperative-operation contract | CRON-6 |
-| O6 | Park or delete the adaptor crates while synchronization is deferred | TPL-6 |
-| O7 | How the shared command path is produced: generics, a syn-based generator, or sc-compose | CMD-1 |
-| O8 | rusqlite version. This repo pins 0.39 to share a SQLite library with sqlx (Phase C anchor ANC-006); atm-core uses 0.41. With SQLite off sqlx the reason for the pin goes away | STO-2 |
+| O5 | Keep, rewrite or drop the Phase C cooperative-operation contract | CRON-3, CRON-4, CRON-6, CRON-7, CRON-9 |
+| O6 | Any later disposition of the existing adaptor crates; keep them as interim code while synchronization is deferred | TPL-6 |
+| O7 | Whether/how to generate the shared command wiring (syn or sc-compose); the hand-written path and transform caller are not blocked | future generator only |
+| O8 — settled | Use rusqlite 0.41 as the SQLite implementation's tested base: RUSTSEC-2026-0459 is fixed in libsqlite3-sys >=0.39, first shipped by rusqlite 0.41. sqlx-sqlite 0.9.0's >=0.30.1,<0.38.0 range cannot share that identity; [Phase D dependency evidence, line 36](https://github.com/randlee/sc-runtime/blob/562ca49a0bd9423ce9de2189a2077b7a317695e3/docs/plans/phase-d/issue-133-dependency-sweep.md#L36). Normal compatible upgrades remain allowed; this is not an exact production pin | no owner decision blocks STO-2 |
 
 ## 7. Work in flight that this affects
 

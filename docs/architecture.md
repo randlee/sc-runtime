@@ -2654,7 +2654,7 @@ option excludes is absent from the rendered project) and of
 
 ### Decision
 
-1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`.
+1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`. **Amended 2026-11-11 (PRD-STO-3, PRD-ENG-1/2):** the sole `Runtime::block_on` exception is a runtime owned and driven on the SQLite writer's or reader pool's dedicated OS thread, as in atm-core. It must never run on a Tokio request worker or turn a caller's storage API into a blocking call; callers enqueue and await a reply. No other `block_on` variant or sleep exemption is introduced.
 2. Production code MUST NOT hold a `std::sync::Mutex` guard across `.await`.
 3. `yield_now` is legal. It is how the rusqlite writer fills its batch budget.
 4. Until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) is in the pinned `sc-lint` and this repo's `minimum_version` requires that release, `just lint` greps `crates/` and `template/` for the calls in point 1. A match fails unless a `cfg` predicate that requires `test` guards it, the file is reached only by a `mod name;` under such a cfg, or the match line has a same-line allow comment. `#[cfg(test)]` and `#[cfg(all(test, feature = "test-util"))]` require `test`. A `mod name;` under either cfg exempts the included module file and the modules that file includes. A cfg that can hold with `test` unset does not exempt the match. The grep is removed when those rules replace it.
@@ -2695,7 +2695,7 @@ The measured atm-core path is a different mechanism: one rusqlite connection on 
 1. `sc-runtime-db-sqlite` is a workspace crate. Its public handle is `SqliteWriter`. It depends on no other workspace crate. `sc-runtime`, `sc-config`, `sc-transport`, and `sc-command` do not depend on it. Template `store-sqlite` does not depend on it.
 2. There is no `StorageBackend`, no `sc-runtime-db`, no `sc-runtime-db-sqlx`, and no `sc-runtime-db-fsqlite` in this phase. Documents under `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/` are withdrawn. `docs/sc-runtime-db-sqlite/` is rewritten by sprint `b-1` to this contract.
 3. `SqliteWriter::execute` enqueues. The writer thread is the only rusqlite caller. Contiguous executes share one savepoint inside one `BEGIN IMMEDIATE` transaction. Each caller is answered only after that transaction commits. A `transaction` closure runs alone on that thread and is not folded into another caller's batch.
-4. `yield_now` is the drain. `sleep`, `sleep_until`, and `block_on` are not. A `std::sync::Mutex` guard is not held across `.await` ([ADR-RUN-0011](architecture.md)).
+4. `yield_now` is the drain; the async-input implementation uses `tokio::task::yield_now` within the 1 ms budget. `sleep`, `sleep_until`, and `block_on` are not drain operations. The dedicated SQLite worker may drive its own runtime with `Runtime::block_on` under the narrow ADR-RUN-0011 exception; this does not permit blocking a caller or Tokio request worker. A `std::sync::Mutex` guard is not held across `.await` ([ADR-RUN-0011](architecture.md)).
 5. `SqliteWriterError` is the crate's one error enum. It is not `Box<dyn Error>` and not an observability `ErrorCode`.
 6. The facade does not gain a `.db()` method and does not inspect the writer. A project that wants the actor depends on this crate itself. A second database is a second `SqliteWriter` the project constructs.
 7. `SqliteWriter::open` takes a path and nothing else. The channel capacity, batch budget, write deadline, and shutdown join are the constants in the crate architecture. A production caller does not pass options.
@@ -3292,18 +3292,18 @@ Verified on `develop` at `4da05e3`:
 
 1. `Storage<T>` is an async trait that reads and writes `T`. It carries no SQL. That is its whole contract.
 2. SQLite, Postgres and MySQL each implement `Storage<T>`. Application code, cron and the generated template are written against the trait; the layout chosen at generation selects the implementation.
-3. The SQLite implementation is the atm-core design: a bounded async channel in, one writer thread that owns the only write connection, writes batched into one `BEGIN IMMEDIATE` transaction, reply after commit; reads through a reader pool. The channel is internal to the implementation.
+3. The SQLite implementation is the atm-core design: a bounded async channel in, one writer thread that owns the only write connection, writes batched into one `BEGIN IMMEDIATE` transaction, reply after commit; reads through a reader pool. The channel is internal to the implementation. Use rusqlite 0.41 as the tested security floor, permitting compatible upgrades: RUSTSEC-2026-0459 requires libsqlite3-sys >=0.39 (first shipped by rusqlite 0.41), while sqlx-sqlite 0.9.0 requires >=0.30.1,<0.38.0. See [Phase D dependency evidence, line 36](https://github.com/randlee/sc-runtime/blob/562ca49a0bd9423ce9de2189a2077b7a317695e3/docs/plans/phase-d/issue-133-dependency-sweep.md#L36). This implementation choice is settled, not an open owner decision.
 4. Postgres and MySQL implementations use sqlx.
-5. Callers never block and never wrap a storage call in `spawn_blocking`. The writer thread and reader threads are the only synchronous code, because rusqlite requires it.
+5. Callers enqueue and await without blocking or wrapping storage calls in `spawn_blocking`. Synchronous rusqlite work stays on dedicated writer/reader threads; those threads may drive their own runtime with `Runtime::block_on` under ADR-RUN-0011. The yield-based drain remains `tokio::task::yield_now`. This storage rule does not change sc-config's synchronous scope or make pure constructors/parsers async.
 6. Cron is a `CronRow` struct stored through `Storage<CronRow>` in the application's database (the SQLite database when the layout has one). There is no `cron.db` and no `cron.database_path`.
 7. Cron requires a database. The generator rejects `db = none` with `cron = true`.
-8. Anything a table needs beyond read and write is an extension trait over `Storage<T>` (for example `CronStorage: Storage<CronRow>`), added only when a real caller needs it.
+8. Anything a table needs beyond read and write is an extension trait over `Storage<T>` (PRD-STO-5). Existing cron callers need `CronStorage: Storage<CronRow>` for atomic conditional and multi-row operations, including generation-fenced writes, row-limit/active-name admission, `set_enabled_many` and `replace_and_set_enabled`. Domain policy remains in cron; the storage extension keeps the check and mutation atomic across independent callers. Separate read/check/write calls are not equivalent.
 
 ### Consequences
 
 Removed or replaced (each to be confirmed against code when planned):
 
-- `sc-cron`: the `ScheduleStore` trait, `SqliteScheduleStore`, its schema/scope modules and the rusqlite dependency.
+- `sc-cron`: replace the bundled own-file store with app storage in the storage-alignment minor, after the cooperative-operation contract is decided. Preserve and port generation-fencing, two-process, multi-row atomicity, schema and retained cooperative behavior tests; remove only the own-file expectation. `ScheduleStore` and its re-exports are not removed in a 0.2.x patch. Retire schema/scope implementation modules and the direct rusqlite dependency only once equivalent behavior is covered through `Storage<CronRow>` / `CronStorage` and the consumer below has migrated.
 - `sc-runtime-db-sqlite`: the blocking `SqliteWriter` handle; the batching core is kept and given the async input.
 - Template: per-table sqlx functions in `store-sqlite` (`insert_widget`, `get_widget`), the sqlx SQLite driver, `EngineStore`/`RowRecord`, and `cron.database_path`.
 
@@ -3320,9 +3320,20 @@ Superseded in whole or in part:
 2. How `T` names its table, columns and key (derive, or a small hand-written impl).
 3. Who creates and migrates tables.
 4. Where the trait and each implementation live. Owner note, 2026-11-11: sc-runtime is too big; new work should be one crate per repo.
-5. rusqlite version: this repo pins 0.39 (ANC-006, to share a SQLite library with sqlx); atm-core uses 0.41. With SQLite off sqlx the pin's reason goes away.
-6. Synchronization between databases: deferred by the owner, 2026-11-11 ("We will worry about synchronization once [we] copy the code we already have to build sc-runtime"). `Storage<T>` stays read and write until then.
-7. Standalone `sc-cron` consumers (beads-cache): whether they keep a built-in store or supply `Storage<CronRow>`.
+5. Synchronization between databases: deferred by the owner, 2026-11-11 ("We will worry about synchronization once [we] copy the code we already have to build sc-runtime"). `Storage<T>` stays read and write until then.
+
+### Standalone consumer migration
+
+beads-cache at `8e883ee99cb9c34dfb89fb39e25323d54ae6f2ad` already keeps cron
+in its app database through `CacheScheduleStore` in
+`crates/bd-cache-store/src/schedule.rs:80,164`. Migrate that implementation and
+its scheduler call sites to `Storage<CronRow>` / `CronStorage`, retaining the
+existing rows, generation fencing and atomic operations. This real consumer is
+the acceptance subject for the storage-alignment minor. `ScheduleStore` is not
+removed from a 0.2.x maintenance patch; removal requires that migration to pass,
+not just an in-repository fake store. The cooperative-operation decision gates
+CRON-3/4/7 as well as the contract rewrite in the candidate worklist.
+
 
 ### Not reviewed for this draft
 
@@ -3351,7 +3362,7 @@ mcp read:  mcp-command<Tcli> <-- http --> daemon --> storage<Tsql> -> read --> t
 
 ### Decision
 
-1. Every command is one of two paths, write or read, as drawn above. CLI, MCP and HTTP are three interfaces onto the same path through the daemon.
+1. Most commands follow one of the two paths, write or read, as drawn above (owner: "most situations"). CLI, MCP and HTTP are three interfaces onto the same path through the daemon.
 2. A command is defined by `Tcli` (the type the interface speaks), `Tsql` (the stored row) and the transform between them. Storage is `Storage<Tsql>` (ADR-RUN-0020 draft).
 3. The transform is the one place for business logic. The default is a plain conversion; an app replaces it where it has rules.
 4. The daemon is reached over HTTP on a Unix domain socket or TCP.
@@ -3392,4 +3403,4 @@ Owner, 2026-11-11: "Monty is NOT out of scope. Monty is done." Monty is part of 
 
 ### Not decided
 
-Code generation for this pattern (sc-compose at the consumer end, or a syn-based generator). Owner intent is recorded in the ADR-RUN-0020 draft.
+Code generation for this pattern (sc-compose at the consumer end, or a syn-based generator). Only the generator is deferred: a hand-written shared read/write path and a real Python/Monty transform caller fulfill PRD-CMD-4/5 without waiting for a generator choice. Owner intent is recorded in the ADR-RUN-0020 draft.

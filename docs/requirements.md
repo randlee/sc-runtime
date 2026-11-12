@@ -2799,14 +2799,14 @@ Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core wr
 | SQLite and Postgres | `store-sqlite` and `store-postgres` |
 | SQLite and MySQL | `store-sqlite` and `store-mysql` |
 
-A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
+A layout renders the stores in its row. Synchronization and adaptor generation are deferred (PRD §9); a two-store layout does not require an adaptor. Existing adaptor code remains as interim code, not a new implementation or deletion obligation. A layout with no database renders no store crate.
 
-Phase b generates all six layouts, the store pairing, and the adaptor. Postgres and MySQL are the same wave so the pairing is not hardened on one remote engine.
+Phase b's existing pairing/adaptor code is historical implementation, retained as interim code. The target supports all six database layouts without requiring synchronization or a new adaptor.
 
 ### Success Criteria
 
 1. `wizard/answers.schema.json` accepts each layout in the table.
-2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
+2. Generating each layout renders the stores in that row. Adaptor generation is not a success criterion while synchronization is deferred; existing interim adaptor code is not deleted by this requirement.
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
 4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
 
@@ -3984,7 +3984,7 @@ try_log admission, which has no capacity wait/sink I/O but takes internal locks.
 This is not a wait-free guarantee; all other request-path rules below apply.
 
 **Status:** Active  
-**Amended 2026-11-11 (PRD-ENG-1, PRD-ENG-2).** The rule covers every sc-runtime crate, not only the request path: no synchronous public API unless it is unavoidable, and no sync-over-async bridge. The SQLite writer thread and reader threads are the permitted exception.
+**Amended 2026-11-11 (PRD-ENG-1, PRD-ENG-2).** Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite writer and reader-pool work runs on dedicated threads, which may drive their own runtime with `Runtime::block_on` under ADR-RUN-0011; callers still enqueue and await without blocking.
 
 
 ### Requirement Statement
@@ -4020,9 +4020,10 @@ file's permissions when `sc-transport` binds
 removing the socket file during the `sc-runtime` shutdown sequence
 ([REQ-RT-0005](sc-runtime/requirements.md)). They MAY use `std::fs`.
 
-`sc-config` is synchronous by design and is not on a request path: a process
-loads its configuration once at start-up. The decision that everything else
-is async on Tokio, with `sc-config` as the exception, is recorded in
+`sc-config` stays synchronous under PRD-ENG-5/6. Loading at start-up describes
+the current use; it does not forbid a consumer from choosing a later reload.
+No watcher, reload or async configuration work follows from this exception.
+The nonblocking Tokio path, with the exceptions above, is recorded in
 [ADR-RUN-0007](architecture.md).
 
 ### Rationale

@@ -46,7 +46,7 @@ Anything not on this list needs a stated reason to exist.
 
 | Id | Requirement |
 |---|---|
-| PRD-CMD-1 | Every command is a write path or a read path as drawn above. "I expect this pattern to be most situations." |
+| PRD-CMD-1 | Most commands follow the write path or read path drawn above. "I expect this pattern to be most situations." |
 | PRD-CMD-2 | CLI, MCP and HTTP are three interfaces onto the same path through the daemon. They default to the same set of endpoints. |
 | PRD-CMD-3 | A command is defined by `Tcli`, `Tsql` and the transform between them. |
 | PRD-CMD-4 | The transform is where business logic goes. "You need to be able to get in the middle of the transform method w/ business logic. But a lot of basic things that is all you need." |
