@@ -1082,6 +1082,19 @@
             "fixtures"
           ],
           "previous_statement": "Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a >= floor, not an exact version match."
+        },
+        {
+          "at": "2026-11-12T06:51:03+00:00",
+          "event": "excluded",
+          "item": "run-d-11",
+          "reason": "d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-11",
+          "reason": "d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11."
         }
       ]
     },

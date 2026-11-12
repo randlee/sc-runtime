@@ -343,6 +343,9 @@ Scope: Changes a skill script or skill instruction that checks the sc-compose CL
 
 Deterministic check to pair with the development gate: Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-11`: d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.
+
 Beads: anchor `run-tngz`, plan questions `run-tngz.1`, dev questions `run-tngz.2`
 
 Fixtures:
