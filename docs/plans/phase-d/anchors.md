@@ -17,7 +17,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-009 | retired | #133 floor sweep | 2026-11-11 |
 | ANC-010 | retired | Publish after dependency sprints | 2026-11-11 |
 | ANC-011 | retired | rmcp >=3.9 floor | 2026-11-11 |
-| ANC-012 | locked | Generation and orchestration tools stay outside production graphs | 2026-11-11 |
+| ANC-012 | retired | Generation and orchestration tools stay outside production graphs | 2026-11-11 |
 | ANC-013 | retired | #131 consumer router docs | 2026-11-11 |
 | ANC-014 | retired | Dedicated plan PR | 2026-11-11 |
 | ANC-015 | locked | Skill checks accept versions above the minimum | 2026-11-11 |
@@ -45,6 +45,31 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-036 | locked | writer panic reaches waiting callers as error | 2026-11-12 |
 | ANC-037 | locked | No upper bounds on any registry dependency | 2026-11-11 |
 | ANC-038 | locked | Tested dependency combination recorded in .sc-runtime/ | 2026-11-11 |
+| ANC-039 | locked | sc-monty depends only on Monty crates | 2026-11-12 |
+| ANC-040 | locked | sc-monty has no cron types or names | 2026-11-12 |
+| ANC-041 | locked | one Monty implementation, in sc-monty | 2026-11-12 |
+| ANC-042 | locked | cron hook tests ported, not weakened | 2026-11-12 |
+| ANC-043 | locked | hooks receive values, not JSON strings | 2026-11-12 |
+| ANC-044 | locked | compiled hook sessions saved as an sc-cron row | 2026-11-12 |
+| ANC-045 | locked | blob key = sc-sha SHA-256 of source + dump version | 2026-11-12 |
+| ANC-046 | locked | blob used only when its key matches the source | 2026-11-12 |
+| ANC-047 | locked | blob captured right after compile, no run state | 2026-11-12 |
+| ANC-048 | locked | hooks compile when the schedule is written | 2026-11-12 |
+| ANC-049 | locked | Monty transform source is run-time data | 2026-11-12 |
+| ANC-050 | locked | command seam documented as not yet stable | 2026-11-12 |
+| ANC-051 | locked | no prohibition of the three seam extensions | 2026-11-12 |
+| ANC-052 | locked | seam shape leaves room for three extensions | 2026-11-12 |
+| ANC-053 | locked | plan names cron commands on the shared path | 2026-11-12 |
+| ANC-054 | locked | reason stated for cron commands off the path | 2026-11-12 |
+| ANC-055 | locked | apps can modify cron JSON before write | 2026-11-12 |
+| ANC-056 | locked | direct conversions need no hand-written transform | 2026-11-12 |
+| ANC-057 | locked | no REQ/ADR binds hand-writing | 2026-11-12 |
+| ANC-058 | locked | no REQ/ADR forbids a consumer-side generator | 2026-11-12 |
+| ANC-059 | locked | plan names widget commands on the path | 2026-11-12 |
+| ANC-060 | locked | a widget write uses storage_write | 2026-11-12 |
+| ANC-061 | locked | no sc-compose repo crates except sc-sha, no ATM crates | 2026-11-12 |
+| ANC-062 | locked | sc-monty starts as an exact copy of current Monty code and tests | 2026-11-12 |
+| ANC-063 | locked | a widget read uses storage_read | 2026-11-12 |
 
 ## ANC-001
 
@@ -278,7 +303,7 @@ Anchor: Production release crates MUST NOT depend on sc-compose or ATM crates.
 
 > sc-compose and atm crates should be blocked from any production release crate.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 4.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 5.
 
 Summary: Generation and orchestration tools stay outside production graphs
 
@@ -837,7 +862,7 @@ Anchor: Storage backend crates MUST NOT include any type, schema or SQL that is 
 
 > No storage backend contains code for a specific consumer's table.
 
-Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 3.
 
 Summary: no consumer table code in storage backends
 
@@ -854,6 +879,7 @@ Beads: anchor `run-q03u`, plan questions `run-q03u.1`, dev questions `run-q03u.2
 
 Fixtures:
 - pass: sc-runtime-db-sqlite implements Storage<T> generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction.
+- pass: sc-cron's compiled-hook blob table is sc-cron's own row type stored through Storage<T>; no backend gains code for it.
 - fail: sc-runtime-db-sqlite adds an optional cron feature with a cron_jobs table definition and fenced record_run SQL for CronRow.
 
 ## ANC-035
@@ -946,3 +972,503 @@ Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2
 Fixtures:
 - pass: Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested, matching the shipped Cargo.lock, in a machine-readable form a later revert or upgrade tool can read.
 - fail: The generated application records no tested dependency versions; upgrades rely only on cargo update.
+
+## ANC-039
+
+Anchor: The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.
+
+> Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: sc-monty depends only on Monty crates
+
+Scope: plan items that create or change the sc-monty crate or its Cargo.toml
+
+Deterministic check to pair with the development gate: cargo tree -p sc-monty -e normal,build --all-features shows no sc-*, tokio or serde_json crate
+
+Beads: anchor `run-yaji`, plan questions `run-yaji.1`, dev questions `run-yaji.2`
+
+Fixtures:
+- pass: sc-monty's Cargo.toml lists only the pydantic Monty crates as normal dependencies.
+- fail: sc-monty adds tokio and serde_json so it can run hook ticks and parse JSON.
+
+## ANC-040
+
+Anchor: The sc-monty crate MUST NOT define cron types or cron-reserved names such as cron_tick and cron_stop.
+
+> no cron types or cron-reserved names.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: sc-monty has no cron types or names
+
+Scope: plan items that create or change the sc-monty crate's public types or names
+
+Deterministic check to pair with the development gate: grep crates/sc-monty/src for Cron, cron_tick, cron_stop: no hits
+
+Beads: anchor `run-4711`, plan questions `run-4711.1`, dev questions `run-4711.2`
+
+Fixtures:
+- pass: sc-monty exposes a compiled session and MontyInvoke with no cron-specific types; cron_tick and cron_stop are named only in sc-cron.
+- fail: sc-monty defines CronHook with cron_tick and cron_stop entry points.
+
+## ANC-041
+
+Anchor: No crate other than sc-monty MUST compile Monty code, run Monty sessions or dispatch Monty host functions.
+
+> the duplication of monty logic was the biggest red flag.  I expect single monty implementation
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: one Monty implementation, in sc-monty
+
+Scope: plan items that create sc-monty or change Monty hosting in sc-cron, sc-command, the template service or any other crate
+
+Deterministic check to pair with the development gate: grep crates and template sources outside crates/sc-monty for use of the monty/monty-types crates: no hits; sc-cron and the transform caller depend on sc-monty
+
+Beads: anchor `run-7yi7`, plan questions `run-7yi7.1`, dev questions `run-7yi7.2`
+
+Fixtures:
+- pass: sc-cron's hooks and the d-10 command transform both call sc-monty; neither imports the monty crate directly.
+- fail: The template service writes its own Monty host with its own compile and limit handling instead of calling sc-monty.
+
+## ANC-042
+
+Anchor: Moving sc-cron's Monty hooks onto sc-monty MUST NOT delete or weaken any existing hook behavior test.
+
+> Hook behavior and tests are ported, not deleted or weakened
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: cron hook tests ported, not weakened
+
+Scope: plan items that change sc-cron's Monty hooks or move Monty hosting out of sc-cron
+
+Deterministic check to pair with the development gate: every pre-existing sc-cron Monty hook test name is present after the change and passes with unchanged assertions
+
+Beads: anchor `run-yn8d`, plan questions `run-yn8d.1`, dev questions `run-yn8d.2`
+
+Fixtures:
+- pass: sc-cron calls sc-monty for hooks and every existing hook test is ported and passes unchanged.
+- fail: sc-cron drops the hook tests that sc-monty's own tests are said to cover.
+
+## ANC-043
+
+Anchor: sc-cron MUST pass hook data to its Monty hooks as Monty values, not as JSON strings.
+
+> JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: hooks receive values, not JSON strings
+
+Scope: plan items that change how sc-cron passes data to Monty hooks
+
+Deterministic check to pair with the development gate: sc-cron hook calls pass Monty values; no hook entry receives a str/String of JSON
+
+Beads: anchor `run-zerf`, plan questions `run-zerf.1`, dev questions `run-zerf.2`
+
+Fixtures:
+- pass: sc-cron converts the schedule's JSON to Monty values and passes those to the hook.
+- fail: sc-cron passes the hook its JSON data as a string for the script to parse.
+
+## ANC-044
+
+Anchor: sc-cron MUST save each successfully compiled hook session as a blob row in an sc-cron table stored through Storage<T>.
+
+> When a hook's source compiles, sc-cron saves the compiled session as a blob in a table that is part of sc-cron, a row type through Storage<T>.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: compiled hook sessions saved as an sc-cron row
+
+Scope: plan items that change sc-cron hook compilation or sc-cron's storage tables
+
+Deterministic check to pair with the development gate: sc-cron defines a compiled-hook row type stored through Storage<T>; no backend crate gains code for it
+
+Beads: anchor `run-te1w`, plan questions `run-te1w.1`, dev questions `run-te1w.2`
+
+Fixtures:
+- pass: After a hook compiles, sc-cron writes the dumped session as a CompiledHookRow through Storage<CompiledHookRow>.
+- fail: sc-cron compiles each hook on the first run of every generation and keeps no compiled session.
+
+## ANC-045
+
+Anchor: sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook's source text, computed with the sc-sha crate, combined with Monty's dump format version.
+
+> Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty's dump version.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: blob key = sc-sha SHA-256 of source + dump version
+
+Scope: plan items that change how sc-cron stores or looks up compiled Monty hook sessions (the saved result of compiling a cron hook script)
+
+Deterministic check to pair with the development gate: the compiled-hook row key is computed with sc-sha over the hook source plus the Monty dump version; a test changes either and gets a miss
+
+Beads: anchor `run-nd6j`, plan questions `run-nd6j.1`, dev questions `run-nd6j.2`
+
+Fixtures:
+- pass: The compiled-hook row is keyed by sc-sha's SHA-256 of the hook source plus Monty's dump version.
+- fail: The compiled-hook row is keyed by schedule name only.
+
+## ANC-046
+
+Anchor: sc-cron MUST use a stored compiled hook session only when its key matches the hook source text in the schedule row.
+
+> The source text in the schedule row stays the source of truth. A blob is used only when its key matches that source.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: blob used only when its key matches the source
+
+Scope: plan items that change how sc-cron loads compiled hook sessions
+
+Deterministic check to pair with the development gate: a test edits the schedule's hook source and shows the old blob is not loaded
+
+Beads: anchor `run-n2ay`, plan questions `run-n2ay.1`, dev questions `run-n2ay.2`
+
+Fixtures:
+- pass: After a daemon restart, a schedule whose source is unchanged loads its blob and runs its next tick without recompiling; a changed source recompiles.
+- fail: sc-cron loads the stored blob for the schedule name even after its source changed.
+
+## ANC-047
+
+Anchor: sc-cron MUST capture a compiled hook session's blob immediately after compile, before the hook runs.
+
+> The blob is captured immediately after compile, before any run. No run state is persisted.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: blob captured right after compile, no run state
+
+Scope: plan items that change when or what sc-cron stores for a compiled hook session
+
+Deterministic check to pair with the development gate: the blob is written in the compile path before the first tick; stored bytes equal a fresh compile of the same source after runs
+
+Beads: anchor `run-zjoo`, plan questions `run-zjoo.1`, dev questions `run-zjoo.2`
+
+Fixtures:
+- pass: sc-cron dumps the session right after compile, before the first tick, so the blob never holds run state.
+- fail: sc-cron dumps the session after each tick so the next run resumes from saved state.
+
+## ANC-048
+
+Anchor: sc-cron MUST reject a schedule write whose hook source does not compile.
+
+> Compile when the schedule is written, so a script that does not compile is rejected at submit instead of at its first tick.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: hooks compile when the schedule is written
+
+Scope: plan items that change sc-cron schedule creation, replacement or hook compilation
+
+Deterministic check to pair with the development gate: a test submits a schedule whose hook does not compile and gets a typed error with no row written
+
+Beads: anchor `run-vi2g`, plan questions `run-vi2g.1`, dev questions `run-vi2g.2`
+
+Fixtures:
+- pass: Adding a schedule compiles its hook; a script with a syntax error is rejected at submit with a typed error and no row is written.
+- fail: A schedule with a script that does not compile is accepted and fails at its first tick.
+
+## ANC-049
+
+Anchor: The source of a Monty command transform MUST be replaceable without rebuilding the application.
+
+> the source of a Monty command transform is loaded at run time and can be replaced without rebuilding the app.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: Monty transform source is run-time data
+
+Scope: plan items that add or change a Monty or Python command transform or its caller
+
+Deterministic check to pair with the development gate: a test replaces the transform source at run time, without rebuilding, and the next command uses the new source
+
+Beads: anchor `run-y0v1`, plan questions `run-y0v1.1`, dev questions `run-y0v1.2`
+
+Fixtures:
+- pass: The service loads the widget transform's Monty source at run time; replacing it changes the next command's result without a rebuild.
+- fail: The Monty transform source is embedded in the binary with include_str!.
+
+## ANC-050
+
+Anchor: Documentation for Transform, storage_read and storage_write MUST state that they are not yet stable.
+
+> Transform, storage_read and storage_write are documented as not yet stable.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: command seam documented as not yet stable
+
+Scope: plan items that define, document or publish Transform, storage_read or storage_write
+
+Deterministic check to pair with the development gate: sc-command rustdoc and README mark Transform, storage_read and storage_write as not yet stable
+
+Beads: anchor `run-25z5`, plan questions `run-25z5.1`, dev questions `run-25z5.2`
+
+Fixtures:
+- pass: The sc-command README and rustdoc state that Transform, storage_read and storage_write are provisional in 0.3.0 and may change.
+- fail: The sc-command README presents storage_write(store, transform, input) as the stable command API.
+
+## ANC-051
+
+Anchor: Phase D plan, ADR and REQ text MUST NOT prohibit later adding a second transform input, a no-write command outcome, or a transform inside an atomic transaction.
+
+> Build none of these now. Forbid none of them.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: no prohibition of the three seam extensions
+
+Scope: plan items, ADRs or REQs that define or constrain Transform, storage_read, storage_write or transaction bodies
+
+Deterministic check to pair with the development gate: plan, ADR and REQ text has no rule forbidding a second transform input, a no-write outcome or a transform inside a transaction; such items read as not built in phase-d
+
+Beads: anchor `run-dz6v`, plan questions `run-dz6v.1`, dev questions `run-dz6v.2`
+
+Fixtures:
+- pass: Phase D does not build a transform inside a transaction; that remains possible later.
+- fail: Transaction bodies may not call the transform mechanism.
+
+## ANC-052
+
+Anchor: The signatures of Transform, storage_read and storage_write MUST allow a second transform input, a no-write outcome and a transform inside an atomic transaction to be added later without breaking consumers.
+
+> Their shape must not prevent adding later, without breaking consumers: (a) a second input to the transform, (b) an outcome that writes nothing, (c) a transform that runs inside an atomic transaction.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: seam shape leaves room for three extensions
+
+Scope: plan items that define the signatures of Transform, storage_read or storage_write
+
+Deterministic check to pair with the development gate: design review of the Transform/storage_read/storage_write signatures shows each extension can be added as a new item without changing existing signatures
+
+Beads: anchor `run-cz0z`, plan questions `run-cz0z.1`, dev questions `run-cz0z.2`
+
+Fixtures:
+- pass: storage_write returns a typed Result whose Ok can later carry a no-write outcome, and Transform is a trait that can gain a second-input form without changing existing impls.
+- fail: storage_write(store, transform, input) is a fixed function that always writes, with no way to add a no-write outcome without a breaking change.
+
+## ANC-053
+
+Anchor: The plan MUST name which cron commands go through the shared command path.
+
+> Name which cron commands go through the shared path
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: plan names cron commands on the shared path
+
+Scope: plan items that change cron commands, sc-cron-commands or the shared command path
+
+Deterministic check to pair with the development gate: the sprint text lists each cron command as on or off the shared path
+
+Beads: anchor `run-1am3`, plan questions `run-1am3.1`, dev questions `run-1am3.2`
+
+Fixtures:
+- pass: Cron add and replace go through the shared path: command type in, transform, CronRow written through Storage<CronRow>.
+- fail: Cron commands keep their own storage calls and the plan does not say whether any use the shared path.
+
+## ANC-054
+
+Anchor: The sprint text MUST state a reason for each cron command that does not go through the shared command path.
+
+> Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: reason stated for cron commands off the path
+
+Scope: plan items that change cron commands, sc-cron-commands or the shared command path
+
+Deterministic check to pair with the development gate: each cron command listed off the shared path has a reason in the sprint text
+
+Beads: anchor `run-6wp9`, plan questions `run-6wp9.1`, dev questions `run-6wp9.2`
+
+Fixtures:
+- pass: Cron run-now does not use the shared path because it writes no schedule row; the sprint says so.
+- fail: Cron stop is handled outside the shared path with no reason given.
+
+## ANC-055
+
+Anchor: Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.
+
+> an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: apps can modify cron JSON before write
+
+Scope: plan items that change cron schedule creation, cron commands or the command transform
+
+Deterministic check to pair with the development gate: a test supplies an app transform that appends a field to the user's schedule JSON; the written CronRow contains it
+
+Beads: anchor `run-qjv1`, plan questions `run-qjv1.1`, dev questions `run-qjv1.2`
+
+Fixtures:
+- pass: An app transform appends its own fields to the user's schedule JSON, and the CronRow is then written through Storage<CronRow>.
+- fail: Cron writes the user's JSON unchanged; an app cannot add its own data before the row is written.
+
+## ANC-056
+
+Anchor: A command whose Tcli type converts directly to its Tsql row type MUST NOT need a hand-written transform.
+
+> A command whose Tcli converts directly to Tsql needs no hand-written transform.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: direct conversions need no hand-written transform
+
+Scope: plan items that define the command transform (Tcli is the type an interface speaks, Tsql the stored row), its default or the template's commands
+
+Deterministic check to pair with the development gate: a test command whose Tcli and Tsql have the same fields runs through storage_write with the default transform and no app-written transform
+
+Beads: anchor `run-w5ju`, plan questions `run-w5ju.1`, dev questions `run-w5ju.2`
+
+Fixtures:
+- pass: When Tcli converts into Tsql, the default transform is that conversion and the app writes no transform.
+- fail: Every command must supply an application-written transform.
+
+## ANC-057
+
+Anchor: ADRs and REQs MUST NOT state that the command path must be hand-written.
+
+> No ADR or REQ may state that the command path must be hand-written.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 3.
+
+Summary: no REQ/ADR binds hand-writing
+
+Scope: plan items that add or amend ADRs or REQs about the command path or transforms
+
+Deterministic check to pair with the development gate: grep docs/requirements.md, docs/architecture.md and per-crate docs for wording requiring hand-written commands: none outside history notes
+
+Beads: anchor `run-z29j`, plan questions `run-z29j.1`, dev questions `run-z29j.2`
+
+Fixtures:
+- pass: Every ADR and REQ, including ADR-RUN-0001 and ADR-RUN-0021, describes hand-written command code only as the interim form; none states that the command path must be hand-written.
+- fail: An ADR states that every operation is hand-written in project code.
+
+## ANC-058
+
+Anchor: ADRs and REQs MUST NOT contain wording that forbids a consumer-side code generator for the command path.
+
+> Scan the REQ/ADR set for any other wording that binds hand-writing or forbids generators.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: no REQ/ADR forbids a consumer-side generator
+
+Scope: plan items that add or amend ADRs or REQs about code generation or the command path
+
+Deterministic check to pair with the development gate: grep the REQ/ADR set for wording forbidding generators; any no-generator rule is limited to sc-runtime's own crates
+
+Beads: anchor `run-6nsz`, plan questions `run-6nsz.1`, dev questions `run-6nsz.2`
+
+Fixtures:
+- pass: REQ-RUN-0318 says crates/sc-runtime ships no generator and does not restrict a generator in a consuming project.
+- fail: A REQ states that command code must never be generated.
+
+## ANC-059
+
+Anchor: The plan MUST state which of the widget create, get and delete commands go through storage_read or storage_write.
+
+> state which of the widget create/get/delete commands go through storage_read/storage_write.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 4.
+
+Summary: plan names widget commands on the path
+
+Scope: plan items that change the template's widget commands or service
+
+Deterministic check to pair with the development gate: the sprint text names which of widget create/get/delete use storage_read or storage_write
+
+Beads: anchor `run-8xhu`, plan questions `run-8xhu.1`, dev questions `run-8xhu.2`
+
+Fixtures:
+- pass: Of the widget commands, create goes through storage_write and get goes through storage_read; delete goes through neither and stays on the WidgetStorage extension.
+- fail: The plan routes widget commands through WidgetStorage without saying which use storage_read or storage_write.
+
+## ANC-060
+
+Anchor: At least one write command of the template's widget example MUST go through storage_write.
+
+> state which of the widget create/get/delete commands go through storage_read/storage_write. At least one write and one read must.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: a widget write uses storage_write
+
+Scope: plan items that change the template's widget commands or service
+
+Deterministic check to pair with the development gate: generated service tests show a widget write command calling storage_write
+
+Beads: anchor `run-v3j3`, plan questions `run-v3j3.1`, dev questions `run-v3j3.2`
+
+Fixtures:
+- pass: Widget create goes through storage_write.
+- fail: Widget create and delete both call WidgetStorage extension methods; no write uses storage_write.
+
+## ANC-061
+
+Anchor: Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.
+
+> sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: no sc-compose repo crates except sc-sha, no ATM crates
+
+Scope: Changes normal/build dependency declarations or resolved production dependency graphs of published sc-runtime crates. Crates from the sc-compose repository include sc-compose, sc-composer, sc-composer-beads and sc-sha. ATM denotes the agent-team-mail workspace crates covered by ADR-RUN-0013, including agent-team-mail and atm-core. Dev-only test and benchmark references are excluded.
+
+Deterministic check to pair with the development gate: cargo tree -e normal,build for each published crate and supported feature set shows no sc-compose, sc-composer, sc-composer-beads, agent-team-mail or atm-* crate; sc-sha may appear
+
+Beads: anchor `run-sxwd`, plan questions `run-sxwd.1`, dev questions `run-sxwd.2`
+
+Fixtures:
+- pass: sc-cron depends on sc-sha for the hook source hash and has no other sc-compose repository crate or ATM crate in its normal or build graph.
+- fail: A production release crate adds sc-composer as a normal dependency to render templates.
+
+## ANC-062
+
+Anchor: sc-monty MUST begin as an exact copy of sc-cron's current Monty code and its unit and integration tests, passing, before its API is extended.
+
+> monty implementation should start w/ an exact copy of current code AND tests including integration tests.  It is important to preserve the current excellent work.  then monty api can be extended as necessary to addres the requirements
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: sc-monty starts as an exact copy of current Monty code and tests
+
+Scope: plan items that create sc-monty or move Monty code or tests out of sc-cron
+
+Deterministic check to pair with the development gate: the first sc-monty commit's Monty sources and tests match sc-cron's monty_run.rs/monty_host.rs and their unit and integration tests (diff limited to crate paths and names); they pass before any API change
+
+Beads: anchor `run-7ejc`, plan questions `run-7ejc.1`, dev questions `run-7ejc.2`
+
+Fixtures:
+- pass: d-5 first copies sc-cron's Monty modules and every Monty unit and integration test into sc-monty unchanged and makes them pass; the MontyInvoke extension follows.
+- fail: sc-monty is written fresh against a new API and only the tests it needs are rewritten.
+
+## ANC-063
+
+Anchor: At least one read command of the template's widget example MUST go through storage_read.
+
+> state which of the widget create/get/delete commands go through storage_read/storage_write. At least one write and one read must.
+
+Said by randlee, owner requirement changes against plan/phase-d 5cffe24, 2026-11-12, 2026-11-12. Status: locked. Version 2.
+
+Summary: a widget read uses storage_read
+
+Scope: plan items that change the template's widget commands or service
+
+Deterministic check to pair with the development gate: generated service tests show a widget read command calling storage_read
+
+Beads: anchor `run-50cw`, plan questions `run-50cw.1`, dev questions `run-50cw.2`
+
+Fixtures:
+- pass: Widget get goes through storage_read.
+- fail: Widget get calls a WidgetStorage extension method; no read uses storage_read.
