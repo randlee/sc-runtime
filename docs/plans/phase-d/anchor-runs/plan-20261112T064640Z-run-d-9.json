@@ -1,0 +1,2470 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261112T064640Z-run-d-9",
+  "gate": "plan",
+  "created_at": "2026-11-12T06:46:40+00:00",
+  "anchors_path": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchors.json",
+  "plan": "phase-d",
+  "item": {
+    "id": "run-d-9",
+    "title": "d-9",
+    "source": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-9.txt",
+    "chars": 5733,
+    "truncated": false,
+    "chars_before_reduction": 5733,
+    "code_reduced": {
+      "blocks": 0,
+      "lines": 0
+    }
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "extra_questions": [
+    {
+      "path": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/.sc/plan-anchor/triage/plan-questions.jsonl",
+      "sha256": "68180fbd2de8a3dee2421351672f9a321506af1f4bb19531c2c26d7d21c2c521",
+      "ids": [
+        "owns",
+        "specific",
+        "stated",
+        "paraphrase",
+        "partial"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "anchor_id": "ANC-035",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Public storage functions MUST NOT panic.",
+      "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
+      "kind": "prohibition",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "8460879bb3d34079e1e276accdf6b74b049a123e497c5cb3d21ea64afb1d1f9b",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item touches none of them.",
+            "unclear": "The item is too vague to tell.",
+            "yes": "The item touches public functions of sc-storage, sc-runtime-db-sqlite or a template store."
+          },
+          "instructions": "Does `item.text` touch the public storage functions named in `anchor.scope`? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No: the item is silent about panics, only generally topical about errors, or plans a panic.",
+            "unclear": "Whether the item commits to not panicking cannot be determined.",
+            "yes": "Yes: the item states the public storage functions do not panic."
+          },
+          "instructions": "Does `item.text` state that the public storage functions it touches avoid panicking (returning typed errors instead of panicking, or denying unwrap/expect/panic)? Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No such outcome is stated, including when the item is silent about panics.",
+            "unclear": "It may let a public storage function panic but cannot be determined.",
+            "yes": "A public storage function is stated to panic on some path."
+          },
+          "instructions": "Does `item.text` plan for a public sc-storage, sc-runtime-db-sqlite or template store function to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Silence about panics is not conflict; unwrap in tests and panics outside storage code are outside `anchor.statement`. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.25,
+          "probabilities": {
+            "no": 0.5,
+            "unclear": 0.02,
+            "yes": 0.48
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "owns": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.94,
+          "probabilities": {
+            "yes": 0.96,
+            "no": 0.04,
+            "unclear": 0.0
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.44,
+          "probabilities": {
+            "yes": 0.63,
+            "no": 0.36,
+            "unclear": 0.01
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.6,
+          "probabilities": {
+            "yes": 0.27,
+            "no": 0.73,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.25,
+      "explanation": "Jev was not confident (min confidence 0.25); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2214,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "relevance",
+          "question_id": "relevant",
+          "choice": "no",
+          "confidence": 0.25
+        }
+      ],
+      "triage_questions": [
+        "owns",
+        "specific",
+        "stated",
+        "paraphrase",
+        "partial"
+      ],
+      "triage_attempts": 1,
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 7629
+    },
+    {
+      "anchor_id": "ADR-RUN-0011",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0011",
+      "statement": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except Runtime::block_on on the SQLite writer's dedicated OS thread.",
+      "quote": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "planning session",
+      "anchor_version": 4,
+      "deterministic_check": "grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "fa5e61b33d27630181059ba1ab7a10f43a1555071f19c785d8b0cd73f19a9235",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item concerns something else, such as documentation of unrelated features, dependency versions, CI, or components with no sync/async bridging.",
+            "unclear": "The item text is too vague to tell whether it touches any of these.",
+            "yes": "The item creates, changes or specifies one of these: block_on calls, runtime construction or entry points, the SQLite writer or reader threads, or a sync/async bridge."
+          },
+          "instructions": "Does the work described in `item.text` touch the area named in `anchor.scope`: async/blocking rules, any block_on call or Tokio runtime construction, the SQLite writer or its thread, the SQLite reader pool, or code that bridges synchronous and asynchronous code (sync wrappers over async calls, spawn_blocking, blocking_recv, async entry points, async test fixtures)? Judge subject overlap only; do not judge whether the item follows `anchor.statement`.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The item does not state it: it is silent about block_on, only uses other bridging such as spawn_blocking, or describes block_on calls outside the writer thread.",
+            "unclear": "The item mentions block_on but whether it commits to the limit cannot be determined.",
+            "yes": "The item states this limit on block_on in production code by one of these forms."
+          },
+          "instructions": "Does `item.text` state that production code calls no block_on (Runtime::block_on, Handle::block_on or futures::executor::block_on) except Runtime::block_on on the SQLite writer's dedicated OS thread, as `anchor.statement` requires? Count an explicit statement of that limit, a statement that the writer thread's Runtime::block_on is the only block_on left, or the removal of a block_on call together with a statement that no block_on variant remains in the affected production code. Judge presence of this commitment only; do not judge conflict.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "Nothing in the item conflicts: it complies, is silent, or uses only allowed mechanisms.",
+            "unclear": "The item may plan such a call, but its details cannot be determined.",
+            "yes": "The item plans such a production block_on call."
+          },
+          "instructions": "Does `item.text` plan production code that `anchor.statement` rules out? A conflict is any production call of Handle::block_on or futures::executor::block_on anywhere, including on the SQLite writer's own thread, or of Runtime::block_on anywhere other than the SQLite writer's dedicated OS thread (for example on reader threads, caller threads, CLI handlers or an application main). Not conflicts: Runtime::block_on on the writer's dedicated thread, block_on in #[cfg(test)] test code, blocking_recv, spawn_blocking, and silence about block_on. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.04,
+            "unclear": 0.0,
+            "yes": 0.96
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.94,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2516,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 9081
+    },
+    {
+      "anchor_id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Production release crates MUST NOT depend on sc-compose or ATM crates.",
+      "quote": "sc-compose and atm crates should be blocked from any production release crate.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: inspect proposed normal/build dependencies. Development: inspect cargo metadata and cargo tree normal/build graphs for each published crate and supported feature set for sc-compose or agent-team-mail.",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "86b37840bba8aa6da8ca0f5ebfb4ce1e826451cddaaaf78664db7c0d63ffedbe",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item is exclusively a dev-only test/benchmark reference, external executable command/help change, or documentation without a production dependency policy, with no normal/build declaration or production graph change.",
+            "unclear": "The work area cannot be determined.",
+            "yes": "The item changes normal/build dependencies or resolved production graphs of published sc-runtime crates, or explicitly sets/preserves the production graph constraint excluding sc-compose and ATM crates. An external invocation mentioned alongside an explicit production-graph constraint does not erase that graph subject."
+          },
+          "instructions": "Does `item.text` change the area governed by `anchor.scope`: normal or build dependencies or resolved production graphs of published sc-runtime release crates? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The exclusion policy is unstated, is only a topic, or is violated. An unrelated dependency, dev-only fixture reference, or external help edit alone states no exclusion policy.",
+            "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+            "yes": "The text explicitly commits to production normal/build graphs excluding BOTH sc-compose and ATM workspace crates; equivalent copy/removal or external-only adapter architecture with this exclusion counts."
+          },
+          "instructions": "Does `item.text` explicitly commit to production release crates have no normal or build dependency on sc-compose or ATM agent-team-mail workspace crates, including agent-team-mail and atm-core? Judge the presence of this obligation only; silence is absence, not conflict. Require an explicit production-graph exclusion policy; adding an unrelated permitted dependency or saying no graph changed does not itself state that policy.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "There is no explicit incompatible policy, including omission, unrelated work, or the scoped exception: dev-only test or benchmark references and external-executable invocation without a normal/build crate dependency.",
+            "unclear": "A stated policy is ambiguous about whether it conflicts.",
+            "yes": "The item adds or retains sc-compose or an ATM workspace crate such as agent-team-mail or atm-core in a production normal/build dependency graph."
+          },
+          "instructions": "Does `item.text` explicitly adopt a policy incompatible with production release crates have no normal or build dependency on sc-compose or ATM agent-team-mail workspace crates, including agent-team-mail and atm-core? Judge conflict only. Silence and topic discussion alone are not conflict.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.86,
+          "probabilities": {
+            "no": 0.08,
+            "unclear": 0.01,
+            "yes": 0.91
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.67,
+          "probabilities": {
+            "no": 0.78,
+            "unclear": 0.02,
+            "yes": 0.2
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.86,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2408,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 9043
+    },
+    {
+      "anchor_id": "ANC-016",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+      "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied.",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "2395090d5af0670ee21dbdf098e044e240d49714ec0ac4c8a4ad0ad3d2a8b784",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The work concerns only non-range edits or releases with demonstrated API, links, or toolchain breaks outside the non-breaking guarantee or unrelated activities.",
+            "unclear": "The work area is insufficiently specified.",
+            "yes": "The item changes, preserves, or explicitly specifies registry dependency requirements of published crates or template manifests."
+          },
+          "instructions": "Would this item make or preserve a decision within registry dependency requirements of published crates or template manifests? Its policy can be unstated and still be in scope.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+            "unclear": "An obligation is alluded to but its presence cannot be determined.",
+            "yes": "The item permits newer Cargo-compatible releases using a normal compatible range or an explicit equivalent; compatible versions share the leftmost nonzero component."
+          },
+          "instructions": "Is the required outcome actually stated: published crate and template registry requirements allow newer Cargo SemVer-compatible dependency releases? Equivalent wording counts; do not infer an unstated policy.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No such compatible consumer release is disallowed. Permitting the entire original compatible line plus another independently qualified line is an allowed superset, not a restriction. A test/CI lockfile choice, an upper boundary beyond the original compatible line, silence, or an unrelated demonstrated break does not establish blocking a compatible consumer upgrade.",
+            "unclear": "The item appears to restrict a compatible consumer release, but the admitted compatibility line or the demonstrated break is not specified sufficiently to determine rejection.",
+            "yes": "An explicit consumer requirement disallows a newer release inside the minimum version's Cargo-compatible line, and no demonstrated API, links, or toolchain break justifies rejecting that release."
+          },
+          "instructions": "Is an explicit dependency requirement narrowing consumer choices inside the original Cargo-compatible line? A broader requirement that still admits that line cannot contradict this anchor merely because it also supports another line. Judge actual compatible-version rejection, not whether the range equals the normal caret syntax.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.02,
+            "unclear": 0.0,
+            "yes": 0.98
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "no": 0.98,
+            "unclear": 0.0,
+            "yes": 0.02
+          }
+        }
+      },
+      "min_confidence": 0.97,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2366,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8888
+    },
+    {
+      "anchor_id": "ANC-017",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+      "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132.",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "3f968f30fe3cf96498bd37fc56636f58af404d52063bc00eba215955716a73e5",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The work concerns only prose-only README edits without range or validation changes or unrelated activities.",
+            "unclear": "The work area is insufficiently specified.",
+            "yes": "The item changes, preserves, or explicitly specifies registry dependency range changes or dependency validation for root, generated-template features, or separate consumer/test workspaces."
+          },
+          "instructions": "Determine whether the described work falls within registry dependency range changes or dependency validation for root, generated-template features, or separate consumer/test workspaces. Apply the scope exclusions even when excluded work mentions the same tool or dependency.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+            "unclear": "An obligation is alluded to but its presence cannot be determined.",
+            "yes": "CI resolves the lowest allowed set and the latest allowed set and runs affected tests at both endpoints, including affected generated/consumer workspaces."
+          },
+          "instructions": "Does a concrete step or constraint in the item carry this policy: dependency CI resolves and tests both minimum and latest allowed versions of changed registry ranges in every affected workspace and feature set? Distinguish a commitment from merely discussing its subject.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No explicit incompatible decision is stated, including silence, topic-only discussion, compliance, and excluded work: prose-only README edits without range or validation changes.",
+            "unclear": "A stated action may conflict, but its relevant details cannot be determined.",
+            "yes": "CI explicitly tests only one endpoint, skips affected workspace endpoint tests, or substitutes a documented command for actual endpoint tests."
+          },
+          "instructions": "Does a stated decision within scope break this rule: dependency CI resolves and tests both minimum and latest allowed versions of changed registry ranges in every affected workspace and feature set? Evaluate actual incompatible actions, not omissions.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0.03,
+            "unclear": 0.0,
+            "yes": 0.97
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.83,
+          "probabilities": {
+            "no": 0.1,
+            "unclear": 0.01,
+            "yes": 0.89
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0.97,
+            "unclear": 0.0,
+            "yes": 0.03
+          }
+        }
+      },
+      "min_confidence": 0.83,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2311,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8504
+    },
+    {
+      "anchor_id": "ANC-028",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The cargo tree of an app that uses SQLite MUST NOT include a sqlx SQLite driver crate.",
+      "quote": "An app with SQLite MUST link exactly one SQLite client library: cargo tree shows rusqlite, no sqlx SQLite driver, and one libsqlite3-sys version.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "cargo tree -e normal on generated SQLite app: no sqlx-sqlite",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "645011b1ded26889614e0ea180c2353b1d852a78bd2d37d5b09b876d2fef6c77",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item touches none of these.",
+            "unclear": "The item is too vague to tell.",
+            "yes": "The item touches SQLite client dependencies, the template's SQLite store, or sc-cron's storage dependencies."
+          },
+          "instructions": "Does `item.text` touch the SQLite dependency or storage area named in `anchor.scope`? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The item does not say this: it is silent or only topical about SQLite dependencies, or keeps sqlx's SQLite driver.",
+            "unclear": "The item alludes to dropping sqlx for SQLite, but whether its SQLite driver leaves the app's tree cannot be determined.",
+            "yes": "The item says the SQLite app's graph excludes the sqlx SQLite driver."
+          },
+          "instructions": "Does `item.text` explicitly plan to keep the sqlx SQLite driver out of a SQLite app's dependency graph? Count wording such as no sqlx-sqlite in cargo tree, removing sqlx's sqlite feature, moving SQLite storage from sqlx to rusqlite, or linking exactly one SQLite client library (rusqlite). Raising rusqlite versions, unifying libsqlite3-sys, bundling SQLite, or store schema work without saying the sqlx SQLite driver is gone do not count. Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "Neither (a) nor (b) is stated.",
+            "unclear": "The item may state (a) or (b) but it cannot be determined.",
+            "yes": "(a) or (b) is stated."
+          },
+          "instructions": "Answer yes if `item.text` states either (a) the SQLite app itself depends on sqlx with the sqlite feature (for its store or any other purpose, even alongside rusqlite), or (b) a crate the SQLite app depends on, such as sc-cron, keeps or adds sqlx with the sqlite feature. Otherwise answer no; an item silent about sqlx is no, and sqlx with only postgres or other non-SQLite features is no. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.86,
+          "probabilities": {
+            "no": 0.09,
+            "unclear": 0.0,
+            "yes": 0.91
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.01,
+            "yes": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "no": 0.97,
+            "unclear": 0.01,
+            "yes": 0.02
+          }
+        }
+      },
+      "min_confidence": 0.86,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2336,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8072
+    },
+    {
+      "anchor_id": "ANC-030",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still reject a second active schedule row that has the same schedule name as an active row.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "e1549b4b6a253af7e0efb88f81bb066db3a0faa50a9cd6976e755e3685ead66a",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item touches none of these.",
+            "unclear": "The item is too vague to tell.",
+            "yes": "The item touches sc-cron's schedule table or store, CronStorage, or cron tests."
+          },
+          "instructions": "Does `item.text` touch the cron storage area named in `anchor.scope`? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The item does not say this: it is silent or only topical about names, or the duplicate is accepted, or uniqueness exists only in a test schema.",
+            "unclear": "The item alludes to name uniqueness but whether a duplicate active name is rejected cannot be determined.",
+            "yes": "The item says the real schedule store rejects a second active row with an existing active schedule name."
+          },
+          "instructions": "Does `item.text` explicitly plan that sc-cron's schedule store keeps one active schedule per name, so a second active row with the same schedule name is rejected? Count wording such as unique constraint, UNIQUE(name), unique or partial unique index on name, duplicate-name error, AlreadyExists, or a ported test asserting a duplicate active name fails. Allowing inactive rows to share a name still counts. Mentioning a name column, name validation, or other indexes does not count, and uniqueness declared only in a test schema does not count. Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "Neither (a) nor (b) is stated.",
+            "unclear": "The item may state (a) or (b) but it cannot be determined.",
+            "yes": "(a) or (b) is stated."
+          },
+          "instructions": "Answer yes if `item.text` states either (a) a second active schedule row with an existing active name is accepted or kept in the real schedule store, or (b) the real schedule table lacks name uniqueness and the store has no duplicate-name check (even if a test schema has one). Otherwise answer no; an item silent about duplicate names is no, and rules about inactive rows, cron expressions or row limits do not count. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.0,
+            "yes": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2362,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8303
+    },
+    {
+      "anchor_id": "ANC-031",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still refuse to add a schedule row once the row count reaches the row limit configured by the embedding application.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "ported sc-cron row-limit admission tests pass against the app-database CronStorage",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "f644f3915b50e37f82872f1f99998dc7f161a20819a1e8448fbc53c4990fab23",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item touches none of these.",
+            "unclear": "The item is too vague to tell.",
+            "yes": "The item touches sc-cron's schedule table or store, CronStorage, or cron tests."
+          },
+          "instructions": "Does `item.text` touch the cron storage area named in `anchor.scope`? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The item does not state this: it is silent about the row limit, only reports or mentions the row count, or describes adds being accepted at or past the configured limit, a fixed cap replacing the configured limit, or a limit enforced only in a test double.",
+            "unclear": "The item mentions the row limit, but whether the real store refuses an add at the configured limit cannot be determined.",
+            "yes": "The item states that the real store refuses an add when the row count has reached the application-configured limit."
+          },
+          "instructions": "Does `item.text` state that sc-cron's real schedule store refuses to add a new schedule row once the row count has reached the row limit configured by the embedding application, as `anchor.statement` requires? A count check in the insert path, a row-limit error, or a ported test asserting the add at the configured limit is refused all count, when they apply to the real store. Judge presence of this commitment only; do not judge conflict.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "Neither (a) nor (b) is stated.",
+            "unclear": "The item may state (a) or (b) but it cannot be determined.",
+            "yes": "(a) or (b) is stated."
+          },
+          "instructions": "Answer yes if `item.text` states either (a) the real schedule store adds a row (or warns and adds) when the row count is already equal to or above the limit configured by the embedding application, or (b) the configured limit is removed or replaced by a fixed value, or exists only in a test double while the real store has no check. Otherwise answer no; an item silent about the row limit is no, and rules about updating existing rows or schedule names do not count. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 0.0,
+            "unclear": 0.0,
+            "yes": 1.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.76,
+          "probabilities": {
+            "no": 0.08,
+            "unclear": 0.08,
+            "yes": 0.84
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.76,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2385,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8393
+    },
+    {
+      "anchor_id": "ANC-003",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+      "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "5f0829ce556af14da523c4031440c984fdc7fd27b1eb817dc01f45922e526781",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item concerns Rust crate dependency resolution alone or a wholly unrelated activity.",
+            "unclear": "The item could concern either the included or excluded area and does not resolve which.",
+            "yes": "The item changes template generation driver, sc-compose executable selection, or generated-app generation instructions."
+          },
+          "instructions": "Determine whether this item falls inside the locked anchor scope. Include template generation driver, sc-compose executable selection, or generated-app generation instructions; apply its explicit exclusions.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No explicit step or constraint states the policy, including silence, topic-only discussion, and contrary instructions.",
+            "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+            "yes": "The item accepts compatible sc-compose 1.8.0 for template generation, including selecting that executable and succeeding."
+          },
+          "instructions": "Does the item carry this policy as a concrete step or constraint: template generation succeeds using sc-compose 1.8.0 when its used CLI commands are compatible? Equivalent wording counts; do not infer compliance from a topic mention or silence.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No rule-breaking decision is stated. An unstated policy is not a violation; exclude Rust crate dependency resolution alone.",
+            "unclear": "An explicit decision may break the rule but its relevant details are unresolved.",
+            "yes": "The item rejects compatible sc-compose 1.8.0 or requires an older exact CLI version for generation."
+          },
+          "instructions": "Does an explicit decision in `item.text` break this anchor rule: template generation succeeds using sc-compose 1.8.0 when its used CLI commands are compatible? Evaluate only actual conflicting decisions within scope.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.0,
+            "yes": 0.01
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2266,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8192
+    },
+    {
+      "anchor_id": "ANC-005",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.",
+      "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: declares a CLI minimum >=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "8cb791f1eebb45f544ec7d89703aaf9de0364aee9e3f5606c0719fedab4398f3",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item concerns the sc-compose Rust crate graph alone or a wholly unrelated activity.",
+            "unclear": "The item could concern either the included or excluded area and does not resolve which.",
+            "yes": "The item changes repository sc-compose CLI requirements, generation-tool setup, or plan-anchoring CLI dependency checks."
+          },
+          "instructions": "Determine whether this item falls inside the locked anchor scope. Include repository sc-compose CLI requirements, generation-tool setup, or plan-anchoring CLI dependency checks; apply its explicit exclusions.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No explicit step or constraint states the policy, including silence, topic-only discussion, and contrary instructions.",
+            "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+            "yes": "The item declares the repository sc-compose CLI minimum as 1.8.0 or higher, for example minimum_version in .sc/generation-tools.json."
+          },
+          "instructions": "Does the item carry this policy as a concrete step or constraint: repository tooling declares a sc-compose CLI minimum version of at least 1.8.0? Equivalent wording counts; do not infer compliance from a topic mention or silence.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No rule-breaking decision is stated. An unstated policy is not a violation; exclude the sc-compose Rust crate graph alone.",
+            "unclear": "An explicit decision may break the rule but its relevant details are unresolved.",
+            "yes": "The item declares a repository sc-compose CLI minimum below 1.8.0, or removes the required minimum."
+          },
+          "instructions": "Does an explicit decision in `item.text` break this anchor rule: repository tooling declares a sc-compose CLI minimum version of at least 1.8.0? Evaluate only actual conflicting decisions within scope.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2300,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8176
+    },
+    {
+      "anchor_id": "ANC-015",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.",
+      "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "735c675357b0da253bb6d1678bad704c6fd23f71f490db434f14844b996bf62b",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item concerns CI selection of a reproducible binary and Rust crate version requirements or a wholly unrelated activity.",
+            "unclear": "The work area cannot be determined.",
+            "yes": "The item changes skill scripts or instructions that check the sc-compose CLI version."
+          },
+          "instructions": "Does `item.text` change the area governed by `anchor.scope`: skill scripts or instructions that check the sc-compose CLI version? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The specific obligation is absent, merely topical, or replaced by a contrary policy.",
+            "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+            "yes": "The skill check accepts CLI versions equal to or above its declared minimum and rejects versions below it; >= floor language also states this."
+          },
+          "instructions": "Does `item.text` explicitly commit to repository skills enforce the declared sc-compose CLI minimum as a lower bound and accept versions above that floor rather than exact-version matching? Judge the presence of this obligation only; silence is absence, not conflict.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "There is no explicit incompatible policy, including omission, unrelated work, or the scoped exception: CI selection of a reproducible binary and Rust crate version requirements.",
+            "unclear": "A stated policy is ambiguous about whether it conflicts.",
+            "yes": "The skill check requires equality to the configured minimum or rejects a CLI solely for being above the minimum."
+          },
+          "instructions": "Does `item.text` explicitly adopt a policy incompatible with repository skills enforce the declared sc-compose CLI minimum as a lower bound and accept versions above that floor rather than exact-version matching? Judge conflict only. Silence and topic discussion alone are not conflict.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2271,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8230
+    },
+    {
+      "anchor_id": "ANC-019",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+      "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription.",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "6598cbaf7c63adff4d5aa920bfe478a54acfece84a024302a425ab83d3ad082b",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The work concerns only normal caret compatibility boundaries and internal path-package identity versions or unrelated activities.",
+            "unclear": "The work area is insufficiently specified.",
+            "yes": "The item changes, preserves, or explicitly specifies added or retained explicit third-party dependency upper bounds beyond normal Cargo SemVer compatibility in published, template, or test manifests."
+          },
+          "instructions": "Does `item.text` touch the recorded scope: added or retained explicit third-party dependency upper bounds beyond normal Cargo SemVer compatibility in published, template, or test manifests? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+            "unclear": "An obligation is alluded to but its presence cannot be determined.",
+            "yes": "For the additional bound the item specifies a manifest comment identifying a concrete known API break, links conflict, toolchain limit, or deliberate negative-test compatibility boundary."
+          },
+          "instructions": "Does `item.text` explicitly commit to each additional third-party dependency upper bound has a manifest comment identifying the known break requiring that bound? Presence alone is the judgment; topic mention and silence supply no commitment.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "The item does not explicitly state missing/false manifest justification. In particular, a description giving no information about a reason or comment leaves the manifest unknown; retaining a bound while omitting comment details from this description is not itself a conflict. Compliant comments and scoped exclusions also do not conflict.",
+            "unclear": "The item asserts something about the actual manifest comment, but it is ambiguous whether the required known-break explanation is present.",
+            "yes": "The text explicitly states that an additional bound has no manifest comment identifying a known break, that no known break exists, or that the manifest will omit the required comment. An explicit statement about the manifest lacking justification counts."
+          },
+          "instructions": "Does `item.text` expressly contradict the rule requiring a known-break manifest comment for an additional dependency upper bound? Distinguish a missing comment IN THE MANIFEST from missing comment details IN THIS ITEM DESCRIPTION. Do not infer the former from the latter.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.79,
+          "probabilities": {
+            "no": 0.86,
+            "unclear": 0.0,
+            "yes": 0.14
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.96,
+            "unclear": 0.0,
+            "yes": 0.04
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.0,
+            "yes": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.79,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2378,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8920
+    },
+    {
+      "anchor_id": "ANC-020",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The primary CI installation path for sc-compose MUST use GitHub Release archives.",
+      "quote": "**Primary install path for CI and production** — GitHub Release tarballs/zip + `checksums.txt` (already published). Treat these as the **stability contract** for a tagged version.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored sc-compose issue #1041, What consumers need item 1: https://github.com/randlee/sc-compose/issues/1041. Replaces ANC-002 with direct provenance for the binary-install mechanism.",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "495acb2d119864ed9157b0d04ea4c6df2b4d8631578d09709f451a2e7f5d42b9",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The work concerns only published sc-runtime Cargo dependencies without CI CLI installation/caching changes or unrelated activities.",
+            "unclear": "The work area is insufficiently specified.",
+            "yes": "The item changes, preserves, or explicitly specifies CI sc-compose CLI installation or caching in workflow setup or rust-build-cache."
+          },
+          "instructions": "Does `item.text` touch the recorded scope: CI sc-compose CLI installation or caching in workflow setup or rust-build-cache? Judge subject overlap only.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+            "unclear": "An obligation is alluded to but its presence cannot be determined.",
+            "yes": "The primary or cache-miss CI installation fetches a selected sc-compose GitHub Release tarball/zip, optionally via a cache of that release archive."
+          },
+          "instructions": "Does `item.text` explicitly commit to the primary CI sc-compose installation uses a GitHub Release binary archive? Presence alone is the judgment; topic mention and silence supply no commitment.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No explicit incompatible decision is stated, including silence, topic-only discussion, compliance, and excluded work: published sc-runtime Cargo dependencies without CI CLI installation/caching changes.",
+            "unclear": "A stated action may conflict, but its relevant details cannot be determined.",
+            "yes": "The primary CI installation compiles sc-compose with cargo install or uses another non-GitHub-Release-archive source."
+          },
+          "instructions": "Does `item.text` explicitly adopt a decision incompatible with the primary CI sc-compose installation uses a GitHub Release binary archive? Judge conflict only; silence is not conflict.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2274,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8149
+    },
+    {
+      "anchor_id": "ANC-034",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer's table (for example cron rows).",
+      "quote": "No storage backend contains code for a specific consumer's table.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "grep storage backend crates for CronRow, cron table DDL or cron SQL: no hits; cargo tree -p sc-runtime-db-sqlite --all-features has no sc-cron",
+      "kind": "prohibition",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "fb3ed589ec8c4b6386ba98258f1fe43adc9a476b9b1e36db0f4868a021c4920b",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item changes no storage backend crate; it concerns other crates, CI, release work or unrelated documentation.",
+            "unclear": "The item is too vague to tell whether it changes a storage backend crate.",
+            "yes": "The item changes code, schema, SQL, configuration or docs inside one of the named storage backend crates."
+          },
+          "instructions": "Does `item.text` plan a change to a storage backend crate (sc-runtime-db-sqlite, or the template's store-sqlite, store-postgres or store-mysql), the area named in `anchor.scope`? Any change inside such a crate counts, including connection pools, retries, transactions, tables, migrations, queries, row types or its docs. An item that only changes another crate, such as sc-cron's scheduling logic, CI or the README, is outside the scope even if it mentions storage or cron. Judge scope only, not compliance with `anchor.statement`.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No: the item is silent or only topical about this, or puts such code in the backend.",
+            "unclear": "Cannot be determined.",
+            "yes": "Yes: the item says so."
+          },
+          "instructions": "Does `item.text` say that one consumer's table types, schema or SQL live outside the storage backend crate (in the consumer), or are moved out of it? Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No such code is placed in a storage backend crate.",
+            "unclear": "Cannot be determined.",
+            "yes": "Yes: such code is in a storage backend crate."
+          },
+          "instructions": "Does `item.text` add or keep a type, schema or SQL for one consumer's specific table (for example cron rows or a users table) inside a storage backend crate, even behind a feature or a generic name? Backend-internal tables, shared generic tables and silence are not conflicts. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.88,
+          "probabilities": {
+            "no": 0.92,
+            "unclear": 0.0,
+            "yes": 0.08
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.86,
+          "probabilities": {
+            "no": 0.09,
+            "unclear": 0.0,
+            "yes": 0.91
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.0,
+            "yes": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.88,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2315,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 8079
+    },
+    {
+      "anchor_id": "ANC-036",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.",
+      "quote": "a panic on the writer thread reaches every waiting caller as an error, never a hang",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: a request that panics on the writer thread makes every pending caller receive an error; no await hangs (no sleeps)",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": true
+      },
+      "questions_sha256": "fe1a16ee441335d412b3baf7c81d0e6dbdb9606f76877bc1585a81bf6fa5160f",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "questions": {
+        "relevant": {
+          "criteria": {
+            "no": "The item concerns something other than the SQLite writer thread, such as unrelated documentation, CI, release work, or another database's components.",
+            "unclear": "The item text is too vague to tell whether it touches the SQLite writer thread, its request channel or its reply path.",
+            "yes": "The item creates, configures or changes the SQLite writer thread, the channel callers use to send it requests, or the way replies or errors reach those callers."
+          },
+          "instructions": "Does the work described in `item.text` implement or change the SQLite writer thread, its request channel, or its reply path (the area named in `anchor.scope`)? Judge subject overlap only; do not judge whether the item follows `anchor.statement`.",
+          "type": "choice"
+        },
+        "addressed": {
+          "criteria": {
+            "no": "No: the item is silent or only topical about panics, or some waiting caller gets no error.",
+            "unclear": "Whether every waiting caller gets an error cannot be determined.",
+            "yes": "Yes: every waiting caller gets an error after a writer panic."
+          },
+          "instructions": "Does `item.text` say that a SQLite writer-thread panic results in an error for every caller waiting on it? Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "criteria": {
+            "no": "No such outcome is stated, including when the item is silent about panics.",
+            "unclear": "It may leave a waiting caller hanging but cannot be determined.",
+            "yes": "Some waiting caller is stated or plainly described to wait indefinitely after a writer panic."
+          },
+          "instructions": "Does `item.text` leave any caller waiting on the SQLite writer thread without an error after the writer panics (for example replies never sent, or queued requests left pending)? Silence about panics is not conflict. Judge conflict only.",
+          "type": "choice"
+        },
+        "owns": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+          "criteria": {
+            "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+            "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+            "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+            "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+            "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+          "criteria": {
+            "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+            "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+            "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+          "criteria": {
+            "yes": "A passage in the item means the same as the requirement in different words.",
+            "no": "No passage in the item means the same as the requirement.",
+            "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+          "criteria": {
+            "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+            "no": "The item states every part, or states none of them.",
+            "unclear": "It is not possible to tell which parts the item covers."
+          }
+        }
+      },
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0.99,
+            "unclear": 0.0,
+            "yes": 0.01
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.94,
+          "probabilities": {
+            "no": 0.96,
+            "unclear": 0.01,
+            "yes": 0.03
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "no": 1.0,
+            "unclear": 0.0,
+            "yes": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.94,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2262,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5733,
+      "item_shortened": false,
+      "request_bytes": 7996
+    },
+    {
+      "anchor_id": "ANC-021",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.",
+      "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-022",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "All writes to an app's SQLite database MUST be submitted to a single writer through an async channel.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: no SQLite write path outside the writer; writer API takes an async channel sender",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-023",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The app's only SQLite write connection MUST be owned by the SQLite writer thread.",
+      "quote": "a single thread that owns the only write connection",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 3,
+      "deterministic_check": "grep: one write-mode Connection::open in the writer thread; other connections opened read-only",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-024",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST reply to each write request only after the transaction containing that write has committed.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: reply observed only after commit hook fires",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-025",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST commit writes that are queued together in a single transaction.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-026",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: no spawn_blocking in callers of the SQLite writer",
+      "kind": "prohibition",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-027",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: writer submit API is async (await on oneshot), no blocking recv in async callers",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-029",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Template generation MUST reject a project that enables cron with the no-database layout.",
+      "quote": "Cron needs a database. Generation MUST reject cron with the no-database layout.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-032",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+      "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 3,
+      "deterministic_check": "grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-033",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+      "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "sc-storage exposes the atomic-unit operation; SQLite, Postgres and MySQL implementations each pass one shared conformance test where a failing operation rolls back the earlier ones",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-9",
+        "reason": "d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.",
+      "attempts": 0
+    }
+  ],
+  "summary": {
+    "counts": {
+      "underspecified": 1,
+      "satisfied": 7,
+      "not_applicable": 7,
+      "excluded": 10
+    },
+    "failing": [
+      "ANC-035"
+    ],
+    "leaning_counts": {
+      "not_applicable": 8,
+      "satisfied": 7
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [
+      {
+        "anchor_id": "ANC-021",
+        "reason": "Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral."
+      },
+      {
+        "anchor_id": "ANC-022",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-023",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-024",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-025",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-026",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-027",
+        "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
+      },
+      {
+        "anchor_id": "ANC-029",
+        "reason": "Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator."
+      },
+      {
+        "anchor_id": "ANC-032",
+        "reason": "d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend."
+      },
+      {
+        "anchor_id": "ANC-033",
+        "reason": "d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8."
+      }
+    ],
+    "shortened": [],
+    "pass": false
+  }
+}
