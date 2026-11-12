@@ -1,0 +1,20 @@
+{
+  "consumer": "run-lead final gate/drift review",
+  "feature": "feature-complete production dependency inspection",
+  "observed_defect": "range13 minor m35: default-only graph could omit optional cron/Monty edges",
+  "deletion_condition": "after final owner approval ordinary Git history suffices",
+  "base": "32c2a1d",
+  "item": "run-d-9",
+  "action": "replace",
+  "before": "Inspect the resolved normal/build dependency graphs of both sc-cron and sc-cron-commands:",
+  "after": "Inspect the resolved normal/build dependency graphs for EACH supported feature set of both published crates, including sc-cron default and monty, and sc-cron-commands default, schema, scheduler, schema+scheduler, monty and schema+monty (monty includes scheduler). Enable the optional scheduler and Monty edges in those inspections; a default-only graph is insufficient. For every inspected feature set:",
+  "why": "The prior outcome named normal/build dependencies but did not identify the feature sets needed to expose optional production edges.",
+  "authority": {
+    "ref": "ANC-061",
+    "commit": "cf23ce0",
+    "quote": "sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.",
+    "deterministic_check": "cargo tree -e normal,build for each published crate and supported feature set shows no sc-compose, sc-composer, sc-composer-beads, agent-team-mail or atm-* crate; sc-sha may appear"
+  },
+  "verification": "Inspections only; no new checker, job, testing matrix, test or dependency edge. Features read from the two current manifests.",
+  "live_gate": "Lead reports 10/10 and0uncovered before this minor clarification; d9 rejudge pending."
+}
