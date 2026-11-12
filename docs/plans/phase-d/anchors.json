@@ -1392,6 +1392,18 @@
           "item": "run-d-6",
           "reason": "d-6 declares no added or retained upper bound beyond Cargo caret (rusqlite ^0.41; 0.42 is a qualification job only), which ANC-019's scope excludes.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T04:43:59+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-6"
+        },
+        {
+          "at": "2026-11-12T04:43:59+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "d-6 keeps rusqlite on a plain ^0.41 caret with no extra upper bound; an optional 0.42 widening after separate qualification widens the range rather than adding a cap, so ANC-019's scope does not apply.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1409,7 +1421,7 @@
         },
         {
           "item": "run-d-6",
-          "reason": "d-6 declares no added or retained upper bound beyond Cargo caret (rusqlite ^0.41; 0.42 is a qualification job only), which ANC-019's scope excludes."
+          "reason": "d-6 keeps rusqlite on a plain ^0.41 caret with no extra upper bound; an optional 0.42 widening after separate qualification widens the range rather than adding a cap, so ANC-019's scope does not apply."
         }
       ]
     },
