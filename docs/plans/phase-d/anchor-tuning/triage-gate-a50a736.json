@@ -1,0 +1,118 @@
+{
+  "consumer": "run-lead independent gate/drift review",
+  "feature": "preserve copied Monty behavior before interpreter extraction",
+  "observed_defect": "range11 M30/M31 baseline test definition changed configurations/required ignored bench; d5 low-confidence ANC039/040/047 cells",
+  "deletion_condition": "after final owner plan approval ordinary Git history suffices",
+  "base": "a50a736",
+  "item": "run-d-5",
+  "action": "replace",
+  "why": "Match the exact existing test configurations/results; make the final dependency/type boundary and immediate post-compile snapshot point explicit without changing the requirements.",
+  "authority": [
+    "Owner exact-copy code AND tests statement",
+    "ANC-062",
+    "ANC-042",
+    "ANC-039",
+    "ANC-040",
+    "ANC-047",
+    "PRD-ENG-4"
+  ],
+  "held_unchanged": "ANC-054 wording, questions, anchors and exclusions",
+  "ruling": "# Gate at a50a736 and range-11 drift (1f4e693..a50a736), run-lead\n\nGate: d-11 now fails ONLY ANC-054, so ANC-051 is fixed. d-5 fails ANC-054 (on HOLD, still with the tuner) plus three new low-confidence conflict cells, all from the baseline wording.\nRange 11 (independent, /Users/randlee/.config/atm/share/run/drift-range11.json): m31 fixed. The d-11/ANC-051 edit matches owner item 4. No ceremony, cap, dropped obligation or graph change.\n\n## M30 + M31 (material, one fix). The baseline test definition is still wrong\n- WHY:\n  - (M30) sc_compose_bench's only test is #[ignore]d, Unix-only, and needs SC_CRON_BENCH=1 plus external sc-compose (tests/sc_compose_bench.rs:698-699), so \"actually ran and passed\" is impossible.\n  - (M31) --all-features never compiles tests/monty_disabled.rs, nor the shipped OS-call denial path in src/monty_run.rs:428-463 (that path exists only without monty-test-handshake). The repo today tests no-features and --features monty (justfile:25).\n- AUTHORITY: owner \"exact copy of current code AND tests including integration tests ... preserve the current excellent work\"; ANC-062/042; PRD-ENG-4.\n- WHAT MUST BE TRUE: the baseline runs the copied package's tests in the same configurations the repo runs them today, and gets the same results as the original. Ignored stays ignored; anything that passes today passes on the copy. Use ordinary cargo commands; add no new checker and invent no new configuration matrix. Simpler is better: \"run the same commands as today\" is the requirement.\n## m32 (minor, optional): d-10 still has the cron.start transform sentence unqualified. d-10 deliverable 5 already says the seam is provisional. Your call.\n\n## d-5 new gate cells (run plan-20261112T232906Z-run-d-5), each leaning satisfied\n- ANC-039 (contradicted, no 0.49). Weak sentence: \"The exact baseline retains its existing dependencies until its copied unit/integration tests pass...\" It isn't clear that the extra dependencies are gone at d-5 closure. AUTHORITY: ANC-039.\n- ANC-040 (contradicted, no 0.49). The copied cron types and names (cron_tick/cron_stop) aren't stated as absent from sc-monty source and tests at closure. AUTHORITY: ANC-040.\n- ANC-047 (contradicted, no 0.52). Weak sentence: \"sc-cron saves each pre-run compiled session...\" \"Pre-run\" doesn't name the capture point (right after compile, before the hook runs). AUTHORITY: ANC-047.\n\nANC-054 is still on HOLD. Fix the rest and push; I'll rejudge the changed sprints and run range 12.\n",
+  "to_fix": [
+    {
+      "field": "description",
+      "before": [
+        "The REQ/ADR amendments state the following contract, implemented by the named downstream owners: sc-cron saves each pre-run compiled session through Storage<MontyBlobRow>, keyed by sc-sha SHA-256(source) plus dump version; source in CronRow is authoritative and only a matching key may load. Missing/corrupt/version-incompatible/missing-hook blobs recompile from source and overwrite; schedule writes reject non-compiling source before a tick (d-9; ANC-044/045/046/048). Transform sources load from an app-owned UTF-8 file at invocation and can be replaced without rebuilding (d-10; ANC-049). Transform/storage_read/storage_write are documented as provisional0.3.0 and their signatures preserve later second-input, typed no-write and atomic-transform additions without building those options (ANC-050/051/052). Basic commands need only types, built-in plain conversion and Storage<T>, without an app-written transform/action; no REQ/ADR mandates hand-writing or forbids later consumer-side generation (ANC-056/057/058). Widget create/delete use storage_write and get uses storage_read. The complete cron command set is cron.start/cron.end via storage_write and cron.list via storage_read; none is excluded. Consumers may enrich JSON before schedule persistence (d-11; ANC-053/054/055/059/060/063)."
+      ],
+      "after": [
+        "The REQ/ADR amendments state the following contract, implemented by the named downstream owners: sc-cron captures each compiled session immediately after compilation and before any hook runs, then saves that snapshot through Storage<MontyBlobRow>, keyed by sc-sha SHA-256(source) plus dump version; source in CronRow is authoritative and only a matching key may load. Missing/corrupt/version-incompatible/missing-hook blobs recompile from source and overwrite; schedule writes reject non-compiling source before a tick (d-9; ANC-044/045/046/048). Transform sources load from an app-owned UTF-8 file at invocation and can be replaced without rebuilding (d-10; ANC-049). Transform/storage_read/storage_write are documented as provisional0.3.0 and their signatures preserve later second-input, typed no-write and atomic-transform additions without building those options (ANC-050/051/052). Basic commands need only types, built-in plain conversion and Storage<T>, without an app-written transform/action; no REQ/ADR mandates hand-writing or forbids later consumer-side generation (ANC-056/057/058). Widget create/delete use storage_write and get uses storage_read. The complete cron command set is cron.start/cron.end via storage_write and cron.list via storage_read; none is excluded. Consumers may enrich JSON before schedule persistence (d-11; ANC-053/054/055/059/060/063)."
+      ]
+    },
+    {
+      "field": "acceptance_criteria",
+      "before": [
+        "boundary:copy-first-tests \u2014 Stage1: in an isolated baseline worktree, copy the whole current sc-cron package, including all Monty implementation code, unit/integration tests, fixture data and existing dependency manifest, exactly; retain its current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree. Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets --all-features against that actual copy, enabling monty, monty-test-handshake and test-utils. Normal test output must show copied Monty code and the monty_hook, monty_host_bridge and sc_compose_bench integration targets actually ran and passed. Record that passing baseline commit before any API change and keep it reachable as an ancestor of the d-5 closing commit, not an orphaned scratch commit. This baseline is not publishable; the old dependency graph is intentional at this stage. Stage2: restore the normal repository workspace with separate sc-cron and sc-monty members while separating the interpreter into sc-monty, retaining every copied assertion. Interpreter assertions run there; scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9. At d-5 closure, ANC-039 applies: sc-monty normal/build dependencies are only pydantic Monty, and no second scheduler/store implementation remains anywhere in sc-monty source or tests. Remove transitional copied scheduler/store fixtures rather than leave a parallel implementation or a dev-dependency cycle. Preserve the exact baseline in Git history; running the original sc-cron code cannot satisfy its copied-code gate (ANC-039/041/042/062; range9 M28)."
+      ],
+      "after": [
+        "boundary:copy-first-tests \u2014 Stage1: in an isolated baseline worktree, copy the whole current sc-cron package, including all Monty implementation code, unit/integration tests, fixture data and existing dependency manifest, exactly; retain its current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree. Run the copied package tests with the same commands/configurations as the repository runs today, against the copy selected by baseline workspace/path wiring, and obtain the same results as the original. The current sc-lint.toml commands are cargo test -p sc-cron and rustup run 1.96.1 cargo test -p sc-cron --features monty (the baseline retains crate identity sc-cron). Keep current feature gates, skips and ignored tests unchanged; the ignored sc_compose_bench benchmark stays ignored. Normal output shows the copied tests and their results in those existing configurations. Add no checker or new configuration matrix. Record that passing baseline commit before any API change and keep it reachable as an ancestor of the d-5 closing commit, not an orphaned scratch commit. This baseline is not publishable; the old dependency graph is intentional at this stage. Stage2: restore the normal repository workspace with separate sc-cron and sc-monty members while separating the interpreter into sc-monty, retaining every copied assertion. Interpreter assertions run there; scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9. At d-5 closure, remove every baseline-only normal/build dependency: sc-monty normal/build dependencies are only the pydantic Monty crates, with no sc-*, tokio or serde_json edge (ANC-039). No cron types or cron-reserved names, including cron_tick and cron_stop, and no second scheduler/store implementation remain anywhere in sc-monty source or tests (ANC-040); cron-specific assertions/fixtures live in sc-cron and exercise the shared interpreter. Remove transitional copied scheduler/store fixtures rather than leave a parallel implementation or a dev-dependency cycle. Preserve the exact baseline in Git history; running the original sc-cron code cannot satisfy its copied-code gate (ANC-039/041/042/062; range9 M28)."
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "anchor": "ANC-039",
+      "run": "plan-20261112T232906Z-run-d-5",
+      "verdict": "underspecified",
+      "why": "Baseline exception lacked an explicit removal obligation for final extra dependencies.",
+      "authority": {
+        "ref": "ANC-039",
+        "commit": "cf23ce0",
+        "quote": "Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json"
+      },
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.49
+        }
+      }
+    },
+    {
+      "anchor": "ANC-040",
+      "run": "plan-20261112T232906Z-run-d-5",
+      "verdict": "underspecified",
+      "why": "Final source/test absence of cron names/types was not explicit.",
+      "authority": {
+        "ref": "ANC-040",
+        "commit": "cf23ce0",
+        "quote": "no cron types or cron-reserved names."
+      },
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.98
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.98
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.49
+        }
+      }
+    },
+    {
+      "anchor": "ANC-047",
+      "run": "plan-20261112T232906Z-run-d-5",
+      "verdict": "underspecified",
+      "why": "Pre-run did not name capture immediately after compile.",
+      "authority": {
+        "ref": "ANC-047",
+        "commit": "cf23ce0",
+        "quote": "The blob is captured immediately after compile, before any run. No run state is persisted."
+      },
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.97
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.11
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.52
+        }
+      }
+    }
+  ]
+}
