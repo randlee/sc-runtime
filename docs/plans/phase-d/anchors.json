@@ -238,6 +238,32 @@
           "item": "run-d-5",
           "reason": "d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 changes MySQL storage crate dependencies only, not template generation's sc-compose version selection.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-11"
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -250,12 +276,8 @@
           "reason": "d-10 changes generated service code; it does not change new_project.py or sc-compose version selection."
         },
         {
-          "item": "run-d-11",
-          "reason": "d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4."
-        },
-        {
           "item": "run-d-5",
-          "reason": "d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11."
+          "reason": "d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work."
         }
       ]
     },
@@ -1230,16 +1252,24 @@
           "at": "2026-11-12T05:23:23+00:00",
           "event": "exclusion_removed",
           "item": "run-d-9"
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-4",
+          "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-10"
         }
       ],
       "exclude": [
         {
           "item": "run-d-4",
           "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs."
-        },
-        {
-          "item": "run-d-10",
-          "reason": "d-10 changes no registry dependency range."
         }
       ]
     },
@@ -1432,6 +1462,27 @@
           "item": "run-d-5",
           "reason": "d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no '<' bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -1445,7 +1496,7 @@
         },
         {
           "item": "run-d-5",
-          "reason": "d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no '<' bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5."
+          "reason": "Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019."
         }
       ]
     },
@@ -1523,6 +1574,13 @@
           "item": "run-d-3",
           "reason": "d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -1654,16 +1712,45 @@
           "item": "run-d-7",
           "reason": "Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-12"
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.",
+          "replaced": true
         }
       ],
       "exclude": [
         {
           "item": "run-d-9",
           "reason": "Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral."
-        },
-        {
-          "item": "run-d-12",
-          "reason": "The default cron-in-app-SQLite configuration is composed and satisfied in d-11; d-12 consumes it for the beads-cache migration."
         },
         {
           "item": "run-d-5",
@@ -1779,6 +1866,55 @@
           "item": "run-d-3",
           "reason": "d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 does not touch the SQLite backend or its writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges and runs existing SQLite tests at both range ends; the single-writer channel is implemented in d-6.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -1905,6 +2041,41 @@
           "item": "run-d-12",
           "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2023,6 +2194,48 @@
           "item": "run-d-11",
           "reason": "Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-11",
+          "reason": "Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2145,6 +2358,48 @@
           "item": "run-d-11",
           "reason": "Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-11",
+          "reason": "Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2253,6 +2508,32 @@
           "item": "run-d-10",
           "reason": "d-10 builds the generated service boundary against the contract storage double and does not implement or change the SQLite writer, backend or store, which d-6 owns.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-10"
         }
       ],
       "exclude": [
@@ -2267,10 +2548,6 @@
         {
           "item": "run-d-9",
           "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns."
-        },
-        {
-          "item": "run-d-10",
-          "reason": "d-10 builds the generated service boundary against the contract storage double and does not implement or change the SQLite writer, backend or store, which d-6 owns."
         }
       ]
     },
@@ -2360,6 +2637,41 @@
           "item": "run-d-12",
           "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2443,6 +2755,13 @@
           "item": "run-d-10",
           "reason": "The generated SQLite app's cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "The generated SQLite app's cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2559,6 +2878,62 @@
           "item": "run-d-3",
           "reason": "d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Template rejection of cron with the no-database layout is owned and satisfied by d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 qualifies dependency ranges and CI range jobs only; rejecting cron with the no-database layout is template generation work in d-11.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -2689,6 +3064,46 @@
           "item": "run-d-12",
           "reason": "Active-name rejection is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-12"
         }
       ],
       "exclude": [
@@ -2711,10 +3126,6 @@
         {
           "item": "run-d-8",
           "reason": "Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code."
-        },
-        {
-          "item": "run-d-12",
-          "reason": "Active-name rejection is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate."
         }
       ]
     },
@@ -2811,6 +3222,46 @@
           "item": "run-d-12",
           "reason": "Row-limit refusal is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-12"
         }
       ],
       "exclude": [
@@ -2833,10 +3284,6 @@
         {
           "item": "run-d-8",
           "reason": "The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code."
-        },
-        {
-          "item": "run-d-12",
-          "reason": "Row-limit refusal is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate."
         }
       ]
     },
@@ -2919,6 +3366,27 @@
           "item": "run-d-12",
           "reason": "Backend Storage<T> conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 consumes Storage<T> through the shared double and implements no engine backend.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Backend Storage<T> conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -3017,6 +3485,27 @@
           "item": "run-d-8",
           "reason": "d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-7",
+          "reason": "d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3027,6 +3516,10 @@
         {
           "item": "run-d-8",
           "reason": "d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread."
+        },
+        {
+          "item": "run-d-12",
+          "reason": "d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer."
         }
       ]
     },
@@ -3102,6 +3595,27 @@
           "item": "run-d-9",
           "reason": "d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -3191,6 +3705,27 @@
           "item": "run-d-3",
           "reason": "d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 touches no storage backend crate; its application stores live in the application layer.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only edits dependency ranges and CI jobs; keeping consumer-specific code out of storage backend crates is owned by d-5 through d-8.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -3266,12 +3801,11 @@
           "item": "run-d-9",
           "reason": "d-9 changes sc-cron storage policy, outside ANC-035's listed crates (sc-storage, sc-runtime-db-sqlite, template stores); its own no-panic criterion covers CronStore/CronStorage.",
           "replaced": false
-        }
-      ],
-      "exclude": [
+        },
         {
-          "item": "run-d-9",
-          "reason": "d-9 changes sc-cron storage policy, outside ANC-035's listed crates (sc-storage, sc-runtime-db-sqlite, template stores); its own no-panic criterion covers CronStore/CronStorage."
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-9"
         }
       ]
     },
@@ -3347,6 +3881,27 @@
           "item": "run-d-5",
           "reason": "d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-11",
+          "reason": "Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T06:40:50+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.",
+          "replaced": true
         }
       ],
       "exclude": [

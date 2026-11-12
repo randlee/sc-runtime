@@ -7,4 +7,4 @@
 {"sprint": "d-9", "depends_on": ["d-5"]}
 {"sprint": "d-10", "depends_on": ["d-3", "d-5"]}
 {"sprint": "d-11", "depends_on": ["d-4", "d-6", "d-7", "d-8", "d-9", "d-10"]}
-{"sprint": "d-12", "depends_on": ["d-4", "d-6", "d-9", "d-10"]}
+{"sprint": "d-12", "depends_on": ["d-11"]}
