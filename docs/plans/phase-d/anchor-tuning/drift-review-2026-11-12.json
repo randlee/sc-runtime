@@ -53,8 +53,8 @@
         "quote": "Generated SQLx-SQLite graphs retain the link-compatible cron-family 0.2.0 floors; they do not receive the 0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1."
       },
       "suggested_fix": "Owner updates intent.md to state that no generated graph carries a sqlx SQLite driver and that every SQLite layout receives the fixed rusqlite graph.",
-      "status": "owner_decision",
-      "fix_note": "Superseded by the later user decision recorded by the lead. The plan already follows the new decision; intent.md text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
+      "status": "open",
+      "fix_note": "Not an owner decision: PRD v2.0 (docs/prd/sc-runtime-prd.md, c2434b3, 2026-11-11 15:40 PST) is the top authority and states PRD-STO-2/3 (SQLite behind the storage trait on the atm-core async channel writer) and PRD-CRON-3 (cron table in the app database). Its Authority rule: 'Where one of them disagrees with this PRD, this PRD is right and the other document is fixed.' intent.md (last rewritten 14:22 PST) predates it. Fix: align intent.md lines 65-68 to the PRD and cite it."
     },
     {
       "id": "M5",
@@ -66,8 +66,8 @@
         "quote": "Success includes a registry consumer using released 0.2.1 crates, resolving the fixed dependencies, passing the relevant advisory checks, and building/running the affected integration."
       },
       "suggested_fix": "Owner updates intent.md to 0.3.0 across 8 crates and records the storage-contract scope as user-justified.",
-      "status": "owner_decision",
-      "fix_note": "Superseded by the later user decision recorded by the lead (0.3.0 across 8 crates; one app database; storage contract). Intent text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
+      "status": "open",
+      "fix_note": "Not an owner decision: intent.md's maintenance-only scope contradicts PRD v2.0 (Storage<T> over SQLite/Postgres/MySQL is a PRD requirement), and the PRD Authority rule says the other document is fixed. The 0.3.0-across-8-crates release is a recorded owner decision (Phase D decisions), not in the PRD; cite that record. Fix: align intent.md lines 18, 68, 76 and 80-82."
     },
     {
       "id": "m1",
@@ -79,8 +79,8 @@
         "quote": "Eight locked anchors now govern the three revised sprints."
       },
       "suggested_fix": "Owner refreshes the planning-status paragraph and points the governs-link at the Beads plan (run-phase-d / phase-d.jsonl).",
-      "status": "owner_decision",
-      "fix_note": "Bookkeeping staleness after later user decisions; owner to refresh intent.md. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
+      "status": "open",
+      "fix_note": "Not an owner decision: bookkeeping. Point intent.md at PRD v2.0 as its authority and at the Beads plan (run-phase-d / phase-d.jsonl); 25 anchors over 10 sprints."
     },
     {
       "id": "m2",
