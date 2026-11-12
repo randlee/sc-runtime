@@ -1,5 +1,7 @@
 # Project plan
 
+**2026-11-11.** [PRD v2.0](prd/sc-runtime-prd.md) now governs this repository. This plan has not been re-planned against it; the changes it implies are listed in [prd/code-alignment.md](prd/code-alignment.md).
+
 Phase A follows the original five milestones: compatibility spike, reusable
 core crates, minimal JSON-driven SQLite template, core release, and wizard.
 Sprints a-1 through a-8 are merged on `integrate/phase-a`.

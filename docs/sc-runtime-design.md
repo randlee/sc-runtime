@@ -1,6 +1,6 @@
 # sc-runtime — Design
 
-Status: final input for sprint planning · 2026-09-19 · Rand Lee
+Status: historical input (2026-09-19 · Rand Lee). Superseded where it conflicts by [PRD v2.0](prd/sc-runtime-prd.md), 2026-11-11. The body below has not been edited.
 
 Source of truth: https://claude.ai/code/artifact/c49d4a44-2689-4a31-82c3-a9056e080d41
 

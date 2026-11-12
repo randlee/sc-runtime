@@ -43,6 +43,8 @@ The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoin
 
 ## REQ-CRON-0004: One configuration table
 
+**Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.
+
 The bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ## REQ-CRON-0005: One error enum
@@ -148,6 +150,8 @@ remain outside an untrusted-code boundary.
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
+**Amended 2026-11-11 (PRD-CRON-2).** `rusqlite` leaves this list when the schedule store moves to `Storage<CronRow>`; until that code change lands the list below describes the code as it is.
+
 This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. Only the temporary defaults-off command contract edge in ADR-RUN-0017
 is allowed; no other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
@@ -236,6 +240,8 @@ core remains free of product HTTP/MCP/CLI APIs. A separate optional standard
 command adapter is permitted by ADR-RUN-0019.
 
 ## REQ-CRON-0020: Public receiver and cooperative owned shutdown
+
+**Under review 2026-11-11.** This target contract is written against `ScheduleStore` and `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned.
 
 The crate exposes the same nominal canonical logging receiver and supporting
 values through `sc_cron::observability`; no parallel trait is introduced.

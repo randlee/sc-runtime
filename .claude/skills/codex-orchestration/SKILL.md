@@ -255,7 +255,7 @@ of the stack.
   validation gate
 - QA cannot PASS unless deliverable completion is 100%
 - QA scope follows the sprint doc's `closure_type`
-  (`.claude/skills/plan-hardening/sprint-planning-guidelines.md`): a
+  (`.claude/project/sprint-planning-guidelines.md`): a
   `contract` or `boundary` sprint is judged against its one
   `target_boundary`, its boundary-rooted criteria and its per-crate
   validation; behaviour listed under "This Sprint Does Not Close" is not a

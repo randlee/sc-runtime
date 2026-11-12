@@ -699,6 +699,8 @@ circular: logging is configured from the values this crate loads.
 ## NFR-CFG-0003: `sc-config` API is synchronous in v0.1
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-ENG-5, PRD-ENG-6).** Scope is unchanged: `sc-config` is synchronous, with no file watcher, no reload and no change notification, and nothing more is to be specified, built or tested here. What changes is one thing only: this document does not take the option away. A consumer may reload or use async around `sc-config`, and the owner may ask for it later. "Reads its configuration once at start-up" and "never in `sc-config`, even behind a feature" were this document's own additions and bind nobody.
+
 
 ### Requirement Statement
 

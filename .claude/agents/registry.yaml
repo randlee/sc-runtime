@@ -84,3 +84,31 @@ skills:
       rust-code-explorer: 0.x
       rust-developer: 0.x
       rust-qa-agent: 0.x
+
+# atm-bd-orchestration configuration (rendered by its installer into
+# .claude/project/atm-bd-orchestration.yaml; the installer rewrites only roles:).
+bead_prefix: run
+worktree_base: ../sc-runtime-worktrees
+test_command: just test
+lint_command: just lint
+integration_branch_pattern: integrate/phase-{phase}
+plans_dir: docs/plan
+requirements_globs:
+  - docs/requirements.md
+  - docs/*/requirements.md
+adr_globs:
+  - docs/architecture.md
+  - docs/*/architecture.md
+policy_path: .claude/project/quality-policy.md
+reviewers_round1:
+  - req-qa
+  - arch-qa
+  - extensibility-qa
+  - ruthless-boundary-qa
+  - rust-qa-agent
+  - rust-best-practices-agent
+  - rust-service-hardening-agent
+roles:
+  dev-sanity: run-sanity
+  quality-mgr: run-qa
+  lead: run-lead

@@ -292,6 +292,8 @@ returns the "lock held" error and its stores closure never runs.
 ## ADR-RT-0003: The project's `Stores`, router and rmcp service pass through
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** See the note on [REQ-RT-0003](requirements.md): opaque `Stores` is the current design, and where the shared command path lives is undecided.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19, section "The crates" (`Stores` is a plain struct defined by the project); applies repo [ADR-RUN-0001](../architecture.md)  
 

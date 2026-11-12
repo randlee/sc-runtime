@@ -80,6 +80,7 @@ Early Phase A work may exist only as plans and bootstrap lint files.
 
 | Path | When required |
 | --- | --- |
+| `docs/prd/sc-runtime-prd.md` | Every review. It governs the two documents in the next row: where a requirement or ADR disagrees with the PRD, the PRD is right and the finding is against the requirement or ADR, not against the work |
 | `docs/requirements.md`, `docs/architecture.md` | Every review |
 | `docs/project-plan.md` | When present; not required before first phase plan lands |
 | `docs/plans/phase-<phase>/` | Plan and sprint reviews for that phase |

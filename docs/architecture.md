@@ -60,7 +60,7 @@ remain release predicates; the source change is under verification.
 | Standalone crates | config loading; listener and client connector; response envelope | this repo, public release artifacts | `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` |
 | Assembly crate | singleton lock, router merge, serve, graceful shutdown, test fixture | this repo, public release artifact | `crates/sc-runtime` |
 | Optional reusable scheduler | SQLite-backed Rust/Python/Monty cron hooks | this repo, public release artifact | `crates/sc-cron` |
-| Internal SQLite writer building block | one rusqlite writer connection/thread | this repo, unpublished | `crates/sc-runtime-db-sqlite` |
+| SQLite writer behind `Storage<T>` (PRD-STO-3, amended 2026-11-11) | one rusqlite writer connection/thread; atm-core design | this repo | `crates/sc-runtime-db-sqlite` |
 | Application layer | operations, routes, MCP tools, CLI commands, stores, schemas | the generated project | rendered from `template/` |
 | Generation tooling | options contract, fixtures, driver, wizard | this repo, not published | `wizard/`, `scripts/`, `tests/unit/` |
 
@@ -87,6 +87,8 @@ flowchart LR
   S --> A[(store-sqlite)]
   S --> B[(store-postgres, later)]
 ```
+
+**Amended 2026-11-11 (PRD §3, §4).** The diagram and paragraph here show the interim, hand-written path. The target is the PRD §3 command pattern over `Storage<T>`.
 
 Request path for one operation: the CLI posts `CreateWidget` JSON to
 `/ops/widget.create`; the handler calls `service::create_widget(stores,
@@ -173,12 +175,14 @@ project. Template CI runs the same driver over every fixture in
 
 - [ADR-RUN-0017: Initial release observability shim](#adr-run-0017-initial-release-observability-shim) (2026-10-31 amendment).
 
-`Active` is binding. `Proposed` is not binding. Sprint a-1 made
+[PRD v2.0](prd/sc-runtime-prd.md) governs every ADR in this file (2026-11-11). Where an ADR disagrees with it, the PRD is right.
+
+`Active` is binding. `Proposed` is not binding. `Superseded` and `Deferred` are not binding. Sprint a-1 made
 ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 | Id | Title | Status |
 |---|---|---|
-| ADR-RUN-0001 | Framework instantiates, project wires; no command registry | Active |
+| ADR-RUN-0001 | Framework instantiates, project wires; no command registry | Active — amended 2026-11-11 (PRD §3, §9) |
 | ADR-RUN-0002 | Thin template; crates published and named by version | Active |
 | ADR-RUN-0003 | Crate dependency graph and the `server` cargo feature | Active |
 | ADR-RUN-0004 | `sc-observability` is initialised by the project, not wrapped | Active |
@@ -189,22 +193,27 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
 | ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
-| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
-| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
+| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Superseded in part by PRD v2.0 (2026-11-11) |
+| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active — point 3 amended 2026-11-11 (PRD §6) |
 | ADR-RUN-0014 | Optional embedder-supplied schedule row limit | Active |
 | ADR-RUN-0015 | Benchmark campaigns in a controlled environment | Active |
 | ADR-RUN-0016 | Explicit Python and Monty hook environments | Active |
+| ADR-RUN-0017 | Initial release observability shim | Active release amendment |
+| ADR-RUN-0018 | Cooperative cron operation and owned shutdown contract | Under review (2026-11-11) |
+| ADR-RUN-0019 | Optional standard cron command adapter and generated wiring | Approved Phase C target |
+| ADR-RUN-0020 | `Storage<T>`: one storage trait, three engines, atm-core SQLite writer | Proposed |
+| ADR-RUN-0021 | One command pattern for CLI, MCP and HTTP | Proposed |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
 | ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Deferred — post-core application layer |
-| ADR-RUN-0301 | One store crate per database backend | Active |
+| ADR-RUN-0301 | One store crate per database backend | Superseded in part by PRD v2.0 (2026-11-11) |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
-| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Deferred (PRD v2.0 §9, 2026-11-11) |
 | ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
-| ADR-RUN-0307 | write_rows upserts one row identity | Active |
+| ADR-RUN-0307 | write_rows upserts one row identity | Deferred (PRD v2.0 §9, 2026-11-11) |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -296,7 +305,9 @@ This documentation amendment claims no implementation, QA or publication pass.
 
 ## ADR-RUN-0001: Framework instantiates, project wires; no command registry
 
-**Status:** Active  
+**Status:** Active — amended 2026-11-11  
+**Amended 2026-11-11 (PRD v2.0 §3, §9).** The owner's principle stands: the framework instantiates, the project wires. The mechanism in points 1 and 2 (every operation hand-written as its own REST handler, MCP tool and CLI command, with no shared command path) was a design recommendation chosen to reach an MVP without a code generator. It is the interim form. The target is the PRD §3 command pattern: one shared write path and one shared read path, with the project supplying `Tcli`, `Tsql` and the transform. "No command registry" does not forbid that shared path.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: the principle was stated by the owner; replacing the command registry with shared service functions is a design recommendation accepted for sprint planning  
 **Amends:** SC scaffold ADR-013 (single assembly point / command registry)  
@@ -541,6 +552,8 @@ authorization remain binding; no hand-written workflow bypass is allowed.
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §4, §6).** The edges in this ADR describe the code as it is and stay enforced until the code changes. Implementing PRD v2.0 changes them ([code-alignment.md](prd/code-alignment.md)).
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; the `server` feature is stated in the design's repository layout. That the feature is off by default, the forbidden-edge lists, the testing rule in point 7 and the build-selection scope in point 8 are decided in this document  
 
@@ -1047,6 +1060,8 @@ constructs of point 3 reachable from public functions.
 ## ADR-RUN-0007: Async end to end on Tokio; `sc-config` is synchronous
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-ENG-5, PRD-ENG-6).** Point 5 stands as scope: `sc-config` is synchronous today and nothing more is built. It does not take the option of async or reload away from a consumer; see the note on [ADR-CFG-0003](sc-config/architecture.md).
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: "everything is async end to end: handler, service function, sqlx pool" stated by the owner and carried unchanged from the earlier SC scaffold decisions; the synchronous `sc-config` follows from the design's dependency list for that crate. Point 4 (library crates, and what is outside the request path) is decided in this document; not stated by the sc-runtime design  
 
@@ -1141,6 +1156,8 @@ criterion for the request paths of `crates/sc-transport` and
 ## ADR-RUN-0008: Requirements must mean less code; prefer standard designs
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** The owner's principle stands: requirements must mean less code. The prohibited-construct list in point 4 is amended in [NFR-RUN-0003](requirements.md): it does not forbid the shared command path or `Storage<T>`, and a generator is undecided. Hand-writing every operation through 22 files is more code, not less.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: stated by the owner as the design's third principle ("standardise below the application layer, with general code, not extra requirements") and as "prefer standard designs over hand-rolled pieces"  
 
@@ -1852,7 +1869,9 @@ process spawn that inherits the caller's environment.
 
 ## ADR-RUN-0301: One store crate per database backend
 
-**Status:** Active  
+**Status:** Superseded in part by PRD v2.0 (2026-11-11)  
+**Superseded in part 2026-11-11 (PRD-STO-2, PRD-STO-3).** Withdrawn: the `store-sqlite` column of point 1 (sqlx `sqlite` driver, two sqlx pools, per-table `query!` functions) and point 2's rule that there is no shared, published store trait. Still standing: `store-postgres` and `store-mysql` use sqlx, one crate per engine.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: one code path to SQL and the SQLite-plus-Postgres pairing stated by the owner; one crate per backend is a design recommendation forced by sqlx 0.9  
 
@@ -1965,7 +1984,9 @@ Amended 2026-10-25.
 
 ## ADR-RUN-0307: write_rows upserts one row identity
 
-**Status:** Active  
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This ADR binds nothing until it is taken up again.
+
 **Decision Date:** 2026-10-27  
 **Source:** arch-qa ARCH-002, 2026-10-27. The upsert contract is recorded here so the earlier sentence stays intact.  
 **Amends:** [ADR-RUN-0301](architecture.md) point 2  
@@ -2003,7 +2024,9 @@ stores follow this contract. They do not clear the table before the write.
 
 ## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
 
-**Status:** Active  
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This ADR binds nothing until it is taken up again.
+
 **Decision Date:** 2026-10-25  
 **Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
 **Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
@@ -2117,6 +2140,8 @@ built from the one `api-types` struct; for point 4, inspection of the rendered
 ## ADR-RUN-0303: Crate graph of the generated workspace
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-STO-3).** The edge "`store-*` MUST depend on `sqlx` with exactly one driver feature" applies to `store-postgres` and `store-mysql`. The SQLite store depends on the atm-core writer, not on sqlx.
+
 **Decision Date:** 2026-09-19  
 **Amended:** 2026-10-25 by [ADR-RUN-0305](architecture.md), [REQ-RUN-0329](requirements.md), and [REQ-RUN-0330](requirements.md)  
 **Source:** sc-runtime design, 2026-09-19: the generated-project crate table is a design recommendation accepted for sprint planning. The edges to `sc-command`, the edge `daemon` -> `api-types` and the location of `Stores` are not in that table; they follow necessarily from the design's own code for a service function, a REST handler and an MCP tool, as stated in each point  
@@ -2629,7 +2654,7 @@ option excludes is absent from the rendered project) and of
 
 ### Decision
 
-1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`.
+1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`. **Amended 2026-11-11 (PRD-STO-3, PRD-ENG-1/2):** the sole `Runtime::block_on` exception is a runtime owned and driven on the SQLite writer's or reader pool's dedicated OS thread, as in atm-core. It must never run on a Tokio request worker or turn a caller's storage API into a blocking call; callers enqueue and await a reply. No other `block_on` variant or sleep exemption is introduced.
 2. Production code MUST NOT hold a `std::sync::Mutex` guard across `.await`.
 3. `yield_now` is legal. It is how the rusqlite writer fills its batch budget.
 4. Until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) is in the pinned `sc-lint` and this repo's `minimum_version` requires that release, `just lint` greps `crates/` and `template/` for the calls in point 1. A match fails unless a `cfg` predicate that requires `test` guards it, the file is reached only by a `mod name;` under such a cfg, or the match line has a same-line allow comment. `#[cfg(test)]` and `#[cfg(all(test, feature = "test-util"))]` require `test`. A `mod name;` under either cfg exempts the included module file and the modules that file includes. A cfg that can hold with `test` unset does not exempt the match. The grep is removed when those rules replace it.
@@ -2653,7 +2678,9 @@ Sprint `b-2` keeps the grep until sc-lint#640 lands, then deletes it and raises 
 
 ## ADR-RUN-0012: Rusqlite writer is its own crate; template stores stay sqlx
 
-**Status:** Active  
+**Status:** Superseded in part by PRD v2.0 (2026-11-11)  
+**Superseded in part 2026-11-11 (PRD-STO-2, PRD-STO-3).** Correction to the Source line: the owner's requirement is that SQLite, Postgres and MySQL are interchangeable behind a storage trait and that the SQLite writer is the atm-core high-performance design. Withdrawn: the title clause "template stores stay sqlx"; point 1's rule that the template store does not depend on the writer; point 2 ("There is no `StorageBackend`"), to the extent it forbids any storage trait; point 6. Still standing: the batching mechanism in points 3 and 4, and the typed error in point 5. Point 7 and the blocking handle are replaced by the async input described in ADR-RUN-0020.
+
 **Decision Date:** 2026-10-25  
 **Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only, and the absent-write-actor sentence in [ADR-RUN-0008](architecture.md). Points 1–7 of ADR-RUN-0301 stay in force for generated stores.
 
@@ -2668,7 +2695,7 @@ The measured atm-core path is a different mechanism: one rusqlite connection on 
 1. `sc-runtime-db-sqlite` is a workspace crate. Its public handle is `SqliteWriter`. It depends on no other workspace crate. `sc-runtime`, `sc-config`, `sc-transport`, and `sc-command` do not depend on it. Template `store-sqlite` does not depend on it.
 2. There is no `StorageBackend`, no `sc-runtime-db`, no `sc-runtime-db-sqlx`, and no `sc-runtime-db-fsqlite` in this phase. Documents under `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/` are withdrawn. `docs/sc-runtime-db-sqlite/` is rewritten by sprint `b-1` to this contract.
 3. `SqliteWriter::execute` enqueues. The writer thread is the only rusqlite caller. Contiguous executes share one savepoint inside one `BEGIN IMMEDIATE` transaction. Each caller is answered only after that transaction commits. A `transaction` closure runs alone on that thread and is not folded into another caller's batch.
-4. `yield_now` is the drain. `sleep`, `sleep_until`, and `block_on` are not. A `std::sync::Mutex` guard is not held across `.await` ([ADR-RUN-0011](architecture.md)).
+4. `yield_now` is the drain; the async-input implementation uses `tokio::task::yield_now` within the 1 ms budget. `sleep`, `sleep_until`, and `block_on` are not drain operations. The dedicated SQLite worker may drive its own runtime with `Runtime::block_on` under the narrow ADR-RUN-0011 exception; this does not permit blocking a caller or Tokio request worker. A `std::sync::Mutex` guard is not held across `.await` ([ADR-RUN-0011](architecture.md)).
 5. `SqliteWriterError` is the crate's one error enum. It is not `Box<dyn Error>` and not an observability `ErrorCode`.
 6. The facade does not gain a `.db()` method and does not inspect the writer. A project that wants the actor depends on this crate itself. A second database is a second `SqliteWriter` the project constructs.
 7. `SqliteWriter::open` takes a path and nothing else. The channel capacity, batch budget, write deadline, and shutdown join are the constants in the crate architecture. A production caller does not pass options.
@@ -2685,7 +2712,7 @@ Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc
 
 ## ADR-RUN-0013: sc-cron is the SQLite cron crate
 
-**Status:** Active  
+**Status:** Active — point 3 amended 2026-11-11  
 **Decision Date:** 2026-10-25  
 **Amended:** 2026-10-29. Point 3 records the pre-release schema baseline; point 4 and the consequences define the b-16 extensible host interface and b-17 hook environment; approved ANC-027 through ANC-042 govern this amendment.
 **Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
@@ -2700,7 +2727,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The generated daemon names it as an optional dependency only: feature `cron` enables it and feature `monty` implies `cron` plus `sc-cron/monty`; neither is a default feature. Comments and schema descriptions may name the crate without adding another manifest edge. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, the hook target, and the canonical Python/Monty hook-environment document from [ADR-RUN-0016](architecture.md). The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Sprint b-17 defines the first published schema at `SCHEMA_VERSION = 1`; it has no compatibility obligation or migration ladder for unreleased development cuts. Amended 2026-10-28.
+3. Configuration is one table, defined by a `CronRow` struct and stored through `Storage<CronRow>` in one of the application's databases, the SQLite database by default (PRD-CRON-2, PRD-CRON-3). There is no separate cron database, and cron requires a database (PRD-CRON-4). Amended 2026-11-11; the earlier "its own database file" wording is withdrawn. A row holds the name, the cron string, the timeout, a JSON payload, the hook target, and the canonical Python/Monty hook-environment document from [ADR-RUN-0016](architecture.md). Schedule writes go through the application's storage like any other table. Sprint b-17 defines the first published schema at `SCHEMA_VERSION = 1`; it has no compatibility obligation or migration ladder for unreleased development cuts. Amended 2026-10-28.
 4. The hook target is a Rust function, a Python module, or application-supplied in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset.
 
    Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its name, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
@@ -2721,7 +2748,7 @@ Sprint b-3 ports the scheduler, b-9 adds Monty, and b-10 proves production host 
 ### Related Documents
 
 - beads-cache ADR-BDC-0006.
-- [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
+- [ADR-RUN-0012](architecture.md). Withdrawn 2026-11-11: the cron table uses the application's storage, not a separate rusqlite connection.
 - [ADR-RUN-0014](architecture.md). Optional embedder-supplied schedule row limit.
 - [ADR-RUN-0016](architecture.md). Explicit Python and Monty hook environments.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
@@ -2731,6 +2758,8 @@ All production release crates (`sc-config`, `sc-transport`, `sc-command`, `sc-ru
 ## ADR-RUN-0014: Optional embedder-supplied schedule row limit
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-CRON-2).** The limit and its meaning stand. Cron owns the row-limit policy; `CronStorage: Storage<CronRow>` atomically checks the limit and admits the new row in the same storage operation, so independent callers cannot race a separate count and write. This replaces the old bundled SQLite store's count check without weakening the limit.
+
 **Decision Date:** 2026-10-27  
 **Source:** Owner, 2026-10-27. Recorded in [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
 
@@ -2906,6 +2935,8 @@ exfiltration by trusted hook code.
 ## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §9).** The clauses "These commands do not add a command registry" and "Framework crates do not move rows" in point 4 bind nothing: the first does not forbid the shared command path, and row movement is deferred with synchronization.
+
 **Decision Date:** 2026-10-25  
 **Source:** Owner, 2026-10-25, recorded as [REQ-RUN-0331](requirements.md).
 
@@ -3145,6 +3176,8 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 
 ## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
 
+**Under review 2026-11-11.** This contract is built on `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned against PRD v2.0.
+
 Phase C's default command intake completes this same pre-submission admission
 contract with finite per-Scheduler capacity (default64, validated finite
 pre-start override), immediate typed refusal rather than an unbounded wait
@@ -3219,3 +3252,155 @@ physical ownership and truthful error/outcome duties. C-6 extends existing
 usage documentation with one selected-default recipe and the c-5 store-example
 link; c-4 consumes it through real generated and registry-only composition.
 No new plugin framework, automatic job start or private wiring is required.
+
+## ADR-RUN-0020: `Storage<T>` — one storage trait, three engines, atm-core SQLite writer
+
+**Status:** Proposed — draft for owner review. Not binding.
+**Decision Date:** pending
+**Source:** Owner, 2026-11-11 (design session). Statements, verbatim or near-verbatim:
+
+- "I want sqlite/postgres/sql to be interchangeable behind traits (this is where sqlx came in), and I want the sqlite writer to be the high performance design used in atm-core."
+- "Storage<T> would allow reading or writing T to a database."
+- "Cron is just a table. It is defined by a struct for the rows. … it could just be Storage<CronRow>."
+- Cron's table lives "in the app's database … in the sqlite database by default." "Cron would require a database, so 'none' isn't really an option."
+- "We should not have any synchronous code in sc-runtime unless absolutely necessary." "sc-runtime is a tokio app." Sync-over-async "sounds like an unsound architecture."
+- "You could implement CronStorage : Storage<T> if you wanted to. I am just saying what I want is very simple."
+
+### Product context
+
+Owner, 2026-11-11: "I need to write 10-20 apps that all have the same patterns. One or more databases (matrix I specified). Most will actually sync the same data in a one (sql/postgres)-many (sqlite) manner. They all have cli, http, mcp which would default to the same set of endpoints. Optional cron w/ storage in one of the databases."
+
+Owner, 2026-11-11, on why `Storage<T>` matters: "I expect this pattern to be most situations: cli-command<Tcli> <-- http --> daemon --> transform<Tcli,Tsql> -> storage<Tsql> -> write."
+
+Owner, 2026-11-11, on the transform: "You need to be able to get in the middle of the transform method w/ business logic. But a lot of basic things that is all you need. Cron would work that way."
+
+Owner, 2026-11-11, on authoring and generation: "I really want to be able to write the function in python (or better yet monty). There will be additional paths like this, but they could all follow this pattern. It would be easy to write a code generator that generates this code using sc-compose at the consumer end, or better yet, build a syn based generator." (Recorded for context; the command/transform pattern and its generator are outside this ADR's decision.)
+
+Measured on `develop` at `4da05e3`: the template's one example entity (widget) appears in 22 non-test source files across `api-types`, `cli`, `daemon`, `service`, `schema`, three store crates and the adaptor crates.
+
+### Context
+
+Verified on `develop` at `4da05e3`:
+
+1. There is no storage trait. Commit `85720583` (2026-10-25) withdrew `StorageBackend` because its raw-SQL `execute`/`query` methods were a portable SQL layer that contradicted ADR-RUN-0301. Nothing replaced it.
+2. There are three SQLite write paths: `template/crates/store-sqlite` (sqlx), `sc-cron`'s `SqliteScheduleStore` (its own rusqlite connection, in a separate `cron.db`), and `sc-runtime-db-sqlite`'s `SqliteWriter` (the atm-core batching design). The third has no dependents.
+3. `SqliteWriter` copies atm-core's batching (1 ms drain, `BEGIN IMMEDIATE`, savepoints, reply after commit) but not its async input: callers block on `std::sync::mpsc`. atm-core (`atm-storage-rusqlite`, `de4d569f6`) uses a bounded `tokio::sync::mpsc` channel with a oneshot reply, and a reader pool for reads.
+4. `sc-cron`'s `ScheduleStore` trait is synchronous and its SQLite store refuses any database that holds another table.
+5. ADR-RUN-0007 (async end to end on Tokio), ADR-RUN-0008 (requirements must mean less code) and ADR-RUN-0201 (daemon owns the database) are Active and already say what the owner restated. Items 2–4 do not follow them.
+
+### Decision
+
+1. `Storage<T>` is an async trait that reads and writes `T`. It carries no SQL. That is its whole contract.
+2. SQLite, Postgres and MySQL each implement `Storage<T>`. Application code, cron and the generated template are written against the trait; the layout chosen at generation selects the implementation.
+3. The SQLite implementation is the atm-core design: a bounded async channel in, one writer thread that owns the only write connection, writes batched into one `BEGIN IMMEDIATE` transaction, reply after commit; reads through a reader pool. The channel is internal to the implementation. Use rusqlite 0.41 as the tested security floor, permitting compatible upgrades: RUSTSEC-2026-0459 requires libsqlite3-sys >=0.39 (first shipped by rusqlite 0.41), while sqlx-sqlite 0.9.0 requires >=0.30.1,<0.38.0. See [Phase D dependency evidence, line 36](https://github.com/randlee/sc-runtime/blob/562ca49a0bd9423ce9de2189a2077b7a317695e3/docs/plans/phase-d/issue-133-dependency-sweep.md#L36). This implementation choice is settled, not an open owner decision.
+4. Postgres and MySQL implementations use sqlx.
+5. Callers enqueue and await without blocking or wrapping storage calls in `spawn_blocking`. Synchronous rusqlite work stays on dedicated writer/reader threads; those threads may drive their own runtime with `Runtime::block_on` under ADR-RUN-0011. The yield-based drain remains `tokio::task::yield_now`. This storage rule does not change sc-config's synchronous scope or make pure constructors/parsers async.
+6. Cron is a `CronRow` struct stored through `Storage<CronRow>` in the application's database (the SQLite database when the layout has one). There is no `cron.db` and no `cron.database_path`.
+7. Cron requires a database. The generator rejects `db = none` with `cron = true`.
+8. Anything a table needs beyond read and write is an extension trait over `Storage<T>` (PRD-STO-5). Existing cron callers need `CronStorage: Storage<CronRow>` for atomic conditional and multi-row operations, including generation-fenced writes, row-limit/active-name admission, `set_enabled_many` and `replace_and_set_enabled`. Domain policy remains in cron; the storage extension keeps the check and mutation atomic across independent callers. Separate read/check/write calls are not equivalent.
+
+### Consequences
+
+Removed or replaced (each to be confirmed against code when planned):
+
+- `sc-cron`: replace the bundled own-file store with app storage in the storage-alignment minor, after the cooperative-operation contract is decided. Preserve and port generation-fencing, two-process, multi-row atomicity, schema and retained cooperative behavior tests; remove only the own-file expectation. `ScheduleStore` and its re-exports are not removed in a 0.2.x patch. Retire schema/scope implementation modules and the direct rusqlite dependency only once equivalent behavior is covered through `Storage<CronRow>` / `CronStorage` and the consumer below has migrated.
+- `sc-runtime-db-sqlite`: the blocking `SqliteWriter` handle; the batching core is kept and given the async input.
+- Template: per-table sqlx functions in `store-sqlite` (`insert_widget`, `get_widget`), the sqlx SQLite driver, `EngineStore`/`RowRecord`, and `cron.database_path`.
+
+Superseded in whole or in part:
+
+- ADR-RUN-0012: title, points 1, 2 and 6 ("template stores stay sqlx", "There is no `StorageBackend`", the writer is not behind a trait).
+- ADR-RUN-0013: point 3 ("its own database file") and "Schedule writes do not go through `SqliteWriter`".
+- ADR-RUN-0301: the `store-sqlite` column of point 1 (sqlx `sqlite` driver) and point 2 (`EngineStore`).
+- REQ-CRON-0004 (the bundled own-file store) and the own-file guard in `crates/sc-cron/src/sqlite.rs`.
+
+### Open — owner decides, nothing assumed
+
+1. Exact method set. Sketch only: `read(key) -> Option<T>`, `read_all() -> Vec<T>`, `write(&T)`. Whether delete exists.
+2. How `T` names its table, columns and key (derive, or a small hand-written impl).
+3. Who creates and migrates tables.
+4. Where the trait and each implementation live. Owner note, 2026-11-11: sc-runtime is too big; new work should be one crate per repo.
+5. Synchronization between databases: deferred by the owner, 2026-11-11 ("We will worry about synchronization once [we] copy the code we already have to build sc-runtime"). `Storage<T>` stays read and write until then.
+
+### Standalone consumer migration
+
+beads-cache at `8e883ee99cb9c34dfb89fb39e25323d54ae6f2ad` already keeps cron
+in its app database through `CacheScheduleStore` in
+`crates/bd-cache-store/src/schedule.rs:80,164`. Migrate that implementation and
+its scheduler call sites to `Storage<CronRow>` / `CronStorage`, retaining the
+existing rows, generation fencing and atomic operations. This real consumer is
+the acceptance subject for the storage-alignment minor. `ScheduleStore` is not
+removed from a 0.2.x maintenance patch; removal requires that migration to pass,
+not just an in-repository fake store. The cooperative-operation decision gates
+CRON-3/4/7 as well as the contract rewrite in the candidate worklist.
+
+
+### Not reviewed for this draft
+
+ADR-RUN-0014, 0018, 0019, 0305, 0306, 0307 and the REQ-RUN-03xx storage requirements touch the same code and were not read in full. The Phase C cooperative-operation scope (ADR-RUN-0018) is built on `SqliteScheduleStore` and is affected. The size of that change is not estimated. Nothing here has been compiled or tested.
+
+## ADR-RUN-0021: One command pattern for CLI, MCP and HTTP
+
+**Status:** Proposed — draft for owner review. Not binding.
+**Decision Date:** pending
+**Source:** Owner, 2026-11-11, verbatim:
+
+```
+cli write: cli-command<Tcli> <-- http --> daemon --> transform<Tcli,Tsql> -> storage<Tsql> -> write
+cli read:  cli-command<Tcli> <-- http --> daemon --> storage<Tsql> -> read --> transform<Tsql,Tcli> -> Tcli
+
+mcp write: mcp-command<Tcli> <-- http --> daemon --> transform<Tcli,Tsql> -> storage<Tsql> -> write
+mcp read:  mcp-command<Tcli> <-- http --> daemon --> storage<Tsql> -> read --> transform<Tsql,Tcli> -> Tcli
+```
+
+- "Since cli and mcp both use http, the same pattern would apply for http as well."
+- "Just like atm-core this would be offered over uds or tcp."
+- "We would want some access/permission differences between the interfaces."
+- "You need to be able to get in the middle of the transform method w/ business logic. But a lot of basic things that is all you need. Cron would work that way."
+- Scale: "I need to write 10-20 apps that all have the same patterns."
+- Scope: "Plus cron, sc-observability for logging, sc-config for json configuration would cover 100% of what sc-runtime is."
+
+### Decision
+
+1. Most commands follow one of the two paths, write or read, as drawn above (owner: "most situations"). CLI, MCP and HTTP are three interfaces onto the same path through the daemon.
+2. A command is defined by `Tcli` (the type the interface speaks), `Tsql` (the stored row) and the transform between them. Storage is `Storage<Tsql>` (ADR-RUN-0020 draft).
+3. The transform is the one place for business logic. The default is a plain conversion; an app replaces it where it has rules.
+4. The daemon is reached over HTTP on a Unix domain socket or TCP.
+5. The interfaces differ in access and permission, not in the path.
+6. Cron follows this pattern.
+7. sc-runtime is exactly: this command pattern, `Storage<T>`, cron, Monty, `sc-observability` for logging, and `sc-config` for JSON configuration. Anything else needs a reason to exist.
+
+### What exists today (verified on `develop` at `4da05e3`)
+
+- `sc-transport` already resolves `uds:<path>` and `tcp:<addr>` endpoints.
+- ADR-RUN-0201 (daemon owns the database; all clients use HTTP) and ADR-RUN-0202 (one Axum router carries REST, OpenAPI and MCP) are Active and agree with points 1 and 4.
+- Access control exists only at the transport: socket-file permissions on UDS, unauthenticated loopback TCP (ADR-TRN-0005). No per-interface permission was found.
+- The template's example entity (widget) is hand-written through 22 non-test source files; there is no generic write or read path.
+
+### Documents that blocked this pattern (amended 2026-11-11)
+
+Read on `develop` at `4da05e3` (Source line and the opening decision points of each ADR; not the full text):
+
+| Document | What it binds | Where the mechanism came from, per its own Source line |
+|---|---|---|
+| ADR-RUN-0001 | Every operation is hand-written in project code: two structs, one `async fn` in `service`, and a separate REST handler, MCP tool and CLI command. "No command registry." | "the principle was stated by the owner; replacing the command registry with shared service functions is a design recommendation accepted for sprint planning" |
+| ADR-RUN-0301, ADR-RUN-0303 | Each `store-*` crate depends on sqlx with exactly one driver; per-table typed query functions; `EngineStore` is not a published trait | "one crate per backend is a design recommendation forced by sqlx 0.9" |
+| ADR-RUN-0305, ADR-RUN-0306 | Rows move only in a generated consumer adaptor; "Framework crates do not move rows"; general commands "do not add a command registry" | Owner, 2026-10-25 |
+| ADR-RUN-0012 | "There is no `StorageBackend`"; template stores stay sqlx | Owner, 2026-10-25, recorded as "Do not put it behind a SQL trait shared with sqlx" |
+| ADR-RUN-0013, REQ-CRON-0004 | Cron owns a separate database file | Reintroduced by commit `7534865f` after the owner's "one SQLite table" |
+
+`docs/requirements.md`, this file and the per-crate requirements and architecture files were then scanned by keyword for further conflicts and amended (2026-11-11). That scan was not a full read.
+
+### Open — owner decides, nothing assumed
+
+1. What the access and permission differences between CLI, MCP and HTTP are.
+2. How an app supplies its transform, and what the transform may call (for example, reading storage).
+3. Paths that do not fit write or read ("There will be additional paths like this, but they could all follow this pattern").
+
+### Monty
+
+Owner, 2026-11-11: "Monty is NOT out of scope. Monty is done." Monty is part of sc-runtime and is already implemented (today in `sc-cron` behind the `monty` feature: `monty_run.rs`, `monty_host.rs`, `MontyHostRegistry`). The owner wants to be able to write the transform function in Python "or better yet Monty".
+
+### Not decided
+
+Code generation for this pattern (sc-compose at the consumer end, or a syn-based generator). Only the generator is deferred: a hand-written shared read/write path and a real Python/Monty transform caller fulfill PRD-CMD-4/5 without waiting for a generator choice. Owner intent is recorded in the ADR-RUN-0020 draft.

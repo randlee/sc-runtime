@@ -281,6 +281,8 @@ stale-PID file to clean up and no race between checking and claiming.
 ## REQ-RT-0003: The project's `Stores` type is opaque to `sc-runtime`
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** `Stores` being opaque to this crate is the current design. The shared command path needs `Storage<T>`; whether it lives in this crate or beside it is undecided.
+
 
 ### Requirement Statement
 
@@ -838,6 +840,8 @@ machine, never on a developer's host
 ## NFR-RT-0001: `sc-runtime` is assembly only, no registry, macro or wrapper
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §9).** This item describes the `sc-runtime` crate as it is. PRD §3 requires a shared command path in the product. Which crate or repository holds it is undecided (PRD §9), so this item must not be read as forbidding that path from existing. The macro clause follows the generator decision.
+
 
 ### Requirement Statement
 

@@ -8,7 +8,9 @@
 
 ---
 
-Repo-level requirements for `sc-runtime`. They are extracted from
+**Authority (2026-11-11).** [PRD v2.0](prd/sc-runtime-prd.md) governs this document. Where a requirement below disagrees with the PRD, the PRD is right. Requirements changed to match it carry the date 2026-11-11 and a PRD id.
+
+Repo-level requirements for `sc-runtime`. They were extracted from
 [`sc-runtime-design.md`](sc-runtime-design.md) (final input for sprint planning,
 2026-09-19). Each requirement states its facts in full, so it can be read
 without that document.
@@ -46,6 +48,8 @@ Three principles decide what belongs here:
 3. **Standardise below the application layer with general code, not extra
    requirements.** A requirement is admitted only if it results in less code.
 
+**Amended 2026-11-11 (PRD v2.0 §3, §4).** Principle 1 does not mean every project hand-writes the path between an interface and storage. That path is shared: a project supplies its types (`Tcli`, `Tsql`) and its transforms, and wires by choosing where its rules go. Hand-written commands are the interim form (PRD §9).
+
 ## ID Ranges
 
 | Range | Area | Scope |
@@ -70,9 +74,9 @@ each waits until a project asks for it.
 | Database layouts other than SQLite-only | accepted when that layout's store crate exists ([REQ-RUN-0326](requirements.md)); v0.1 generates SQLite only |
 | `store-mysql` | when the first project needs it |
 | SQL Server | never; sqlx has no driver |
-| SQLite batched write actor inside template `store-sqlite` | forbidden; that crate stays the sqlx two-pool store ([ADR-RUN-0301](architecture.md) points 1–7) |
-| Library rusqlite writer `sc-runtime-db-sqlite` | phase `b`; not a portable query layer and not a template dependency ([ADR-RUN-0012](architecture.md)) |
-| `sc-cron` | phase `b`; SQLite-backed cron ported from beads-cache ([ADR-RUN-0013](architecture.md)) |
+| SQLite batched write actor | required: the atm-core writer is the SQLite implementation of `Storage<T>` (PRD-STO-3). The earlier "forbidden" entry is withdrawn, 2026-11-11 |
+| Library rusqlite writer `sc-runtime-db-sqlite` | the atm-core writer behind `Storage<T>` (PRD-STO-3). The "not a template dependency" rule is withdrawn, 2026-11-11 |
+| `sc-cron` | cron's table is a row struct stored through `Storage<CronRow>` in the application's database (PRD §6), 2026-11-11 |
 | `tracing` bridge into `sc-observability` | undecided |
 | Bearer token for TCP; Origin and Host checks on `/mcp` | ideas only; relevant only on TCP |
 | Surface snapshots and adapter-drift tooling | owned by sc-lint |
@@ -80,8 +84,8 @@ each waits until a project asks for it.
 | `sc-config` reload, change notification, async interop | later, possibly `sc-config-tokio` |
 | stdio MCP clients | a stdio-to-HTTP shim is a later option |
 | A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the safety rule remains in [NFR-RUN-0010](requirements.md), while generated-project wording is deferred with [REQ-RUN-0311](requirements.md) |
-| Forwarding inside the sc-runtime crates, a replication mechanism, an outbox, or a routing policy | the crates do not do it; the generated consumer adaptor moves rows, including a cache ([ADR-RUN-0305](architecture.md)) |
-| A query layer portable across database backends | never; each store crate has one fixed backend |
+| Synchronization between databases (forwarding, replication, an outbox, a routing policy, a consumer adaptor) | deferred by the owner (PRD §9); no mechanism is bound, 2026-11-11 |
+| A raw-SQL layer portable across database backends | never. `Storage<T>` is not one: it carries no SQL (PRD-STO-1, PRD-STO-2), 2026-11-11 |
 | Web-application features: HTML templating, sessions, user authentication | never; this is not a web-app framework |
 | Adopting an existing scaffold (loco-rs, rust-web-app, axum-postgres-template) | never; none has the daemon plus thin-client split, so they stay pattern references |
 | Generating the prototype set of example repositories and handing it to the sc-lint team | first step after the MVP |
@@ -99,7 +103,7 @@ each waits until a project asks for it.
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
-The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. `sc-runtime-db-sqlite` is not a store the generated daemon opens and is not a template dependency. The generated daemon may depend on `sc-cron` only through the optional `cron` feature fixed by [REQ-RUN-0301](requirements.md); feature-off generated builds do not link it.
+The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Amended 2026-11-11 (PRD-STO-3): `sc-runtime-db-sqlite` holds the atm-core SQLite writer that sits behind `Storage<T>`; the earlier rule that it is not a store the daemon opens and not a template dependency is withdrawn. The generated daemon may depend on `sc-cron` only through the optional `cron` feature fixed by [REQ-RUN-0301](requirements.md); feature-off generated builds do not link it.
 
 | Member path | Crate name | Purpose |
 |---|---|---|
@@ -453,6 +457,8 @@ and transitive edges. Direct-depth normal-only checks below are historical
 minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §4, §6).** The edge tables below describe the code as it is and stay enforced until the code changes. PRD v2.0 changes these edges when it is implemented ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` and stores its table through `Storage<CronRow>`, and the SQLite writer is no longer forbidden to the template and the runtime.
+
 
 ### Requirement Statement
 
@@ -825,6 +831,8 @@ second example that nobody maintains.
 ## REQ-RUN-0201: One operation, three surfaces, one service function
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD v2.0 §3, §9).** A separately hand-written REST handler, MCP tool and CLI command per operation is the interim form of the command pattern, used because the generator does not exist yet. The target is one shared write path and one shared read path for all three interfaces.
+
 
 ### Requirement Statement
 
@@ -1447,6 +1455,8 @@ item.
 ## REQ-RUN-0301: Layout of the workspace rendered from `template/`
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** This layout is the interim, hand-written form. `store-sqlite` on sqlx, the per-layout service files and the adaptor crates are not the target; see PRD §3 and §4.
+
 
 ### Requirement Statement
 
@@ -1614,6 +1624,8 @@ REST and MCP have exactly one place to call.
 ## REQ-RUN-0302: Template example operations `widget.create`, `widget.get`
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §9).** The widget example is the interim, hand-written form of the command pattern. "Typed query functions" in `store-sqlite` and "one service function is the only path to SQL" describe that interim form; the target is `Tcli`, `Tsql`, a transform and `Storage<Tsql>`.
+
 **Amended:** 2026-10-25 by [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
 ### Requirement Statement
@@ -2077,7 +2089,9 @@ evidence records the 0.8.4 exit-3 behavior and remains unchanged.
 
 ## REQ-RUN-0308: Generated `store-sqlite` crate
 
-**Status:** Active  
+**Status:** Superseded by PRD-STO-2 and PRD-STO-3 (2026-11-11)  
+The SQLite store is the atm-core writer behind `Storage<T>`, not two sqlx pools with per-table query functions. The text below is kept for history and binds nothing.
+
 
 ### Requirement Statement
 
@@ -2588,7 +2602,9 @@ functions costs nothing and needs no mocking layer.
 
 ## REQ-RUN-0313: The store relationship lives in a consumer adaptor
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2600,7 +2616,9 @@ The relationship between the local SQLite store and the remote Postgres or SQL s
 
 ## REQ-RUN-0314: The copy adaptor matches the remote schema
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2612,7 +2630,9 @@ The copy adaptor is a local SQLite database with the remote schema, for faster o
 
 ## REQ-RUN-0315: The host-aggregate adaptor collects many hosts
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2624,7 +2644,9 @@ The host-aggregate adaptor is one SQLite database for this host and a Postgres d
 
 ## REQ-RUN-0316: The consumer defines the host rollup
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2636,7 +2658,9 @@ The consumer repository defines the rollup from host rows into the Postgres aggr
 
 ## REQ-RUN-0317: `just new` generates the adaptor
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2648,7 +2672,9 @@ Adaptor Rust code and models in a new repository are generated by the command `j
 
 ## REQ-RUN-0318: The `sc-runtime` library crate does not generate the adaptor
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2660,7 +2686,9 @@ The library crate named `sc-runtime` does not generate adaptor code.
 
 ## REQ-RUN-0319: Generation flags name one-sided tables and columns
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2672,7 +2700,9 @@ Generation flags name tables and columns that exist on only one of the two store
 
 ## REQ-RUN-0320: One generated implementation per common pattern
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2696,7 +2726,9 @@ Each database engine's SQL is in that engine's store crate.
 
 ## REQ-RUN-0322: An advanced adaptor is consumer code
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2708,7 +2740,9 @@ An adaptor that is neither the copy pattern nor the host-aggregate pattern is wr
 
 ## REQ-RUN-0323: The application schedules store synchronization
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2720,7 +2754,9 @@ Store synchronization is scheduled by the consuming application. The adaptor sta
 
 ## REQ-RUN-0324: The consumer adaptor moves rows between stores
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2732,7 +2768,9 @@ The consumer adaptor moves rows between the local store and the remote store.
 
 ## REQ-RUN-0325: The sc-runtime crates do not move rows between stores
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2750,7 +2788,7 @@ The sc-runtime crates do not move rows between stores.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
-sqlx 0.9 ships drivers for SQLite, Postgres, and MySQL. Postgres and MySQL are the SQL engines. A later sqlx driver is another engine in this set. The layouts are:
+Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core writer (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
 
 | Layout | Stores |
 |---|---|
@@ -2761,19 +2799,22 @@ sqlx 0.9 ships drivers for SQLite, Postgres, and MySQL. Postgres and MySQL are t
 | SQLite and Postgres | `store-sqlite` and `store-postgres` |
 | SQLite and MySQL | `store-sqlite` and `store-mysql` |
 
-A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
+A layout renders the stores in its row. Synchronization and adaptor generation are deferred (PRD §9); a two-store layout does not require an adaptor. Existing adaptor code remains as interim code, not a new implementation or deletion obligation. A layout with no database renders no store crate.
 
-Phase b generates all six layouts, the store pairing, and the adaptor. Postgres and MySQL are the same wave so the pairing is not hardened on one remote engine.
+Phase b's existing pairing/adaptor code is historical implementation, retained as interim code. The target supports all six database layouts without requiring synchronization or a new adaptor.
 
 ### Success Criteria
 
 1. `wizard/answers.schema.json` accepts each layout in the table.
-2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
+2. Generating each layout renders the stores in that row. Adaptor generation is not a success criterion while synchronization is deferred; existing interim adaptor code is not deleted by this requirement.
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
+4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
 
 ## REQ-RUN-0327: Paired stores use the same schema or a similar schema
 
-**Status:** Active
+**Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
+Synchronization between databases is deferred by the owner. This requirement binds nothing until it is taken up again.
+
 
 ### Requirement Statement
 
@@ -2789,11 +2830,11 @@ Two stores in one application use the same schema or a similar schema.
 
 ### Requirement Statement
 
-Two stores in one application use one shared trait or a different trait per store.
+Every store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.
 
 ### Success Criteria
 
-1. A generated pair names one trait that both stores implement, or a trait for each store.
+1. A generated pair names one trait that both stores implement.
 
 ## REQ-RUN-0329: A generated package name carries the project name
 
@@ -3943,6 +3984,8 @@ try_log admission, which has no capacity wait/sink I/O but takes internal locks.
 This is not a wait-free guarantee; all other request-path rules below apply.
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD-ENG-1, PRD-ENG-2).** Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite writer and reader-pool work runs on dedicated threads, which may drive their own runtime with `Runtime::block_on` under ADR-RUN-0011; callers still enqueue and await without blocking.
+
 
 ### Requirement Statement
 
@@ -3954,7 +3997,7 @@ MUST be asynchronous on the Tokio runtime:
 | REST handler | `crates/daemon/src/routes.rs` | MUST be an `async fn` |
 | MCP tool | `crates/daemon/src/mcp.rs` | MUST be an `async fn` |
 | service function | `crates/service` | MUST be an `async fn` |
-| store query function | `crates/store-sqlite`, `crates/store-postgres` | MUST be an `async fn` that awaits an `sqlx::Pool` |
+| store call | the `Storage<T>` implementation | MUST be an `async fn`. SQLite awaits the writer's channel reply; Postgres and MySQL await an `sqlx::Pool` (PRD-STO-3, amended 2026-11-11) |
 
 Code on a request path MUST NOT block a Tokio runtime thread. It MUST NOT
 call `block_on`, `std::thread::sleep`, blocking `std::fs` or `std::net` I/O,
@@ -3977,9 +4020,10 @@ file's permissions when `sc-transport` binds
 removing the socket file during the `sc-runtime` shutdown sequence
 ([REQ-RT-0005](sc-runtime/requirements.md)). They MAY use `std::fs`.
 
-`sc-config` is synchronous by design and is not on a request path: a process
-loads its configuration once at start-up. The decision that everything else
-is async on Tokio, with `sc-config` as the exception, is recorded in
+`sc-config` stays synchronous under PRD-ENG-5/6. Loading at start-up describes
+the current use; it does not forbid a consumer from choosing a later reload.
+No watcher, reload or async configuration work follows from this exception.
+The nonblocking Tokio path, with the exceptions above, is recorded in
 [ADR-RUN-0007](architecture.md).
 
 ### Rationale
@@ -4022,6 +4066,8 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 ## NFR-RUN-0003: Standard crates, used the documented way
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §3, §4, §9).** The prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) "A command or operation registry" does not forbid the shared command path of PRD §3. (2) "A portable query layer" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) "A macro system" and "a code generator of its own" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD §9). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.
+
 
 ### Requirement Statement
 
