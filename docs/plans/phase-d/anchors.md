@@ -429,6 +429,7 @@ Deterministic check to pair with the development gate: Plan: each retained extra
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
 - `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
+- `run-d-5`: d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no '<' bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5.
 
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 

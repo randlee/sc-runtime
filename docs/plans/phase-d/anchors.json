@@ -1425,6 +1425,13 @@
           "at": "2026-11-12T05:23:23+00:00",
           "event": "exclusion_removed",
           "item": "run-d-9"
+        },
+        {
+          "at": "2026-11-12T05:27:31+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no '<' bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1435,6 +1442,10 @@
         {
           "item": "run-d-8",
           "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes."
+        },
+        {
+          "item": "run-d-5",
+          "reason": "d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no '<' bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5."
         }
       ]
     },
