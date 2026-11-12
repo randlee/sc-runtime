@@ -53,3 +53,12 @@ Remove this file only if the owner withdraws these guidelines.
   reviews each exclusion as possible drift: it accepts or rejects it.
 - The lead runs the gates and the drift review against the owner's quotes and
   intent, and reports the results.
+
+## Failure reports (owner ruling, 2026-11-12)
+
+Every gate failure report must give two things for each failing cell and each fix:
+
+- **Why:** the run, the question, Jev's answer and confidence, and the weak or conflicting sentence.
+- **Authority:** the specific locked ANC, REQ or ADR, dated before the failure, that justifies the change or any added text.
+
+A single generic authority shared by several fixes does not count. The rule applies to the planner's triage record and push messages and to the lead's failure reports. The triage record is committed with the run evidence.
