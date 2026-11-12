@@ -433,7 +433,6 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
 - `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
 - `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
-- `run-d-6`: d-6 keeps rusqlite on a plain ^0.41 caret with no extra upper bound; an optional 0.42 widening after separate qualification widens the range rather than adding a cap, so ANC-019's scope does not apply.
 
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
