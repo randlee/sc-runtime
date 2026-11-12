@@ -1,0 +1,313 @@
+{
+  "consumer": "run-lead independent gate/drift review and owner final HTML",
+  "gate": "d-10 relevance-only correction",
+  "observed_defect": "Generic service plan receives low-confidence relevance for SQLite-only anchor",
+  "retirement": "Archive with final Phase D review after implementation closes",
+  "failed_revision": "c46b1f7",
+  "failures": [
+    {
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-027",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081756Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.53,
+            "probabilities": {
+              "no": 0.69,
+              "unclear": 0.04,
+              "yes": 0.27
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.76,
+            "probabilities": {
+              "no": 0.84,
+              "unclear": 0.04,
+              "yes": 0.12
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.43,
+            "probabilities": {
+              "yes": 0.36,
+              "no": 0.62,
+              "unclear": 0.02
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.83,
+            "probabilities": {
+              "yes": 0.1,
+              "no": 0.89,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.39,
+              "no": 0.58,
+              "unclear": 0.03
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.43,
+            "probabilities": {
+              "yes": 0.3,
+              "no": 0.62,
+              "unclear": 0.08
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.6,
+            "probabilities": {
+              "yes": 0.73,
+              "no": 0.26,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.68,
+            "probabilities": {
+              "no": 0.79,
+              "unclear": 0.03,
+              "yes": 0.18
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.85,
+            "probabilities": {
+              "no": 0.9,
+              "unclear": 0.02,
+              "yes": 0.08
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.53
+          }
+        ],
+        "weak_sentence": "Storage submission is never wrapped in spawn_blocking.",
+        "diagnosis": "d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint."
+      },
+      "authority": {
+        "revision": "c46b1f7",
+        "path": "docs/plans/phase-d/anchors.json",
+        "id": "ANC-027",
+        "version": 2,
+        "status": "locked",
+        "statement": "Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.",
+        "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+        "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+        "predates_failure": true
+      },
+      "reason": "d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint."
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-027",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081756Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.53,
+            "probabilities": {
+              "no": 0.69,
+              "unclear": 0.04,
+              "yes": 0.27
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.76,
+            "probabilities": {
+              "no": 0.84,
+              "unclear": 0.04,
+              "yes": 0.12
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.43,
+            "probabilities": {
+              "yes": 0.36,
+              "no": 0.62,
+              "unclear": 0.02
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.83,
+            "probabilities": {
+              "yes": 0.1,
+              "no": 0.89,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.39,
+              "no": 0.58,
+              "unclear": 0.03
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.43,
+            "probabilities": {
+              "yes": 0.3,
+              "no": 0.62,
+              "unclear": 0.08
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.6,
+            "probabilities": {
+              "yes": 0.73,
+              "no": 0.26,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.68,
+            "probabilities": {
+              "no": 0.79,
+              "unclear": 0.03,
+              "yes": 0.18
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.85,
+            "probabilities": {
+              "no": 0.9,
+              "unclear": 0.02,
+              "yes": 0.08
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.53
+          }
+        ],
+        "weak_sentence": "Storage submission is never wrapped in spawn_blocking.",
+        "diagnosis": "d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint."
+      },
+      "authority": {
+        "revision": "c46b1f7",
+        "path": "docs/plans/phase-d/anchors.json",
+        "id": "ANC-027",
+        "version": 2,
+        "status": "locked",
+        "statement": "Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.",
+        "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+        "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+        "predates_failure": true
+      },
+      "reason": "d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint."
+    }
+  ],
+  "evidence": {
+    "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T081756Z-run-d-10.json",
+    "run_sha256": "68b34fb89a9176a0332dab4af4715293cd5ec9657b2bf3473eb1d382ff3848df",
+    "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-c46b1f7/run-d-10.txt",
+    "snapshot_sha256": "72b3cb3be857e180da0d152078e37a2f76c2c967ef2e3578b7e36b5f156ed2a8"
+  },
+  "other_owner": {
+    "item_id": "run-d-6",
+    "anchor_id": "ANC-027",
+    "run_id": "plan-20261112T081329Z-run-d-6",
+    "verdict": "satisfied"
+  }
+}

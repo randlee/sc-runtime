@@ -640,6 +640,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
 - `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+- `run-d-10`: d-10 implements engine-neutral sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. SQLite submission/reply behavior is owned by d-6 and integrated by d-11; d-10 retains its generic nonblocking storage-submission constraint.
 
 Beads: anchor `run-n4fl`, plan questions `run-n4fl.1`, dev questions `run-n4fl.2`
 
