@@ -369,9 +369,10 @@ command is. A project could then do only what the wrappers expose.
    merge the project's router, the OpenAPI document route, a health route and
    the MCP service if one was given; bind the listener through `sc-transport`
    and serve with graceful shutdown on SIGINT and SIGTERM.
-4. The library crates do not implement a command generator in Phase D.
-   Consumer-side generation is follow-up work and is permitted. The library
-   crates MUST NOT introduce public wrappers or re-exports of Axum, rmcp or sqlx types.
+4. The workspace library crates retain the existing repo-internal macro
+   policy and ban on public wrappers/re-exports of Axum, rmcp and sqlx types.
+   Phase D builds no generator. This does not forbid the shared command path
+   or follow-up consumer-side generation against the delivered framework.
 5. The project MUST pass the builder an ordinary `utoipa_axum::OpenApiRouter`
    and, optionally, an ordinary rmcp service, each returned from a closure.
 6. `Stores` is a plain struct defined by the project. `sc-runtime` MUST NOT
@@ -3439,10 +3440,10 @@ Consumer-side code generation is follow-up work against a delivered sc-runtime. 
 
 ### Exact Phase D command and interpreter contract proposed for ratification (2026-11-12)
 
-1. sc-command owns plain async `storage_read(action, transform, key)`/`storage_write(action, transform, input)`, typed `StorageCommandError` and an open Transform seam. The default is plain type conversion; custom app business rules replace it. The app supplies a typed async storage action: widget actions use Storage<T>/WidgetStorage, cron actions use policy-checked CronStorage. Helpers own conversion/transform/error composition once; no raw-row fallback bypasses cron checks.
+1. sc-command owns plain async `storage_read(store, transform, key)`/`storage_write(store, transform, input)` over Storage<T>, typed `StorageCommandError` and an open Transform seam. Built-in read/write behavior and default plain conversion need neither a hand-written transform nor an app-written storage action. Only cron uses a library-provided policy adapter in sc-cron-commands that delegates to CronStorage; the raw backend stays private and no policy is duplicated. Helpers own conversion/transform/error composition once.
 2. Transform and both helpers are documented as provisional in0.3.0. Extensible input/context and typed outcome construction, with compatible default methods where needed, preserve later addition of a second input, Ok with no write distinct from Err, and transforms inside an atomic transaction. Phase D builds none of those three behaviors and imposes no permanent prohibition. Its interpreter transform completes before the storage transaction.
 3. sc-monty is the one Monty implementation: compile, compiled session, limits, host dispatch, typed errors and session dump/load. It exposes a compiled session and value-level `MontyInvoke<Tin,Tout>` (script, function name, inputs -> output). Production dependencies are only pydantic Monty crates: no sc-*, Tokio, serde_json, cron types or reserved cron names. Start with an exact copy of current sc-cron code AND unit/integration tests, passing before extension; preserve all assertions through extraction. No second interpreter host remains in cron, command or template code.
-4. sc-cron consumes sc-monty and owns JSON/value conversion and cron-specific adaptation; hooks receive values, never JSON strings. d-10 calls sc-monty directly with runtime-loaded source that can be replaced without rebuilding. The app's bounded blocking adapter keeps interpreter work off Tokio request workers; it never blocks storage submission. No-cron generated applications can select Monty independently.
+4. sc-cron consumes sc-monty and owns JSON/value conversion and cron-specific adaptation; hooks receive values, never JSON strings. d-10 calls sc-monty directly with source read at invocation from an app-owned UTF-8 script file whose path is supplied at daemon configuration; replacing its contents requires no rebuild. File/UTF-8 failures are typed transform errors. The app's bounded blocking adapter keeps interpreter work off Tokio request workers; it never blocks storage submission. No-cron generated applications can select Monty independently.
 5. Widget create/delete use storage_write; widget get uses storage_read. Cron start/end use storage_write and list uses storage_read, preserving policy-checked CronStorage actions. An app can append/modify user JSON before cron.start persists its script-plus-data schedule. Internal scheduler lifecycle transitions stay in domain transactions because they are not user commands. All CLI/MCP/HTTP surfaces use these same application paths.
 
 ADR-RUN-0020 and ADR-RUN-0021 remain Proposed until the owner ratifies this exact contract. No ratification is inferred from this amendment.

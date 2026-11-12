@@ -4078,7 +4078,7 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 
 ## NFR-RUN-0003: Standard crates, used the documented way
 
-**Amended 2026-11-12 (owner requirement change).** Command-path code may be written directly as the interim form; no command path is required to be hand-written. A command whose Tcli converts directly to Tsql uses the default conversion without a custom transform. Consumer-side generators are follow-up work running in a consuming project against delivered sc-runtime; this requirement does not forbid them. No generator is built in Phase D. Owner item 6.
+**Amended 2026-11-12 (owner item 6; ANC-057/058).** No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.
 
 **Status:** Active  
 **Amended 2026-11-11 (PRD §3, §4, §9).** The prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) "A command or operation registry" does not forbid the shared command path of PRD §3. (2) "A portable query layer" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) "A macro system" and "a code generator of its own" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD §9). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.
@@ -4103,10 +4103,10 @@ chosen crates are:
 The repository MUST NOT contain any of the following, in `crates/` or in
 `template/`:
 
-- public framework wrappers that hide the standard command interfaces;
-- a command generator implemented in Phase D. A later consumer-side generator
-  may generate the shared command path against the delivered framework;
-- a generated Rust HTTP client in the delivered Phase D template;
+- a command or operation registry;
+- a macro system of its own: no crate with `proc-macro = true`, and no
+  `macro_rules!` macro that defines operations, routes or tools;
+- a code generator of its own, including a generated Rust HTTP client;
 - a portable query layer, meaning any abstraction that lets one query run on
   more than one database backend;
 - a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The
@@ -4129,9 +4129,8 @@ is recorded in [ADR-RUN-0008](architecture.md).
 2. The `arch-qa` architecture review checks the public API of each of the
    four crates against [ADR-RUN-0001](architecture.md), which states that the
    framework builds the parts and the project wires them in ordinary Rust. It
-   checks the Phase D scope and reports no public newtype or trait whose only
-   purpose is to hide an `axum`, `rmcp` or `sqlx` type. This does not forbid
-   future consumer-side generation of command paths.
+   reports no registry type, no generator and no public newtype or trait
+   whose only purpose is to hide an `axum`, `rmcp` or `sqlx` type.
 3. Inspection of the template: the example routes are registered with
    `utoipa_axum::routes!` on an `OpenApiRouter`, the example MCP tools use
    `#[tool]` and `#[tool_router]`, and the CLI uses `clap` derive.

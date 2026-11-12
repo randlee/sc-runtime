@@ -501,6 +501,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.
 - `run-d-7`: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.
 - `run-d-8`: d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
 
 Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
 
@@ -747,6 +748,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-6`: One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
 - `run-d-7`: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
 - `run-d-8`: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
 
 Beads: anchor `run-z85b`, plan questions `run-z85b.1`, dev questions `run-z85b.2`
 
@@ -774,6 +776,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-6`: The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
 - `run-d-7`: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
 - `run-d-8`: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
 
 Beads: anchor `run-9pf5`, plan questions `run-9pf5.1`, dev questions `run-9pf5.2`
 
@@ -966,6 +969,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.
 - `run-d-10`: d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.
 - `run-d-9`: d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.
+- `run-d-6`: This backend sprint does not create/read/write .sc-runtime tested dependency metadata or its generation tool; d-12 alone owns that behavior, and range/graph work is explicitly outside ANC-038 scope.
 
 Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2`
 
@@ -987,6 +991,12 @@ Scope: plan items that create or change the sc-monty crate or its Cargo.toml
 
 Deterministic check to pair with the development gate: cargo tree -p sc-monty -e normal,build --all-features shows no sc-*, tokio or serde_json crate
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-yaji`, plan questions `run-yaji.1`, dev questions `run-yaji.2`
 
 Fixtures:
@@ -1006,6 +1016,12 @@ Summary: sc-monty has no cron types or names
 Scope: plan items that create or change the sc-monty crate's public types or names
 
 Deterministic check to pair with the development gate: grep crates/sc-monty/src for Cron, cron_tick, cron_stop: no hits
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-4711`, plan questions `run-4711.1`, dev questions `run-4711.2`
 
@@ -1027,6 +1043,9 @@ Scope: plan items that create sc-monty or change Monty hosting in sc-cron, sc-co
 
 Deterministic check to pair with the development gate: grep crates and template sources outside crates/sc-monty for use of the monty/monty-types crates: no hits; sc-cron and the transform caller depend on sc-monty
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+
 Beads: anchor `run-7yi7`, plan questions `run-7yi7.1`, dev questions `run-7yi7.2`
 
 Fixtures:
@@ -1046,6 +1065,10 @@ Summary: cron hook tests ported, not weakened
 Scope: plan items that change sc-cron's Monty hooks or move Monty hosting out of sc-cron
 
 Deterministic check to pair with the development gate: every pre-existing sc-cron Monty hook test name is present after the change and passes with unchanged assertions
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-yn8d`, plan questions `run-yn8d.1`, dev questions `run-yn8d.2`
 
@@ -1087,6 +1110,13 @@ Scope: plan items that change sc-cron hook compilation or sc-cron's storage tabl
 
 Deterministic check to pair with the development gate: sc-cron defines a compiled-hook row type stored through Storage<T>; no backend crate gains code for it
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-te1w`, plan questions `run-te1w.1`, dev questions `run-te1w.2`
 
 Fixtures:
@@ -1106,6 +1136,10 @@ Summary: blob key = sc-sha SHA-256 of source + dump version
 Scope: plan items that change how sc-cron stores or looks up compiled Monty hook sessions (the saved result of compiling a cron hook script)
 
 Deterministic check to pair with the development gate: the compiled-hook row key is computed with sc-sha over the hook source plus the Monty dump version; a test changes either and gets a miss
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-nd6j`, plan questions `run-nd6j.1`, dev questions `run-nd6j.2`
 
@@ -1127,6 +1161,10 @@ Scope: plan items that change how sc-cron loads compiled hook sessions
 
 Deterministic check to pair with the development gate: a test edits the schedule's hook source and shows the old blob is not loaded
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-n2ay`, plan questions `run-n2ay.1`, dev questions `run-n2ay.2`
 
 Fixtures:
@@ -1146,6 +1184,10 @@ Summary: blob captured right after compile, no run state
 Scope: plan items that change when or what sc-cron stores for a compiled hook session
 
 Deterministic check to pair with the development gate: the blob is written in the compile path before the first tick; stored bytes equal a fresh compile of the same source after runs
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-zjoo`, plan questions `run-zjoo.1`, dev questions `run-zjoo.2`
 
@@ -1167,6 +1209,9 @@ Scope: plan items that change sc-cron schedule creation, replacement or hook com
 
 Deterministic check to pair with the development gate: a test submits a schedule whose hook does not compile and gets a typed error with no row written
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+
 Beads: anchor `run-vi2g`, plan questions `run-vi2g.1`, dev questions `run-vi2g.2`
 
 Fixtures:
@@ -1187,6 +1232,11 @@ Scope: plan items that add or change a Monty or Python command transform or its 
 
 Deterministic check to pair with the development gate: a test replaces the transform source at run time, without rebuilding, and the next command uses the new source
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-y0v1`, plan questions `run-y0v1.1`, dev questions `run-y0v1.2`
 
 Fixtures:
@@ -1206,6 +1256,12 @@ Summary: command seam documented as not yet stable
 Scope: plan items that define, document or publish Transform, storage_read or storage_write
 
 Deterministic check to pair with the development gate: sc-command rustdoc and README mark Transform, storage_read and storage_write as not yet stable
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
 
 Beads: anchor `run-25z5`, plan questions `run-25z5.1`, dev questions `run-25z5.2`
 
@@ -1246,6 +1302,14 @@ Summary: seam shape leaves room for three extensions
 Scope: plan items that define the signatures of Transform, storage_read or storage_write
 
 Deterministic check to pair with the development gate: design review of the Transform/storage_read/storage_write signatures shows each extension can be added as a new item without changing existing signatures
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-cz0z`, plan questions `run-cz0z.1`, dev questions `run-cz0z.2`
 
@@ -1307,6 +1371,9 @@ Scope: plan items that change cron schedule creation, cron commands or the comma
 
 Deterministic check to pair with the development gate: a test supplies an app transform that appends a field to the user's schedule JSON; the written CronRow contains it
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+
 Beads: anchor `run-qjv1`, plan questions `run-qjv1.1`, dev questions `run-qjv1.2`
 
 Fixtures:
@@ -1326,6 +1393,12 @@ Summary: direct conversions need no hand-written transform
 Scope: plan items that define the command transform (Tcli is the type an interface speaks, Tsql the stored row), its default or the template's commands
 
 Deterministic check to pair with the development gate: a test command whose Tcli and Tsql have the same fields runs through storage_write with the default transform and no app-written transform
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
 
 Beads: anchor `run-w5ju`, plan questions `run-w5ju.1`, dev questions `run-w5ju.2`
 
@@ -1347,6 +1420,15 @@ Scope: plan items that add or amend ADRs or REQs about the command path or trans
 
 Deterministic check to pair with the development gate: grep docs/requirements.md, docs/architecture.md and per-crate docs for wording requiring hand-written commands: none outside history notes
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+- `run-d-4`: Generator tool installation/version selection does not amend any command-path or transform REQ/ADR; d-5 owns those amendments.
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-z29j`, plan questions `run-z29j.1`, dev questions `run-z29j.2`
 
 Fixtures:
@@ -1366,6 +1448,14 @@ Summary: no REQ/ADR forbids a consumer-side generator
 Scope: plan items that add or amend ADRs or REQs about code generation or the command path
 
 Deterministic check to pair with the development gate: grep the REQ/ADR set for wording forbidding generators; any no-generator rule is limited to sc-runtime's own crates
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-6nsz`, plan questions `run-6nsz.1`, dev questions `run-6nsz.2`
 
@@ -1387,6 +1477,9 @@ Scope: plan items that change the template's widget commands or service
 
 Deterministic check to pair with the development gate: the sprint text names which of widget create/get/delete use storage_read or storage_write
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+
 Beads: anchor `run-8xhu`, plan questions `run-8xhu.1`, dev questions `run-8xhu.2`
 
 Fixtures:
@@ -1406,6 +1499,13 @@ Summary: a widget write uses storage_write
 Scope: plan items that change the template's widget commands or service
 
 Deterministic check to pair with the development gate: generated service tests show a widget write command calling storage_write
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-9`: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-v3j3`, plan questions `run-v3j3.1`, dev questions `run-v3j3.2`
 
@@ -1447,6 +1547,11 @@ Scope: plan items that create sc-monty or move Monty code or tests out of sc-cro
 
 Deterministic check to pair with the development gate: the first sc-monty commit's Monty sources and tests match sc-cron's monty_run.rs/monty_host.rs and their unit and integration tests (diff limited to crate paths and names); they pass before any API change
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+- `run-d-11`: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
+
 Beads: anchor `run-7ejc`, plan questions `run-7ejc.1`, dev questions `run-7ejc.2`
 
 Fixtures:
@@ -1466,6 +1571,12 @@ Summary: a widget read uses storage_read
 Scope: plan items that change the template's widget commands or service
 
 Deterministic check to pair with the development gate: generated service tests show a widget read command calling storage_read
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-6`: Generic SQLite backend work changes neither command APIs/widgets nor command-path REQ/ADRs or .sc-runtime tested-version metadata; those are owned by d-5/d-10/d-12.
+- `run-d-7`: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-8`: Generic MySQL backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+- `run-d-12`: Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.
 
 Beads: anchor `run-50cw`, plan questions `run-50cw.1`, dev questions `run-50cw.2`
 

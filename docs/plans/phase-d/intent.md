@@ -27,9 +27,10 @@ The template ships a recommended Cargo.lock at the newest tested combination;
 .sc-runtime/tested-dependencies.json records those versions for reference and
 future revert/upgrade tools (ANC-038). The normal build and test suites check the selected versions.
 
-**Release.** The recorded owner decision is coordinated **0.3.0** across eight
+**Release.** The recorded owner decision is coordinated **0.3.0** across nine
 crates: `sc-storage`, `sc-runtime-db-sqlite`, `sc-config`, `sc-transport`,
-`sc-command`, `sc-runtime`, `sc-cron` and `sc-cron-commands` (owner message
+`sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands` and `sc-monty` (owner
+2026-11-12 requirement change item 1 adds the ninth crate; original version message
 01M76S6D7T58E4CMKHJRCXFJ1J; `run-phase-d` release metadata). This supersedes
 the earlier 0.2.1 target. The live plan owns package, advisory, integration and
 consumer proof; this document claims no implementation or publication pass.
