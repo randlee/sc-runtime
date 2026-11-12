@@ -14,8 +14,8 @@
         "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
       },
       "suggested_fix": "Keep d-12 as the single publication blocker, but make it name the check. Run the sc-lint#931 panic rule over every crate with changed public storage functions: sc-storage, sc-runtime-db-sqlite, sc-cron/sc-cron-commands and the template stores. Run the transaction-body analyzer over changed transaction bodies. Both must be clean before the first upload. Restore 'Analyzer rejects awaits on non-tx handles and calls to unmarked helpers' and 'or a new explicit user decision; no implicit waiver' in d-5 design or d-12. Per CQA-F002, the owner sprint (d-6, and d-9 for sc-cron) runs the rule when it is available and records its state honestly. Remove the dangling 'configured sc-boundary .' fragments.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Restored actual sc-lint#931 no-panic and transaction-body analyzer requirements on changed storage code in d-5/d-6/d-9/d-11; missing rules block owner closure. Restored rejection of non-transaction awaits/unmarked helpers and no implicit waiver. d-12 names both actual rules as publication blockers once. Per lead ruling01M770ZDRPY1QTBCYK6ZN7SBM2, no rule CLI/ID exists yet: actual commands must be recorded when delivered; none invented or claimed run."
     },
     {
       "id": "M2",
@@ -27,8 +27,8 @@
         "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
       },
       "suggested_fix": "Ask the owner whether the released rusqlite range may widen to include 0.42 after qualification. If yes, restore round-1 deliverable 4 ('qualify 0.42 separately before widening'), require the widened bound's manifest comment, and remove the d-6 ANC-019 exclusion so the gate judges it. If no, record that user decision and delete 'optional0.42 widening separately passes' from d-6 and 'qualifies range/widening' from d-12 design so the plan is consistent.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Restored d-6 rusqlite ^0.41 baseline with no extra cap and optional released-range widening to0.42 only after separate qualification passes; aligned kept-caps and d-12 consumer range text. No dependency restriction added."
     },
     {
       "id": "M3",
@@ -40,8 +40,8 @@
         "quote": "Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness."
       },
       "suggested_fix": "Add the round-1 sentence, unchanged in meaning, as a d-5 acceptance criterion, with a required test command in sc-storage. Keep the engines' 'wire, do not reimplement' line.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Restored controlled-clock/observer wrapper acceptance and cargo test -p sc-storage coverage in d-5, with no wall-clock/sleep/load correctness assertions. d-6/d-7/d-8 keep wiring the single wrapper."
     },
     {
       "id": "M4",
@@ -118,8 +118,8 @@
         "quote": "Use an upper bound only where a known break requires one, and say why in a comment."
       },
       "suggested_fix": "Reword the d-11 test to fail on an exact, tilde or extra-upper requirement that lacks an adjacent comment naming its demonstrated break, matching d-12's package-caps-check.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "d-11 generated-manifest regression test rejects exact/tilde/extra-upper restrictions lacking an adjacent demonstrated-break comment, matching ANC-019 and d-12."
     },
     {
       "id": "m5",
@@ -131,8 +131,8 @@
         "quote": "The release sprint must prove the actual beads-cache configuration uses the fixed released graph."
       },
       "suggested_fix": "Restore 'validate the beads-cache migration against the exact post-conversion rehearsal archives before the first upload', attached to the one remaining rehearsal, not as a second rehearsal.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "Restored actual beads-cache migration validation against the unpacked exact post-version-conversion archives before the first upload, inside the single remaining rehearsal. No duplicate rehearsal added."
     }
   ],
   "acceptable_choices": [
