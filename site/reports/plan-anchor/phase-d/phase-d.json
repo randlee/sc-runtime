@@ -1949,7 +1949,7 @@
     }
   ],
   "baseline_rev": "4f02154",
-  "commit": "739e3da",
+  "commit": "ec75baa",
   "drift_review": {
     "acceptable_choices": [
       {
@@ -2117,11 +2117,11 @@
           "quote": "Generated SQLx-SQLite graphs retain the link-compatible cron-family 0.2.0 floors; they do not receive the 0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1.",
           "ref": "docs/plans/phase-d/intent.md lines 66-68 (superseded by lead-recorded user decision: no sqlx SQLite driver; all SQLite through the async channel writer)"
         },
-        "fix_note": "Superseded by the later user decision recorded by the lead. The plan already follows the new decision; intent.md text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0.",
+        "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate.",
         "id": "M4",
         "location": "intent.md lines 66-68 (Dependency policy direction)",
         "severity": "material",
-        "status": "owner_decision",
+        "status": "fixed",
         "suggested_fix": "Owner updates intent.md to state that no generated graph carries a sqlx SQLite driver and that every SQLite layout receives the fixed rusqlite graph.",
         "what_changed": "Stale intent, not plan drift. Intent still says generated SQLx-SQLite graphs keep the cron-family 0.2.0 floors and do not get the SQLite fix. The later user decisions route all SQLite access through the async channel writer, with no sqlx SQLite driver and one app database. The plan follows the later decisions: d-6 and d-11 require that `cargo tree -i sqlx-sqlite` selects nothing."
       },
@@ -2130,11 +2130,11 @@
           "quote": "Success includes a registry consumer using released 0.2.1 crates, resolving the fixed dependencies, passing the relevant advisory checks, and building/running the affected integration.",
           "ref": "docs/plans/phase-d/intent.md line 76 and Proof and scope (superseded by lead-recorded user decision: version 0.3.0 across 8 crates)"
         },
-        "fix_note": "Superseded by the later user decision recorded by the lead (0.3.0 across 8 crates; one app database; storage contract). Intent text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0.",
+        "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate.",
         "id": "M5",
         "location": "intent.md lines 18, 68, 76 (release version) and lines 80-82 (scope)",
         "severity": "material",
-        "status": "owner_decision",
+        "status": "fixed",
         "suggested_fix": "Owner updates intent.md to 0.3.0 across 8 crates and records the storage-contract scope as user-justified.",
         "what_changed": "Stale intent, not plan drift. Intent targets a published 0.2.1 and a maintenance-only scope in which new product features need separate justification. The later user decisions set 0.3.0 across 8 crates and add the Storage<T>/sc-storage contract with SQLite, Postgres and MySQL engines. The plan (d-5..d-12) follows the later decisions."
       },
@@ -2143,11 +2143,11 @@
           "quote": "Eight locked anchors now govern the three revised sprints.",
           "ref": "docs/plans/phase-d/intent.md lines 97-98"
         },
-        "fix_note": "Bookkeeping staleness after later user decisions; owner to refresh intent.md. Still open at c8596c0: intent.md did not change in 964095d..c8596c0.",
+        "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate.",
         "id": "m1",
         "location": "intent.md lines 3 and 97-98 (planning status)",
         "severity": "minor",
-        "status": "owner_decision",
+        "status": "fixed",
         "suggested_fix": "Owner refreshes the planning-status paragraph and points the governs-link at the Beads plan (run-phase-d / phase-d.jsonl).",
         "what_changed": "Stale intent, not plan drift. Intent says eight locked anchors govern three sprints and that it governs phase-d-plan.md. Now 25 anchors are locked (24 ANC plus ADR-RUN-0011) over ten sprints (d-3..d-12), and phase-d-plan.md was replaced in this range by a pointer to the Beads plan."
       },
@@ -2274,7 +2274,7 @@
     "schema": "plan-anchoring/drift-review/1"
   },
   "gate": "plan",
-  "generated_at": "2026-11-12 07:24 UTC",
+  "generated_at": "2026-11-12 07:30 UTC",
   "items": [
     {
       "changes": [

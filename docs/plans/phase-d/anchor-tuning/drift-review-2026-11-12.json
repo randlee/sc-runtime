@@ -53,8 +53,8 @@
         "quote": "Generated SQLx-SQLite graphs retain the link-compatible cron-family 0.2.0 floors; they do not receive the 0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1."
       },
       "suggested_fix": "Owner updates intent.md to state that no generated graph carries a sqlx SQLite driver and that every SQLite layout receives the fixed rusqlite graph.",
-      "status": "open",
-      "fix_note": "Not an owner decision: PRD v2.0 (docs/prd/sc-runtime-prd.md, c2434b3, 2026-11-11 15:40 PST) is the top authority and states PRD-STO-2/3 (SQLite behind the storage trait on the atm-core async channel writer) and PRD-CRON-3 (cron table in the app database). Its Authority rule: 'Where one of them disagrees with this PRD, this PRD is right and the other document is fixed.' intent.md (last rewritten 14:22 PST) predates it. Fix: align intent.md lines 65-68 to the PRD and cite it."
+      "status": "fixed",
+      "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate."
     },
     {
       "id": "M5",
@@ -66,8 +66,8 @@
         "quote": "Success includes a registry consumer using released 0.2.1 crates, resolving the fixed dependencies, passing the relevant advisory checks, and building/running the affected integration."
       },
       "suggested_fix": "Owner updates intent.md to 0.3.0 across 8 crates and records the storage-contract scope as user-justified.",
-      "status": "open",
-      "fix_note": "Not an owner decision: intent.md's maintenance-only scope contradicts PRD v2.0 (Storage<T> over SQLite/Postgres/MySQL is a PRD requirement), and the PRD Authority rule says the other document is fixed. The 0.3.0-across-8-crates release is a recorded owner decision (Phase D decisions), not in the PRD; cite that record. Fix: align intent.md lines 18, 68, 76 and 80-82."
+      "status": "fixed",
+      "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate."
     },
     {
       "id": "m1",
@@ -79,8 +79,8 @@
         "quote": "Eight locked anchors now govern the three revised sprints."
       },
       "suggested_fix": "Owner refreshes the planning-status paragraph and points the governs-link at the Beads plan (run-phase-d / phase-d.jsonl).",
-      "status": "open",
-      "fix_note": "Not an owner decision: bookkeeping. Point intent.md at PRD v2.0 as its authority and at the Beads plan (run-phase-d / phase-d.jsonl); 25 anchors over 10 sprints."
+      "status": "fixed",
+      "fix_note": "Verified by run-lead at ec75baa: intent.md now references PRD v2.0 (a0be417) as top authority and keeps only the Phase D delta (beads-cache adoption, compatible-upgrade policy ANC-016/017/019, coordinated 0.3.0 across eight crates). Cited PRD ids PRD-STO-1..5, PRD-CRON-1..5, PRD-ENG-5/6 exist in the PRD. The 'no exact or tilde pins' statement matches run-d-3 deliverable 4 and run-d-5 deliverable 8 / boundary:storage-contract/ranges (sc-observability =1.5.0 -> ^1.5.0). Per-row why/authority: anchor-tuning/triage-intent-prd-v2.json. intent.md is not gate-read text, so no regate."
     },
     {
       "id": "m2",
