@@ -431,6 +431,8 @@ Deterministic check to pair with the development gate: Plan: each retained extra
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
+- `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
+- `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
 
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
@@ -618,6 +620,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
 - `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-10`: d-10 builds the generated service boundary against the contract storage double and does not implement or change the SQLite writer, backend or store, which d-6 owns.
 
 Beads: anchor `run-x8rt`, plan questions `run-x8rt.1`, dev questions `run-x8rt.2`
 
@@ -827,6 +830,7 @@ Deterministic check to pair with the development gate: sc-storage exposes the at
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-10`: d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.
 - `run-d-12`: The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.
+- `run-d-9`: d-9 only consumes AtomicStorage::transaction in sc-cron; the contract method is defined in d-5 and implemented per engine in d-6/d-7/d-8.
 
 Beads: anchor `run-gar9`, plan questions `run-gar9.1`, dev questions `run-gar9.2`
 
@@ -872,6 +876,9 @@ Summary: public storage functions do not panic
 Scope: plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)
 
 Deterministic check to pair with the development gate: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: d-9 changes sc-cron storage policy, outside ANC-035's listed crates (sc-storage, sc-runtime-db-sqlite, template stores); its own no-panic criterion covers CronStore/CronStorage.
 
 Beads: anchor `run-vjhq`, plan questions `run-vjhq.1`, dev questions `run-vjhq.2`
 
