@@ -1,0 +1,33 @@
+{
+ "ANC-054": {
+  "questions": {
+   "addressed": {
+    "criteria": {
+     "no": "The item does neither: it is silent about cron routing, only mentions the topic, or names at least one off-path cron command without its own reason.",
+     "unclear": "The item says something about cron routing but it cannot be told whether it does (A) or (B).",
+     "yes": "The item does (A), or does (B) for every off-path cron command it names."
+    },
+    "instructions": "An item satisfies this anchor in one of two ways: (A) it says every cron command goes through the shared command path, so none is off it and no reason is required; or (B) for every cron command it keeps off the shared path, it gives that command's reason. Does `item.text` do (A) or (B)? Check each off-path cron command on its own: a reason given for one command does not cover a different command unless the text applies it to that command, and saying how a command stays off the path (for example that it calls storage itself) is not a reason why. A general mention of cron and the shared path does neither. Judge presence only.",
+    "type": "choice"
+   },
+   "contradicted": {
+    "criteria": {
+     "no": "Every cron command the item places off the shared path has its own reason, or the item places none off it, or the item is silent about cron routing.",
+     "unclear": "The item may leave an off-path cron command without its own reason, but the wording does not settle it.",
+     "yes": "Some cron command is stated to be off the shared path and no reason for that command appears in the item, or the item says reasons are not needed."
+    },
+    "instructions": "Does `item.text` place at least one cron command outside the shared command path (it bypasses the path, keeps its own storage call, is handled outside it, or calls a backend directly) without a reason for that particular command, or state that off-path cron commands need no reason? Check each off-path cron command on its own: a reason given for one command does not cover a different command unless the text applies it to that command, and saying how a command stays off the path (for example that it calls storage itself) is not a reason why. An item that puts every cron command on the shared path is not a conflict. Silence about cron routing is not a conflict. Judge conflict only.",
+    "type": "choice"
+   },
+   "relevant": {
+    "criteria": {
+     "no": "The item concerns something else, such as another crate's release notes, docs, CI or non-cron storage work, and touches no cron command and not the shared command path.",
+     "unclear": "The item text is too vague to tell whether it touches a cron command or the shared command path.",
+     "yes": "The item plans or changes a cron command, sc-cron-commands, or the shared command path, or states how cron commands are routed."
+    },
+    "instructions": "Does `item.text` plan or change cron commands (such as cron.start, cron.end, cron.list, or the sc-cron-commands crate), plan or change the shared command path (Transform, storage_read, storage_write), or state which cron commands use that path? Judge subject overlap only; do not judge compliance.",
+    "type": "choice"
+   }
+  }
+ }
+}
