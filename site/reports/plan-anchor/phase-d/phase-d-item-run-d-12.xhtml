@@ -5,12 +5,12 @@
       <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
   &quot;changes&quot;: [
     {
-      &quot;after_chars&quot;: 3239,
+      &quot;after_chars&quot;: 3566,
       &quot;before_chars&quot;: 1242,
       &quot;field&quot;: &quot;description&quot;
     },
     {
-      &quot;after_chars&quot;: 4877,
+      &quot;after_chars&quot;: 5272,
       &quot;before_chars&quot;: 3040,
       &quot;field&quot;: &quot;acceptance_criteria&quot;
     },
@@ -20,7 +20,68 @@
       &quot;field&quot;: &quot;design&quot;
     }
   ],
-  &quot;exclusions&quot;: [],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+      &quot;reason&quot;: &quot;d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+      &quot;reason&quot;: &quot;d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+      &quot;reason&quot;: &quot;Template rejection of cron with the no-database layout is owned and satisfied by d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+      &quot;reason&quot;: &quot;Backend Storage&lt;T&gt; conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+      &quot;reason&quot;: &quot;The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+      &quot;reason&quot;: &quot;Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    }
+  ],
   &quot;first&quot;: {
     &quot;created_at&quot;: &quot;2026-11-12T03:45:40+00:00&quot;,
     &quot;excluded&quot;: [],
@@ -47,15 +108,64 @@
   },
   &quot;id&quot;: &quot;run-d-12&quot;,
   &quot;last&quot;: {
-    &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
-    &quot;excluded&quot;: [],
+    &quot;created_at&quot;: &quot;2026-11-12T17:44:03+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+        &quot;reason&quot;: &quot;d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+        &quot;reason&quot;: &quot;d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+        &quot;reason&quot;: &quot;Template rejection of cron with the no-database layout is owned and satisfied by d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+        &quot;reason&quot;: &quot;Backend Storage&lt;T&gt; conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+        &quot;reason&quot;: &quot;The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+        &quot;reason&quot;: &quot;Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+        &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+      }
+    ],
     &quot;failing&quot;: [],
     &quot;pass&quot;: true,
-    &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-12&quot;,
-    &quot;score&quot;: &quot;1/1&quot;,
+    &quot;run_id&quot;: &quot;plan-20261112T174403Z-run-d-12&quot;,
+    &quot;score&quot;: &quot;9/9&quot;,
     &quot;status&quot;: &quot;pass&quot;
   },
-  &quot;runs&quot;: 19,
+  &quot;runs&quot;: 20,
   &quot;status&quot;: &quot;pass&quot;,
   &quot;text_note&quot;: &quot;&quot;,
   &quot;text_source&quot;: &quot;bd&quot;,
@@ -1123,14 +1233,84 @@
       &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-12&quot;,
       &quot;score&quot;: &quot;1/1&quot;,
       &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T17:44:03+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Template rejection of cron with the no-database layout is owned and satisfied by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-032&quot;,
+          &quot;reason&quot;: &quot;Backend Storage&lt;T&gt; conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-033&quot;,
+          &quot;reason&quot;: &quot;The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-034&quot;,
+          &quot;reason&quot;: &quot;Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T174403Z-run-d-12&quot;,
+      &quot;score&quot;: &quot;9/9&quot;,
+      &quot;status&quot;: &quot;pass&quot;
     }
   ],
   &quot;url&quot;: &quot;&quot;
 }">{}</button>
       <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-12: d-12: beads-cache-and-release
-Gate FAIL 7/21 -&gt; PASS 1/1 over 19 runs.
+Gate FAIL 7/21 -&gt; PASS 9/9 over 20 runs.
 Failing at first run: ANC-024, ANC-025, ANC-027, ANC-029, ANC-030, ANC-031, ANC-033, ANC-019, ANC-021, ANC-022, ANC-023, ANC-032, ANC-034, ANC-036.
 Failing now: none.
+Excluded ADR-RUN-0011: d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.
+Excluded ANC-003: d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.
+Excluded ANC-022: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+Excluded ANC-023: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+Excluded ANC-024: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+Excluded ANC-025: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+Excluded ANC-027: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+Excluded ANC-029: Template rejection of cron with the no-database layout is owned and satisfied by d-11.
+Excluded ANC-032: Backend Storage&lt;T&gt; conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.
+Excluded ANC-033: The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.
+Excluded ANC-034: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.
+Excluded ANC-036: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     </div>
   </div>
@@ -1139,12 +1319,12 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
     <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
     <tbody>
       <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>7/21</td><td>ANC-024, ANC-025, ANC-027, ANC-029, ANC-030, ANC-031, ANC-033, ANC-019, ANC-021, ANC-022, ANC-023, ANC-032, ANC-034, ANC-036</td></tr>
-      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
     </tbody>
   </table>
 
   <details class="trail">
-    <summary>All 19 runs</summary>
+    <summary>All 20 runs</summary>
     <table>
       <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
       <tbody>
@@ -1167,20 +1347,39 @@ Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
         <tr><td><code>plan-20261112T094205Z-run-d-12</code></td><td>2026-11-12T09:42:05+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
         <tr><td><code>plan-20261112T095003Z-run-d-12</code></td><td>2026-11-12T09:50:03+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
         <tr><td><code>plan-20261112T100339Z-run-d-12</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+        <tr><td><code>plan-20261112T174403Z-run-d-12</code></td><td>2026-11-12T17:44:03+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
       </tbody>
     </table>
   </details>
 
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ADR-RUN-0011">ADR-RUN-0011</a></th><td>d-12 changes release manifests, Python release/test wiring and the external beads-cache consumer, not production Rust blocking/runtime code under crates/ or template/; d-6 and d-9 own and satisfy that ADR behavior, verified by official coverage and the targeted relevance answer.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-003">ANC-003</a></th><td>d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-023">ANC-023</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>Template rejection of cron with the no-database layout is owned and satisfied by d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-032">ANC-032</a></th><td>Backend Storage&lt;T&gt; conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-033">ANC-033</a></th><td>The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-034">ANC-034</a></th><td>Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-036">ANC-036</a></th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>this round</td></tr>
+    </tbody>
+  </table>
 
   <h3>Text: first judged to now</h3>
   <p class="small">Source: bd</p>
   <details open="open">
     <summary>description</summary>
-    <div class="diff"><div class="eq">## Deliverables</div><div class="eq">1. Migrate actual beads-cache@8e883ee CacheScheduleStore and scheduler calls to published sc-storage/sc-runtime-db-sqlite/sc-cron0.3.0. Deliver the upstream migration PR and validate app+cron writes through its shared writer, preserving existing data and cron behavior — REQ-RUN-0002; REQ-CRON-0004; ADR-RUN-0020.</div><div class="ch">2. Own registry runner/workflow, archive rehearsal and actual eight-crate coordinated0.3.0 publication in dependency order with sc-storage first. Run fresh registry-only upstream/cron, server/rmcp and test-util helper consumers <del>at</del><ins>with</ins> <del>minimum/latest</del><ins>the</ins> <del>allowed</del><ins>release-tested</ins> <del>ranges,</del><ins>dependency combination,</ins> with advisory/source/native-identity checks — REQ-RUN-0002/0702; NFR-RUN-0007; <del>ANC-012/016/017/019.</del><ins>ANC-012.</ins></div><div class="eq">3. Update root README, release notes/project status and applicable controlled-host benchmark evidence to the actual published surface. Preserve kit/recovery rules and do not claim a source checkout or copied facade is the upstream migration — REQ-RUN-0702; NFR-RT-0001.</div><div class="eq"></div><div class="rm">- ## This sprint does not close</div><div class="rm">- Generated app composition/transports are d-11, an independent sibling. No duplicate template wiring or template-only registry subject. Phase release acceptance requires d-11 independently; this sprint does not wait for or repeat its wiring artifact.</div><div class="ad">+ 4. Remove tests/integration/cron-consumer/schema/Cargo.toml rmcp =3.8.0 pin in this sole-owned consumer manifest: use &gt;=3.9 because3.9.x is the tested patched minimum for RUSTSEC-2026-0462 under the ADR-RUN-0203 amendment. Raising the floor removes older vulnerable releases; every later release from3.9 is admitted with no upper bound. Preserve the existing server/default-features selection and run the normal registry consumer tests and apply req:REQ-RUN-0002/package-caps (ADR-RUN-0203; ANC-037). Also convert tests/integration/cron-consumer/Cargo.toml Windows dev-dependencies to win32job &gt;=2.0.3 and waitpid-any &gt;=0.3.0, preserving purpose comments and running the normal Windows tests. d-3/d-5/d-9 retain their own pin-line edits; this sprint does not repeat them.</div><div class="ad">+ </div><div class="ad">+ 5. Reuse d-3&#x27;s check_dependency_manifests(paths) on exact unpacked archives and generated-template defaults; wire it into archive rehearsal, registry consumer validation and upload. Own only input assembly and release fixtures. SDK registry requirements use &gt;= floors with no upper bound; consumer pins are allowed (ANC-037). Remove the interim rule after equivalent sc-lint#936 release and adoption, as recorded by ADR-RUN-0005.</div><div class="ad">+ </div><div class="ad">+ 6. Own final recommendation generation after0.3.0 conversion and registry availability: template/scripts/tested_dependencies.py, template/cargo-generate.toml and template/.sc-runtime/** deliver the newest tested Cargo.lock and matching .sc-runtime/tested-dependencies.json for each supported profile (ANC-038). The script runs after normal project-name prefixing. Verify every recorded name/version/source matches the lock and real --locked build/tests; consumer pins remain free.</div><div class="ad">+ </div><div class="ad">+ ## Boundaries and handoffs</div><div class="ad">+ Generated app composition/transports are d-11-owned. This sprint prepares alongside d-11, consumes d-3&#x27;s checker, and merges completed d-11 before archive rehearsal/upload. No duplicate template wiring, template-only registry subject or second checker.</div><div class="ad">+ Apply template/cargo-generate.toml changes only after the completed d-11 merge: preserve its existing layout/cron choices and validation hook, remove Cargo.lock suppression as needed for recommendation delivery and add the recommendation script after project-name prefixing. No concurrent section ownership.</div></div>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="eq">1. Migrate actual beads-cache@8e883ee CacheScheduleStore and scheduler calls to published sc-storage/sc-runtime-db-sqlite/sc-cron0.3.0. Deliver the upstream migration PR and validate app+cron writes through its shared writer, preserving existing data and cron behavior — REQ-RUN-0002; REQ-CRON-0004; ADR-RUN-0020.</div><div class="ch">2. Own registry runner/workflow, archive rehearsal and actual eight-crate coordinated0.3.0 publication in dependency order with sc-storage first. Run fresh registry-only upstream/cron, server/rmcp and test-util helper consumers <del>at</del><ins>with</ins> <del>minimum/latest</del><ins>the</ins> <del>allowed</del><ins>release-tested</ins> <del>ranges,</del><ins>dependency combination,</ins> with advisory/source/native-identity checks — REQ-RUN-0002/0702; NFR-RUN-0007; <del>ANC-012/016/017/019.</del><ins>ANC-012.</ins></div><div class="eq">3. Update root README, release notes/project status and applicable controlled-host benchmark evidence to the actual published surface. Preserve kit/recovery rules and do not claim a source checkout or copied facade is the upstream migration — REQ-RUN-0702; NFR-RT-0001.</div><div class="eq"></div><div class="rm">- ## This sprint does not close</div><div class="rm">- Generated app composition/transports are d-11, an independent sibling. No duplicate template wiring or template-only registry subject. Phase release acceptance requires d-11 independently; this sprint does not wait for or repeat its wiring artifact.</div><div class="ad">+ 4. Remove tests/integration/cron-consumer/schema/Cargo.toml rmcp =3.8.0 pin in this sole-owned consumer manifest: use &gt;=3.9 because3.9.x is the tested patched minimum for RUSTSEC-2026-0462 under the ADR-RUN-0203 amendment. Raising the floor removes older vulnerable releases; every later release from3.9 is admitted with no upper bound. Preserve the existing server/default-features selection and run the normal registry consumer tests and apply req:REQ-RUN-0002/package-caps (ADR-RUN-0203; ANC-037). Also convert tests/integration/cron-consumer/Cargo.toml Windows dev-dependencies to win32job &gt;=2.0.3 and waitpid-any &gt;=0.3.0, preserving purpose comments and running the normal Windows tests. d-3/d-5/d-9 retain their own pin-line edits; this sprint does not repeat them.</div><div class="ad">+ </div><div class="ad">+ 5. Reuse d-3&#x27;s check_dependency_manifests(paths) on exact unpacked archives and generated-template defaults; wire it into archive rehearsal, registry consumer validation and upload. Own only input assembly and release fixtures. SDK registry requirements use &gt;= floors with no upper bound; consumer pins are allowed (ANC-037). Remove the interim rule after equivalent sc-lint#936 release and adoption, as recorded by ADR-RUN-0005.</div><div class="ad">+ </div><div class="ad">+ 6. Own final recommendation generation after0.3.0 conversion and registry availability: template/scripts/tested_dependencies.py, template/cargo-generate.toml and template/.sc-runtime/** deliver the newest tested Cargo.lock and matching .sc-runtime/tested-dependencies.json for each supported profile (ANC-038). The script runs after normal project-name prefixing. Verify every recorded name/version/source matches the lock and real --locked build/tests; consumer pins remain free. Wire this generation into the standing release process through the owned release/publish-preflight.toml and release configuration: every release regenerates and includes its tested Cargo.lock and .sc-runtime/tested-dependencies.json in the delivered template, and generation carries both into populated repositories (ANC-038).</div><div class="ad">+ </div><div class="ad">+ ## Boundaries and handoffs</div><div class="ad">+ Generated app composition/transports are d-11-owned. This sprint prepares alongside d-11, consumes d-3&#x27;s checker, and merges completed d-11 before archive rehearsal/upload. No duplicate template wiring, template-only registry subject or second checker.</div><div class="ad">+ Apply template/cargo-generate.toml changes only after the completed d-11 merge: preserve its existing layout/cron choices and validation hook, remove Cargo.lock suppression as needed for recommendation delivery and add the recommendation script after project-name prefixing. No concurrent section ownership.</div></div>
   </details>
   <details>
     <summary>acceptance_criteria</summary>
-    <div class="diff"><div class="ch">req:REQ-RUN-0002/published-consumers — Actual beads-cache migration PR/revision passes against crates.io0.3.0 packages, no path/patch/Git SDK source. App and schedule writes share its channel writer/file; run the upstream migration subject against published artifacts, distinct from d-11 generated-app criteria. Registry server/rmcp/helper subjects compile and execute; <del>exact</del><ins>one</ins> native <del>identity&gt;=0.39,</del><ins>libsqlite3-sys identity in the graph, at &gt;=0.39,</ins> no SQLx SQLite driver, target SQLite/rmcp advisories clear.</div><div class="eq">req:REQ-RUN-0002/release — Rehearse exact8crate archives before publication; package manifests/READMEs/features/comments match actual APIs and approved0.3.0. Publish sc-storage first then actual DAG order; all8 versions present, hash-identical retries only for missing uploads. Real defects halt/yank under owner policy and require coordinated replacement patch; transient failures never trigger yanks. Partial upload is not phase success.</div><div class="ch"><del>req:REQ-RUN-0702/endpoint-proof</del><ins>req:REQ-RUN-0702/registry-proof</ins> — Workflow invokes python3 tests/registry/phase-d/run.py <del>--endpoint minimum|latest </del>--version 0.3.0 --source <del>crates-io,</del><ins>crates-io</ins> with <ins>an </ins>isolated <del>locks/source</del><ins>release-test lock, source/version</ins> assertions and <del>live</del><ins>actual</ins> upstream tests. <del>Missing</del><ins>Wrong</ins> <del>artifact,</del><ins>or</ins> <del>wrong</del><ins>missing</ins> <del>source/version,</del><ins>release/source,</ins> advisory/native mismatch or failed command exits nonzero. Controlled <del>fault cases</del><ins>negatives</ins> test refusal; only <del>real</del><ins>actual</ins> post-publication <del>runs</del><ins>consumer</ins> <del>are</del><ins>builds/tests</ins> <del>proof.</del><ins>prove</ins> <del>Production</del><ins>delivery.</ins> <del>manifests</del><ins>Apply</ins> <del>admit</del><ins>package-caps</ins> <del>compatible</del><ins>to</ins> <del>upgrades;</del><ins>the</ins> <del>extra</del><ins>exact</ins> <del>upper</del><ins>unpacked</ins> <del>caps</del><ins>SDK</ins> <del>have</del><ins>manifests,</ins> <del>concrete</del><ins>not</ins> <del>adjacent</del><ins>consumer-owned</ins> <del>break comments.</del><ins>pins.</ins></div><div class="ch">Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; kit package/rehearsal and fresh registry runner <del>both</del><ins>the</ins> <del>endpoints;</del><ins>registry consumers;</ins> cargo deny check advisories for every registry subject; python3 scripts/benchmark/check_release_evidence.py with controlled-host evidence matching source-equivalence policy. Root README/release notes match package contents. d-11 generated integration is separately required for phase acceptance.</div><div class="ch">req:REQ-RUN-0002/publication-gate — <del>Rehearsal/runner/migration</del><ins>Prepare</ins> <del>preparation</del><ins>migration/runner/recommendation</ins> <del>first.</del><ins>generation</ins> <del>No</del><ins>in</ins> <del>upload</del><ins>parallel</ins> <del>until</del><ins>with</ins> <del>run-d-11.group-sanity</del><ins>d-11.</ins> <del>status=closed,</del><ins>Before archive rehearsal/upload, merge completed d-11 generated composition and require its sanity closed,</ins> owner ratification <del>recorded </del>and <del>required</del><ins>both actual</ins> external <ins>safety </ins>rules <del>actually available/running.</del><ins>passing.</ins> Then final0.3.0 <del>manifest/lock </del>conversion, <del>exact8-archive</del><ins>one exact eight-archive</ins> rehearsal, <del>upload,</del><ins>d-3 checker passing on those archives and</ins> fresh <del>registry</del><ins>registry-only consumer</ins> proof. <del>This</del><ins>Missing</ins> <del>predicate</del><ins>predicates</ins> <del>is</del><ins>block</ins> <del>checked</del><ins>publication,</ins> <del>immediately</del><ins>not independent development readiness. Immediately</ins> before the first <del>irreversible</del><ins>upload,</ins> <del>upload;</del><ins>recheck</ins> <del>no</del><ins>the</ins> <del>new</del><ins>same</ins> <del>dependency</del><ins>publication</ins> <del>edge.</del><ins>predicate against the current source, completed d-11, ratification, safety-rule results and exact rehearsed archives.</ins></div><div class="eq">req:REQ-RUN-0002/upstream-subject — Exact close predicate: upstream beads-cache PR open with CI green at recorded SHA using published0.3.0 SDKs, URL/SHA in owned consumer README. Maintainer=user/randlee; merge not required. No response or CI failure leaves sprint open with explicit external follow-up. No local path/patch/Git SDK substitute. sc-command package exports/docs match closed d-10; cargo tree checks selected native graph, not lockfile.</div><div class="eq">All changed public storage functions are typed Result/no-panic. Actual writer-panic callers receive typed errors; required no-panic/transaction analyzer evidence is not replaced by promises or a superficial grep. cargo build --workspace passes against the final coordinated train at this closure.</div><div class="ad">+ req:REQ-RUN-0002/package-caps — Call d-3&#x27;s single manifest check on exact unpacked SDK manifests and generated-template defaults: registry requirements must use &gt;= tested floors with no upper bound (ANC-037). A violation fails rehearsal, registry consumer proof and upload. Consumer-owned pins are permitted and outside this default-policy check. d-12 owns input assembly/wiring; the checker stays d-3-owned and root rusqlite registration stays d-5-owned; in SDK crate manifests and root Cargo.toml, d-12 changes only release-version lines.</div><div class="ad">+ req:REQ-RUN-0002/preserved-cron — In the actual upstream migration, the default app and cron data use the same SQLite file; the existing consumer tests verify rejection of a second active schedule with the same name and of a new schedule row at the embedding app&#x27;s configured limit. Reuse the delivered cron behavior and existing upstream cases; do not build a second policy implementation (ANC-021/030/031).</div><div class="ad">+ req:REQ-RUN-0002/release-recommendations — Release-generated applications ship the tested latest-allowed registry Cargo.lock and .sc-runtime/tested-dependencies.json from the same actual profile build/test run (ANC-038). Metadata enumerates every locked package name/version/source and release/toolchain/profile identity, matches Cargo.lock, and is readable for later revert/upgrade tooling. Consumers can keep, replace or update the recommended lock and pin their own requirements. D-12 owns recommendation production and its generation script; d-11 owns unrelated app composition hooks.</div></div>
+    <div class="diff"><div class="ch">req:REQ-RUN-0002/published-consumers — Actual beads-cache migration PR/revision passes against crates.io0.3.0 packages, no path/patch/Git SDK source. App and schedule writes share its channel writer/file; run the upstream migration subject against published artifacts, distinct from d-11 generated-app criteria. Registry server/rmcp/helper subjects compile and execute; <del>exact</del><ins>one</ins> native <del>identity&gt;=0.39,</del><ins>libsqlite3-sys identity in the graph, at &gt;=0.39,</ins> no SQLx SQLite driver, target SQLite/rmcp advisories clear.</div><div class="eq">req:REQ-RUN-0002/release — Rehearse exact8crate archives before publication; package manifests/READMEs/features/comments match actual APIs and approved0.3.0. Publish sc-storage first then actual DAG order; all8 versions present, hash-identical retries only for missing uploads. Real defects halt/yank under owner policy and require coordinated replacement patch; transient failures never trigger yanks. Partial upload is not phase success.</div><div class="ch"><del>req:REQ-RUN-0702/endpoint-proof</del><ins>req:REQ-RUN-0702/registry-proof</ins> — Workflow invokes python3 tests/registry/phase-d/run.py <del>--endpoint minimum|latest </del>--version 0.3.0 --source <del>crates-io,</del><ins>crates-io</ins> with <ins>an </ins>isolated <del>locks/source</del><ins>release-test lock, source/version</ins> assertions and <del>live</del><ins>actual</ins> upstream tests. <del>Missing</del><ins>Wrong</ins> <del>artifact,</del><ins>or</ins> <del>wrong</del><ins>missing</ins> <del>source/version,</del><ins>release/source,</ins> advisory/native mismatch or failed command exits nonzero. Controlled <del>fault cases</del><ins>negatives</ins> test refusal; only <del>real</del><ins>actual</ins> post-publication <del>runs</del><ins>consumer</ins> <del>are</del><ins>builds/tests</ins> <del>proof.</del><ins>prove</ins> <del>Production</del><ins>delivery.</ins> <del>manifests</del><ins>Apply</ins> <del>admit</del><ins>package-caps</ins> <del>compatible</del><ins>to</ins> <del>upgrades;</del><ins>the</ins> <del>extra</del><ins>exact</ins> <del>upper</del><ins>unpacked</ins> <del>caps</del><ins>SDK</ins> <del>have</del><ins>manifests,</ins> <del>concrete</del><ins>not</ins> <del>adjacent</del><ins>consumer-owned</ins> <del>break comments.</del><ins>pins.</ins></div><div class="ch">Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; kit package/rehearsal and fresh registry runner <del>both</del><ins>the</ins> <del>endpoints;</del><ins>registry consumers;</ins> cargo deny check advisories for every registry subject; python3 scripts/benchmark/check_release_evidence.py with controlled-host evidence matching source-equivalence policy. Root README/release notes match package contents. d-11 generated integration is separately required for phase acceptance.</div><div class="ch">req:REQ-RUN-0002/publication-gate — <del>Rehearsal/runner/migration</del><ins>Prepare</ins> <del>preparation</del><ins>migration/runner/recommendation</ins> <del>first.</del><ins>generation</ins> <del>No</del><ins>in</ins> <del>upload</del><ins>parallel</ins> <del>until</del><ins>with</ins> <del>run-d-11.group-sanity</del><ins>d-11.</ins> <del>status=closed,</del><ins>Before archive rehearsal/upload, merge completed d-11 generated composition and require its sanity closed,</ins> owner ratification <del>recorded </del>and <del>required</del><ins>both actual</ins> external <ins>safety </ins>rules <del>actually available/running.</del><ins>passing.</ins> Then final0.3.0 <del>manifest/lock </del>conversion, <del>exact8-archive</del><ins>one exact eight-archive</ins> rehearsal, <del>upload,</del><ins>d-3 checker passing on those archives and</ins> fresh <del>registry</del><ins>registry-only consumer</ins> proof. <del>This</del><ins>Missing</ins> <del>predicate</del><ins>predicates</ins> <del>is</del><ins>block</ins> <del>checked</del><ins>publication,</ins> <del>immediately</del><ins>not independent development readiness. Immediately</ins> before the first <del>irreversible</del><ins>upload,</ins> <del>upload;</del><ins>recheck</ins> <del>no</del><ins>the</ins> <del>new</del><ins>same</ins> <del>dependency</del><ins>publication</ins> <del>edge.</del><ins>predicate against the current source, completed d-11, ratification, safety-rule results and exact rehearsed archives.</ins></div><div class="eq">req:REQ-RUN-0002/upstream-subject — Exact close predicate: upstream beads-cache PR open with CI green at recorded SHA using published0.3.0 SDKs, URL/SHA in owned consumer README. Maintainer=user/randlee; merge not required. No response or CI failure leaves sprint open with explicit external follow-up. No local path/patch/Git SDK substitute. sc-command package exports/docs match closed d-10; cargo tree checks selected native graph, not lockfile.</div><div class="eq">All changed public storage functions are typed Result/no-panic. Actual writer-panic callers receive typed errors; required no-panic/transaction analyzer evidence is not replaced by promises or a superficial grep. cargo build --workspace passes against the final coordinated train at this closure.</div><div class="ad">+ req:REQ-RUN-0002/package-caps — Call d-3&#x27;s single manifest check on exact unpacked SDK manifests and generated-template defaults: registry requirements must use &gt;= tested floors with no upper bound (ANC-037). A violation fails rehearsal, registry consumer proof and upload. Consumer-owned pins are permitted and outside this default-policy check. d-12 owns input assembly/wiring; the checker stays d-3-owned and root rusqlite registration stays d-5-owned; in SDK crate manifests and root Cargo.toml, d-12 changes only release-version lines.</div><div class="ad">+ req:REQ-RUN-0002/preserved-cron — In the actual upstream migration, the default app and cron data use the same SQLite file; the existing consumer tests verify rejection of a second active schedule with the same name and of a new schedule row at the embedding app&#x27;s configured limit. Reuse the delivered cron behavior and existing upstream cases; do not build a second policy implementation (ANC-021/030/031).</div><div class="ad">+ req:REQ-RUN-0002/release-recommendations — Release-generated applications ship the tested latest-allowed registry Cargo.lock and .sc-runtime/tested-dependencies.json from the same actual profile build/test run (ANC-038). Metadata enumerates every locked package name/version/source and release/toolchain/profile identity, matches Cargo.lock, and is readable for later revert/upgrade tooling. Consumers can keep, replace or update the recommended lock and pin their own requirements. For every release, the standing release pipeline regenerates these artifacts from that release&#x27;s actual profile build/test run and includes them in the delivered template. Exercise the release path and template generation to verify that populated repositories receive the matching lock and metadata with the current release identity. Reuse the existing generation/validation; no second checker. D-12 owns recommendation production and its generation script; d-11 owns unrelated app composition hooks.</div></div>
   </details>
   <details>
     <summary>design</summary>

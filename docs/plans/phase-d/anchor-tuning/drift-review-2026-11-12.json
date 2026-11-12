@@ -676,6 +676,10 @@
     {
       "location": "ANC-035 v2->v3 scope (3157ad2)",
       "note": "Independent tuner widened scope from a three-crate list to public storage functions in any crate (incl. sc-cron CronStore/CronStorage), with the frozen oracle 18975d72..., resealed plan questions 1236291d..., fixtures pass/fail as intended. Matches the quote and the m2 ruling; stricter reading, no obligation dropped. Reviewed by lead."
+    },
+    {
+      "location": "run-d-12 deliverable 6 + AC release-recommendations (f5244e0)",
+      "note": "Standing release process regenerates and ships tested Cargo.lock + .sc-runtime/tested-dependencies.json every release and into populated repos. Traces to ANC-038 and owner quote 2026-11-12 (\"I expect tested-dependencies.json (or equivalent) to be part of the delivered template for each release and land on generated sc-runtime populated repos.\"). No new checker; ownership/graph unchanged. Reviewed by lead; d-12 anchor gate pass plan-20261112T174403Z."
     }
   ],
   "confirmations": [

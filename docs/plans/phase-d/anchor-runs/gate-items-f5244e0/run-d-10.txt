@@ -1,0 +1,24 @@
+# d-10: shared-service-transforms
+
+## Description
+
+### Deliverables
+
+1. Implement the real generated service boundary using sc-storage Storage<Tsql>; implement the two default sc-command storage_read/storage_write combinators once and provide the application read/write path for existing CLI/MCP/HTTP service entrypoints with application-owned Tcli/Tsql conversions and WidgetStore<S> wrapper. — REQ-RUN-0201/0302; PRD-CMD-2/3/4.
+2. Add a real Python/Monty-authored transform caller on that path, reusing existing hosting patterns without inventing a generator or permissions system. Blocking interpreter/I/O work stays off Tokio request workers. — PRD-CMD-5; NFR-RUN-0002.
+3. Document sc-command default helper API/exports in its README, then replace per-layout widget-specific backend calls with the agreed Storage trait and port service behavior/error tests against the contract storage double. — REQ-RUN-0328; ADR0021.
+
+### Boundaries and handoffs
+Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.
+After d-3's compiled rmcp3.9 server/schema and public envelope/error compatibility lands, add sc-storage >=0.2.0 (>=0.3.0 at release), with no upper bound, in the handed-off command manifest without changing its already-open registry floors. Define Transform and StorageCommandError beside the plain generic async storage_read/storage_write functions; no StorageCommands wrapper (REQ-CMD-0002; REQ-RUN-0203/0331; ANC-037).
+
+## Acceptance criteria
+
+boundary:template-service — service tests cover real common write/read and Python/Monty transform execution against the contract storage double; typed errors and existing DTO behavior hold; no unfinished branch. Run generated service crate tests/lints and workspace/boundary validation under the configured generation harness. This does not claim production database, transport or release integration; d-11 owns those.
+
+### Required validation commands
+Generate a development-source consumer using just new <temp-dir> --var-file wizard/fixtures/postgres.json (no cron selected). Run cargo test --manifest-path <temp-dir>/crates/service/Cargo.toml and cargo clippy --manifest-path <temp-dir>/crates/service/Cargo.toml --all-targets -- -D warnings with required interpreter prerequisites; service contract tests use the controlled storage double and actual Python/Monty transform execution. Then build the generated workspace and run its configured sc-boundary profile. Existing legacy wrappers keep unrelated consumer code compiling until d-11 wiring; no live database or transport proof is claimed here.
+Run cargo test -p sc-command --test storage_combinators with the real default combinators and controlled storage/transform errors; no per-app duplicate generic pipeline. No ATM/sc-compose or SQLx dependency in the shared storage/command seam.
+boundary:template-service/preserved-crud — Existing create/get/delete/row-delete service behavior, generated IDs and typed errors are unchanged against shared double; default helper implementation/exports and README match the real sc-storage trait. Implement the d-5-frozen, owner-ratified option (a) extension with no operation removal.
+boundary:template-service/nonblocking — On a controlled single-thread runtime, interpreter worker signals entered then holds on a barrier. While held, an independent async task completes/acknowledges; only that acknowledgment releases the worker. Both success and panic map to typed Results; no sleeps, elapsed deadlines or load races establish correctness. Test cancellation/channel closure deterministically. Storage submission is never wrapped in spawn_blocking. cargo build --workspace passes at closure.
+boundary:template-service/transform-limits — Before spawn_blocking, acquire a bounded transform permit or return a typed saturation error. Hold that permit until the worker actually exits, including caller cancellation. Apply the published Monty resource/deadline limits to computation itself, map expiry/errors/panic to typed transform errors, and test expiry/saturation/cancellation with controlled inputs. Timing out the JoinHandle alone is not termination proof.
