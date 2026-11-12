@@ -2187,14 +2187,14 @@ and on a fresh clone without a database.
 This applies to `crates/daemon` of a project rendered from `template/`.
 `sc-observability` is the SC logging crate.
 
-1. For the initial 0.1.1 release, `crates/daemon/Cargo.toml` MUST use real
-   registry `sc-observability = "=1.5.0"` and
-   `sc-observability-types = "=1.5.0"`; root/generated lock evidence proves
-   matching registry identity. The temporary contract is defined once in
-   `sc_command::observability`, with a private inline generated LoggerAdapter.
-   [ADR-RUN-0017](architecture.md#adr-run-0017-initial-release-observability-shim)
-   specifies the exact pin, panic dispositions, dependency and removal policy.
-   Future published upstream trait/direct Arc proof is a cleanup gate.
+1. `crates/daemon/Cargo.toml` MUST use registry requirements
+   `sc-observability = ">=1.5.0"` and
+   `sc-observability-types = ">=1.5.0"`, with no upper bound (ANC-037).
+   Phase D retains the command-owned neutral port and private generated
+   LoggerAdapter. Normal build/tests check compatibility at the selected
+   versions; no registry-availability, signature or forced-cleanup probe gates
+   the release. ADR-RUN-0017's Phase D amendment governs panic/error behavior.
+
 2. `crates/daemon/src/main.rs` MUST perform these three steps, in this order:
    1. load the project's configuration with `sc-config` into the project's
       own config struct; on error, report it and return a failure exit code
@@ -2235,9 +2235,9 @@ This applies to `crates/daemon` of a project rendered from `template/`.
    `sc-observability` or its OpenTelemetry export crate
    `sc-observability-otlp`; the forbidden edges are owned by
    [REQ-RUN-0005](requirements.md). The only observability dependency inside
-   library crates is registry `sc-observability-types`: command temporarily
-   pins `=1.5.0`, runtime/cron use compatible `1.5.0`, and root lock resolution
-   is exact registry 1.5.0. Runtime/cron receive the command-owned neutral port;
+   library crates is registry `sc-observability-types` with requirement
+   `>=1.5.0` and no upper bound; the recommended lock records the versions
+   actually tested. Runtime/cron receive the command-owned neutral port;
    no library wraps or links the full logger. Types remain forbidden on
    config/transport and remediation stays on command only.
    `DaemonNotRunning` carries `code: &'static str`
@@ -2270,9 +2270,10 @@ is logged.
 
 ### Success Criteria
 
-1. Rendered `crates/daemon/Cargo.toml` lists the caret-compatible requirement
-   `sc-observability = "=1.5.0"` and types `=1.5.0`, lists no OpenTelemetry
-   crate, and proves the actual registry pair exactly at 1.5.0 under ADR-RUN-0017.
+1. Rendered `crates/daemon/Cargo.toml` declares `sc-observability = ">=1.5.0"`
+   and `sc-observability-types = ">=1.5.0"` without upper bounds, lists no
+   OpenTelemetry crate, and passes ordinary generated-daemon logging tests.
+
 2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes
    before `daemon::observability::Observability::build`, which comes before
    `Daemon::builder`. The named `Observability` owner lives until runtime and

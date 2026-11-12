@@ -232,7 +232,21 @@ NFR-CRON-0001 and NFR-RT-0002/0003, only as specified below.
 
 ### Phase D amendment (2026-11-12)
 
-Published/template registry requirements for sc-observability and sc-observability-types use >=1.5.0 with no upper bound (ANC-037). This replaces the exact-pin policy below for Phase D.
+Published/template requirements for sc-observability and sc-observability-types
+use >=1.5.0 with no upper bound (ANC-037). Phase D retains the existing
+sc_command::observability shim and generated inline LoggerAdapter. d-3 owns
+compatibility adaptations and ordinary observability tests; d-11 owns generated
+adapter integration tests. The normal build/test suite at the selected versions
+replaces registry-availability refresh, the isolated signature/Arc<Logger> probe,
+and the forced "shim mode fail" cleanup gate below. No new cleanup work follows
+merely from an upstream release becoming available.
+
+The fixed "noop" ServiceName literal remains the sole invariant exception,
+never caller/environment data; ordinary tests validate it with the selected
+types, rather than an exact 1.5.0 pin. Existing error, panic-containment,
+initialization/lifetime and dependency-boundary behavior remains unchanged.
+This amendment supersedes those pin, readiness/probe and version-triggered
+cleanup clauses below for Phase D; historical release evidence is preserved.
 
 ### Decision
 
