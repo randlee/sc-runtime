@@ -43,6 +43,8 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-034 | locked | no consumer table code in storage backends | 2026-11-12 |
 | ANC-035 | locked | public storage functions do not panic | 2026-11-12 |
 | ANC-036 | locked | writer panic reaches waiting callers as error | 2026-11-12 |
+| ANC-037 | locked | No upper bounds on any registry dependency | 2026-11-11 |
+| ANC-038 | locked | Tested dependency combination recorded in .sc-runtime/ | 2026-11-11 |
 
 ## ANC-001
 
@@ -901,3 +903,43 @@ Beads: anchor `run-cdtx`, plan questions `run-cdtx.1`, dev questions `run-cdtx.2
 Fixtures:
 - pass: The writer thread runs each request under catch_unwind; on panic it fails the request and drains the channel, so every queued caller receives StorageError::WriterPanicked.
 - fail: If a request panics, the writer thread exits and queued callers' oneshot replies are never sent, so their awaits never complete.
+
+## ANC-037
+
+Anchor: Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.
+
+> Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies
+
+Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 2.
+
+Summary: No upper bounds on any registry dependency
+
+Scope: Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.
+
+Deterministic check to pair with the development gate: Parse every published-crate and template Cargo.toml registry requirement; fail on any '<', '<=', '=', '~' or caret requirement (caret implies an upper bound).
+
+Beads: anchor `run-svmi`, plan questions `run-svmi.1`, dev questions `run-svmi.2`
+
+Fixtures:
+- pass: Every registry requirement in crates/sc-storage/Cargo.toml and the template manifests is a floor such as rusqlite = ">=0.41" with no upper bound.
+- fail: The template keeps rusqlite = "^0.41" and sc-observability = "=1.5.0", so consumers cannot select 0.42 or 1.6.
+
+## ANC-038
+
+Anchor: The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.
+
+> This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release
+
+Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 2.
+
+Summary: Tested dependency combination recorded in .sc-runtime/
+
+Scope: Specifies generated-application contents, template lockfiles, .sc-runtime/ metadata, or dependency revert/upgrade tooling.
+
+Deterministic check to pair with the development gate: Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.
+
+Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2`
+
+Fixtures:
+- pass: Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested; the upgrade command reads it to revert to or upgrade from that set.
+- fail: The generated application records no tested dependency versions; upgrades rely only on cargo update.
