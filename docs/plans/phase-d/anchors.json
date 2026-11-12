@@ -1625,6 +1625,142 @@
           "status": "locked"
         }
       ]
+    },
+    {
+      "id": "ANC-029",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Template generation MUST reject a project that enables cron with the no-database layout.",
+      "quote": "Cron needs a database. Generation MUST reject cron with the no-database layout.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "generation rejects cron with no-database layout",
+      "scope": "plan items that change template generation options, layouts, or the cron feature",
+      "deterministic_check": "generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:08:30+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-030",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still reject a second active schedule row that has the same schedule name as an active row.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "cron keeps one active row per schedule name",
+      "scope": "plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests",
+      "deterministic_check": "ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:08:30+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-031",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still refuse to add a schedule row once the row count reaches the row limit configured by the embedding application.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "kind": "directive",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "cron keeps caller-supplied row limit",
+      "scope": "plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests",
+      "deterministic_check": "ported sc-cron row-limit admission tests pass against the app-database CronStorage",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:08:30+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
+    },
+    {
+      "id": "ANC-032",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+      "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+      "kind": "structural",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "summary": "SQLite/Postgres/MySQL implement one Storage<T>",
+      "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+      "deterministic_check": "grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-12T02:08:30+00:00",
+          "event": "created",
+          "status": "locked"
+        }
+      ]
     }
   ]
 }

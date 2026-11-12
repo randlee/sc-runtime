@@ -34,6 +34,10 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-026 | locked | no spawn_blocking to reach writer | 2026-11-11 |
 | ANC-027 | locked | async callers do not block awaiting writer reply | 2026-11-11 |
 | ANC-028 | locked | no sqlx SQLite driver in SQLite app tree | 2026-11-11 |
+| ANC-029 | locked | generation rejects cron with no-database layout | 2026-11-11 |
+| ANC-030 | locked | cron keeps one active row per schedule name | 2026-11-11 |
+| ANC-031 | locked | cron keeps caller-supplied row limit | 2026-11-11 |
+| ANC-032 | locked | SQLite/Postgres/MySQL implement one Storage<T> | 2026-11-11 |
 
 ## ANC-001
 
@@ -544,3 +548,59 @@ Summary: no sqlx SQLite driver in SQLite app tree
 Scope: plan items that change SQLite-related dependencies, the generated template's SQLite store, or sc-cron's storage dependencies
 
 Deterministic check to pair with the development gate: cargo tree -e normal on generated SQLite app: no sqlx-sqlite
+
+## ANC-029
+
+Anchor: Template generation MUST reject a project that enables cron with the no-database layout.
+
+> Cron needs a database. Generation MUST reject cron with the no-database layout.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: generation rejects cron with no-database layout
+
+Scope: plan items that change template generation options, layouts, or the cron feature
+
+Deterministic check to pair with the development gate: generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written
+
+## ANC-030
+
+Anchor: When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still reject a second active schedule row that has the same schedule name as an active row.
+
+> Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: cron keeps one active row per schedule name
+
+Scope: plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests
+
+Deterministic check to pair with the development gate: ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage
+
+## ANC-031
+
+Anchor: When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still refuse to add a schedule row once the row count reaches the row limit configured by the embedding application.
+
+> Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: cron keeps caller-supplied row limit
+
+Scope: plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests
+
+Deterministic check to pair with the development gate: ported sc-cron row-limit admission tests pass against the app-database CronStorage
+
+## ANC-032
+
+Anchor: The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.
+
+> Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.
+
+Said by Rand Lee, Phase D planning session; option B storage decision, 2026-11-11. Status: locked. Version 1.
+
+Summary: SQLite/Postgres/MySQL implement one Storage<T>
+
+Scope: plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend
+
+Deterministic check to pair with the development gate: grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path
