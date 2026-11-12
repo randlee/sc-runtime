@@ -378,6 +378,9 @@ Scope: Changes a registry dependency range or dependency validation for the root
 
 Deterministic check to pair with the development gate: Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-4`: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
+
 Beads: anchor `run-qxzw`, plan questions `run-qxzw.1`, dev questions `run-qxzw.2`
 
 Fixtures:
@@ -436,6 +439,9 @@ Scope: Changes CI installation or caching of the sc-compose CLI in .github/actio
 
 Deterministic check to pair with the development gate: Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.
+
 Beads: anchor `run-kaze`, plan questions `run-kaze.1`, dev questions `run-kaze.2`
 
 Fixtures:
@@ -455,6 +461,10 @@ Summary: cron rows default to app SQLite DB
 Scope: plan items that change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring
 
 Deterministic check to pair with the development gate: generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.
+- `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.
 
 Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
 
@@ -476,6 +486,9 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: no SQLite write path outside the writer; writer API takes an async channel sender
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.
+
 Beads: anchor `run-b3q4`, plan questions `run-b3q4.1`, dev questions `run-b3q4.2`
 
 Fixtures:
@@ -495,6 +508,9 @@ Summary: writer thread owns the only write connection
 Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
 
 Deterministic check to pair with the development gate: grep: one write-mode Connection::open in the writer thread; other connections opened read-only
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.
 
 Beads: anchor `run-wq51`, plan questions `run-wq51.1`, dev questions `run-wq51.2`
 
@@ -516,6 +532,9 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: deterministic test: reply observed only after commit hook fires
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.
+
 Beads: anchor `run-ox1n`, plan questions `run-ox1n.1`, dev questions `run-ox1n.2`
 
 Fixtures:
@@ -535,6 +554,9 @@ Summary: queued writes batched in one transaction
 Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
 
 Deterministic check to pair with the development gate: deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.
 
 Beads: anchor `run-g9ca`, plan questions `run-g9ca.1`, dev questions `run-g9ca.2`
 
@@ -576,6 +598,9 @@ Scope: plan items that implement or change a SQLite storage backend, the SQLite 
 
 Deterministic check to pair with the development gate: grep: writer submit API is async (await on oneshot), no blocking recv in async callers
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.
+
 Beads: anchor `run-n4fl`, plan questions `run-n4fl.1`, dev questions `run-n4fl.2`
 
 Fixtures:
@@ -616,6 +641,10 @@ Scope: plan items that change template generation options, layouts, or the cron 
 
 Deterministic check to pair with the development gate: generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-5`: d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.
+- `run-d-6`: Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.
+
 Beads: anchor `run-1opo`, plan questions `run-1opo.1`, dev questions `run-1opo.2`
 
 Fixtures:
@@ -636,6 +665,11 @@ Scope: plan items that move or change cron storage, CronStorage, sc-cron's sched
 
 Deterministic check to pair with the development gate: ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.
+- `run-d-5`: d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9.
+- `run-d-6`: One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
+
 Beads: anchor `run-z85b`, plan questions `run-z85b.1`, dev questions `run-z85b.2`
 
 Fixtures:
@@ -655,6 +689,11 @@ Summary: cron keeps caller-supplied row limit
 Scope: plan items that move or change cron storage, CronStorage, sc-cron's schedule store, or cron tests
 
 Deterministic check to pair with the development gate: ported sc-cron row-limit admission tests pass against the app-database CronStorage
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-3`: d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.
+- `run-d-5`: d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9.
+- `run-d-6`: The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
 
 Beads: anchor `run-9pf5`, plan questions `run-9pf5.1`, dev questions `run-9pf5.2`
 

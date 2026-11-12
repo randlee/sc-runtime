@@ -1146,6 +1146,19 @@
             "plan_questions": "run-qxzw.1",
             "dev_questions": "run-qxzw.2"
           }
+        },
+        {
+          "at": "2026-11-12T03:42:01+00:00",
+          "event": "excluded",
+          "item": "run-d-4",
+          "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-4",
+          "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs."
         }
       ]
     },
@@ -1351,6 +1364,19 @@
             "plan_questions": "run-kaze.1",
             "dev_questions": "run-kaze.2"
           }
+        },
+        {
+          "at": "2026-11-12T03:42:01+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-3",
+          "reason": "d-3 changes published Cargo dependency ranges and CI range jobs only; it does not change how CI installs sc-compose."
         }
       ]
     },
@@ -1405,6 +1431,30 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:17+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9."
+        },
+        {
+          "item": "run-d-6",
+          "reason": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11."
         }
       ]
     },
@@ -1459,6 +1509,19 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6."
         }
       ]
     },
@@ -1520,6 +1583,19 @@
           "fields": [
             "kind"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6."
         }
       ]
     },
@@ -1574,6 +1650,19 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6."
         }
       ]
     },
@@ -1628,6 +1717,19 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6."
         }
       ]
     },
@@ -1736,6 +1838,19 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6."
         }
       ]
     },
@@ -1844,6 +1959,30 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:17+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-5",
+          "reason": "d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11."
+        },
+        {
+          "item": "run-d-6",
+          "reason": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage."
         }
       ]
     },
@@ -1898,6 +2037,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:42:01+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:18+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9."
+        },
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9."
+        },
+        {
+          "item": "run-d-6",
+          "reason": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
         }
       ]
     },
@@ -1952,6 +2126,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:42:01+00:00",
+          "event": "excluded",
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:10+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T03:43:18+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-3",
+          "reason": "d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9."
+        },
+        {
+          "item": "run-d-5",
+          "reason": "d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9."
+        },
+        {
+          "item": "run-d-6",
+          "reason": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
         }
       ]
     },
