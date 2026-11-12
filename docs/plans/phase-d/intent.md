@@ -25,8 +25,7 @@ PRD-CRON-3).
 use tested floors with no upper bound (ANC-037). Consumers may pin what they want.
 The template ships a recommended Cargo.lock at the newest tested combination;
 .sc-runtime/tested-dependencies.json records those versions for reference and
-future revert/upgrade tools (ANC-038). CI tests minimum/latest allowed selections
-(ANC-017).
+future revert/upgrade tools (ANC-038). The normal build and test suites check the selected versions.
 
 **Release.** The recorded owner decision is coordinated **0.3.0** across eight
 crates: `sc-storage`, `sc-runtime-db-sqlite`, `sc-config`, `sc-transport`,

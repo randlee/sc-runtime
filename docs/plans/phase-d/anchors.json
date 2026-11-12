@@ -1283,12 +1283,11 @@
           "event": "retired",
           "replaced_by": null,
           "reason": "Owner 2026-11-12: \"Everything gets extensive testing.  If there was a real issue it would show up\" and \"A compile error would pick that up.\" Separate minimum/latest dependency jobs and probes duplicate the normal test suite (PRD-ENG-4/6)."
-        }
-      ],
-      "exclude": [
+        },
         {
-          "item": "run-d-4",
-          "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs."
+          "at": "2026-11-12T08:11:22+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-4"
         }
       ]
     },

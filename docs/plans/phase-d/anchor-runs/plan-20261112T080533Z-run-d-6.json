@@ -1,0 +1,1714 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261112T080533Z-run-d-6",
+  "gate": "plan",
+  "created_at": "2026-11-12T08:05:33+00:00",
+  "anchors_path": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchors.json",
+  "plan": "phase-d",
+  "item": {
+    "id": "run-d-6",
+    "title": "d-6: sqlite-storage",
+    "source": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-0ebcfbe/run-d-6.txt",
+    "chars": 6012,
+    "truncated": false,
+    "chars_before_reduction": 6012,
+    "code_reduced": {
+      "blocks": 0,
+      "lines": 0
+    }
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "extra_questions": [
+    {
+      "path": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/.sc/plan-anchor/triage/plan-questions.jsonl",
+      "sha256": "68180fbd2de8a3dee2421351672f9a321506af1f4bb19531c2c26d7d21c2c521",
+      "ids": [
+        "owns",
+        "specific",
+        "stated",
+        "paraphrase",
+        "partial"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "anchor_id": "ANC-023",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The app's only SQLite write connection MUST be owned by the SQLite writer thread.",
+      "quote": "a single thread that owns the only write connection",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 3,
+      "deterministic_check": "grep: one write-mode Connection::open in the writer thread; other connections opened read-only",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.43,
+          "probabilities": {
+            "yes": 0.62,
+            "no": 0.25,
+            "unclear": 0.13
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.86,
+          "probabilities": {
+            "yes": 0.07,
+            "no": 0.91,
+            "unclear": 0.02
+          }
+        },
+        "owns": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.85,
+          "probabilities": {
+            "yes": 0.9,
+            "no": 0.09,
+            "unclear": 0.01
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.7,
+          "probabilities": {
+            "yes": 0.16,
+            "no": 0.8,
+            "unclear": 0.04
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.77,
+          "probabilities": {
+            "yes": 0.14,
+            "no": 0.85,
+            "unclear": 0.01
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.34,
+          "probabilities": {
+            "yes": 0.56,
+            "no": 0.31,
+            "unclear": 0.13
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.76,
+          "probabilities": {
+            "yes": 0.84,
+            "no": 0.16,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.43,
+      "explanation": "Jev was not confident (min confidence 0.43); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2430,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "compliance",
+          "question_id": "addressed",
+          "choice": "yes",
+          "confidence": 0.43
+        }
+      ],
+      "triage_questions": [
+        "owns",
+        "specific",
+        "stated",
+        "paraphrase",
+        "partial"
+      ],
+      "triage_attempts": 1,
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9064
+    },
+    {
+      "anchor_id": "ANC-038",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+      "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning, m6 owner decision 2026-11-12",
+      "anchor_version": 2,
+      "deterministic_check": "Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.31,
+          "probabilities": {
+            "yes": 0.45,
+            "no": 0.54,
+            "unclear": 0.01
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.86,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.91,
+            "unclear": 0.08
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        },
+        "owns": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.98,
+            "unclear": 0.01
+          }
+        },
+        "specific": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        },
+        "stated": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        },
+        "paraphrase": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.98,
+            "unclear": 0.01
+          }
+        },
+        "partial": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.28,
+          "probabilities": {
+            "yes": 0.52,
+            "no": 0.48,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.31,
+      "explanation": "Jev was not confident (min confidence 0.31); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2452,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "relevance",
+          "question_id": "relevant",
+          "choice": "no",
+          "confidence": 0.31
+        }
+      ],
+      "triage_questions": [
+        "owns",
+        "specific",
+        "stated",
+        "paraphrase",
+        "partial"
+      ],
+      "triage_attempts": 1,
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9173
+    },
+    {
+      "anchor_id": "ADR-RUN-0011",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0011",
+      "statement": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except Runtime::block_on on the SQLite writer's dedicated OS thread.",
+      "quote": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "planning session",
+      "anchor_version": 4,
+      "deterministic_check": "grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.98,
+            "no": 0.02,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.46,
+          "probabilities": {
+            "yes": 0.18,
+            "no": 0.64,
+            "unclear": 0.18
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.89,
+          "probabilities": {
+            "yes": 0.04,
+            "no": 0.93,
+            "unclear": 0.03
+          }
+        }
+      },
+      "min_confidence": 0.89,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2461,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9175
+    },
+    {
+      "anchor_id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Production release crates MUST NOT depend on sc-compose or ATM crates.",
+      "quote": "sc-compose and atm crates should be blocked from any production release crate.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: inspect proposed normal/build dependencies. Development: inspect cargo metadata and cargo tree normal/build graphs for each published crate and supported feature set for sc-compose or agent-team-mail.",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.96,
+          "probabilities": {
+            "yes": 0.97,
+            "no": 0.03,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "yes": 0.03,
+            "no": 0.97,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.96,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2457,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9216
+    },
+    {
+      "anchor_id": "ANC-016",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+      "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied.",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2460,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9285
+    },
+    {
+      "anchor_id": "ANC-017",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+      "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132.",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2444,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9163
+    },
+    {
+      "anchor_id": "ANC-022",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "All writes to an app's SQLite database MUST be submitted to a single writer through an async channel.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: no SQLite write path outside the writer; writer API takes an async channel sender",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.91,
+          "probabilities": {
+            "yes": 0.06,
+            "no": 0.94,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.91,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2434,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9084
+    },
+    {
+      "anchor_id": "ANC-024",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST reply to each write request only after the transaction containing that write has committed.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: reply observed only after commit hook fires",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.97,
+            "unclear": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.96,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2433,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9097
+    },
+    {
+      "anchor_id": "ANC-025",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The SQLite writer MUST commit writes that are queued together in a single transaction.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: N writes queued before drain commit in one transaction (commit hook count 1)",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.98,
+            "no": 0.01,
+            "unclear": 0.01
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.97,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2429,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9069
+    },
+    {
+      "anchor_id": "ANC-026",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: no spawn_blocking in callers of the SQLite writer",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2431,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9057
+    },
+    {
+      "anchor_id": "ANC-027",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Async callers MUST submit writes to the SQLite writer without blocking their thread while waiting for the reply.",
+      "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "grep: writer submit API is async (await on oneshot), no blocking recv in async callers",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2433,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9095
+    },
+    {
+      "anchor_id": "ANC-028",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The cargo tree of an app that uses SQLite MUST NOT include a sqlx SQLite driver crate.",
+      "quote": "An app with SQLite MUST link exactly one SQLite client library: cargo tree shows rusqlite, no sqlx SQLite driver, and one libsqlite3-sys version.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "cargo tree -e normal on generated SQLite app: no sqlx-sqlite",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2433,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9072
+    },
+    {
+      "anchor_id": "ANC-032",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+      "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 3,
+      "deterministic_check": "grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2436,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9084
+    },
+    {
+      "anchor_id": "ANC-033",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+      "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "sc-storage exposes the atomic-unit operation; SQLite, Postgres and MySQL implementations each pass one shared conformance test where a failing operation rolls back the earlier ones",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.97,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2456,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9178
+    },
+    {
+      "anchor_id": "ANC-034",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer's table (for example cron rows).",
+      "quote": "No storage backend contains code for a specific consumer's table.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "grep storage backend crates for CronRow, cron table DDL or cron SQL: no hits; cargo tree -p sc-runtime-db-sqlite --all-features has no sc-cron",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2447,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9110
+    },
+    {
+      "anchor_id": "ANC-035",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Public storage functions MUST NOT panic.",
+      "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2425,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9024
+    },
+    {
+      "anchor_id": "ANC-036",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.",
+      "quote": "a panic on the writer thread reaches every waiting caller as an error, never a hang",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "anchor_version": 2,
+      "deterministic_check": "deterministic test: a request that panics on the writer thread makes every pending caller receive an error; no await hangs (no sleeps)",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2432,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9079
+    },
+    {
+      "anchor_id": "ANC-037",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+      "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning, m6 owner decision 2026-11-12",
+      "anchor_version": 2,
+      "deterministic_check": "Parse every published-crate and template Cargo.toml registry requirement; fail on any '<', '<=', '=', '~' or caret requirement (caret implies an upper bound).",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2425,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9088
+    },
+    {
+      "anchor_id": "ANC-003",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+      "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.92,
+          "probabilities": {
+            "yes": 0.05,
+            "no": 0.95,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.91,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.94,
+            "unclear": 0.04
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.91,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2441,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9137
+    },
+    {
+      "anchor_id": "ANC-005",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.",
+      "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: declares a CLI minimum >=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.92,
+          "probabilities": {
+            "yes": 0.05,
+            "no": 0.95,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.94,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.96,
+            "unclear": 0.03
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.92,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2451,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9139
+    },
+    {
+      "anchor_id": "ANC-015",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.",
+      "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session 2026-11-11",
+      "anchor_version": 3,
+      "deterministic_check": "Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.91,
+          "probabilities": {
+            "yes": 0.06,
+            "no": 0.94,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.97,
+            "unclear": 0.01
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.91,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2444,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9153
+    },
+    {
+      "anchor_id": "ANC-020",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The primary CI installation path for sc-compose MUST use GitHub Release archives.",
+      "quote": "**Primary install path for CI and production** — GitHub Release tarballs/zip + `checksums.txt` (already published). Treat these as the **stability contract** for a tagged version.",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored sc-compose issue #1041, What consumers need item 1: https://github.com/randlee/sc-compose/issues/1041. Replaces ANC-002 with direct provenance for the binary-install mechanism.",
+      "anchor_version": 4,
+      "deterministic_check": "Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.",
+      "kind": "directive",
+      "leaning": "not_applicable",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+      "verdict": "not_applicable",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.92,
+          "probabilities": {
+            "yes": 0.05,
+            "no": 0.95,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.96,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.97,
+            "unclear": 0.02
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.92,
+      "explanation": "The anchor does not govern this bead.",
+      "usage": {
+        "input_tokens": 2438,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 6012,
+      "item_shortened": false,
+      "request_bytes": 9114
+    },
+    {
+      "anchor_id": "ANC-021",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.",
+      "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-6",
+        "reason": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-029",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Template generation MUST reject a project that enables cron with the no-database layout.",
+      "quote": "Cron needs a database. Generation MUST reject cron with the no-database layout.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "generation test: cron enabled + no-database layout exits non-zero with a typed error; no project written",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-6",
+        "reason": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-030",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still reject a second active schedule row that has the same schedule name as an active row.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "ported sc-cron test: unique schedule-name constraint/behaviour test passes against the app-database CronStorage",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-6",
+        "reason": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ANC-031",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "When sc-cron's schedule rows move from a separate cron database file into the application's database, sc-cron MUST still refuse to add a schedule row once the row count reaches the row limit configured by the embedding application.",
+      "quote": "Moving the cron table MUST NOT drop one-active-schedule-per-name, the row limit, or generation fencing; their tests are ported, not deleted.",
+      "stated_by": "Rand Lee",
+      "stated_at": "2026-11-11",
+      "context": "Phase D planning session; option B storage decision",
+      "anchor_version": 2,
+      "deterministic_check": "ported sc-cron row-limit admission tests pass against the app-database CronStorage",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "run-d-6",
+        "reason": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.",
+      "attempts": 0
+    }
+  ],
+  "summary": {
+    "counts": {
+      "underspecified": 2,
+      "satisfied": 16,
+      "not_applicable": 4,
+      "excluded": 4
+    },
+    "failing": [
+      "ANC-023",
+      "ANC-038"
+    ],
+    "leaning_counts": {
+      "not_applicable": 5,
+      "satisfied": 17
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [
+      {
+        "anchor_id": "ANC-021",
+        "reason": "d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11."
+      },
+      {
+        "anchor_id": "ANC-029",
+        "reason": "Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage."
+      },
+      {
+        "anchor_id": "ANC-030",
+        "reason": "One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
+      },
+      {
+        "anchor_id": "ANC-031",
+        "reason": "The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema."
+      }
+    ],
+    "shortened": [],
+    "pass": false
+  }
+}

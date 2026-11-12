@@ -388,9 +388,6 @@ Scope: Changes a registry dependency range or dependency validation for the root
 
 Deterministic check to pair with the development gate: Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.
 
-Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-4`: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
-
 Beads: anchor `run-qxzw`, plan questions `run-qxzw.1`, dev questions `run-qxzw.2`
 
 Fixtures:
