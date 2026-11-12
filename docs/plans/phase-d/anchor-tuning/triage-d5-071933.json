@@ -1,0 +1,253 @@
+{
+  "failed_revision": "130603f",
+  "consumer": "run-lead independent gate/drift review and owner final diff",
+  "gate": "d-5 planning acceptance",
+  "observed_defect": "d-5 ANC-019 relevance/compliance low confidence after exclusion removal",
+  "retirement": "Archive with Phase D final review when implementation closes",
+  "failures": [
+    {
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-019",
+      "run_id": "plan-20261112T071933Z-run-d-5",
+      "why": {
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.42,
+            "probabilities": {
+              "no": 0.39,
+              "unclear": 0.0,
+              "yes": 0.61
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.25,
+            "probabilities": {
+              "no": 0.5,
+              "unclear": 0.02,
+              "yes": 0.48
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.0,
+              "yes": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.34,
+              "no": 0.65,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.38,
+            "probabilities": {
+              "yes": 0.4,
+              "no": 0.59,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.95,
+              "no": 0.05,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.98,
+              "no": 0.02,
+              "unclear": 0.0
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.65,
+              "unclear": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "yes",
+            "confidence": 0.42
+          },
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.25
+          }
+        ],
+        "weak_sentence": "boundary:storage-contract/ranges — All d-5 manifest edits in template/Cargo.toml and template/workspace.template.toml, including sc-observability/sc-observability-types ^1.5.0 , utoipa ^6.0.0 and schemars ^1.2.3, the sc-cron Windows win32job ^2.0.3/waitpid-any ^0.3.0 lines, and the rusqlite ^0.41/sc-storage registrations use normal caret requirements, permit newer compatible releases and add no extra upper bound; none needs a break comment. CI tests their minimum (-Z minimal-versions) and latest allowed selections. Any extra upper bound that later becomes necessary must start at the first release with the concrete API, links or toolchain break and carry an adjacent manifest comment naming that break (ANC-016/017/019).",
+        "diagnosis": "The criterion names only the resulting carets and says none needs a break comment, obscuring responsibility for removing existing exact-pin upper bounds. The later-bound sentence reads as an afterthought. The sealed relevant/addressed questions correctly require the item to own the actual restriction/comment work, while stated=yes0.92 and paraphrase=yes0.97 already establish presence of the general rule."
+      },
+      "authority": {
+        "revision": "130603f",
+        "path": "docs/plans/phase-d/anchors.json",
+        "id": "ANC-019",
+        "version": 4,
+        "status": "locked",
+        "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+        "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
+      }
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-019",
+      "run_id": "plan-20261112T071933Z-run-d-5",
+      "why": {
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.42,
+            "probabilities": {
+              "no": 0.39,
+              "unclear": 0.0,
+              "yes": 0.61
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.25,
+            "probabilities": {
+              "no": 0.5,
+              "unclear": 0.02,
+              "yes": 0.48
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.0,
+              "yes": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.34,
+              "no": 0.65,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.38,
+            "probabilities": {
+              "yes": 0.4,
+              "no": 0.59,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.95,
+              "no": 0.05,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.98,
+              "no": 0.02,
+              "unclear": 0.0
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.65,
+              "unclear": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "yes",
+            "confidence": 0.42
+          },
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.25
+          }
+        ],
+        "weak_sentence": "boundary:storage-contract/ranges — All d-5 manifest edits in template/Cargo.toml and template/workspace.template.toml, including sc-observability/sc-observability-types ^1.5.0 , utoipa ^6.0.0 and schemars ^1.2.3, the sc-cron Windows win32job ^2.0.3/waitpid-any ^0.3.0 lines, and the rusqlite ^0.41/sc-storage registrations use normal caret requirements, permit newer compatible releases and add no extra upper bound; none needs a break comment. CI tests their minimum (-Z minimal-versions) and latest allowed selections. Any extra upper bound that later becomes necessary must start at the first release with the concrete API, links or toolchain break and carry an adjacent manifest comment naming that break (ANC-016/017/019).",
+        "diagnosis": "The criterion names only the resulting carets and says none needs a break comment, obscuring responsibility for removing existing exact-pin upper bounds. The later-bound sentence reads as an afterthought. The sealed relevant/addressed questions correctly require the item to own the actual restriction/comment work, while stated=yes0.92 and paraphrase=yes0.97 already establish presence of the general rule."
+      },
+      "authority": {
+        "revision": "130603f",
+        "path": "docs/plans/phase-d/anchors.json",
+        "id": "ANC-019",
+        "version": 4,
+        "status": "locked",
+        "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+        "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
+      },
+      "action": "replace",
+      "sentence": "boundary:storage-contract/ranges — All d-5 manifest edits in template/Cargo.toml and template/workspace.template.toml, including sc-observability/sc-observability-types ^1.5.0 , utoipa ^6.0.0 and schemars ^1.2.3, the sc-cron Windows win32job ^2.0.3/waitpid-any ^0.3.0 lines, and the rusqlite ^0.41/sc-storage registrations use normal caret requirements, permit newer compatible releases and add no extra upper bound; none needs a break comment. CI tests their minimum (-Z minimal-versions) and latest allowed selections. Any extra upper bound that later becomes necessary must start at the first release with the concrete API, links or toolchain break and carry an adjacent manifest comment naming that break (ANC-016/017/019).",
+      "replacement": "boundary:storage-contract/ranges — This sprint removes existing explicit upper bounds by converting exact pins to tested-floor carets: sc-observability/sc-observability-types =1.5.0 -> ^1.5.0 and utoipa =6.0.0 -> ^6.0.0 in both shared template manifests; win32job =2.0.3 -> ^2.0.3 and waitpid-any =0.3.0 -> ^0.3.0 in crates/sc-cron/Cargo.toml. Inspect every third-party requirement this sprint changes in template/Cargo.toml, template/workspace.template.toml, root Cargo.toml and crates/sc-cron/Cargo.toml. Every additional upper bound it adds or retains MUST have a comment immediately beside the requirement identifying the actual known API, native-links or toolchain break requiring that specific bound; the boundary starts at the first demonstrated broken release. A missing comment or unsupported bound blocks this sprint closing. The converted carets and rusqlite ^0.41 registration allow newer compatible releases; CI tests minimum (-Z minimal-versions) and latest allowed selections (ANC-016/017/019)."
+    }
+  ],
+  "evidence": {
+    "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T071933Z-run-d-5.json",
+    "run_sha256": "60de6a6e4863f087b02cab4fbe3235a6d020de7544d864fafca7213f7a8c5c76",
+    "snapshot_path": "docs/plans/phase-d/anchor-runs/gate-items-130603f/run-d-5.txt",
+    "snapshot_sha256": "8fd6280299c11f760cf02fc6baf21dab2c346c1ca897fa6b3494405eaac3471e",
+    "source_path_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-130603f/run-d-5.txt"
+  }
+}
