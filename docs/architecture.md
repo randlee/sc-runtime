@@ -198,19 +198,22 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0014 | Optional embedder-supplied schedule row limit | Active |
 | ADR-RUN-0015 | Benchmark campaigns in a controlled environment | Active |
 | ADR-RUN-0016 | Explicit Python and Monty hook environments | Active |
+| ADR-RUN-0017 | Initial release observability shim | Active release amendment |
+| ADR-RUN-0018 | Cooperative cron operation and owned shutdown contract | Under review (2026-11-11) |
+| ADR-RUN-0019 | Optional standard cron command adapter and generated wiring | Approved Phase C target |
 | ADR-RUN-0020 | `Storage<T>`: one storage trait, three engines, atm-core SQLite writer | Proposed |
 | ADR-RUN-0021 | One command pattern for CLI, MCP and HTTP | Proposed |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
 | ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Deferred — post-core application layer |
-| ADR-RUN-0301 | One store crate per database backend | Active |
+| ADR-RUN-0301 | One store crate per database backend | Superseded in part by PRD v2.0 (2026-11-11) |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
-| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Deferred (PRD v2.0 §9, 2026-11-11) |
 | ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
-| ADR-RUN-0307 | write_rows upserts one row identity | Active |
+| ADR-RUN-0307 | write_rows upserts one row identity | Deferred (PRD v2.0 §9, 2026-11-11) |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -3375,7 +3378,7 @@ Read on `develop` at `4da05e3` (Source line and the opening decision points of e
 | ADR-RUN-0012 | "There is no `StorageBackend`"; template stores stay sqlx | Owner, 2026-10-25, recorded as "Do not put it behind a SQL trait shared with sqlx" |
 | ADR-RUN-0013, REQ-CRON-0004 | Cron owns a separate database file | Reintroduced by commit `7534865f` after the owner's "one SQLite table" |
 
-`docs/requirements.md` (4,629 lines) and the per-crate requirements files were not audited.
+`docs/requirements.md`, this file and the per-crate requirements and architecture files were then scanned by keyword for further conflicts and amended (2026-11-11). That scan was not a full read.
 
 ### Open — owner decides, nothing assumed
 
