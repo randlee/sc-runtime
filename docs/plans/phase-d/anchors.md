@@ -926,11 +926,11 @@ Anchor: The generated application MUST record the release's tested dependency co
 
 > This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release
 
-Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 3.
 
 Summary: Tested dependency combination recorded in .sc-runtime/
 
-Scope: Specifies generated-application contents, template lockfiles, .sc-runtime/ metadata, or dependency revert/upgrade tooling.
+Scope: Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.
 
 Deterministic check to pair with the development gate: Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.
 

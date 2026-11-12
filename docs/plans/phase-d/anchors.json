@@ -4004,7 +4004,7 @@
       "stated_at": "2026-11-11",
       "context": "Phase D planning, m6 owner decision 2026-11-12",
       "summary": "Tested dependency combination recorded in .sc-runtime/",
-      "scope": "Specifies generated-application contents, template lockfiles, .sc-runtime/ metadata, or dependency revert/upgrade tooling.",
+      "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
       "deterministic_check": "Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.",
       "fixtures": {
         "pass": [
@@ -4015,7 +4015,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -4043,6 +4043,13 @@
           "event": "updated",
           "fields": [
             "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T08:06:05+00:00",
+          "event": "updated",
+          "fields": [
+            "scope"
           ]
         }
       ]
