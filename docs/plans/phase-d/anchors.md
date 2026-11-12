@@ -429,10 +429,6 @@ Scope: Adds or retains an explicit third-party dependency upper bound beyond Car
 
 Deterministic check to pair with the development gate: Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.
 
-Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
-- `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
-
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
 Fixtures:

@@ -4299,6 +4299,17 @@ rule changes from sc-lint and nothing in this repository changes.
 
 **Status:** Active  
 
+### Phase D amendment (2026-11-12)
+
+For Phase D, the owner's all-dependencies decision and ANC-037 supersede the
+historical minor-pin policy below: published crate and template registry
+requirements, including rmcp, use >= a tested floor with no upper bound.
+rmcp's patched tested floor is >=3.9. Consumers may pin any version in their
+own manifests/lockfiles. Minimum/latest CI tests actual allowed selections;
+the generated Cargo.lock and .sc-runtime/tested-dependencies.json recommend
+the release-tested latest combination (ANC-038). This amendment states the
+approved policy, not a successful implementation or publication.
+
 ### Requirement Statement
 
 Every `Cargo.toml` in this repository that names the `rmcp` crate as a

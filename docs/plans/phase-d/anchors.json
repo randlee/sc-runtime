@@ -1507,16 +1507,16 @@
           "event": "retired",
           "replaced_by": "ANC-037",
           "reason": "Contradicts PRD v2.0 PRD-ENG-5 (a requirement does not take an option away from a consumer) and PRD-ENG-4 (keep it simple): an upper bound takes the newer-release option away, and the break-comment machinery is work for an open option (PRD-ENG-6). The PRD is top authority; ANC-037 states the PRD-consistent rule."
-        }
-      ],
-      "exclude": [
-        {
-          "item": "run-d-7",
-          "reason": "d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes."
         },
         {
-          "item": "run-d-8",
-          "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes."
+          "at": "2026-11-12T08:01:24+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-7"
+        },
+        {
+          "at": "2026-11-12T08:01:24+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-8"
         }
       ]
     },

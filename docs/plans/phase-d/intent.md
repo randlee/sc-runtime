@@ -21,14 +21,12 @@ acceptance follows the PRD and live sprint criteria; the superseded vulnerable
 SQLx-SQLite configuration is not an accepted Phase D outcome (PRD-STO-2/3;
 PRD-CRON-3).
 
-**Compatible upgrades.** Published and generated dependency requirements allow
-newer Cargo-compatible releases from tested floors without another SDK release
-(ANC-016). Production and generated requirements do not use exact or tilde pins.
-Additional upper bounds need adjacent manifest comments identifying the known
-break requiring them (ANC-019). CI tests minimum and latest allowed selections,
-including generated and separate-consumer configurations (ANC-017). Application
-lockfiles and reproducible generation-tool installs do not restrict consumers'
-dependency choices.
+**Dependency choice and recommendations.** Published/template registry requirements
+use tested floors with no upper bound (ANC-037). Consumers may pin what they want.
+The template ships a recommended Cargo.lock at the newest tested combination;
+.sc-runtime/tested-dependencies.json records those versions for reference and
+future revert/upgrade tools (ANC-038). CI tests minimum/latest allowed selections
+(ANC-017).
 
 **Release.** The recorded owner decision is coordinated **0.3.0** across eight
 crates: `sc-storage`, `sc-runtime-db-sqlite`, `sc-config`, `sc-transport`,
