@@ -1138,12 +1138,11 @@
           "item": "run-d-9",
           "reason": "d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.",
           "replaced": false
-        }
-      ],
-      "exclude": [
+        },
         {
-          "item": "run-d-9",
-          "reason": "d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5."
+          "at": "2026-11-12T05:23:23+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-9"
         }
       ]
     },
@@ -1226,16 +1225,17 @@
           "item": "run-d-10",
           "reason": "d-10 changes no registry dependency range.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T05:23:23+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-9"
         }
       ],
       "exclude": [
         {
           "item": "run-d-4",
           "reason": "d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs."
-        },
-        {
-          "item": "run-d-9",
-          "reason": "d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5."
         },
         {
           "item": "run-d-10",
@@ -1420,13 +1420,14 @@
           "at": "2026-11-12T05:21:25+00:00",
           "event": "exclusion_removed",
           "item": "run-d-6"
+        },
+        {
+          "at": "2026-11-12T05:23:23+00:00",
+          "event": "exclusion_removed",
+          "item": "run-d-9"
         }
       ],
       "exclude": [
-        {
-          "item": "run-d-9",
-          "reason": "d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5."
-        },
         {
           "item": "run-d-7",
           "reason": "d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes."

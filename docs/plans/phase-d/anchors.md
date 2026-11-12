@@ -364,9 +364,6 @@ Scope: Changes registry dependency requirements in published crates or template 
 
 Deterministic check to pair with the development gate: Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.
 
-Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
-
 Beads: anchor `run-41jv`, plan questions `run-41jv.1`, dev questions `run-41jv.2`
 
 Fixtures:
@@ -389,7 +386,6 @@ Deterministic check to pair with the development gate: Plan: requires passing lo
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-4`: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
-- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
 - `run-d-10`: d-10 changes no registry dependency range.
 
 Beads: anchor `run-qxzw`, plan questions `run-qxzw.1`, dev questions `run-qxzw.2`
@@ -431,7 +427,6 @@ Scope: Adds or retains an explicit third-party dependency upper bound beyond Car
 Deterministic check to pair with the development gate: Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.
 
 Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
 - `run-d-7`: d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019's scope excludes.
 - `run-d-8`: d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.
 
