@@ -1,9 +1,9 @@
 {
-  "version": "0.19.16",
-  "commit": "bc2dc972d9725a2474e4364b6646db82050cb67a",
+  "version": "0.19.17",
+  "commit": "3b2aee4e194c1f1020990b40e950546bb67343a3",
   "source": {
     "ref": "bundled",
-    "manifest_aggregate": "27431980d124324541de82744495447f371b7014a64302fe976a44bd5f7af033"
+    "manifest_aggregate": "f461062d7b0309a601e90fac953497e7e21abd3fc1f08db97954974b15caf0b5"
   },
   "files": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "path": ".codex/skills/atm-bd-lite/SKILL.md",
-      "sc_sha": "34aae5f03a1f577297e70887d55e6ec022e278dfd471b3c90094f83a83af4a65"
+      "sc_sha": "c5f615794bc669a50d01a464323cbd00bb9bf8fdd9d7f215e8fd977234b1551d"
     },
     {
       "path": ".codex/skills/atm-bd-lite/hooks/task-assign.md",
@@ -84,7 +84,7 @@
     },
     {
       "path": ".codex/skills/atm-bd-orchestration/SKILL.md",
-      "sc_sha": "9a5af9f20f1a72bcb30b3a85a8417065a4fa660255b7902945e1bcbf00b170e3"
+      "sc_sha": "d3bea63096816af1c42b8012a1683b14ac700652a8bd64f361e3eb8ddd14972c"
     },
     {
       "path": ".codex/skills/atm-bd-orchestration/blocking-findings-guidelines.md",
@@ -804,7 +804,7 @@
     },
     {
       "path": ".codex/skills/atm-beads/SKILL.md",
-      "sc_sha": "b6140279656851e7aa613fd5fcd465d704ff2af88be8b1272840e61d7cb66fe8"
+      "sc_sha": "009799a2f446c8a5533921cd5c761cc9235d6fd2bcc26aeb762bb8a7d5b45fed"
     },
     {
       "path": ".codex/skills/atm-beads/examples/dev-sanity-bead-vars-d-4.json",
@@ -892,7 +892,7 @@
     },
     {
       "path": ".codex/skills/atm-beads/scripts/bead_schema.py",
-      "sc_sha": "6c654eb00be5ba9af7d4cfbf98ce25d30d797210226eac97a69cc3fb3689072a"
+      "sc_sha": "87f90df9d69af31d9c43d13b2cb18bb201d96a1df5f3b41a99948d871237a7fc"
     },
     {
       "path": ".codex/skills/atm-beads/scripts/check-phase-artifact",
@@ -964,7 +964,7 @@
     },
     {
       "path": ".codex/skills/atm-beads/tests/test_bead_schema.py",
-      "sc_sha": "7d85e0316437ec5169ed599a884acb4a9e6469f8ba563f3cc36eed0465658c1e"
+      "sc_sha": "d705877e11b26b9958130025881945e009ef3ecdfec1ed6cb98df71c7b284b5c"
     },
     {
       "path": ".codex/skills/atm-beads/tests/test_importing_docs.py",
@@ -1008,7 +1008,7 @@
     },
     {
       "path": ".codex/skills/plan-hardening/SKILL.md",
-      "sc_sha": "71da7491cf8c0d4b77950e2e4e96e65a66886dd901a543e751e4cd6691fe4e18"
+      "sc_sha": "d64f36d73122cedf3b366c6e7458fef80b0c5b124b4d2846585ba87056030bc7"
     },
     {
       "path": ".codex/skills/plan-hardening/examples/plan-hardening-finding-bead-vars.example.json",
