@@ -3984,7 +3984,7 @@ try_log admission, which has no capacity wait/sink I/O but takes internal locks.
 This is not a wait-free guarantee; all other request-path rules below apply.
 
 **Status:** Active  
-**Amended 2026-11-11 (PRD-ENG-1, PRD-ENG-2).** Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite writer and reader-pool work runs on dedicated threads, which may drive their own runtime with `Runtime::block_on` under ADR-RUN-0011; callers still enqueue and await without blocking.
+**Amended 2026-11-11 (PRD-ENG-1, PRD-ENG-2).** Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite work runs on dedicated threads: only the writer thread drives its own runtime with `Runtime::block_on` under ADR-RUN-0011. Reader workers receive with `blocking_recv`, have no runtime and need no exception; callers still enqueue and await without blocking.
 
 
 ### Requirement Statement
