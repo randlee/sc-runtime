@@ -47,8 +47,6 @@ This item covers the file layer of the `sc-config` crate (`crates/sc-config`).
 The design fixes the two file names and that `local.json` is gitignored. The
 merge rules below are decided in this document.
 
-The crate MUST export this function:
-
 ```rust
 pub fn load<T: serde::de::DeserializeOwned>(app: AppName) -> Result<T, ConfigError>
 ```
@@ -61,27 +59,9 @@ reach `load`. The name still selects only the environment-variable prefix
 (entry 9). Display is `as_str` or `AsRef<str>`. The type does not implement
 `Deref`.
 
-1. `load` MUST read `config/default.json`, resolved against the process's
-   current working directory.
-2. `config/default.json` MUST exist. If it does not, `load` MUST return the
-   `ConfigError` variant for a missing default file
-   ([REQ-CFG-0004](requirements.md)).
-3. `load` MUST read `config/local.json` from the same directory when that file
-   exists.
-4. An absent `config/local.json` MUST NOT be an error. The result is then
-   built from `config/default.json` alone.
-5. Each file MUST be read as bytes and parsed as one JSON document into a
-   `serde_json::Value` (`serde_json::from_slice`).
-6. `load` MUST merge the `local.json` value over the `default.json` value with
-   the function `merge(base, overlay)` defined in the table below.
-7. `load` MUST then apply the environment-variable overrides of app `app` to
-   the merged value. Those overrides take precedence over both files
-   ([REQ-CFG-0002](requirements.md)).
-8. `load` MUST deserialise the final value into `T` exactly once, with
-   `serde_json::from_value::<T>`.
-9. The `app` argument MUST NOT change which files are read. It selects only
-   the environment-variable prefix.
-10. `load` MUST NOT write, create or modify any file.
+4. The result is then built from `config/default.json` alone.
+7. Those overrides take precedence over both files ([REQ-CFG-0002](requirements.md)).
+9. It selects only the environment-variable prefix.
 
 `merge(base, overlay)`, decided in this document:
 
@@ -128,6 +108,24 @@ Merged value, with no environment overrides set:
 replaced, not concatenated. `logging.level` becomes `null`. `stores` changes
 from an object to a string because a non-object overlay replaces whatever is
 beneath it.
+
+**MUST statements:**
+
+- The crate MUST export this function:
+- `load` MUST read `config/default.json`, resolved against the process's current working directory.
+- `config/default.json` MUST exist.
+- If it does not, `load` MUST return the `ConfigError` variant for a missing default file ([REQ-CFG-0004](requirements.md)).
+- `load` MUST read `config/local.json` from the same directory when that file exists.
+- Each file MUST be read as bytes and parsed as one JSON document into a `serde_json::Value` (`serde_json::from_slice`).
+- `load` MUST merge the `local.json` value over the `default.json` value with the function `merge(base, overlay)` defined in the table below. (see table above)
+- `load` MUST then apply the environment-variable overrides of app `app` to the merged value.
+- `load` MUST deserialise the final value into `T` exactly once, with `serde_json::from_value::<T>`.
+
+**MUST NOT statements:**
+
+- An absent `config/local.json` MUST NOT be an error.
+- The `app` argument MUST NOT change which files are read.
+- `load` MUST NOT write, create or modify any file.
 
 ### Rationale
 
@@ -193,55 +191,24 @@ caller's type.
 
 Variable name:
 
-1. The prefix MUST be the app name with every ASCII lower-case letter
-   upper-cased and every `-` replaced by `_`, followed by `__` (two
-   underscores). App `my-app` gives prefix `MY_APP__`. `_` is already that
-   character, so `my_app` yields the same prefix. `AppName::env_prefix` is
-   the function that implements this rule.
-2. A variable MUST be treated as an override if and only if its encoded name
-   starts with that prefix. The comparison is exact and case-sensitive. Empty
-   segments, application order, and non-Unicode names or values are decided
-   below.
-3. Every variable whose name does not start with the prefix MUST be ignored,
-   whatever its value. `OTHER_APP__DAEMON__PORT` and `MY_APP_DAEMON_PORT`
-   (single underscores) are both ignored for app `my-app`.
-4. The part of the name after the prefix MUST be split at every
-   non-overlapping occurrence of `__`, scanning left to right (Rust
-   `str::split("__")`).
-5. Each resulting segment MUST be converted to ASCII lower case. The segments,
-   in order, are the key path. `MY_APP__DAEMON__MAX_CONNECTIONS` addresses key
-   `max_connections` inside object `daemon`.
-6. A single `_` MUST NOT separate segments. It is part of the key.
+1. App `my-app` gives prefix `MY_APP__`. `_` is already that character, so `my_app` yields the same prefix. `AppName::env_prefix` is the function that implements this rule.
+2. The comparison is exact and case-sensitive. Empty segments, application order, and non-Unicode names or values are decided below.
+3. `OTHER_APP__DAEMON__PORT` and `MY_APP_DAEMON_PORT` (single underscores) are both ignored for app `my-app`.
+5. The segments, in order, are the key path. `MY_APP__DAEMON__MAX_CONNECTIONS` addresses key `max_connections` inside object `daemon`.
+6. It is part of the key.
 7. A key that contains an ASCII upper-case letter, or that contains `__`,
    cannot be addressed by an override. Array elements cannot be addressed; an
    array is overridden whole.
 
 Value:
 
-8. The variable's value MUST be parsed with
-   `serde_json::from_str::<serde_json::Value>`.
-9. If parsing succeeds, the parsed JSON value MUST be used. `8080` is a number,
-   `true` is a boolean, `null` is JSON null, `["a"]` is an array, `{"x":1}` is
-   an object and `"8080"` (with the quotes) is the string `8080`.
-10. If parsing fails, the value MUST be used unchanged as a JSON string.
-    `debug` becomes `"debug"`, `0.0.0.0` becomes `"0.0.0.0"` and the empty
-    value becomes `""`.
+9. `8080` is a number, `true` is a boolean, `null` is JSON null, `["a"]` is an array, `{"x":1}` is an object and `"8080"` (with the quotes) is the string `8080`.
+10. `debug` becomes `"debug"`, `0.0.0.0` becomes `"0.0.0.0"` and the empty value becomes `""`.
 
 Applying an override with key path `k1, k2, ..., kn`:
 
-11. Starting at the document root, for each of `k1` to `k(n-1)`: if the current
-    value is an object that lacks the key, an empty object MUST be created at
-    that key. The walk then moves to the value at that key.
-12. If the current value at any step of that walk, including the root, is not
-    an object (it is a string, number, boolean, array or `null`), the load MUST
-    fail with the `ConfigError` variant for an override that cannot be applied
-    ([REQ-CFG-0004](requirements.md)). The document MUST NOT be silently
-    restructured.
-13. At the last object, key `kn` MUST be set to the override value. An existing
-    value at `kn` is replaced whole, whatever its type. An override value that
-    is an object replaces; it is not merged.
-14. Overrides MUST take precedence over `config/default.json` and
-    `config/local.json`.
+11. The walk then moves to the value at that key.
+13. An existing value at `kn` is replaced whole, whatever its type. An override value that is an object replaces; it is not merged.
 
 Decided: An application name is `sc_config::AppName`, not a free `&str`.
 `AppName::new` accepts only ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length 1
@@ -314,6 +281,26 @@ not start with `MY_APP__` and are ignored. Adding `MY_APP__DAEMON__PORT__X=1`
 to this environment makes the load fail, because `daemon.port` is a number and
 cannot be descended into.
 
+**MUST statements:**
+
+- The prefix MUST be the app name with every ASCII lower-case letter upper-cased and every `-` replaced by `_`, followed by `__` (two underscores).
+- A variable MUST be treated as an override if and only if its encoded name starts with that prefix.
+- Every variable whose name does not start with the prefix MUST be ignored, whatever its value.
+- The part of the name after the prefix MUST be split at every non-overlapping occurrence of `__`, scanning left to right (Rust `str::split("__")`).
+- Each resulting segment MUST be converted to ASCII lower case.
+- The variable's value MUST be parsed with `serde_json::from_str::<serde_json::Value>`.
+- If parsing succeeds, the parsed JSON value MUST be used.
+- If parsing fails, the value MUST be used unchanged as a JSON string.
+- Starting at the document root, for each of `k1` to `k(n-1)`: if the current value is an object that lacks the key, an empty object MUST be created at that key.
+- If the current value at any step of that walk, including the root, is not an object (it is a string, number, boolean, array or `null`), the load MUST fail with the `ConfigError` variant for an override that cannot be applied ([REQ-CFG-0004](requirements.md)).
+- At the last object, key `kn` MUST be set to the override value.
+- Overrides MUST take precedence over `config/default.json` and `config/local.json`.
+
+**MUST NOT statements:**
+
+- A single `_` MUST NOT separate segments.
+- The document MUST NOT be silently restructured.
+
 ### Rationale
 
 Deployments and CI need to change a setting without editing a file, and the
@@ -376,42 +363,14 @@ process environment variables.
 This item covers the `Loader` type of the `sc-config` crate
 (`crates/sc-config`).
 
-1. The crate MUST export a public type `Loader`.
-2. A `Loader` MUST be given three inputs explicitly by the caller: the app
-   name, the config directory (a filesystem path), and the environment source.
-3. The environment source MUST be an iterator of (variable name, value) pairs
-   supplied by the caller. It may be built in memory, for example from a
-   `Vec` of pairs.
-4. `Loader` MUST expose `Loader::load::<T>()` for any
-   `T: serde::de::DeserializeOwned`, returning `Result<T, ConfigError>`.
-5. `Loader::load` MUST read `default.json` and `local.json` from the given
-   config directory and from nowhere else.
-6. `Loader::load` MUST take overrides from the given environment source and
-   from nowhere else. It MUST NOT read the process environment.
-7. `Loader::load` MUST apply the same file merge
-   ([REQ-CFG-0001](requirements.md)) and the same override rules
-   ([REQ-CFG-0002](requirements.md)) as the free function `load`.
-8. The free function `load::<T>(app)` MUST be the convenience form. It MUST
-   behave exactly as a `Loader` given app name `app`, the directory `config`
-   resolved against the current working directory, and the process
-   environment.
-9. When reading the process environment, `load` MUST use
-   `std::env::vars_os`. It MUST NOT use `std::env::vars`, which panics when
-   any variable is not valid Unicode.
+3. It may be built in memory, for example from a `Vec` of pairs.
 10. No code in the crate may call `std::env::set_var`,
     `std::env::remove_var` or `std::env::set_current_dir`, in `src/` or in
     tests. Setting the environment or the working directory of a child
     process with `std::process::Command::env` and
     `std::process::Command::current_dir` is allowed, because it does not
     change the state of the test process.
-11. No file under `crates/sc-config`, code or tests, may contain a literal
-    temporary-directory path or a literal home-directory path (`/tmp/`,
-    `/home/`, `/Users/`). Tests MUST obtain their directories from a
-    temporary-directory API. The repository-wide rule is
-    [NFR-RUN-0005](../requirements.md): non-test code contains no such
-    literal, and every test that writes files uses its own temporary
-    directory. Extending the literal-path ban to this crate's test code is
-    decided in this document.
+11. No file under `crates/sc-config`, code or tests, may contain a literal temporary-directory path or a literal home-directory path (`/tmp/`, `/home/`, `/Users/`). The repository-wide rule is [NFR-RUN-0005](../requirements.md): non-test code contains no such literal, and every test that writes files uses its own temporary directory. Extending the literal-path ban to this crate's test code is decided in this document.
 
 Using `./config` and the process environment as the defaults of `load` is
 decided in this document; the design fixes only the file names
@@ -422,6 +381,25 @@ Decided: `Loader::new(app: AppName, config_dir: PathBuf, environment: Vec<(OsStr
 The constructor stores those arguments and does not return `Result`.
 `Loader::load` and `load` return `Result<T, ConfigError>`. Environment pairs
 are `OsString` so a non-Unicode value is reported instead of panicking.
+
+**MUST statements:**
+
+- The crate MUST export a public type `Loader`.
+- A `Loader` MUST be given three inputs explicitly by the caller: the app name, the config directory (a filesystem path), and the environment source.
+- The environment source MUST be an iterator of (variable name, value) pairs supplied by the caller.
+- `Loader` MUST expose `Loader::load::<T>()` for any `T: serde::de::DeserializeOwned`, returning `Result<T, ConfigError>`.
+- `Loader::load` MUST read `default.json` and `local.json` from the given config directory and from nowhere else.
+- `Loader::load` MUST take overrides from the given environment source and from nowhere else.
+- `Loader::load` MUST apply the same file merge ([REQ-CFG-0001](requirements.md)) and the same override rules ([REQ-CFG-0002](requirements.md)) as the free function `load`.
+- The free function `load::<T>(app)` MUST be the convenience form.
+- It MUST behave exactly as a `Loader` given app name `app`, the directory `config` resolved against the current working directory, and the process environment.
+- When reading the process environment, `load` MUST use `std::env::vars_os`.
+- Tests MUST obtain their directories from a temporary-directory API.
+
+**MUST NOT statements:**
+
+- It MUST NOT read the process environment.
+- It MUST NOT use `std::env::vars`, which panics when any variable is not valid Unicode.
 
 ### Rationale
 
@@ -483,10 +461,6 @@ for the tests of any program that uses it.
 This item covers the public error enum `ConfigError` of the `sc-config` crate
 (`crates/sc-config`). It is the error type of `load` and of `Loader::load`.
 
-`ConfigError` MUST have one distinct variant for each failure in this table.
-Each variant MUST carry the listed data as typed fields, not only inside a
-message string.
-
 | # | Failure | Data the variant MUST carry |
 |---|---|---|
 | 1 | `default.json` does not exist in the config directory | the full path that was looked for |
@@ -495,18 +469,6 @@ message string.
 | 4 | an environment override cannot be applied because its key path passes through a value that is not a JSON object | the full environment variable name |
 | 5 | the merged document does not deserialise into the caller's type `T` | the message of the `serde_json::Error`, the paths of the files that were read, and the names of the environment variables that were applied |
 
-1. A missing `local.json` MUST NOT produce an error.
-2. A `local.json` that exists but cannot be read MUST produce failure 2, not
-   be skipped.
-3. Failure 1 and failure 2 MUST be distinct variants: "file not found" for
-   `default.json` is failure 1, every other I/O error is failure 2.
-   The failure 2 variant SHOULD also carry the underlying `std::io::Error` or
-   its `std::io::ErrorKind`.
-4. `ConfigError` MUST implement `std::fmt::Debug`, `std::fmt::Display` and
-   `std::error::Error`.
-5. The `Display` text of every variant MUST contain the file path or the
-   variable name that the variant carries.
-6. The `Display` text of failure 3 MUST contain the line and the column.
 7. Failure 5 lists contributing files and variables because the type mismatch
    is found in the merged document, where the origin of a value is no longer
    known.
@@ -519,6 +481,24 @@ Decided: The five load failures are `MissingDefault { path }`,
 non-Unicode environment entry adds `NonUnicode { variable }`. Stable codes
 and recovery steps are the error inventory in
 [ADR-CFG-0001](architecture.md).
+
+**MUST statements:**
+
+- `ConfigError` MUST have one distinct variant for each failure in this table. (see table above)
+- Each variant MUST carry the listed data as typed fields, not only inside a message string.
+- A `local.json` that exists but cannot be read MUST produce failure 2, not be skipped.
+- Failure 1 and failure 2 MUST be distinct variants: "file not found" for `default.json` is failure 1, every other I/O error is failure 2.
+- `ConfigError` MUST implement `std::fmt::Debug`, `std::fmt::Display` and `std::error::Error`.
+- The `Display` text of every variant MUST contain the file path or the variable name that the variant carries.
+- The `Display` text of failure 3 MUST contain the line and the column.
+
+**SHOULD statements:**
+
+- The failure 2 variant SHOULD also carry the underlying `std::io::Error` or its `std::io::ErrorKind`.
+
+**MUST NOT statements:**
+
+- A missing `local.json` MUST NOT produce an error.
 
 ### Rationale
 
@@ -576,35 +556,15 @@ directory and an in-memory environment.
 
 This item binds all code under `crates/sc-config/src`.
 
-The panic rule for the four library crates of this repository is owned by
-[NFR-RUN-0009](../requirements.md). That rule is: code reachable from a public
-function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`,
-`unimplemented!`, or panicking `[]` indexing. There is no allowance for a
-commented exception. Test code is exempt. This item applies that rule to
-`sc-config` and adds the crate-specific entries 5 and 6.
+The panic rule for the four library crates of this repository is owned by [NFR-RUN-0009](../requirements.md). There is no allowance for a commented exception. Test code is exempt. This item applies that rule to `sc-config` and adds the crate-specific entries 5 and 6.
 
-1. Every public function and public method of `sc-config` that can fail MUST
-   return `Result<T, ConfigError>`, where `ConfigError` is the crate's public
-   typed error enum ([REQ-CFG-0004](requirements.md)). In Rust this is the
-   discriminated union the design calls for: the caller receives either the
-   value or a typed error and must handle both.
+1. In Rust this is the discriminated union the design calls for: the caller receives either the value or a typed error and must handle both.
 2. No public function or method may return `Option` to signal failure, return
    a boxed or opaque error (`Box<dyn Error>`, `anyhow::Error`), or report
    failure by printing or logging.
 3. No code path reachable from a public function or method may panic, for any
    input: any app name, any directory path, any file content, any environment
    content including variables that are not valid Unicode.
-4. Code reachable from a public function MUST NOT use `unwrap`, `expect`,
-   `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]`
-   indexing ([NFR-RUN-0009](../requirements.md)). Where a slice, string, `Vec`
-   or `serde_json::Value` is accessed, the code MUST use `get`, pattern
-   matching or iterators.
-5. Stricter than the repository rule, decided in this document: code reachable
-   from a public function MUST NOT use `assert!`, `assert_eq!` or
-   `assert_ne!`.
-6. Stricter than the repository rule, decided in this document: non-test code
-   MUST NOT call `std::env::vars()`, which panics on a variable that is not
-   valid Unicode. It MUST use `std::env::vars_os()`.
 7. Implementations of standard traits on public types (`Display`, `Debug`,
    `std::error::Error`, `From`) are not "public methods" for entry 1, but
    entries 3, 4 and 5 apply to them.
@@ -616,6 +576,19 @@ Decided: Only an operation that can fail returns `Result<T, ConfigError>`.
 environment, so it returns `Loader`. `AppName::new` can fail and returns
 `Result<AppName, ConfigError>`. [NFR-RUN-0009](../requirements.md) requires
 `Result` of operations that can fail.
+
+**MUST statements:**
+
+- Every public function and public method of `sc-config` that can fail MUST return `Result<T, ConfigError>`, where `ConfigError` is the crate's public typed error enum ([REQ-CFG-0004](requirements.md)).
+- Where a slice, string, `Vec` or `serde_json::Value` is accessed, the code MUST use `get`, pattern matching or iterators.
+- It MUST use `std::env::vars_os()`.
+
+**MUST NOT statements:**
+
+- That rule is: code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing.
+- Code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing ([NFR-RUN-0009](../requirements.md)).
+- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert!`, `assert_eq!` or `assert_ne!`.
+- Stricter than the repository rule, decided in this document: non-test code MUST NOT call `std::env::vars()`, which panics on a variable that is not valid Unicode.
 
 ### Rationale
 
@@ -672,12 +645,6 @@ this workspace, the forbidden edges, and the boundary manifest under
 [REQ-RUN-0005](../requirements.md), which refers to this item for the
 third-party list.
 
-1. The `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain
-   exactly two entries: `serde` and `serde_json`.
-2. `[dependencies]` MUST NOT contain optional dependencies or
-   target-specific dependency tables that add a third crate.
-3. The `ConfigError` type MUST be written by hand. `thiserror` and `anyhow`
-   MUST NOT be added.
 4. The forbidden edges of `sc-config` are `sc-observability`,
    `sc-observability-otlp` (the OTel export crate of `sc-observability`),
    `tokio`, `sc-transport`, `sc-command` and `sc-runtime`. The obligation,
@@ -689,6 +656,16 @@ third-party list.
 Decided: `[dev-dependencies]` is empty. Tests create a private directory
 under `std::env::temp_dir` and remove it when the test ends. No third test
 crate is added.
+
+**MUST statements:**
+
+- The `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain exactly two entries: `serde` and `serde_json`.
+- The `ConfigError` type MUST be written by hand.
+
+**MUST NOT statements:**
+
+- `[dependencies]` MUST NOT contain optional dependencies or target-specific dependency tables that add a third crate.
+- `thiserror` and `anyhow` MUST NOT be added.
 
 ### Rationale
 
@@ -733,19 +710,24 @@ circular: logging is configured from the values this crate loads.
 This item binds all code under `crates/sc-config/src` for the first release
 (v0.1).
 
-1. Every public function and method of `sc-config` MUST be synchronous. A call
-   to `load` or `Loader::load` reads the files, applies the overrides,
-   deserialises, and returns on the calling thread.
-2. The crate MUST NOT contain an `async fn`, an `.await`, or a public function
-   that returns a `Future`.
-3. The crate MUST NOT watch files for changes.
-4. The crate MUST NOT reload configuration after a load has returned.
-5. The crate MUST NOT offer change notification: no callbacks, channels or
-   subscriptions.
-6. The crate MUST NOT spawn threads or tasks.
-7. Automatic reloading, change notification and async interop are out of
-   scope for v0.1. If they are built later they SHOULD go into a separate
-   crate, possibly named `sc-config-tokio`, that depends on `sc-config`.
+1. A call to `load` or `Loader::load` reads the files, applies the overrides, deserialises, and returns on the calling thread.
+7. Automatic reloading, change notification and async interop are out of scope for v0.1.
+
+**MUST statements:**
+
+- Every public function and method of `sc-config` MUST be synchronous.
+
+**SHOULD statements:**
+
+- If they are built later they SHOULD go into a separate crate, possibly named `sc-config-tokio`, that depends on `sc-config`.
+
+**MUST NOT statements:**
+
+- The crate MUST NOT contain an `async fn`, an `.await`, or a public function that returns a `Future`.
+- The crate MUST NOT watch files for changes.
+- The crate MUST NOT reload configuration after a load has returned.
+- The crate MUST NOT offer change notification: no callbacks, channels or subscriptions.
+- The crate MUST NOT spawn threads or tasks.
 
 ### Rationale
 
