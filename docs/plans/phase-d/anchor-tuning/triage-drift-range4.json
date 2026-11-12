@@ -1,0 +1,272 @@
+{
+  "consumer": "run-lead independent drift/gate review and owner final HTML",
+  "gate": "range4 M10/M11/M12/m13-m19 corrections",
+  "observed_defect": "Missing compilation coupling, local pin conversions, facade/double ownership and stale release/scope pointers",
+  "retirement": "Archive with accepted Phase D review after implementation closes",
+  "reviewed_revision": "83943f5",
+  "note": "Independent drift findings, not new Jev failed cells; no question/answer/confidence invented. Gate-cell evidence is in triage-gate-83943f5.json.",
+  "findings": [
+    {
+      "id": "M10",
+      "why": "The sc-command manifest moved from d-3 to d-10, and the d-3->d-10 edge was removed, but d-3 still owns sc-command/src/server.rs and must show 'rmcp>=3.9 builds/tests with existing command/server/schema paths' on its own branch with 'no unowned manifest change'. crates/sc-command/Cargo.toml still has rmcp '~3.8' (<3.9), while d-3 raises sc-runtime and daemon to >=3.9, so d-3 cannot close as written, and d-3 and d-10 run in parallel. d-10's conversion list also names only rmcp/schemars/sc-observability-types. It leaves out utoipa '=6.0.0' and the caret requirements (axum '0.8.9', serde/tokio '1') in that manifest, and gives no >=3.9 security floor for rmcp.",
+      "authority": {
+        "ref": "anchors.json ANC-037 quote",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+      },
+      "disposition": "addressed",
+      "action": "Keep whole command manifest with d-3 compiled rmcp3.9 server/schema ABI; explicitly convert all registry lines, d-10 follows consumed code."
+    },
+    {
+      "id": "M11",
+      "why": "The only obligation to convert crates/sc-cron-commands/Cargo.toml schemars '=1.2.3' and utoipa '=6.0.0' (both still exact pins) was dropped, and no other sprint picked it up. d-9 still owns that manifest and now points to a 'schema-range' criterion that no longer exists. PLAN-SCOPE-006 said to 'retain only local manifest deliverables', but d-9 never had a deliverable for this, so the pin is left to fail late in d-12's archive check.",
+      "authority": {
+        "ref": "anchors.json ANC-037 statement",
+        "quote": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound."
+      },
+      "disposition": "addressed",
+      "action": "d-9 explicit utoipa/schemars/all registry line floor conversion and corrected dangling range rule."
+    },
+    {
+      "id": "M12",
+      "why": "d-6 retires SqliteWriter/WriterConn/SqlValue/SqliteWriterError, and d-9 retires ScheduleStore/SqliteScheduleStore, which are listed in boundaries/sc-cron/sc-cron.toml facade/roots. Neither sprint owns boundaries/**, and d-5, the only owner, closes before them. The obligation to register tests/support/storage and d-9's tests/support/cron-storage in allowed_test_double_paths was also dropped. As written, the required 'sc-lint lint sc-boundary' in d-6 and d-9 has no owner able to update the boundary files.",
+      "authority": {
+        "ref": "push.md PLAN-SCOPE-003 (planner's own shared-registry rule, run-lead accepted)",
+        "quote": "the guidelines say shared registry files belong to the contract or an integration sprint, never to a layer sprint"
+      },
+      "disposition": "addressed",
+      "action": "d-5 registers both private double paths; d-6/d-9 receive their specific facade boundary files to match actual implementation removals."
+    },
+    {
+      "id": "m13",
+      "why": "Several exclusion reasons became false after the moves. The ANC-038 exclusions for d-5 and d-10 say metadata 'are owned by d-11 and refreshed by d-12' and 'd-11 owns that metadata path'. The ANC-003 exclusion for d-12 says it 'runs delivered generation code unchanged', but d-12 now writes template/scripts/tested_dependencies.py and owns template/cargo-generate.toml. d-11 now explicitly gives up ANC-038 work but has no exclusion, so the ANC-038 gate on d-11 will fail or be misjudged. The conclusions for d-5 and d-10 still hold; only the reasons are stale.",
+      "authority": {
+        "ref": "anchors.json ANC-038 quote",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
+      },
+      "disposition": "addressed",
+      "action": "Official exclusion reasons name d-12 metadata ownership and actual recommendation-only hooks, plus d-11 metadata exclusion."
+    },
+    {
+      "id": "m14",
+      "why": "Says 'root rusqlite stays d-6-owned'. PLAN-SCOPE-003 removed root Cargo.toml from d-6, and d-5 now says 'Root owns rusqlite >=0.41' (d-5 owns Cargo.toml).",
+      "authority": {
+        "ref": "owner statement",
+        "quote": "All dependencies"
+      },
+      "disposition": "addressed",
+      "action": "Root rusqlite pointer corrected to d-5 in the gate batch."
+    },
+    {
+      "id": "m15",
+      "why": "Deliverable 3 was re-traced to the new REQ-RUN-0703, but its acceptance criterion is still rooted at REQ-RUN-0305 (AGENTS.md/CLAUDE.md rendering), the trace REQ-QA-04 rejected.",
+      "authority": {
+        "ref": "anchors.json ANC-015 quote",
+        "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold"
+      },
+      "disposition": "addressed",
+      "action": "d-4 floor acceptance rooted at REQ0703."
+    },
+    {
+      "id": "m16",
+      "why": "The new lifecycle AC cites ADR-RT-0005 (push.md RSH-004 also cites REQ-RT-0005), but d-11's governing metadata lists neither, so the new scope is not traced in metadata.",
+      "authority": {
+        "ref": "docs/prd/sc-runtime-prd.md PRD-ENG-4",
+        "quote": "Keep it simple. \"What I want is very simple.\""
+      },
+      "disposition": "addressed",
+      "action": "Add ADR-RT-0005 and REQ-RT-0005 to d-11 and task projections."
+    },
+    {
+      "id": "m17",
+      "why": "d-11 lost template/cargo-generate.toml while it still removes cron.db/database_path, wires the per-layout files and rejects db=none+cron before generation. Those changes may need conditional ignore and hook registration in that file, which now belongs to d-12, and d-12 runs in parallel with d-11.",
+      "authority": {
+        "ref": "owner statement",
+        "quote": "we should deliver cargo.lock at max version combination (recommended). This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
+      },
+      "disposition": "addressed",
+      "action": "Single file owner d-12; d-11 validation in existing owned schema/hook, no cargo-generate config edit; d-12 changes config after completed d-11 merge."
+    },
+    {
+      "id": "m18",
+      "why": "Dropped the 'immediately before first upload, check the publication predicate again' re-check. Now that d-12 prepares in parallel with d-11, the predicate is evaluated only once, before rehearsal.",
+      "authority": {
+        "ref": "owner statement",
+        "quote": "Everything gets extensive testing. If there was a real issue it would show up"
+      },
+      "disposition": "addressed",
+      "action": "Recheck existing predicate immediately before first upload."
+    },
+    {
+      "id": "m19",
+      "why": "The old split ('d-9 leaves those lines unchanged') for the win32job/waitpid-any Windows dev-dependency lines was dropped. Both sprints own the manifest, so ownership of those lines is ambiguous again.",
+      "authority": {
+        "ref": "owner statement",
+        "quote": "Remove upper bound"
+      },
+      "disposition": "addressed",
+      "action": "d-5 converts Windows lines; d-9 explicitly preserves them unchanged."
+    }
+  ],
+  "plan_changes": [
+    {
+      "item_id": "run-d-3",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -2,9 +2,10 @@\n 1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: replace exact/tilde pins, bare versions and carets with >= tested floors and no upper bound, update rmcp to patched >=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/037.\n 2. Update sc-config/sc-transport/sc-runtime READMEs alongside changed API/dependency behavior; preserve documented test-util helper and synchronous sc-config scope — REQ-RUN-0702; NFR-CFG-0002; NFR-RT-0001.\n \n-3. Own pin removal in crates/sc-runtime/Cargo.toml (normal/dev lines), template/crates/daemon/Cargo*.toml and tests/contracts/phase-c/application-control/Cargo.toml: rmcp >=3.9, utoipa >=6.0.0, utoipa-axum >=0.3.0. Preserve the unpublished compile-fail fixture crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml with incompatible utoipa-axum ^0.2.0; it is test input, not a published SDK or template dependency. Preserve feature flags and its negative assertion — ANC-037.\n+3. Own pin removal in crates/sc-command/Cargo.toml and crates/sc-runtime/Cargo.toml (normal/dev lines), template/crates/daemon/Cargo*.toml and tests/contracts/phase-c/application-control/Cargo.toml: rmcp >=3.9, utoipa >=6.0.0, utoipa-axum >=0.3.0. Preserve the unpublished compile-fail fixture crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml with incompatible utoipa-axum ^0.2.0; it is test input, not a published SDK or template dependency. Preserve feature flags and its negative assertion — ANC-037.\n \n 4. Implement the one check_dependency_manifests(paths) and its unit tests in tests/unit/generation/test_runtime_ecosystem_upgrade.py: SDK-owned registry defaults use >= tested floors with no upper bound (ANC-037). Inputs are explicit manifest paths; d-11 supplies generated manifests and d-12 unpacked archives. Keep this interim under ADR-RUN-0005 until equivalent sc-lint#936 enforcement is shipped and adopted.\n \n ## This sprint does not close\n-No storage engine, cron implementation, generated wiring or registry release is closed here. d-5 owns shared root Cargo/version/lock/boundary edits, d-6 backend dependencies, d-9 cron dependencies; d-10 independently owns the whole command manifest and storage helpers; this sprint preserves the existing public command API while adapting source. Qualified source is consumed by d-12; d-11 independently tests generated integration.\n+No storage engine, cron implementation, generated wiring or registry release is closed here. d-5 owns shared root Cargo/version/lock/boundary edits, d-6 backend dependencies, d-9 cron dependencies; d-3 owns the command manifest together with compiled server/schema compatibility; d-10 consumes that code and adds storage helpers after it. Qualified source is consumed by d-12; d-11 independently tests generated integration.\n+In the complete command manifest convert every registry requirement, including dev/optional entries, to open floors: rmcp >=3.9, utoipa >=6.0.0, schemars >=1.2.3, sc-observability-types >=1.5.0, axum >=0.8.9 and serde/serde_json/tokio >=1. Preserve features. This lands with the normal server/schema conversions and typed public error/envelope ABI compiled against those identities; d-10 consumes that code before adding storage helpers (ANC-037)."
+    },
+    {
+      "item_id": "run-d-3",
+      "field": "design",
+      "diff": "--- \n+++ \n@@ -9,4 +9,4 @@\n \n Closure note: integration applies to this complete independent feature, even in the first wave; its actual API/toolchain interactions and executable acceptance close here, not an unimplemented contract.\n Own complete sc-command and template daemon manifest rmcp changes here; no d-5 parallel edits. Workspace remains development0.2.0; only d-12 bumps final coordinated0.3.0. d-10 consumes this manifest and follows d-3 to add sc-storage later. D-5 common command traits live in sc-storage, so this sprint needs no new storage dependency to close. Native check uses cargo tree; umbrella SQLx mixed feature conflict is handled by d-7/8 direct crates and fully integrated in d-11.\n-Own source compatibility adaptations and the callable manifest checker; d-10 owns the entire sc-command manifest and adds its storage helpers independently. Shared contract registry files remain d-5-owned.\n+Own source compatibility adaptations and the callable manifest checker; d-3 owns the command manifest and matching rmcp3.9 server/schema conversions; d-10 consumes that compiled code, not just a same-file permission. Shared contract registry files remain d-5-owned."
+    },
+    {
+      "item_id": "run-d-3",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -74,7 +74,8 @@\n     \"crates/sc-command/tests/fixtures/success.json\",\n     \"crates/sc-command/tests/server.rs\",\n     \"template/crates/daemon/Cargo*.toml\",\n-    \"tests/unit/generation/test_runtime_ecosystem_upgrade.py\"\n+    \"tests/unit/generation/test_runtime_ecosystem_upgrade.py\",\n+    \"crates/sc-command/Cargo.toml\"\n   ],\n   \"phase\": \"d\",\n   \"pr_target\": \"integrate/phase-d\","
+    },
+    {
+      "item_id": "run-d-4",
+      "field": "acceptance_criteria",
+      "diff": "--- \n+++ \n@@ -5,7 +5,7 @@\n 2. **req:REQ-RUN-0502/selection** — A real generation run succeeds on compatible\n    sc-compose1.8.0; SC_COMPOSE selects an independent executable ahead of PATH\n    without changing the CI pin. Preserve fail-before-generation on missing tools.\n-3. **req:REQ-RUN-0305/floor** — Controlled inputs prove equal/newer versions\n+3. **req:REQ-RUN-0703/floor** — Controlled inputs prove equal/newer versions\n    accepted and older/malformed versions rejected; real generation and report\n    rendering prove the commands actually execute. No timing/sleep assertions.\n 4. Run `python3 -m unittest discover -s tests/unit/generation -p 'test_generation_tool*.py'`"
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -8,3 +8,4 @@\n \n ## This sprint does not close\n No production engine or cron implementation, generated integration or publication. Real contract types/doubles compile and the workspace builds. Exact new transaction futures are prototype risk, not copied atm-core typed operations. D-6..d-10 consume the closed, ratified contract.\n+Register tests/support/storage and tests/support/cron-storage as allowed_test_double_paths in the relevant storage/cron boundary manifests and sc-lint configuration; these are private test support. Hand only each specific boundary facade file to d-6/d-9 after contract sanity. Convert sc-cron Windows dev requirements win32job >=2.0.3 and waitpid-any >=0.3.0 here; d-9 leaves those lines unchanged (ANC-037)."
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -9,3 +9,4 @@\n ## This sprint does not close\n Cron schema/domain policy/migration are d-9; real cron conformance and complete generated/mixed layouts are d-11; actual upstream/publication d-12. Backend tests use generic rows and do not contain a CronRow codec or cron SQL.\n This sprint implements Storage<T> for SqliteStore<T> using that shared trait, with no SQLite-specific parallel storage trait; it implements the SAME AtomicStorage::transaction(spec, producer) method as one writer message/savepoint.\n+After the d-5 boundary registration handoff, own boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml for the actual public-facade/root removals matching this implementation. This is the boundary's own facade, not a shared root registry."
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -27,7 +27,8 @@\n     \"template/crates/store-sqlite/migrations/**\",\n     \"template/crates/store-sqlite/.sqlx/**\",\n     \"template/crates/store-sqlite/sqlx.toml\",\n-    \"template/crates/store-sqlite/Cargo*.toml\"\n+    \"template/crates/store-sqlite/Cargo*.toml\",\n+    \"boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml\"\n   ],\n   \"phase\": \"d\",\n   \"pr_target\": \"sprint/d-5-storage-contract\","
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -9,3 +9,6 @@\n Full real-SQLite/mixed-engine cron conformance is d-11, actual released beads-cache d-12. No storage backend imports sc-cron or specific table code. No separate duplicate cron invariant suite.\n CronStore consumes AtomicStorage::transaction(spec, producer) from the shared Storage<T> contract; d-6/d-7/d-8 implement that same method for SQLite/Postgres/MySQL, while d-9 supplies only cron policy bodies (ANC-033).\n Retire ScheduleStore/SqliteScheduleStore and legacy SQLite files in0.3.0, updating lib.rs/row.rs/storage.rs after the d-5 handoff. CronStore wraps Storage<CronRow> privately and exposes only policy-checked CronStorage operations. Keep per-name in-flight behavior and generation fencing under local REQ-CRON-0001 and ADR-RUN-0013; upstream crosswalk numbers are provenance, not local requirement IDs.\n+Convert every registry line in the owned sc-cron-commands manifest to >= tested floors, explicitly utoipa >=6.0.0 and schemars >=1.2.3, with no upper bound; preserve features (ANC-037). The sc-cron Windows win32job >=2.0.3 and waitpid-any >=0.3.0 lines were converted by d-5 and are left unchanged here.\n+\n+After the d-5 boundary registration handoff, own boundaries/sc-cron/sc-cron.toml for the actual public-facade/root removals matching this implementation. This is the boundary's own facade, not a shared root registry."
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -45,7 +45,8 @@\n     \"tests/support/cron-storage/**\",\n     \"crates/sc-cron/src/lib.rs\",\n     \"crates/sc-cron/src/row.rs\",\n-    \"crates/sc-cron/src/storage.rs\"\n+    \"crates/sc-cron/src/storage.rs\",\n+    \"boundaries/sc-cron/sc-cron.toml\"\n   ],\n   \"phase\": \"d\",\n   \"pr_target\": \"sprint/d-5-storage-contract\","
+    },
+    {
+      "item_id": "run-d-10",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -6,4 +6,4 @@\n \n ## This sprint does not close\n Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.\n-Own the entire crates/sc-command/Cargo.toml: remove rmcp/schemars/sc-observability-types pins to open tested floors and add sc-storage >=0.2.0 (>=0.3.0 at release), with no upper bound. Define Transform and StorageCommandError beside plain generic async storage_read/storage_write functions; no StorageCommands trait or wrapper implementor (REQ-CMD-0002; REQ-RUN-0203/0331; ANC-037).\n+After d-3's compiled rmcp3.9 server/schema and public envelope/error compatibility lands, add sc-storage >=0.2.0 (>=0.3.0 at release) in the handed-off command manifest without changing its already-open registry floors. Define Transform and StorageCommandError beside the plain generic async storage_read/storage_write functions; no StorageCommands wrapper (REQ-CMD-0002; REQ-RUN-0203/0331; ANC-037)."
+    },
+    {
+      "item_id": "run-d-10",
+      "field": "design",
+      "diff": "--- \n+++ \n@@ -1,3 +1,4 @@\n+Consumes d-3's compiled sc-command server/schema/envelope/error implementation with rmcp>=3.9 and matching registry identities, plus d-5 Storage/row contracts.\n Consumes only d-5 Storage<T>/mapping/error/extension contract. The service boundary owns typed command/transform behavior and can be tested independently with the contract double, not actual engine implementation. Proposed flow:\n write: decode Tcli -> await app transform(Tcli)->Tsql -> await storage.write(&row) -> existing envelope/error projection;\n read: await storage.read(key)->Option<Tsql> -> await app transform(Tsql)->Tcli -> existing envelope/error projection."
+    },
+    {
+      "item_id": "run-d-10",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -28,7 +28,7 @@\n     \"template/crates/service/Cargo.toml\"\n   ],\n   \"phase\": \"d\",\n-  \"pr_target\": \"sprint/d-5-storage-contract\",\n+  \"pr_target\": \"sprint/d-3-dependency-qualification\",\n   \"relation\": \"must_follow\",\n   \"release_train\": \"\",\n   \"requirements\": ["
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "design",
+      "diff": "--- \n+++ \n@@ -1 +1,2 @@\n Consumes real d-6 SQLite, d-7/d-8 engine backends, d-9 domain adapter, d-10 command/transform code, d-4 generation tooling and d-3 manifest checker. Compose concrete stores for each selected layout; cloned handles share the one SQLite database/writer. Mixed-adaptor source trees are owned here. This sprint closes generated composition/lifecycle; d-12 independently prepares publication and recommendations, then merges this completed integration before uploading. No recommendation generator or repeated checker fixtures live here.\n+Existing cargo-generate layout names/file choices remain unchanged: no-db+cron rejection uses the owned wizard answers schema and existing post-generation validation hook. d-11 does not edit template/cargo-generate.toml; d-12 is its sole owner and applies release lock/post-hook changes only after merging completed d-11 composition."
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -1,5 +1,6 @@\n {\n   \"adrs\": [\n+    \"ADR-RT-0005\",\n     \"ADR-RUN-0002\",\n     \"ADR-RUN-0003\",\n     \"ADR-RUN-0005\",\n@@ -80,6 +81,7 @@\n     \"REQ-CRNC-0001\",\n     \"REQ-CRNC-0002\",\n     \"REQ-CRON-0004\",\n+    \"REQ-RT-0005\",\n     \"REQ-RUN-0001\",\n     \"REQ-RUN-0002\",\n     \"REQ-RUN-0005\","
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -11,3 +11,4 @@\n \n ## This sprint does not close\n Generated app composition/transports are d-11-owned. This sprint prepares alongside d-11, consumes d-3's checker, and merges completed d-11 before archive rehearsal/upload. No duplicate template wiring, template-only registry subject or second checker.\n+Apply template/cargo-generate.toml changes only after the completed d-11 merge: preserve its existing layout/cron choices and validation hook, remove Cargo.lock suppression as needed for recommendation delivery and add the recommendation script after project-name prefixing. No concurrent section ownership."
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "diff": "--- \n+++ \n@@ -2,7 +2,7 @@\n req:REQ-RUN-0002/release — Rehearse exact8crate archives before publication; package manifests/READMEs/features/comments match actual APIs and approved0.3.0. Publish sc-storage first then actual DAG order; all8 versions present, hash-identical retries only for missing uploads. Real defects halt/yank under owner policy and require coordinated replacement patch; transient failures never trigger yanks. Partial upload is not phase success.\n req:REQ-RUN-0702/registry-proof — Workflow invokes python3 tests/registry/phase-d/run.py --version 0.3.0 --source crates-io with an isolated release-test lock, source/version assertions and actual upstream tests. Wrong or missing release/source, advisory/native mismatch or failed command exits nonzero. Controlled negatives test refusal; only actual post-publication consumer builds/tests prove delivery. Apply package-caps to the exact unpacked SDK manifests, not consumer-owned pins.\n Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; kit package/rehearsal and fresh registry runner the registry consumers; cargo deny check advisories for every registry subject; python3 scripts/benchmark/check_release_evidence.py with controlled-host evidence matching source-equivalence policy. Root README/release notes match package contents. d-11 generated integration is separately required for phase acceptance.\n-req:REQ-RUN-0002/publication-gate — Prepare migration/runner/recommendation generation in parallel with d-11. Before archive rehearsal/upload, merge completed d-11 generated composition and require its sanity closed, owner ratification and both actual external safety rules passing. Then final0.3.0 conversion, one exact eight-archive rehearsal, d-3 checker passing on those archives and fresh registry-only consumer proof. Missing predicates block publication, not independent development readiness.\n+req:REQ-RUN-0002/publication-gate — Prepare migration/runner/recommendation generation in parallel with d-11. Before archive rehearsal/upload, merge completed d-11 generated composition and require its sanity closed, owner ratification and both actual external safety rules passing. Then final0.3.0 conversion, one exact eight-archive rehearsal, d-3 checker passing on those archives and fresh registry-only consumer proof. Missing predicates block publication, not independent development readiness. Immediately before the first upload, recheck the same publication predicate against the current source, completed d-11, ratification, safety-rule results and exact rehearsed archives.\n req:REQ-RUN-0002/upstream-subject — Exact close predicate: upstream beads-cache PR open with CI green at recorded SHA using published0.3.0 SDKs, URL/SHA in owned consumer README. Maintainer=user/randlee; merge not required. No response or CI failure leaves sprint open with explicit external follow-up. No local path/patch/Git SDK substitute. sc-command package exports/docs match closed d-10; cargo tree checks selected native graph, not lockfile.\n All changed public storage functions are typed Result/no-panic. Actual writer-panic callers receive typed errors; required no-panic/transaction analyzer evidence is not replaced by promises or a superficial grep. cargo build --workspace passes against the final coordinated train at this closure.\n req:REQ-RUN-0002/package-caps — Call d-3's single manifest check on exact unpacked SDK manifests and generated-template defaults: registry requirements must use >= tested floors with no upper bound (ANC-037). A violation fails rehearsal, registry consumer proof and upload. Consumer-owned pins are permitted and outside this default-policy check. d-12 owns input assembly/wiring; the checker stays d-3-owned and root rusqlite registration stays d-5-owned; d-12 changes only SDK release-version lines."
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "description",
+      "diff": "--- \n+++ \n@@ -9,8 +9,8 @@\n | d-7 | 2 | Postgres backend | d-5 production contract |\n | d-8 | 2 | MySQL backend | d-5 production contract |\n | d-9 | 2 | cron domain adapter | d-5 production contract and additive legacy build |\n-| d-10 | 2 | common commands/transforms | d-5 Storage/row contract |\n+| d-10 | 2 | common commands/transforms | d-3 compiled command server/schema/error ABI, d-5 Storage/row contract |\n | d-11 | 3 | generated composition | d-3 checker, d-4 tools, d-6/7/8/9/10 code |\n | d-12 | 3 | registry migration/release/recommendations | d-3 source/checker, d-4 tools, d-6/9/10 code; d-11 completion checked before upload |\n \n-Ten sprints; critical path3, width7. No dependency exists solely because two sprints edit the same manifest. The release and generated-integration sprints prepare in parallel; upload waits for completed generated integration. No implementation dispatch before plan approval.\n+Ten sprints; critical path3, width6. No dependency exists solely because two sprints edit the same manifest. The release and generated-integration sprints prepare in parallel; upload waits for completed generated integration. No implementation dispatch before plan approval."
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "design",
+      "diff": "--- \n+++ \n@@ -1,6 +1,6 @@\n PRD v2.0 governs product scope. sc-storage is std-only; storage/atomic/row traits are the shared contract, with only transaction name/mode properties. SQLite uses one async queue and one writer thread exclusively owning its sole write-mode connection, queued writes commit together, and replies follow commit. Only the writer runtime uses Runtime::block_on. Readers use blocking_recv without a runtime; async callers never block or use spawn_blocking to submit writes. Consumer rows/schema/migrations stay above generic engines. sc-cron implements its policy once over generic atomic Storage<CronRow> and keeps raw backend mutation out of the CronStore public facade.\n \n-D-5 owns contract types, shared registry/boundary definitions, required REQ/ADR amendments and the minimal legacy compatibility build. Its layer-file handoffs are additive contract/legacy artifacts on existing dependencies, not simultaneous same-wave edits. d-9 owns the0.3.0 removal of ScheduleStore/SqliteScheduleStore and obsolete SQLite files after those artifacts compile. Root Cargo.toml passes directly from d-5 registrations to d-12 release-version conversion; d-6 reads it. d-10 owns its complete command manifest, independently of d-3.\n+D-5 owns contract types, shared registry/boundary definitions, required REQ/ADR amendments and the minimal legacy compatibility build. Its layer-file handoffs are additive contract/legacy artifacts on existing dependencies, not simultaneous same-wave edits. d-9 owns the0.3.0 removal of ScheduleStore/SqliteScheduleStore and obsolete SQLite files after those artifacts compile. Root Cargo.toml passes directly from d-5 registrations to d-12 release-version conversion; d-6 reads it. d-3 owns the command manifest with its rmcp3.9 server/schema compatibility code; d-10 consumes that compiled artifact and later adds storage helpers. Specific crate facade boundaries pass from d-5 to their implementation owner on the existing must-follow edges.\n \n D-5 owner ratification is pending and gates its closure; ADR0020/0021 must be Active before d-6..d-12 start. The actual no-panic rule sc-lint#931 and transaction-safe analyzer remain required for affected owner-sprint closure and are rechecked before publication. Lead owns the external analyzer request; missing delivery is a real blocker, not a waiver.\n "
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "metadata",
+      "diff": "--- \n+++ \n@@ -20,7 +20,7 @@\n   \"version_decision_pending\": false,\n   \"version_proposal\": \"coordinated0.3.0\",\n   \"wave_count\": 3,\n-  \"width\": 7,\n+  \"width\": 6,\n   \"working_option\": \"b\",\n   \"writer_runtime_policy\": \"only_dedicated_writer_thread\"\n }"
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "metadata",
+      "finding": "M12",
+      "why": "Specific facade boundary file ownership requires the governing boundary/lint requirement and ADR.",
+      "authority": [
+        "REQ-RUN-0005",
+        "ADR-RUN-0005"
+      ],
+      "diff": "--- \n+++ \n@@ -2,6 +2,7 @@\n   \"adrs\": [\n     \"ADR-RUN-0002\",\n     \"ADR-RUN-0003\",\n+    \"ADR-RUN-0005\",\n     \"ADR-RUN-0006\",\n     \"ADR-RUN-0007\",\n     \"ADR-RUN-0011\",\n@@ -44,6 +45,7 @@\n     \"REQ-DBSQ-0004\",\n     \"REQ-RUN-0001\",\n     \"REQ-RUN-0002\",\n+    \"REQ-RUN-0005\",\n     \"REQ-RUN-0308\",\n     \"REQ-RUN-0321\",\n     \"REQ-RUN-0326\","
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "metadata",
+      "finding": "M12",
+      "why": "Specific facade boundary file ownership requires the governing boundary/lint requirement and ADR.",
+      "authority": [
+        "REQ-RUN-0005",
+        "ADR-RUN-0005"
+      ],
+      "diff": "--- \n+++ \n@@ -2,6 +2,7 @@\n   \"adrs\": [\n     \"ADR-CRNC-0001\",\n     \"ADR-RUN-0002\",\n+    \"ADR-RUN-0005\",\n     \"ADR-RUN-0006\",\n     \"ADR-RUN-0007\",\n     \"ADR-RUN-0011\",\n@@ -69,6 +70,7 @@\n     \"REQ-CRON-0021\",\n     \"REQ-RUN-0001\",\n     \"REQ-RUN-0002\",\n+    \"REQ-RUN-0005\",\n     \"REQ-RUN-0328\",\n     \"REQ-RUN-0332\",\n     \"REQ-RUN-0702\""
+    },
+    {
+      "item_id": "run-d-10",
+      "field": "design",
+      "finding": "M10",
+      "why": "Remove misleading only after restoring the real d-3 compiled-code prerequisite.",
+      "authority": [
+        "ANC-037",
+        "M10 accepted drift ruling"
+      ],
+      "sentence": "Consumes only d-5 Storage<T>/mapping/error/extension contract.",
+      "replacement": "Its storage/mapping/error/extension contract comes from d-5."
+    }
+  ],
+  "graph": {
+    "critical_path": 3,
+    "width": 6,
+    "sprints": 10,
+    "edges": 16
+  },
+  "exclusion_updates": [
+    {
+      "id": "ANC-038",
+      "item": "run-d-5",
+      "reason": "d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production."
+    },
+    {
+      "id": "ANC-038",
+      "item": "run-d-10",
+      "reason": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script."
+    },
+    {
+      "id": "ANC-003",
+      "item": "run-d-12",
+      "reason": "d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior."
+    }
+  ],
+  "verification": {
+    "plan": "10 sprints valid",
+    "parallel_file_intersections": 0,
+    "live_edges": "Exact authored index match",
+    "cross_engine_carriers": "Present in d-5/6/7/8",
+    "range_pointer": "d-9 dangling schema-range removed",
+    "status": "Independent drift/gate acceptance pending"
+  }
+}

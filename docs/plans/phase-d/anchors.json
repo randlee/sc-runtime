@@ -271,6 +271,13 @@
           "item": "run-d-12",
           "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T09:31:44+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -288,7 +295,7 @@
         },
         {
           "item": "run-d-12",
-          "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
+          "reason": "d-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection or instructions for selecting/running compatible sc-compose commands; d-4/d-11 own that CLI compatibility behavior."
         }
       ]
     },
@@ -3870,6 +3877,19 @@
           "at": "2026-11-12T06:40:50+00:00",
           "event": "exclusion_removed",
           "item": "run-d-9"
+        },
+        {
+          "at": "2026-11-12T09:24:21+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-9",
+          "reason": "d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required."
         }
       ]
     },
@@ -4116,16 +4136,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T09:24:21+00:00",
+          "event": "excluded",
+          "item": "run-d-11",
+          "reason": "d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T09:31:44+00:00",
+          "event": "excluded",
+          "item": "run-d-5",
+          "reason": "d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.",
+          "replaced": true
+        },
+        {
+          "at": "2026-11-12T09:31:44+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script.",
+          "replaced": true
         }
       ],
       "exclude": [
         {
+          "item": "run-d-11",
+          "reason": "d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step."
+        },
+        {
           "item": "run-d-5",
-          "reason": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+          "reason": "d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production."
         },
         {
           "item": "run-d-10",
-          "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
+          "reason": "d-10 changes generic commands/transforms and registry floors, not .sc-runtime/ metadata or its generation reader/writer; d-12 owns the metadata path and recommendation script."
         }
       ]
     }
