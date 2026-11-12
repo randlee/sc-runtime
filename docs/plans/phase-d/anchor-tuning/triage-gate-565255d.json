@@ -1,0 +1,480 @@
+{
+  "consumer": "run-lead gate/drift reviewer",
+  "feature": "owner-approved Monty/cron plan before execution",
+  "observed_defect": "five failed sprint gates at565255d; range9 M28/m29/m30",
+  "deletion_condition": "after final approval ordinary Git history suffices",
+  "base": "565255d",
+  "authority_commit": "cf23ce0",
+  "cells": [
+    {
+      "item": "run-d-9",
+      "anchor": "ANC-037",
+      "run": "plan-20261112T231721Z-run-d-9",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.66
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-037",
+        "commit": "locked before cited run",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-9",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-9",
+      "anchor": "ANC-054",
+      "run": "plan-20261112T231721Z-run-d-9",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.96
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.56
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.79
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-9",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-12",
+      "anchor": "ANC-054",
+      "run": "plan-20261112T231800Z-run-d-12",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.98
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.56
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.8
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-12",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-10",
+      "anchor": "ANC-046",
+      "run": "plan-20261112T231720Z-run-d-10",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.58
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.96
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.97
+        }
+      },
+      "why": "This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.",
+      "authority": {
+        "ref": "ANC-046",
+        "commit": "cf23ce0",
+        "quote": "The source text in the schedule row stays the source of truth. A blob is used only when its key matches that source."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-046",
+        "item": "run-d-10",
+        "reason": "This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046."
+      }
+    },
+    {
+      "item": "run-d-10",
+      "anchor": "ANC-054",
+      "run": "plan-20261112T231720Z-run-d-10",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.89
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.48
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.89
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-10",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-11",
+      "anchor": "ANC-022",
+      "run": "plan-20261112T231800Z-run-d-11",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.91
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.49
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-022",
+        "commit": "locked before cited run",
+        "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input"
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-11",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-11",
+      "anchor": "ANC-054",
+      "run": "plan-20261112T231800Z-run-d-11",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.98
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.55
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.82
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-11",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-5",
+      "anchor": "ANC-054",
+      "run": "plan-20261112T231714Z-run-d-5",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.55
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.33
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.79
+        }
+      },
+      "why": "The cited sentence is ambiguous about the complete command set, the inherited requirement, or the one SQLite writer; the recorded replacement names the actual contract without changing it.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/cut",
+      "replacement_ref": {
+        "item": "run-d-5",
+        "record": "to_fix"
+      }
+    }
+  ],
+  "to_fix": [
+    {
+      "item": "run-d-5",
+      "action": "replace/cut",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "7. Deliver sc-monty in Wave 1 as the single Monty implementation, beginning with an exact copy of current sc-cron Monty code AND its unit and integration tests, passing before API extension. Preserve those assertions while separating cron/JSON adapters: sc-monty production dependencies are only pydantic Monty crates; no sc-*, Tokio, serde_json, cron types or reserved cron names. It owns compilation, compiled sessions, resource limits, host dispatch, typed errors and session byte dump/load. Expose a compiled session and value-level MontyInvoke<Tin,Tout> (script, function name, inputs -> output); no new serialization framework. Move all interpreter machinery here; sc-cron, sc-command and generated services call it and contain no second host. Scheduler-specific adaptation and its integration tests remain in sc-cron, receiving Monty values rather than JSON strings. Register this ninth public crate in workspace/release/boundary inputs with open dependency floors; d-9 consumes it for hooks/cache and d-10 directly for transforms. \u2014 owner 2026-11-12 requirement change, item 1 and copy/single-implementation rulings.",
+            "The REQ/ADR amendments state the following contract, implemented by the named downstream owners: sc-cron saves each pre-run compiled session through Storage<MontyBlobRow>, keyed by sc-sha SHA-256(source) plus dump version; source in CronRow is authoritative and only a matching key may load. Missing/corrupt/version-incompatible/missing-hook blobs recompile from source and overwrite; schedule writes reject non-compiling source before a tick (d-9; ANC-044/045/046/048). Transform sources load from an app-owned UTF-8 file at invocation and can be replaced without rebuilding (d-10; ANC-049). Transform/storage_read/storage_write are documented as provisional0.3.0 and their signatures preserve later second-input, typed no-write and atomic-transform additions without building those options (ANC-050/051/052). Basic commands need only types, built-in plain conversion and Storage<T>, without an app-written transform/action; no REQ/ADR mandates hand-writing or forbids later consumer-side generation (ANC-056/057/058). Widget create/delete use storage_write and get uses storage_read. The complete user cron command set is start/end via storage_write and list via storage_read; internal scheduler lifecycle transitions stay in domain transactions because they are not user commands. Consumers may enrich JSON before schedule persistence (d-11; ANC-053/054/055/059/060/063).",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ],
+          "after": [
+            "7. Deliver sc-monty in Wave 1 as the single Monty implementation, beginning with an exact copy of current sc-cron Monty code AND its unit and integration tests, passing before API extension. The exact baseline retains its existing dependencies until its copied unit/integration tests pass at a recorded commit before any API change. Preserve those assertions while separating cron/JSON adapters; at d-5 closure sc-monty production dependencies are only pydantic Monty crates; no sc-*, Tokio, serde_json, cron types or reserved cron names. It owns compilation, compiled sessions, resource limits, host dispatch, typed errors and session byte dump/load. Expose a compiled session and value-level MontyInvoke<Tin,Tout> (script, function name, inputs -> output); no new serialization framework. Move all interpreter machinery here; sc-cron, sc-command and generated services call it and contain no second host. Scheduler-specific adaptation and its integration tests remain in sc-cron, receiving Monty values rather than JSON strings. Register this ninth public crate in workspace/release/boundary inputs with open dependency floors; d-9 consumes it for hooks/cache and d-10 directly for transforms. \u2014 owner 2026-11-12 requirement change, item 1 and copy/single-implementation rulings.",
+            "The REQ/ADR amendments state the following contract, implemented by the named downstream owners: sc-cron saves each pre-run compiled session through Storage<MontyBlobRow>, keyed by sc-sha SHA-256(source) plus dump version; source in CronRow is authoritative and only a matching key may load. Missing/corrupt/version-incompatible/missing-hook blobs recompile from source and overwrite; schedule writes reject non-compiling source before a tick (d-9; ANC-044/045/046/048). Transform sources load from an app-owned UTF-8 file at invocation and can be replaced without rebuilding (d-10; ANC-049). Transform/storage_read/storage_write are documented as provisional0.3.0 and their signatures preserve later second-input, typed no-write and atomic-transform additions without building those options (ANC-050/051/052). Basic commands need only types, built-in plain conversion and Storage<T>, without an app-written transform/action; no REQ/ADR mandates hand-writing or forbids later consumer-side generation (ANC-056/057/058). Widget create/delete use storage_write and get uses storage_read. The complete cron command set is cron.start/cron.end via storage_write and cron.list via storage_read; none is excluded. Consumers may enrich JSON before schedule persistence (d-11; ANC-053/054/055/059/060/063).",
+            "The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "boundary:copy-first-tests \u2014 First copy the current Monty implementation AND its existing unit/integration test sources into the d-5-owned crates/sc-monty tree. Before any API extension, cargo test -p sc-monty --all-targets must compile and run those integration tests against that copied implementation. Private scheduler fixtures/adapters are copied into crates/sc-monty/tests support and use dev-only dependencies as necessary; there is no dependency on sc-cron, including dev dependencies. Normal/build dependencies remain only pydantic Monty crates. Running the old sc-cron test target is not this gate. Preserve the exact copied baseline and every assertion; extend the API only after its unit AND integration tests pass. d-9 separately ports the original cron integration assertions to the shared interpreter, without editing d-9-owned source/test files in this sprint (ANC-039/042/062)."
+          ],
+          "after": [
+            "boundary:copy-first-tests \u2014 Stage1: in an isolated baseline worktree, copy the current implementation AND unit/integration tests exactly, retaining their current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree. Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets against that actual copy and record its passing commit before any API change. This baseline is not publishable; the old dependency graph is intentional at this stage. Stage2: separate the interpreter into sc-monty, retaining every copied assertion. Interpreter assertions run there; scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9. At d-5 closure, ANC-039 applies: sc-monty normal/build dependencies are only pydantic Monty, and no second scheduler/store implementation remains anywhere in sc-monty source or tests. Remove transitional copied scheduler/store fixtures rather than leave a parallel implementation or a dev-dependency cycle. Preserve the exact baseline in Git history; running the original sc-cron code cannot satisfy its copied-code gate (ANC-039/041/042/062; range9 M28)."
+          ]
+        }
+      ],
+      "why": "Remove misleading command exception prose while preserving the domain behavior, clarify inherited open ranges, and distinguish exact-copy baseline from closure dependencies as required by independent review.",
+      "authority": [
+        "ANC-054",
+        "ANC-037",
+        "ANC-022",
+        "ANC-039",
+        "ANC-041",
+        "ANC-042",
+        "ANC-062",
+        "REQ-CRON-0001",
+        "REQ-CRON-0003",
+        "ADR-RUN-0013"
+      ],
+      "source": "Existing locked obligations and range9 owner-authority clarification; no new checker or runtime feature."
+    },
+    {
+      "item": "run-d-9",
+      "action": "replace/cut",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "2. Migrate scheduler/worker to awaited app-supplied storage, porting hooks to the single sc-monty interpreter, preserving clocks, in-flight skip, cooperative cancellation and typed FENCED behavior. Domain read/check/mutate runs in one serializable atomic body, never separate calls. Backend is table-neutral \u2014 ADR-RUN-0013/0014/0020.",
+            "Convert every remaining registry line in crates/sc-cron/Cargo.toml and every registry line in crates/sc-cron-commands/Cargo.toml, including dev/optional entries, to >= tested floors with no upper bound; preserve features. This includes async-trait, chrono, cron, getrandom, tokio, tracing, process-wrap, sc-monty, sc-sha, tempfile and libc; remove direct monty/monty-types dependencies after the shared-interpreter port, plus utoipa >=6.0.0 and schemars >=1.2.3 in sc-cron-commands (ANC-037). The sc-cron Windows win32job >=2.0.3 and waitpid-any >=0.3.0 lines were converted by d-5 and are left unchanged here.",
+            "Shared-command handoff: cron.start and cron.end use storage_write, cron.list uses storage_read when d-11 integrates d-10 helpers. These are all user-facing cron commands. Scheduler tick/stop/record_run and other internal lifecycle transitions stay in domain transactions because they are scheduler actions, not user commands (ANC-053/054). Consume d-5's passing exact copy of the current Monty code AND unit/integration tests before extending or moving the cron adapter; retain every hook assertion (ANC-062).",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054).",
+            "Own sc-cron-commands/Cargo.toml dependency registration for the later library policy adapter, including sc-storage from the d-5 workspace registration at an open tested floor (>=0.2.0 development, >=0.3.0 release). Existing sc-command/sc-cron dependencies support d-11 source integration; d-11 adds no dependency or manifest edit. This manifest passes from d-9 directly to d-12 for final release-version lines on their existing dependency path."
+          ],
+          "after": [
+            "2. Migrate scheduler/worker to awaited app-supplied storage, porting hooks to the single sc-monty interpreter, preserving clock-driven tick dispatch, in-flight skip, cooperative stop/cancellation and typed FENCED behavior. Existing record_run and set_next still persist execution outcomes and next-run state through the fenced atomic policy operations in deliverable1. Domain read/check/mutate runs in one serializable atomic body, never separate calls. Backend is table-neutral \u2014 ADR-RUN-0013/0014/0020.",
+            "Convert every remaining registry line in crates/sc-cron/Cargo.toml and every registry line in crates/sc-cron-commands/Cargo.toml, including dev/optional entries, to >= tested floors with no upper bound; preserve features. This includes async-trait, chrono, cron, getrandom, tokio, tracing, process-wrap, sc-monty, sc-sha, tempfile and libc; remove direct monty/monty-types dependencies after the shared-interpreter port, plus utoipa >=6.0.0 and schemars >=1.2.3 in sc-cron-commands (ANC-037). The sc-cron Windows declarations inherited from d-5 are win32job >=2.0.3 and waitpid-any >=0.3.0, each with no upper bound; retain those already-open requirements unchanged.",
+            "Shared-command handoff: cron.start and cron.end use storage_write, cron.list uses storage_read when d-11 integrates d-10 helpers. These are all user-facing cron commands. Consume d-5's passing exact copy of the current Monty code AND unit/integration tests before extending or moving the cron adapter; retain every hook assertion (ANC-062).",
+            "The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054).",
+            "Own sc-cron-commands/Cargo.toml dependency registration for the later library policy adapter, including sc-storage from the d-5 workspace registration at >=0.2.0 during development and >=0.3.0 at release, with no upper bound in either case. Existing sc-command/sc-cron dependencies support d-11 source integration; d-11 adds no dependency or manifest edit. This manifest passes from d-9 directly to d-12 for final release-version lines on their existing dependency path."
+          ]
+        },
+        {
+          "field": "design",
+          "before": [
+            "Windows manifest counterpart: d-5 alone converts sc-cron/Cargo.toml win32job/waitpid-any dev-dependency pins to open tested floors; d-9 takes the manifest later but leaves both lines and their purpose comments unchanged."
+          ],
+          "after": [
+            "Windows manifest counterpart: d-5 alone converts sc-cron/Cargo.toml win32job/waitpid-any dev-dependency pins to open tested floors; d-9 takes the manifest later but retains both already-open >= requirements with no upper bound and their purpose comments (ANC-037)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "boundary:cron-manifest-floors \u2014 At closure verify every registry requirement in the complete sc-cron and sc-cron-commands manifests, including normal/dev/optional/target-specific entries, is >= its tested floor with no upper bound. Verify inherited Windows win32job >=2.0.3 and waitpid-any >=0.3.0 declarations too; prior d-5 ownership does not exempt them from this check. Those two declarations remain unchanged (ANC-037)."
+          ],
+          "after": [
+            "boundary:cron-manifest-floors \u2014 At closure verify every registry requirement in the complete sc-cron and sc-cron-commands manifests, including normal/dev/optional/target-specific entries, is >= its tested floor with no upper bound. Verify inherited Windows win32job >=2.0.3 and waitpid-any >=0.3.0 declarations too; prior d-5 ownership does not exempt them from this check. Those two already-open declarations remain unchanged. Use inspection evidence of the owned manifests; add no checking code, checker or dependency edge (ANC-037; owner one-checker rule)."
+          ]
+        }
+      ],
+      "why": "Remove misleading command exception prose while preserving the domain behavior, clarify inherited open ranges, and distinguish exact-copy baseline from closure dependencies as required by independent review.",
+      "authority": [
+        "ANC-054",
+        "ANC-037",
+        "ANC-022",
+        "ANC-039",
+        "ANC-041",
+        "ANC-042",
+        "ANC-062",
+        "REQ-CRON-0001",
+        "REQ-CRON-0003",
+        "ADR-RUN-0013"
+      ],
+      "source": "Existing locked obligations and range9 owner-authority clarification; no new checker or runtime feature."
+    },
+    {
+      "item": "run-d-10",
+      "action": "replace/cut",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ],
+          "after": [
+            "The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054)."
+          ]
+        }
+      ],
+      "why": "Remove misleading command exception prose while preserving the domain behavior, clarify inherited open ranges, and distinguish exact-copy baseline from closure dependencies as required by independent review.",
+      "authority": [
+        "ANC-054",
+        "ANC-037",
+        "ANC-022",
+        "ANC-039",
+        "ANC-041",
+        "ANC-042",
+        "ANC-062",
+        "REQ-CRON-0001",
+        "REQ-CRON-0003",
+        "ADR-RUN-0013"
+      ],
+      "source": "Existing locked obligations and range9 owner-authority clarification; no new checker or runtime feature."
+    },
+    {
+      "item": "run-d-11",
+      "action": "replace/cut",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "After d-9's sc-cron-commands handoff and d-10's common helper delivery, integrate the complete user cron command set: cron.start and cron.end use storage_write; cron.list uses storage_read. A library-provided policy adapter delegates to existing CronStorage domain operations, retaining active-name, row-limit and generation checks; consumers need no app-written storage action. Internal scheduler tick/stop/record_run and other lifecycle transitions stay in domain transactions because they are not user commands (ANC-053/054/055). After d-3's completed daemon-manifest handoff, remove monty -> cron coupling in template/crates/daemon/Cargo.toml; a no-cron app selects sc-monty independently. No parallel edits to this manifest.",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ],
+          "after": [
+            "After d-9's sc-cron-commands handoff and d-10's common helper delivery, integrate the complete user cron command set: cron.start and cron.end use storage_write; cron.list uses storage_read. A library-provided policy adapter delegates to existing CronStorage domain operations, retaining active-name, row-limit and generation checks; consumers need no app-written storage action. After d-3's completed daemon-manifest handoff, remove monty -> cron coupling in template/crates/daemon/Cargo.toml; a no-cron app selects sc-monty independently. No parallel edits to this manifest.",
+            "The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054).",
+            "",
+            "In generated SQLite+cron profiles, application writes, cron command writes and scheduler persistence all use Storage<T> backed by the same SqliteDatabase instance, its single bounded write channel, dedicated writer thread and sole write-mode connection. Cron policy atomic operations submit through that same writer; there is no second SQLite write path. Preserve the d-9 scheduler operations and their existing tests (ANC-022/023/024/025/033)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "req:REQ-RUN-0201/shared-interpreter \u2014 Generate Monty with Postgres and cron disabled, build and run its real transform, change source without rebuilding and observe the new value. A cron-selected generated app invokes cron.start/end through storage_write and cron.list through storage_read; these are all user cron commands, with internal scheduler lifecycle actions excluded for the reason above. The app modifies user JSON before persistence; sc-cron converts it to Monty values, never JSON strings, before passing it to hooks. Widget.create/delete use storage_write and widget.get uses storage_read; the direct-conversion example needs no hand-written transform or app-written storage action. No second Monty host is generated. Existing selected-layout and hook integration assertions remain in force."
+          ],
+          "after": [
+            "req:REQ-RUN-0201/shared-interpreter \u2014 Generate Monty with Postgres and cron disabled, build and run its real transform, change source without rebuilding and observe the new value. A cron-selected generated app invokes cron.start/end through storage_write and cron.list through storage_read; these are all cron commands and none bypasses the shared path. The app modifies user JSON before persistence; sc-cron converts it to Monty values, never JSON strings, before passing it to hooks. Widget.create/delete use storage_write and widget.get uses storage_read; the direct-conversion example needs no hand-written transform or app-written storage action. No second Monty host is generated. Existing selected-layout and hook integration assertions remain in force."
+          ]
+        }
+      ],
+      "why": "Remove misleading command exception prose while preserving the domain behavior, clarify inherited open ranges, and distinguish exact-copy baseline from closure dependencies as required by independent review.",
+      "authority": [
+        "ANC-054",
+        "ANC-037",
+        "ANC-022",
+        "ANC-039",
+        "ANC-041",
+        "ANC-042",
+        "ANC-062",
+        "REQ-CRON-0001",
+        "REQ-CRON-0003",
+        "ADR-RUN-0013"
+      ],
+      "source": "Existing locked obligations and range9 owner-authority clarification; no new checker or runtime feature."
+    },
+    {
+      "item": "run-d-12",
+      "action": "replace/cut",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "In the actual migrated consumer, the complete user cron command set is cron.start/end via storage_write and cron.list via storage_read, using the delivered policy adapter. Internal scheduler lifecycle actions remain domain transactions because they are not user commands. Preserve the application's ability to append/modify user JSON before schedule persistence; the existing consumer tests exercise this path against published crates (ANC-053/054/055).",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ],
+          "after": [
+            "In the actual migrated consumer, the complete user cron command set is cron.start/end via storage_write and cron.list via storage_read, using the delivered policy adapter. Preserve the application's ability to append/modify user JSON before schedule persistence; the existing consumer tests exercise this path against published crates (ANC-053/054/055).",
+            "The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054)."
+          ]
+        }
+      ],
+      "why": "Remove misleading command exception prose while preserving the domain behavior, clarify inherited open ranges, and distinguish exact-copy baseline from closure dependencies as required by independent review.",
+      "authority": [
+        "ANC-054",
+        "ANC-037",
+        "ANC-022",
+        "ANC-039",
+        "ANC-041",
+        "ANC-042",
+        "ANC-062",
+        "REQ-CRON-0001",
+        "REQ-CRON-0003",
+        "ADR-RUN-0013"
+      ],
+      "source": "Existing locked obligations and range9 owner-authority clarification; no new checker or runtime feature."
+    }
+  ],
+  "exclusions": [
+    {
+      "id": "ANC-046",
+      "item": "run-d-10",
+      "reason": "This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046."
+    },
+    {
+      "id": "ANC-059",
+      "item": "run-d-8",
+      "reason": "This sprint implements MySQL storage operations but does not route template widget commands through storage_read/storage_write; d-10/d-11 own that command routing."
+    }
+  ],
+  "drift_rulings": "# Range 9 drift rulings (a2c0e20..565255d), run-lead\nSource: /Users/randlee/.config/atm/share/run/drift-range9.json (an independent reviewer). m28 fixed. Cron inventory honest. Single Monty implementation met. d-12 pins wording consistent. 7 exclusions accepted (the m30 note applies). No cap and no dropped obligation.\n\n## M28 (material, rejected to runs). d-5 copy-first gate cannot be met as written\n- WHY: d-5 requires an exact copy that passes before any change AND normal deps only on pydantic Monty. The current code needs more than Monty: monty_host.rs uses sc-command, serde_json and sc-cron types, monty_compose.rs uses process_wrap, and the integration tests use the sc-cron scheduler, store, Fixture, tokio and serde_json. The \"private scheduler fixtures/adapters\" would be a second scheduler/store left in sc-monty/tests with no exit.\n- AUTHORITY: owner statement \"monty implementation should start w/ an exact copy of current code AND tests including integration tests ... then monty api can be extended\" (ANC-062/042); owner item 1 / ANC-039 (deps); owner \"I expect single monty implementation\" (ANC-041); PRD-ENG-4.\n- WHAT MUST BE TRUE (wording is yours):\n  1. The baseline copy is exact, including the dependencies it already has, and its tests pass at a recorded commit before any API change.\n  2. ANC-039 applies at d-5 closure, not at the baseline commit.\n  3. Every copied assertion survives separation.\n  4. After closure, no second scheduler or store implementation remains in sc-monty, whether in source or tests.\n  If you need to change it, I withdraw my earlier \"no sc-cron dev-dependency\" condition. A dev-dependency cycle is still a Cargo hazard, so avoid one if you can.\n## m29 (minor). d-9 floor check must not become a second checker\n- WHY: the new d-9 closure check names neither the method nor d-3's checker, so a developer could write a new one.\n- AUTHORITY: owner dependency policy, \"one checker (d-3's)\".\n- WHAT MUST BE TRUE: d-9 uses d-3's check, or inspection evidence. It adds no new checking code and no new graph edge.\n## m30 (minor). The reason for the d-8/ANC-059 exclusion is false\n- WHY: store-mysql/src/lib.rs does contain insert_widget/get_widget and widget SQL.\n- AUTHORITY: the plan-anchoring exclude rule (the reason must say truthfully why the anchor doesn't apply).\n- WHAT MUST BE TRUE: the exclusion stays, and its reason gives the true basis (d-8 does not route widget commands; d-10/d-11 do).\n",
+  "documentation_edit": {
+    "file": "docs/architecture.md",
+    "record": "ADR-RUN-0021",
+    "why": "Its exact contract must distinguish the preserved baseline dependencies from the final separated crate boundary, matching M28.",
+    "authority": "Owner copy-first statement/ANC-062 and range9 M28 ruling, recorded before plan edits",
+    "change": "Exact-copy code/dependencies/unit+integration tests pass against copy at recorded commit before API change; ANC039 at d5 closure; no copied scheduler/store implementation remains in sc-monty source/tests. Status remains Proposed."
+  }
+}

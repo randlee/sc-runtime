@@ -4937,6 +4937,13 @@
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:22:12+00:00",
+          "event": "excluded",
+          "item": "run-d-10",
+          "reason": "This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4947,6 +4954,10 @@
         {
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own."
+        },
+        {
+          "item": "run-d-10",
+          "reason": "This sprint implements command transforms and their generic caller, not sc-cron compiled-session loading or key matching; d-9 owns and remains subject to ANC-046."
         }
       ]
     },
@@ -6105,6 +6116,13 @@
           "item": "run-d-12",
           "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:22:12+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "This sprint implements MySQL storage operations but does not route template widget commands through storage_read/storage_write; d-10/d-11 own that command routing.",
+          "replaced": true
         }
       ],
       "exclude": [
@@ -6113,12 +6131,12 @@
           "reason": "This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own."
         },
         {
-          "item": "run-d-8",
-          "reason": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths."
-        },
-        {
           "item": "run-d-12",
           "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths."
+        },
+        {
+          "item": "run-d-8",
+          "reason": "This sprint implements MySQL storage operations but does not route template widget commands through storage_read/storage_write; d-10/d-11 own that command routing."
         }
       ]
     },
