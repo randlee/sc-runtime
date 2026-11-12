@@ -21,7 +21,7 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-013 | retired | #131 consumer router docs | 2026-11-11 |
 | ANC-014 | retired | Dedicated plan PR | 2026-11-11 |
 | ANC-015 | locked | Skill checks accept versions above the minimum | 2026-11-11 |
-| ANC-016 | locked | Consumers can take compatible dependency upgrades | 2026-11-11 |
+| ANC-016 | retired | Consumers can take compatible dependency upgrades | 2026-11-11 |
 | ANC-017 | retired | CI proves dependency range endpoints | 2026-11-11 |
 | ANC-018 | retired | Advisory proof uses the released consumer graph | 2026-11-11 |
 | ANC-019 | retired | Additional upper bounds explain their known break | 2026-11-11 |
@@ -361,7 +361,7 @@ Anchor: Published crate and template dependency requirements MUST allow consumer
 
 > we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
 
-Said by randlee, User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied., 2026-11-11. Status: locked. Version 4.
+Said by randlee, User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied., 2026-11-11. Status: retired. Version 5.
 
 Summary: Consumers can take compatible dependency upgrades
 
@@ -926,7 +926,7 @@ Anchor: The generated application MUST record the release's tested dependency co
 
 > This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release
 
-Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 3.
+Said by randlee, Phase D planning, m6 owner decision 2026-11-12, 2026-11-11. Status: locked. Version 4.
 
 Summary: Tested dependency combination recorded in .sc-runtime/
 
@@ -941,5 +941,5 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-ongv`, plan questions `run-ongv.1`, dev questions `run-ongv.2`
 
 Fixtures:
-- pass: Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested; the upgrade command reads it to revert to or upgrade from that set.
+- pass: Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested, matching the shipped Cargo.lock, in a machine-readable form a later revert or upgrade tool can read.
 - fail: The generated application records no tested dependency versions; upgrades rely only on cargo update.

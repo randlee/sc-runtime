@@ -1131,8 +1131,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 4,
-      "status": "locked",
+      "version": 5,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-41jv",
@@ -1189,6 +1189,12 @@
           "at": "2026-11-12T05:23:23+00:00",
           "event": "exclusion_removed",
           "item": "run-d-9"
+        },
+        {
+          "at": "2026-11-12T08:25:46+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-037",
+          "reason": "Owner 'Remove upper bound' / 'All dependencies' and PRD-ENG-4/5/6: ANC-037 (no upper bound) subsumes allowing newer compatible releases; ANC-016's min/newer endpoint check and caret fixture encode the retired ANC-017 policy (drift M8)."
         }
       ]
     },
@@ -4046,14 +4052,14 @@
       "deterministic_check": "Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.",
       "fixtures": {
         "pass": [
-          "Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested; the upgrade command reads it to revert to or upgrade from that set."
+          "Generation writes .sc-runtime/tested-dependencies.json listing every dependency version the release tested, matching the shipped Cargo.lock, in a machine-readable form a later revert or upgrade tool can read."
         ],
         "fail": [
           "The generated application records no tested dependency versions; upgrades rely only on cargo update."
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -4103,6 +4109,13 @@
           "item": "run-d-10",
           "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T08:25:46+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ],
       "exclude": [

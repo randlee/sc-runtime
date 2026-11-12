@@ -1,8 +1,8 @@
 {
   "schema": "plan-anchoring/drift-review/1",
   "reviewed_at": "2026-11-12",
-  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'.",
-  "not_reviewed": "Jev was not run and no network call was made, so the beads-cache source and crates.io were not inspected. Intermediate gate-items folders between 964095d and c8596c0 were used only to date when the '>=0.41, <0.43' form appeared. Bead design fields were compared only for d-5, d-6 and d-12, plus targeted searches for ratification, rehearsal and migration text. phase-d-dag.html and the raw run JSON bodies were not reviewed beyond verdicts and answers. triage-fe81543 was read for its failures and fix rows, not audited line by line. The anchor-tuning question files were not compared beyond confirming none changed in range. No code was read beyond the manifests and scripts/adr_run_0011_grep.py. Nothing was verified by a second independent reviewer, and the M1/M2/M3/m2/m3/m5 fixes were verified by this reviewer from text only.",
+  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'. Range 3 (c8596c0..a00e86f): c8596c0..a00e86f (origin/plan/phase-d), worktree anchors-phase-d. Inputs: git log; anchors.json diff; phase-d.jsonl, docs/architecture.md, docs/requirements.md and intent.md diffs; word diffs of gate-items-c8596c0 vs gate-items-1b0dabc for run-d-3..run-d-12, plus gate-items-1b0dabc vs gate-items-c46b1f7 for run-d-10 (identical); run-d-5 .bead.json snapshots for the ratification wording; current ADR-RUN-0017, ADR-RUN-0203, REQ-RUN-0309 and NFR-RUN-0007 text; .github/workflows listing.",
+  "not_reviewed": "Jev was not run and no network call was made, so the beads-cache source and crates.io were not inspected. Intermediate gate-items folders between 964095d and c8596c0 were used only to date when the '>=0.41, <0.43' form appeared. Bead design fields were compared only for d-5, d-6 and d-12, plus targeted searches for ratification, rehearsal and migration text. phase-d-dag.html and the raw run JSON bodies were not reviewed beyond verdicts and answers. triage-fe81543 was read for its failures and fix rows, not audited line by line. The anchor-tuning question files were not compared beyond confirming none changed in range. No code was read beyond the manifests and scripts/adr_run_0011_grep.py. Nothing was verified by a second independent reviewer, and the M1/M2/M3/m2/m3/m5 fixes were verified by this reviewer from text only. Range 3: Jev plan-*.json run outputs and their verdicts; anchor-tuning triage-*.json files; site/reports/plan-anchor HTML/XHTML and phase-d.json; phase-d-dag.html; anchors.md bodies beyond the status table. bd show was not run; bead fields came from the committed gate-items .bead.json snapshots. Implementation feasibility of per-profile recommended lockfiles was not assessed.",
   "findings": [
     {
       "id": "M1",
@@ -198,6 +198,84 @@
       "suggested_fix": "Choose one: move the two ADR amendments into d-3, or land them before dispatch, or have d-3 consume d-5's amendment. The last option adds an edge and changes the wave metrics, so it needs the owner's consent.",
       "status": "fixed",
       "fix_note": "Verified by run-lead at 130603f: ADR-RUN-0017 (^1.5.0, min/latest probe) and ADR-RUN-0203 (rmcp ^3.9, utoipa ^6.0.0, utoipa-axum ^0.3.0, schemars ^1.2.3, min/latest probes) Phase D amendments committed in docs/architecture.md before dispatch; content matches the owner-approved amendments. d-3/d-5 stay parallel."
+    },
+    {
+      "id": "M7",
+      "severity": "material",
+      "location": "docs/architecture.md ADR-RUN-0017 'Removal and compatibility' and Decision (panic policy); docs/requirements.md REQ-RUN-0309 item 3 and Success Criterion 1; run-d-3 item 3, run-d-5 item 8 and run-d-11 admitted-versions, which convert sc-observability/-types to >=1.5.0",
+      "what_changed": "The new ADR-RUN-0017 Phase D amendment only 'replaces the exact-pin policy below'. The rest of the binding ADR is unchanged. Its 'Removal and compatibility' section still requires each readiness run to refresh registry availability, requires a matching 1.5.1 pair to pass the 'isolated registry signature/direct Arc<Logger> to upstream SharedCanonicalLog probe', and says working capability 'makes shim mode fail'. The range removed that probe and the native/shim selection from d-3 (pin-probes). No sprint now decides shim versus native, and nothing amends the paragraph, so the d-12 0.3.0 release readiness run either meets a binding ADR gate the plan no longer implements or drops it silently. The noop panic exception is also still justified as 'validated against exact types 1.5.0', which the open floor no longer guarantees. REQ-RUN-0309 (Active, unamended) still says 'command temporarily pins =1.5.0' and its Success Criterion 1 requires rendered daemon 'sc-observability = \"=1.5.0\" and types =1.5.0'. This directly contradicts d-5 and d-11, and req-qa will flag it. NFR-RUN-0007 received the matching amendment in this range; REQ-RUN-0309 did not.",
+      "authority": {
+        "ref": "ADR-RUN-0017 / REQ-RUN-0309 vs ANC-037",
+        "quote": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound."
+      },
+      "suggested_fix": "Extend the ADR-RUN-0017 Phase D amendment. State that the registry signature probe and 'shim mode fail' gate are replaced by the normal build/tests at the selected versions, citing the owner quote. State that the shim stays in place for Phase D, or name the sprint that removes it. Restate the noop invariant against the tested floor, backed by a normal test. Add a matching Phase D amendment to REQ-RUN-0309 items 1/3 and Success Criterion 1 (>=1.5.0, no upper bound), as was done for NFR-RUN-0007.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "M8",
+      "severity": "material",
+      "location": "anchors.json ANC-016 (still locked, unchanged in range): deterministic_check, fixtures.pass, scope; cited by run-d-3, run-d-5, run-d-9, run-d-11 and run-d-12",
+      "what_changed": "ANC-016 stays locked and is cited beside ANC-037, but its mechanics still encode the retired policy. (1) The development check, 'resolve and build a registry consumer at the minimum and a newer compatible dependency version', is a minimum/newer endpoint job. The owner retired that with ANC-017, and no sprint implements it any more, so the development gate will fail or reintroduce endpoint CI. (2) The pass fixture, 'rmcp 3.9.0 with the normal Cargo-compatible range', is a caret, which ANC-037's own deterministic check fails ('caret implies an upper bound'). (3) The scope defines compatibility as sharing 'the leftmost nonzero version component', which is the caret ceiling. A sprint that follows ANC-016's fixture violates ANC-037.",
+      "authority": {
+        "ref": "ANC-037; owner",
+        "quote": "Remove upper bound"
+      },
+      "suggested_fix": "Bump ANC-016 to a new version and keep its statement and quote. Replace the development check with the d-11 check_dependency_manifests open-floor check plus normal tests, change the pass fixture to 'rmcp >=3.9', and drop the leftmost-nonzero compatibility definition from the scope. Alternatively, retire ANC-016 with replaced_by ANC-037 and remove the ANC-016 citations from d-3, d-5, d-9, d-11 and d-12.",
+      "status": "fixed",
+      "fix_note": "Lead retired ANC-016 with replaced_by ANC-037 (owner 'Remove upper bound', 'All dependencies'; PRD-ENG-4/5/6). Plan citations of ANC-016 in d-3/d-5/d-9/d-11/d-12 go to the planner."
+    },
+    {
+      "id": "M9",
+      "severity": "material",
+      "location": "run-d-7 'Required validation commands' ('d-3 owns the CI prerequisite/recipe wiring'); run-d-8 'Required validation commands' ('d-3 owns CI prerequisites/recipes'); run-d-7 boundary:template-store-postgres ('named CI prerequisites')",
+      "what_changed": "d-7 and d-8 still assign live-engine CI prerequisites and recipes to d-3. In this range d-3 dropped that work completely: the old d-3 text 'provision live POSTGRES_DATABASE_URL/MYSQL_DATABASE_URL services, apply migrations and run cargo test on generated engine crates' left with the min/latest jobs. phase-d.jsonl also removed d-7/d-8's dependency on d-3. The owner dropped only the min/latest endpoint duplication, not live-engine CI for the normal suite. CI wiring for the generated-consumer live Postgres/MySQL tests now has a named owner that does not do the work. The existing .github/workflows/store-postgres.yml and store-mysql.yml run the template-workspace store crates, not the generated consumer that d-7/d-8 name.",
+      "authority": {
+        "ref": "owner",
+        "quote": "Everything gets extensive testing. If there was a real issue it would show up"
+      },
+      "suggested_fix": "In d-7 and d-8, replace the d-3 pointer with self-ownership. Either update the existing store-postgres.yml/store-mysql.yml live jobs to run the d-7/d-8 contract tests, or state that the existing workflows are the CI vehicle and list the commands they run. Do not restore any min/latest job.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m10",
+      "severity": "minor",
+      "location": "anchors.json ANC-038 fixtures.pass",
+      "what_changed": "The pass fixture says 'the upgrade command reads it to revert to or upgrade from that set'. That implies an upgrade command exists, but d-11 says 'no new upgrade CLI is requested'. The owner said 'for reference or tools', which is an open option. At the development gate Jev may count the missing command against the fixture.",
+      "authority": {
+        "ref": "PRD-ENG-6",
+        "quote": "an open option is not a work item"
+      },
+      "suggested_fix": "Reword the pass fixture to say the metadata lists every tested package version, matches the shipped Cargo.lock, and is machine-readable by a future revert/upgrade tool. Do not require an existing command.",
+      "status": "fixed",
+      "fix_note": "Lead reworded the ANC-038 pass fixture: metadata lists every tested version, matches the shipped Cargo.lock, machine-readable by a later revert/upgrade tool; no command required."
+    },
+    {
+      "id": "m11",
+      "severity": "minor",
+      "location": "anchors.json ANC-038 statement/quote",
+      "what_changed": "The owner's lockfile obligation, 'we should deliver cargo.lock at max version combination (recommended)', is in no anchor's statement or quote. ANC-038 quotes only the metadata sentence, and the lock appears only in its deterministic_check ('matches the shipped Cargo.lock'). The recommended lockfile deliverable is protected only by d-11 item 5 and d-12 item 6 text, so a later edit could drop it without any anchor failing.",
+      "authority": {
+        "ref": "owner",
+        "quote": "we should deliver cargo.lock at max version combination (recommended)"
+      },
+      "suggested_fix": "Extend ANC-038's quote and statement, or lock a sibling anchor, so the generated application ships a recommended Cargo.lock at the newest tested combination alongside the metadata.",
+      "status": "owner_decision",
+      "fix_note": "Known: no lockfile anchor wording passed the testability rubric; the owner's lockfile instruction stays a planner instruction owned by d-11 (item 5) and refreshed by d-12 (item 6)."
+    },
+    {
+      "id": "m12",
+      "severity": "minor",
+      "location": "run-d-12 req:REQ-RUN-0002/package-caps-check",
+      "what_changed": "'Actual archives and both registry registry consumer proof must also pass the check' is left over from 'both fresh endpoint proofs'. With the endpoints gone, 'both' has no referent and 'registry' is duplicated, so the number of required consumer proofs is ambiguous in gate-read text.",
+      "authority": {
+        "ref": "PRD-ENG-4",
+        "quote": "keep it simple"
+      },
+      "suggested_fix": "Change it to 'Actual archives and the registry consumer proof must also pass the check.'",
+      "status": "open",
+      "fix_note": ""
     }
   ],
   "acceptable_choices": [
@@ -260,6 +338,42 @@
     {
       "location": "run-d-5 deliverable 5 / run-d-12 deliverable 4 / run-d-3 deliverable 4",
       "note": "The new pin-line ownership is disjoint. d-3 owns command, runtime, daemon, phase-c contract and fixture lines. d-5 owns the template manifests and sc-cron Windows lines. d-9 owns sc-cron-commands. d-12 owns tests/integration/cron-consumer. Each line traces to the owner pin rule and the ADR-RUN-0017/0203 caret amendments. 'd-12 does not repeat them' avoids double edits."
+    },
+    {
+      "location": "all sprint items (d-3, d-5..d-12)",
+      "note": "No upper bound and no min/latest CI job remains in gate-read sprint text. Every former caret, tilde or exact pin, and the rusqlite '>=0.41, <0.43' form, is now a >= floor. The only retained ^ is the unpublished utoipa5-router compile-fail fixture (d-3 item 3), which is outside ANC-037's published/template scope."
+    },
+    {
+      "location": "security floors (d-3, d-5, d-6, d-11, d-12)",
+      "note": "Kept: rmcp >=3.9 with the RUSTSEC-2026-0462 rationale (d-12 item 4), rusqlite >=0.41, the libsqlite3-sys >=0.39 and no-sqlx-sqlite cargo tree checks, and cargo deny check advisories in d-11 and d-12."
+    },
+    {
+      "location": "run-d-11 item 5, req:REQ-RUN-0328/tested-recommendations; run-d-12 item 6, req:REQ-RUN-0002/release-recommendations",
+      "note": "The lockfile and .sc-runtime/tested-dependencies.json deliverables trace to the owner's lockfile quote. Per-profile locks, the release/profile/toolchain identity and the --locked build/test are needed for a lock that matches the generated package names and actually comes from a test run. 'No new upgrade CLI is requested' respects PRD-ENG-6."
+    },
+    {
+      "location": "run-d-6, run-d-10, run-d-12: SDK siblings >=0.2.0/>=0.3.0; d-11 owning the api-types/store-adaptor conversions; d-12 converting the test/consumer manifests",
+      "note": "Traces to the owner quote \"All dependencies\" and to \"I will not rerelease multiple products every time this occurs.\""
+    },
+    {
+      "location": "ANC-017 and ANC-019 retirements; d-3 deliverable 2, pin-probes and cron-schema-endpoints removed; d-6/d-7/d-8/d-9 endpoint jobs removed",
+      "note": "Matches the owner quotes \"Everything gets extensive testing. If there was a real issue it would show up\" and \"A compile error would pick that up.\" The ADR-RUN-0203 single-axum/rmcp identity probe is safe to drop: a second axum or rmcp identity on one router shows up as a type-mismatch compile error in the normal build."
+    },
+    {
+      "location": "anchors.json exclusions added in c46b1f7/a00e86f: ANC-003 d-12; ANC-022/026/027 d-10; ANC-038 d-5 and d-10",
+      "note": "Each reason checks out against the sprint text. d-12 item 6 runs d-11 generation code unchanged and touches no generation instructions. d-10 changes no SQLite backend/writer/store, and its boundary:template-service/nonblocking keeps 'Storage submission is never wrapped in spawn_blocking'. Neither d-5 nor d-10 mentions .sc-runtime. The named owners d-6, d-11 and d-12 do carry the work."
+    },
+    {
+      "location": "run-d-5 item 3, item 6 and boundary:storage-contract",
+      "note": "The owner-ratification closure gate was already in the c8596c0 bead design field ('## Ratification ... gates d-5 closure'). This range only makes it explicit in gate-read text, so it is not new scope."
+    },
+    {
+      "location": "docs/plans/phase-d.jsonl: d-3 dropped from depends_on for d-6/d-7/d-8",
+      "note": "Consistent with d-3 no longer owning endpoint jobs that those sprints consumed. See M9 for the stale ownership pointer this leaves."
+    },
+    {
+      "location": "docs/architecture.md ADR-RUN-0203 Phase D amendment; docs/requirements.md NFR-RUN-0007 Phase D amendment",
+      "note": "Both state the open-floor policy and replace the frozen-matrix and minor-pin rules for Phase D, consistent with ANC-037 and the owner quotes."
     }
   ],
   "confirmations": [
