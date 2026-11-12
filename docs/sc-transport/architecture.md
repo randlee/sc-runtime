@@ -63,6 +63,9 @@ it is TCP. Most Rust HTTP clients historically spoke only TCP, so an early
 draft of this project assumed HTTP over a Unix socket needed the
 `hyperlocal` crate or a hand-written hyper connector. That is no longer
 true: reqwest 0.13 provides `ClientBuilder::unix_socket(path)`.
+The problem is that the client needs HTTP over UDS on macOS and Linux and
+over TCP elsewhere, and the project prefers standard crates used the
+documented way over code it must own.
 
 ### Decision
 
