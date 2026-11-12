@@ -1,0 +1,194 @@
+{
+  "schema": "plan-anchoring/drift-review/1",
+  "reviewed_at": "2026-11-12",
+  "compared": "docs/plans/phase-d/anchors.json at 4f02154 vs 964095d (field-by-field: only `exclude` lists changed; no statement, quote, scope, version or status changed; ANC-033..036 were locked at 38ce8b9, before 4f02154). Composed gate items run-d-3..run-d-12 in anchor-runs/gate-items-4f02154 vs gate-items-964095d (spot-checked against 25c7d4f, ddad9a5 and bea5d2a); bead `design`, `notes` and `metadata` fields of the same .bead.json snapshots, which the gate does not read; git diff 4f02154..964095d of docs/plans/phase-d.jsonl and phase-d-plan.md, plus the sprint-d-1..d-4 pointer replacements; latest plan-gate run JSON per item (verdicts and pre-exclusion verdicts for ANC-019 on d-6 and ANC-033/035 on d-9); planner edit logs /tmp/phase-d-gate-r1..r4/to-fix.json; batch instructions plan-gate-r1/r2/r3-fixes.md; current repo manifests, checked for real rusqlite/sqlx upper caps.",
+  "not_reviewed": "Jev was not run and no network call was made. No code was read beyond the Cargo manifests used to check whether any real cap was dropped. The anchors.md render, phase-d-dag.html and the anchor-tuning question files were not reviewed beyond the ANC-029 unwrap, which is structural only and keeps the same digest. The deleted bodies of the superseded 0.2.1 sprint-d-1..d-4 docs were not compared line by line. Intermediate rounds were only spot-checked. Final-gate verdicts for d-3, d-4, d-5 and d-7..d-10 were produced on ddad9a5 text, and for d-11 and d-12 on bea5d2a text. Those texts are byte-identical to 964095d, which was verified. Nothing here was independently verified by a second reviewer.",
+  "findings": [
+    {
+      "id": "M1",
+      "severity": "material",
+      "location": "run-d-5 deliverable 7, acceptance and design ('External dependencies and prototype acceptance'); run-d-6 deliverable 2 and acceptance 'unsafe-body' / 'Required'; run-d-9 'Required'; run-d-11 acceptance; run-d-12 publication-gate",
+      "what_changed": "At round 1, d-6, d-9 and d-11 each required the actual external no-panic rule (sc-lint#931) and the transaction-body await analyzer to run on their changed code, with honest recording of external state ('Qualify actual external analyzer/no-panic rules for changed code, never substitute runtime polling for static analysis'; 'configured sc-boundary and actual analyzer/no-panic rules'; 'No-Panic/await analyzer actual external gates apply to changed storage code'). Also at round 1, d-5 design said 'Production release requires actual analyzer/no-panic enforcement on changed phase code, or a new explicit user decision; no implicit waiver. Analyzer rejects awaits on non-tx handles and calls to unmarked helpers'. All of this was cut, leaving a dangling 'configured sc-boundary .' in d-6 and d-9. It was replaced by 'checked once at d-12 publication'. d-12 keeps only 'required external rules actually available/running' and a general 'required no-panic/transaction analyzer evidence'. No sprint now has a required command that runs the no-panic rule over the changed storage crates, sc-cron included. The analyzer's specified behaviour and the 'no implicit waiver' clause are gone. This also departs from the lead's own CQA-F002 ruling ('State once (owner sprint + publication blocker)'): no owner sprint keeps the check.",
+      "authority": {
+        "ref": "ANC-035 (deterministic_check: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates); later user decisions: no-panics with a mechanical check in sc-lint#931, and a build-time analyzer plus runtime rollback",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+      },
+      "suggested_fix": "Keep d-12 as the single publication blocker, but make it name the check. Run the sc-lint#931 panic rule over every crate with changed public storage functions: sc-storage, sc-runtime-db-sqlite, sc-cron/sc-cron-commands and the template stores. Run the transaction-body analyzer over changed transaction bodies. Both must be clean before the first upload. Restore 'Analyzer rejects awaits on non-tx handles and calls to unmarked helpers' and 'or a new explicit user decision; no implicit waiver' in d-5 design or d-12. Per CQA-F002, the owner sprint (d-6, and d-9 for sc-cron) runs the rule when it is available and records its state honestly. Remove the dangling 'configured sc-boundary .' fragments.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "M2",
+      "severity": "material",
+      "location": "run-d-6 deliverable 4 and acceptance 'kept-caps' vs acceptance 'dependencies'; run-d-12 design; anchors.json ANC-019 exclude run-d-6",
+      "what_changed": "Round 1 said 'Qualify inherited rusqlite0.41 floor and separately0.42 before widening; permit compatible patches and justify extra upper caps.' That made a tested widening across the 0.41/0.42 compatibility boundary a planned option. The r3 edit, made only to clear ANC-019, rewrote it as '0.42 is a separate qualification job only, not a cap or a range in the released manifest'. The kept-caps line now says 0.42 is 'not an implicit release-range widening'. That closes the released range at ^0.41 even though rusqlite 0.42.0 is already published (lead-validated-facts). The edit still failed ANC-019 at bea5d2a (addressed 0.52, owns 0.26). ANC-019 was then excluded on d-6, with an exclusion reason that relies on the rewritten sentence. The final text contradicts itself: d-6 acceptance still says 'optional0.42 widening separately passes', and d-12 design still says 'D-6 qualifies range/widening'. The recorded user decision is a 0.41 baseline registered once at the root. That decision sets a floor; it does not forbid a qualified widening. The user's ANC-019 words reject a single 0.x minor as the default range shape.",
+      "authority": {
+        "ref": "ANC-019 (quote); intent.md 'Support across a Cargo compatibility boundary, including rusqlite 0.41 / 0.42, requires explicit validation of the affected APIs and dependency graph.'",
+        "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
+      },
+      "suggested_fix": "Ask the owner whether the released rusqlite range may widen to include 0.42 after qualification. If yes, restore round-1 deliverable 4 ('qualify 0.42 separately before widening'), require the widened bound's manifest comment, and remove the d-6 ANC-019 exclusion so the gate judges it. If no, record that user decision and delete 'optional0.42 widening separately passes' from d-6 and 'qualifies range/widening' from d-12 design so the plan is consistent.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "M3",
+      "severity": "material",
+      "location": "run-d-6, run-d-7, run-d-8 acceptance (observability line) vs run-d-5 acceptance",
+      "what_changed": "At round 1, each engine sprint required: 'Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness.' Per CQA-F005, those lines became 'Wire the single sc-storage observability wrapper defined/tested by d-5'. d-5 never gained the matching acceptance. Its only mention is the prototype deliverable sentence 'The generic observability wrapper records name, queue wait, run time, row operation count and outcome.' None of d-5's acceptance criteria or required commands tests the wrapper, uses a controlled clock, or bans wall-clock/load assertions. The test obligation and its determinism guard are now owned by no sprint.",
+      "authority": {
+        "ref": "Round-1 approved plan text (run-d-6/7/8 acceptance at 4f02154, citing NFR-RUN-0002); lead ruling CQA-F005 'observability wrapper defined once in sc-storage (d-5); backends only wire it'",
+        "quote": "Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness."
+      },
+      "suggested_fix": "Add the round-1 sentence, unchanged in meaning, as a d-5 acceptance criterion, with a required test command in sc-storage. Keep the engines' 'wire, do not reimplement' line.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "M4",
+      "severity": "material",
+      "location": "intent.md lines 66-68 (Dependency policy direction)",
+      "what_changed": "Stale intent, not plan drift. Intent still says generated SQLx-SQLite graphs keep the cron-family 0.2.0 floors and do not get the SQLite fix. The later user decisions route all SQLite access through the async channel writer, with no sqlx SQLite driver and one app database. The plan follows the later decisions: d-6 and d-11 require that `cargo tree -i sqlx-sqlite` selects nothing.",
+      "authority": {
+        "ref": "docs/plans/phase-d/intent.md lines 66-68 (superseded by lead-recorded user decision: no sqlx SQLite driver; all SQLite through the async channel writer)",
+        "quote": "Generated SQLx-SQLite graphs retain the link-compatible cron-family 0.2.0 floors; they do not receive the 0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1."
+      },
+      "suggested_fix": "Owner updates intent.md to state that no generated graph carries a sqlx SQLite driver and that every SQLite layout receives the fixed rusqlite graph.",
+      "status": "owner_decision",
+      "fix_note": "Superseded by the later user decision recorded by the lead. The plan already follows the new decision; intent.md text needs owner update."
+    },
+    {
+      "id": "M5",
+      "severity": "material",
+      "location": "intent.md lines 18, 68, 76 (release version) and lines 80-82 (scope)",
+      "what_changed": "Stale intent, not plan drift. Intent targets a published 0.2.1 and a maintenance-only scope in which new product features need separate justification. The later user decisions set 0.3.0 across 8 crates and add the Storage<T>/sc-storage contract with SQLite, Postgres and MySQL engines. The plan (d-5..d-12) follows the later decisions.",
+      "authority": {
+        "ref": "docs/plans/phase-d/intent.md line 76 and Proof and scope (superseded by lead-recorded user decision: version 0.3.0 across 8 crates)",
+        "quote": "Success includes a registry consumer using released 0.2.1 crates, resolving the fixed dependencies, passing the relevant advisory checks, and building/running the affected integration."
+      },
+      "suggested_fix": "Owner updates intent.md to 0.3.0 across 8 crates and records the storage-contract scope as user-justified.",
+      "status": "owner_decision",
+      "fix_note": "Superseded by the later user decision recorded by the lead (0.3.0 across 8 crates; one app database; storage contract). Intent text needs owner update."
+    },
+    {
+      "id": "m1",
+      "severity": "minor",
+      "location": "intent.md lines 3 and 97-98 (planning status)",
+      "what_changed": "Stale intent, not plan drift. Intent says eight locked anchors govern three sprints and that it governs phase-d-plan.md. Now 25 anchors are locked (24 ANC plus ADR-RUN-0011) over ten sprints (d-3..d-12), and phase-d-plan.md was replaced in this range by a pointer to the Beads plan.",
+      "authority": {
+        "ref": "docs/plans/phase-d/intent.md lines 97-98",
+        "quote": "Eight locked anchors now govern the three revised sprints."
+      },
+      "suggested_fix": "Owner refreshes the planning-status paragraph and points the governs-link at the Beads plan (run-phase-d / phase-d.jsonl).",
+      "status": "owner_decision",
+      "fix_note": "Bookkeeping staleness after later user decisions; owner to refresh intent.md."
+    },
+    {
+      "id": "m2",
+      "severity": "minor",
+      "location": "anchors.json ANC-035 exclude run-d-9",
+      "what_changed": "The exclusion reason reads ANC-035's scope parenthetical '(sc-storage, sc-runtime-db-sqlite, template stores)' as an exhaustive crate list and puts sc-cron's CronStore/CronStorage outside the anchor. The quote covers public storage functions generally. d-9's text satisfies the anchor ('addressed' 1.0 in both pre-exclusion runs); only relevance was unstable. The obligation is still stated in d-9 (boundary:sc-cron/no-panic) and in d-12 ('All changed public storage functions'), which passed ANC-035, so it is not unowned. But with the exclusion and M1 together, sc-cron storage functions get no anchor-tracked mechanical no-panic check at the development gate.",
+      "authority": {
+        "ref": "ANC-035",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+      },
+      "suggested_fix": "Remove the run-d-9 exclusion and let d-9 be judged, or have the owner amend ANC-035's scope to name sc-cron CronStore/CronStorage explicitly. Do not narrow scope by exclusion.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m3",
+      "severity": "minor",
+      "location": "anchors.json ANC-021 exclude reasons for run-d-5, run-d-6, run-d-7 vs run-d-9",
+      "what_changed": "The d-5, d-6 and d-7 exclusion reasons say default cron placement in the app SQLite file is wired 'in d-11 and d-9' or 'by d-9 and d-11'. The d-9 exclusion says d-9 does not wire it ('generated-app composition wired in d-11; d-9 is engine-neutral'). The obligation is owned and satisfied by d-11 only. The reasons misstate ownership; coverage is unaffected.",
+      "authority": {
+        "ref": "ANC-021",
+        "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file."
+      },
+      "suggested_fix": "Reword the d-5, d-6 and d-7 reasons to name d-11 as the sole owner.",
+      "status": "fixed",
+      "fix_note": "run-lead re-recorded the ANC-021 exclusion reasons on run-d-5, run-d-6 and run-d-7 to name d-11 as the only owner."
+    },
+    {
+      "id": "m4",
+      "severity": "minor",
+      "location": "run-d-11 acceptance 'req:REQ-RUN-0328/compatible-generation' (added in round 2)",
+      "what_changed": "The new generated-manifest regression test 'fails on a restrictive exact/tilde pin or an unexplained extra cap'. Read literally, it fails on any exact or tilde pin, even one with a justifying comment. That is stricter than ANC-016/019, and it conflicts with d-3 ('remove unnecessary exact/tilde caps') and d-12 ('any tilde, exact or additional upper bound is named with its demonstrated break'). The template currently keeps exact pins such as utoipa =6.0.0 and sc-observability =1.5.0, which d-3 may keep with comments.",
+      "authority": {
+        "ref": "ANC-019",
+        "quote": "Use an upper bound only where a known break requires one, and say why in a comment."
+      },
+      "suggested_fix": "Reword the d-11 test to fail on an exact, tilde or extra-upper requirement that lacks an adjacent comment naming its demonstrated break, matching d-12's package-caps-check.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m5",
+      "severity": "minor",
+      "location": "run-d-12 design ('Internal release order and exact external closure')",
+      "what_changed": "Removing the duplicate rehearsal also removed 'migrate beads-cache against rehearsal archives'; the pre-publication step now reads only 'migrate beads-cache'. The single exact 8-archive rehearsal after version conversion remains (acceptance 'Rehearse exact8crate archives before publication'), so no rehearsal deliverable was lost. What was lost is the pre-upload check that the real beads-cache migration works against the exact archives. The only remaining beads-cache proof is post-publication, where a defect means a yank and a replacement release.",
+      "authority": {
+        "ref": "intent.md (Dependency policy direction); REQ-RUN-0002",
+        "quote": "The release sprint must prove the actual beads-cache configuration uses the fixed released graph."
+      },
+      "suggested_fix": "Restore 'validate the beads-cache migration against the exact post-conversion rehearsal archives before the first upload', attached to the one remaining rehearsal, not as a second rehearsal.",
+      "status": "open",
+      "fix_note": ""
+    }
+  ],
+  "acceptable_choices": [
+    {
+      "location": "run-d-5 deliverable 4 / design; run-d-9 deliverable 4, design and owned_paths",
+      "note": "The CronStorage conformance suite and double moved from d-5 (tests/support/cron-storage) to d-9. d-5 keeps only generic tests/support/storage with no cron rows, and d-11 still runs the one suite on real engines. This is consistent with ANC-034 and the decision 'no consumer-table code in backends'. d-9 says 'Reuse the ported ... suite owned here' but has no explicit 'create/port' deliverable verb; the design line 'Own the single tests/support/cron-storage provider suite, ported from existing cron assertions' covers it."
+    },
+    {
+      "location": "run-d-5 design ADR0020 paragraph",
+      "note": "Open items 1-4 are now labelled 'User-directed: read/write/atomic, no consumer table code in backends, sc-storage placement and app-owned schema'. The first two match recorded decisions. sc-storage placement and app-owned schema are implied by the 8-crate 0.3.0 decision and ANC-034, not stated verbatim. Status stays 'Accepted pending owner sign-off', and the template extension stays pending ratification, so no false user sign-off is claimed. The owner may want to confirm the label."
+    },
+    {
+      "location": "run-d-3 'This sprint does not close' additions; phase-d.jsonl d-6 -> d-3 edge",
+      "note": "d-3 now names the template.yml postgres/mysql minimum/latest live-service jobs and the crates.yml sqlite-rusqlite-minimum-latest job it owns. d-7 already said at round 1 that 'd-3 owns the CI prerequisite/recipe wiring', so this names an existing obligation rather than adding scope (ANC-017, REQ-RUN-0301). The new d-6 -> d-3 edge follows from d-6 consuming that job."
+    },
+    {
+      "location": "run-d-11 acceptance shared-storage; anchors.json ANC-024/025 exclude run-d-11",
+      "note": "'queued transactions with replies after commit' became 'per root writer constraints'. Reply-after-commit and batching are owned and tested in d-6, which satisfied both anchors, so d-11 composing by reference is a dedupe, not a drop."
+    },
+    {
+      "location": "anchors.json ANC-016/017/019 exclude run-d-9",
+      "note": "The reason 'sc-cron inherits the workspace rusqlite range registered and qualified in d-5' is only partly accurate, because d-9 retires the legacy DB dependency. The conclusion holds: d-9 changes no registry range itself, since the sc-storage registration is d-5's and caps are owned by d-3, d-11 and d-12. d-9's text still asks for endpoint checks and preserved cap comments."
+    },
+    {
+      "location": "run-d-7/d-8/d-10 design; run-d-9 design",
+      "note": "Repeated 'Version is approved coordinated0.3.0 ... scope B is selected by user' and ratification boilerplate were removed. The 0.3.0 version and ratification gating are still stated once, in d-5 and d-12 (CQA-F005)."
+    }
+  ],
+  "confirmations": [
+    {
+      "area": "Anchor statements, scopes and quotes (check 3)",
+      "note": "Field-by-field comparison of anchors.json at 4f02154 and 964095d: only `exclude` lists and their history changed. No statement, quote, scope, deterministic_check, version or status changed. ANC-027 moved position only. ANC-033..036 were locked at 38ce8b9, before this range. ANC-035's scope omitting sc-cron predates the range; see m2 for how the new exclusion uses it."
+    },
+    {
+      "area": "ANC-019 ownership (d-6, d-7, d-8 exclusions)",
+      "note": "ANC-019 is satisfied on d-3, which owns the real caps (rmcp ~3.8 and the =pins), and on d-11 and d-12 (packaged and registry-subject manifest check). The current manifests carry no extra upper cap on rusqlite (\"0.39\") or sqlx (\"0.9.0\"), so the 'NONE extra upper caps' declarations in d-5, d-6, d-7 and d-8 are true and no real cap or break comment was dropped. No range was widened. The d-6 exclusion text itself depends on the 0.42 rewrite (M2)."
+    },
+    {
+      "area": "ANC-033 exclusion on d-9",
+      "note": "The reason is true of the final text: d-9 consumes AtomicStorage::transaction. The obligation is defined in d-5 and implemented and live-tested in d-6, d-7, d-8 and d-11, all of which satisfied it."
+    },
+    {
+      "area": "ANC-026 exclusion on d-10",
+      "note": "The reason is true: d-10 touches no SQLite backend, writer or store. Its text still says 'Storage submission is never wrapped in spawn_blocking'. The obligation is satisfied on d-5, d-6, d-11 and d-12."
+    },
+    {
+      "area": "Other exclusions",
+      "note": "Every remaining excluded cell (ANC-003, 016, 017, 020, 021, 022-025, 027-032, 034, 036, ADR-RUN-0011) points to an owner sprint that satisfied the anchor in its latest run. No anchor obligation is left without a passing owner."
+    },
+    {
+      "area": "Deleted passages (check 4)",
+      "note": "The edges removed from d-11 to d-3 and from d-12 to d-3/d-5 are transitively implied (d-6 and d-10 depend on d-3, and d-6, d-9 and d-10 depend on d-5). The removed d-6 'justify extra upper caps' conditional had no real cap behind it, and the acceptance 'ranges' line keeps the rule. The duplicate pre-conversion rehearsal removal keeps one exact 8-archive rehearsal before upload (see m5 for the beads-cache-against-archives clause). phase-d-plan.md and sprint-d-1..d-4 were superseded 0.2.1 docs replaced by pointers to the Beads plan (CQA-F006)."
+    },
+    {
+      "area": "Later user decisions reflected in final items",
+      "note": "The final items reflect the later user decisions. There is one app DB, and cron is CronStore over Storage<CronRow> (d-9, d-11). There is no sqlx SQLite driver, and Postgres and MySQL use direct sqlx crates (d-6, d-7, d-8, d-11). Only the writer thread calls block_on, and readers use blocking_recv on non-async threads (d-11, ADR-RUN-0011). There is no optional cron Cargo feature; 'cron=true' is a generation option. Evidence uses cargo tree rather than Cargo.lock throughout, and the rusqlite 0.41 baseline is registered once at the root (d-5). d-6's rewrite to 'copied code, no dependency' for the atm-core-derived channel (r4) matches ANC-012."
+    }
+  ]
+}

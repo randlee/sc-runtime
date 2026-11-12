@@ -479,11 +479,11 @@ Scope: plan items that change sc-cron storage, cron persistence configuration, o
 Deterministic check to pair with the development gate: generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)
 
 Excluded from (not judged; the cell passes as `excluded`):
-- `run-d-5`: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.
-- `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.
-- `run-d-7`: Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.
 - `run-d-9`: Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.
 - `run-d-12`: The default cron-in-app-SQLite configuration is composed and satisfied in d-11; d-12 consumes it for the beads-cache migration.
+- `run-d-5`: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.
+- `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.
+- `run-d-7`: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.
 
 Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
 
