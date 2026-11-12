@@ -1,0 +1,1382 @@
+{
+  "version": {
+    "argv": [
+      "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+      "version",
+      "--verbose"
+    ],
+    "cwd": null,
+    "exit": 0,
+    "stdout": "dolt version 2.6.2\nWarning: unable to query latest released Dolt version",
+    "stderr": ""
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 64429,
+    "data_dir": "/tmp/raptor-dolt-plan-evidence/probes/data",
+    "pid": 41900,
+    "exit_before_cleanup": null,
+    "exit_after_cleanup": 0
+  },
+  "probes": [
+    {
+      "case": "fast-forward-setup",
+      "sql": "CREATE TABLE t(pk INT PRIMARY KEY, v INT)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "INSERT INTO t VALUES (1,10)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_COMMIT('-m','base')",
+      "ok": true,
+      "rows": [
+        [
+          "gu5h83jp7ritap44pc4tiano6e1cj7a3"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_BRANCH('feature')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_CHECKOUT('feature')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'feature'"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "INSERT INTO t VALUES (2,20)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_COMMIT('-m','feature row')",
+      "ok": true,
+      "rows": [
+        [
+          "fpf4nocjgpf52uf8qhvh51st8nav7gi1"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-setup",
+      "sql": "CALL DOLT_CHECKOUT('main')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'main'"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-main-before",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "gu5h83jp7ritap44pc4tiano6e1cj7a3"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-feature",
+      "sql": "SELECT hashof('feature')",
+      "ok": true,
+      "rows": [
+        [
+          "fpf4nocjgpf52uf8qhvh51st8nav7gi1"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-preview",
+      "sql": "SELECT * FROM dolt_preview_merge_conflicts_summary('main','feature')",
+      "ok": true,
+      "rows": [],
+      "columns": [
+        "table",
+        "num_data_conflicts",
+        "num_schema_conflicts"
+      ],
+      "schema_source": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go#L46-L50"
+    },
+    {
+      "case": "fast-forward-merge",
+      "sql": "CALL DOLT_MERGE('feature')",
+      "ok": true,
+      "rows": [
+        [
+          "fpf4nocjgpf52uf8qhvh51st8nav7gi1",
+          1,
+          0,
+          "merge successful"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-main-after",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "fpf4nocjgpf52uf8qhvh51st8nav7gi1"
+        ]
+      ]
+    },
+    {
+      "case": "fast-forward-rows",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CREATE TABLE t(pk INT PRIMARY KEY, v INT)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "INSERT INTO t VALUES (1,10)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_COMMIT('-m','base')",
+      "ok": true,
+      "rows": [
+        [
+          "0u9grkohnbch47kcimj60d2qst9d9aep"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_BRANCH('feature')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "INSERT INTO t VALUES (2,20)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_COMMIT('-m','main row')",
+      "ok": true,
+      "rows": [
+        [
+          "fbqha03lvoustc7eu4jspr2mg47uv5k7"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_CHECKOUT('feature')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'feature'"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "INSERT INTO t VALUES (3,30)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_COMMIT('-m','feature row')",
+      "ok": true,
+      "rows": [
+        [
+          "mmo8d4oh189mbcc8elmdjeo7lmn23c3v"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-setup",
+      "sql": "CALL DOLT_CHECKOUT('main')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'main'"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-main-hash",
+      "sql": "SELECT hashof('main')",
+      "ok": true,
+      "rows": [
+        [
+          "fbqha03lvoustc7eu4jspr2mg47uv5k7"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-feature-hash",
+      "sql": "SELECT hashof('feature')",
+      "ok": true,
+      "rows": [
+        [
+          "mmo8d4oh189mbcc8elmdjeo7lmn23c3v"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-preview",
+      "sql": "SELECT * FROM dolt_preview_merge_conflicts_summary('main','feature')",
+      "ok": true,
+      "rows": [],
+      "columns": [
+        "table",
+        "num_data_conflicts",
+        "num_schema_conflicts"
+      ],
+      "schema_source": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go#L46-L50"
+    },
+    {
+      "case": "threeway-pinned-diff",
+      "sql": "SELECT * FROM dolt_diff('fbqha03lvoustc7eu4jspr2mg47uv5k7','mmo8d4oh189mbcc8elmdjeo7lmn23c3v','t')",
+      "ok": true,
+      "rows": [
+        [
+          null,
+          null,
+          "mmo8d4oh189mbcc8elmdjeo7lmn23c3v",
+          "2026-11-03 02:10:52.409000",
+          2,
+          20,
+          "fbqha03lvoustc7eu4jspr2mg47uv5k7",
+          "2026-11-03 02:10:52.394000",
+          "removed"
+        ],
+        [
+          3,
+          30,
+          "mmo8d4oh189mbcc8elmdjeo7lmn23c3v",
+          "2026-11-03 02:10:52.409000",
+          null,
+          null,
+          "fbqha03lvoustc7eu4jspr2mg47uv5k7",
+          "2026-11-03 02:10:52.394000",
+          "added"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-begin",
+      "sql": "START TRANSACTION",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-merge",
+      "sql": "CALL DOLT_MERGE('feature')",
+      "ok": true,
+      "rows": [
+        [
+          "ng78qfcm142eca3j090707d83a27vv7h",
+          0,
+          0,
+          "merge successful"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-head-after-merge",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "ng78qfcm142eca3j090707d83a27vv7h"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-rows-after-merge",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          30
+        ]
+      ]
+    },
+    {
+      "case": "threeway-rollback",
+      "sql": "ROLLBACK",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "threeway-head-after-rollback",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "ng78qfcm142eca3j090707d83a27vv7h"
+        ]
+      ]
+    },
+    {
+      "case": "threeway-rows-after-rollback",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          30
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CREATE TABLE t(pk INT PRIMARY KEY, v INT)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "INSERT INTO t VALUES (1,0)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_COMMIT('-m','base')",
+      "ok": true,
+      "rows": [
+        [
+          "2598ubrfivdt1418nig2voe2kndjhtqi"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_BRANCH('side')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "UPDATE t SET v=10 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_COMMIT('-m','main change')",
+      "ok": true,
+      "rows": [
+        [
+          "099f79i2nbjm1tos6s4lnb4dmsel6177"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_CHECKOUT('side')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'side'"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "UPDATE t SET v=20 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_COMMIT('-m','side change')",
+      "ok": true,
+      "rows": [
+        [
+          "h0nkf5k81j2a619n64tvrhubhk4u29rq"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-setup",
+      "sql": "CALL DOLT_CHECKOUT('main')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'main'"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-head-before",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "099f79i2nbjm1tos6s4lnb4dmsel6177"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-preview",
+      "sql": "SELECT * FROM dolt_preview_merge_conflicts_summary('main','side')",
+      "ok": true,
+      "rows": [
+        [
+          "t",
+          1,
+          0
+        ]
+      ],
+      "columns": [
+        "table",
+        "num_data_conflicts",
+        "num_schema_conflicts"
+      ],
+      "schema_source": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go#L46-L50"
+    },
+    {
+      "case": "conflict-auto-merge",
+      "sql": "CALL DOLT_MERGE('side')",
+      "ok": false,
+      "error": "OperationalError(1105, 'Merge conflict detected, @autocommit transaction rolled back. @autocommit must be disabled so that merge conflicts can be resolved using the dolt_conflicts and dolt_schema_conflicts tables before manually committing the transaction. Alternatively, to commit transactions with merge conflicts, set @@dolt_allow_commit_conflicts = 1')"
+    },
+    {
+      "case": "conflict-auto-head-after-merge",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "099f79i2nbjm1tos6s4lnb4dmsel6177"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-working-row",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-conflict-count",
+      "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-abort",
+      "sql": "CALL DOLT_MERGE('--abort')",
+      "ok": false,
+      "error": "OperationalError(1105, 'fatal: There is no merge to abort')"
+    },
+    {
+      "case": "conflict-auto-head-after-abort",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "099f79i2nbjm1tos6s4lnb4dmsel6177"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-row-after-abort",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "conflict-auto-status-after-abort",
+      "sql": "SELECT * FROM dolt_status",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CREATE TABLE t(pk INT PRIMARY KEY, v INT)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "INSERT INTO t VALUES (1,0)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_COMMIT('-m','base')",
+      "ok": true,
+      "rows": [
+        [
+          "o8of2oe1p0kmulci17rpj4ea9oc453lj"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_BRANCH('side')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "UPDATE t SET v=10 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_COMMIT('-m','main change')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_CHECKOUT('side')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'side'"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "UPDATE t SET v=20 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_COMMIT('-m','side change')",
+      "ok": true,
+      "rows": [
+        [
+          "mbdbrb28l2i58idugipscm2n2f3pfc09"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-setup",
+      "sql": "CALL DOLT_CHECKOUT('main')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'main'"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-head-before",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-set-autocommit",
+      "sql": "SET autocommit=0",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-begin",
+      "sql": "START TRANSACTION",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-merge",
+      "sql": "CALL DOLT_MERGE('side')",
+      "ok": true,
+      "rows": [
+        [
+          "",
+          0,
+          1,
+          "conflicts found"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-head-after-merge",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-row-before-rollback",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-rollback",
+      "sql": "ROLLBACK",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "conflict-manual-head-after-rollback",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-row-after-rollback",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-conflict-count-after-rollback",
+      "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-abort-after-rollback",
+      "sql": "CALL DOLT_MERGE('--abort')",
+      "ok": false,
+      "error": "OperationalError(1105, 'fatal: There is no merge to abort')"
+    },
+    {
+      "case": "conflict-manual-head-after-abort",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "conflict-manual-row-after-abort",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CREATE TABLE t(pk INT PRIMARY KEY, v INT)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "INSERT INTO t VALUES (1,0)",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_COMMIT('-m','base')",
+      "ok": true,
+      "rows": [
+        [
+          "emrvubmvo01tvb5qfngnls96ijoldu6p"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_BRANCH('side')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_CHECKOUT('side')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'side'"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "UPDATE t SET v=20 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_ADD('-A')",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_COMMIT('-m','side commit')",
+      "ok": true,
+      "rows": [
+        [
+          "n4nmsffruc0fq9d2lb3cvn3qhb9o38ck"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "CALL DOLT_CHECKOUT('main')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'main'"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-setup",
+      "sql": "UPDATE t SET v=10 WHERE pk=1",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "dirty-before-checkout-row",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "dirty-checkout-side",
+      "sql": "CALL DOLT_CHECKOUT('side')",
+      "ok": true,
+      "rows": [
+        [
+          0,
+          "Switched to branch 'side'"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-after-checkout-row",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          20
+        ]
+      ]
+    },
+    {
+      "case": "dirty-status",
+      "sql": "SELECT * FROM dolt_status",
+      "ok": true,
+      "rows": []
+    }
+  ],
+  "notes": [],
+  "initialization": [
+    {
+      "argv": [
+        "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+        "init",
+        "--name=Probe User",
+        "--email=probe@example.invalid",
+        "--initial-branch=main"
+      ],
+      "cwd": "/tmp/raptor-dolt-plan-evidence/probes/data/ff",
+      "exit": 0,
+      "stdout": "Successfully initialized dolt data repository.",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+        "init",
+        "--name=Probe User",
+        "--email=probe@example.invalid",
+        "--initial-branch=main"
+      ],
+      "cwd": "/tmp/raptor-dolt-plan-evidence/probes/data/threeway",
+      "exit": 0,
+      "stdout": "Successfully initialized dolt data repository.",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+        "init",
+        "--name=Probe User",
+        "--email=probe@example.invalid",
+        "--initial-branch=main"
+      ],
+      "cwd": "/tmp/raptor-dolt-plan-evidence/probes/data/conflict_auto",
+      "exit": 0,
+      "stdout": "Successfully initialized dolt data repository.",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+        "init",
+        "--name=Probe User",
+        "--email=probe@example.invalid",
+        "--initial-branch=main"
+      ],
+      "cwd": "/tmp/raptor-dolt-plan-evidence/probes/data/conflict_manual",
+      "exit": 0,
+      "stdout": "Successfully initialized dolt data repository.",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/raptor-dolt-plan-evidence/probes/bin/dolt-darwin-arm64/bin/dolt",
+        "init",
+        "--name=Probe User",
+        "--email=probe@example.invalid",
+        "--initial-branch=main"
+      ],
+      "cwd": "/tmp/raptor-dolt-plan-evidence/probes/data/dirty",
+      "exit": 0,
+      "stdout": "Successfully initialized dolt data repository.",
+      "stderr": ""
+    }
+  ],
+  "fast_forward": {
+    "main_before": "gu5h83jp7ritap44pc4tiano6e1cj7a3",
+    "feature_before": "fpf4nocjgpf52uf8qhvh51st8nav7gi1",
+    "main_after": "fpf4nocjgpf52uf8qhvh51st8nav7gi1",
+    "head_moved_to_feature": true,
+    "head_before_distinct": true
+  },
+  "threeway": {
+    "head_before": "fbqha03lvoustc7eu4jspr2mg47uv5k7",
+    "feature_head": "mmo8d4oh189mbcc8elmdjeo7lmn23c3v",
+    "head_after_merge": "ng78qfcm142eca3j090707d83a27vv7h",
+    "head_after_rollback": "ng78qfcm142eca3j090707d83a27vv7h",
+    "merge_persisted_after_sql_rollback": true,
+    "expected_rows_after_merge": [
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        30
+      ]
+    ]
+  },
+  "conflict_autocommit": {
+    "head_before": "099f79i2nbjm1tos6s4lnb4dmsel6177",
+    "head_after_merge": "099f79i2nbjm1tos6s4lnb4dmsel6177",
+    "head_after_abort": "099f79i2nbjm1tos6s4lnb4dmsel6177"
+  },
+  "conflict_manual": {
+    "head_before": "icb8ruqjdedhhgeufjei8ubtvk9ui72g",
+    "head_after_merge": "icb8ruqjdedhhgeufjei8ubtvk9ui72g",
+    "head_after_rollback": "icb8ruqjdedhhgeufjei8ubtvk9ui72g",
+    "head_after_abort": "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+  },
+  "supplement": {
+    "server": {
+      "host": "127.0.0.1",
+      "port": 64644,
+      "pid": 43681,
+      "exit_before_cleanup": null,
+      "exit_after_cleanup": 0
+    },
+    "probes": [
+      {
+        "case": "manual-abort-set-autocommit",
+        "sql": "SET autocommit=0",
+        "ok": true,
+        "rows": []
+      },
+      {
+        "case": "manual-abort-begin",
+        "sql": "START TRANSACTION",
+        "ok": true,
+        "rows": []
+      },
+      {
+        "case": "manual-abort-before-head",
+        "sql": "SELECT hashof('HEAD')",
+        "ok": true,
+        "rows": [
+          [
+            "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-merge",
+        "sql": "CALL DOLT_MERGE('side')",
+        "ok": true,
+        "rows": [
+          [
+            "",
+            0,
+            1,
+            "conflicts found"
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-conflict-count",
+        "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+        "ok": true,
+        "rows": [
+          [
+            1
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-working-row",
+        "sql": "SELECT * FROM t ORDER BY pk",
+        "ok": true,
+        "rows": [
+          [
+            1,
+            10
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-operation",
+        "sql": "CALL DOLT_MERGE('--abort')",
+        "ok": true,
+        "rows": [
+          [
+            "",
+            0,
+            0,
+            "merge aborted"
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-conflict-count-after",
+        "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+        "ok": true,
+        "rows": [
+          [
+            0
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-working-row-after",
+        "sql": "SELECT * FROM t ORDER BY pk",
+        "ok": true,
+        "rows": [
+          [
+            1,
+            10
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-head-after",
+        "sql": "SELECT hashof('HEAD')",
+        "ok": true,
+        "rows": [
+          [
+            "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-commit",
+        "sql": "COMMIT",
+        "ok": true,
+        "rows": []
+      },
+      {
+        "case": "manual-abort-head-after-commit",
+        "sql": "SELECT hashof('HEAD')",
+        "ok": true,
+        "rows": [
+          [
+            "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+          ]
+        ]
+      },
+      {
+        "case": "manual-abort-row-after-commit",
+        "sql": "SELECT * FROM t ORDER BY pk",
+        "ok": true,
+        "rows": [
+          [
+            1,
+            10
+          ]
+        ]
+      },
+      {
+        "case": "dirty-main-use",
+        "sql": "USE `dirty/main`",
+        "ok": true,
+        "rows": []
+      },
+      {
+        "case": "dirty-main-row-before-merge",
+        "sql": "SELECT * FROM t ORDER BY pk",
+        "ok": true,
+        "rows": [
+          [
+            1,
+            10
+          ]
+        ]
+      },
+      {
+        "case": "dirty-main-status-before-merge",
+        "sql": "SELECT * FROM dolt_status",
+        "ok": true,
+        "rows": [
+          [
+            "t",
+            0,
+            "modified"
+          ]
+        ]
+      },
+      {
+        "case": "dirty-main-merge-side",
+        "sql": "CALL DOLT_MERGE('side')",
+        "ok": false,
+        "error": "OperationalError(1105, 'error: local changes would be stomped by merge:\\n\\tt\\n Please commit your changes before you merge.')"
+      },
+      {
+        "case": "dirty-main-row-after-merge",
+        "sql": "SELECT * FROM t ORDER BY pk",
+        "ok": true,
+        "rows": [
+          [
+            1,
+            10
+          ]
+        ]
+      },
+      {
+        "case": "dirty-main-status-after-merge",
+        "sql": "SELECT * FROM dolt_status",
+        "ok": true,
+        "rows": [
+          [
+            "t",
+            0,
+            "modified"
+          ]
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "sourceRepo": "dolthub/dolt",
+    "sourceTag": "v2.6.2",
+    "sourceCommit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+    "localTagCommitVerification": "git rev-parse v2.6.2^{commit} returned the source commit above",
+    "officialReleasePage": "https://github.com/dolthub/dolt/releases/expanded_assets/v2.6.2",
+    "asset": "dolt-darwin-arm64.tar.gz",
+    "officialAssetSha256": "deb095a13f8b75a7c7f1fdb04eed8d8ffdd5602e327945e88523e598594ed3c6",
+    "downloadedAssetSha256": "deb095a13f8b75a7c7f1fdb04eed8d8ffdd5602e327945e88523e598594ed3c6",
+    "binarySha256": "333ccb0e04af731f16b05e94956f13b1e4fa6f3b88553c63f1443b5d70ea3817",
+    "pythonDriver": "PyMySQL 2.2.8 in probes/venv; temporary venv only",
+    "isolatedDoltRoot": "/tmp/raptor-dolt-plan-evidence/probes/dolt-root",
+    "isolatedDataDir": "/tmp/raptor-dolt-plan-evidence/probes/data",
+    "globalConfigTouched": false,
+    "defaultPort3306Used": false,
+    "serverProcesses": [
+      {
+        "pid": 41900,
+        "port": 64429,
+        "exitAfterTerminateAndWait": 0
+      },
+      {
+        "pid": 43681,
+        "port": 64644,
+        "exitAfterTerminateAndWait": 0
+      }
+    ],
+    "hostLimitation": "GitHub API git-ref endpoint returned HTTP 403 once; the existing checkout tag resolved to the exact source commit, and the official release asset page exposed its SHA-256. The archive downloaded and matched that published digest."
+  },
+  "behaviorSummary": {
+    "fastForward": "main HEAD advanced exactly to feature HEAD; rows included feature row.",
+    "cleanThreeWay": "non-conflicting main/feature changes merged successfully; subsequent SQL ROLLBACK did not reverse the published merge or move HEAD back.",
+    "rowConflictAutocommit": "preview reported table t, one data conflict, zero schema conflicts. DOLT_MERGE returned error and rolled back the autocommit transaction; HEAD and main working row remained unchanged; conflict count was zero. DOLT_MERGE(--abort) then correctly said no merge to abort.",
+    "rowConflictExplicitTransaction": "merge returned conflicts found and conflict count 1; SQL ROLLBACK left target HEAD and current main row unchanged and removed conflict state. In a separate explicit-transaction run, DOLT_MERGE(--abort) returned merge aborted, removed conflicts, preserved main row and left HEAD unchanged after COMMIT.",
+    "dirtyWorkingSet": "a main working-set edit blocked DOLT_MERGE(side) with \u201clocal changes would be stomped\u201d; row and dirty status stayed intact. Earlier branch-checkout probe switched from main to side while main had a dirty row; selecting dirty/main afterward showed the edit remained in main WORKING, so checkout switched the active view but did not discard that branch working-set edit.",
+    "diffEvidence": "Preview summary returned no rows for clean fast-forward/three-way cases and [t,1,0] for conflicting refs; according to its schema these mean table t, one data conflict, zero schema conflicts. dolt_diff between immutable main/feature commit hashes showed the main-only removed row and feature-only added row."
+  },
+  "previewMergeSummarySchema": {
+    "source": {
+      "path": "go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go",
+      "lines": "46-50",
+      "symbol": "previewMergeConflictsSummarySchema",
+      "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go#L46-L50"
+    },
+    "columns": [
+      "table",
+      "num_data_conflicts",
+      "num_schema_conflicts"
+    ],
+    "interpretation": "For row [\"t\",1,0], table t has one data conflict and zero schema conflicts. This table does not report constraint violations."
+  }
+}

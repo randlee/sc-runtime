@@ -110,8 +110,11 @@ The workspace members MUST be exactly these library crates. Amended 2026-10-25 (
 | `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
 | `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
 | `crates/sc-cron-commands` (Phase C target) | `sc-cron-commands` | optional standard cron DTOs and scheduler adapter; ADR-RUN-0019 |
+| `crates/sc-dolt` (proposed; on hold) | `sc-dolt` | Dolt branch/merge/remote access; [plan only](plans/maintenance/sc-dolt-plan.md) |
 
-Phase C amendment: the new adapter member is planned, not yet implemented.
+Phase C amendment: the cron-commands adapter member is delivered at 0.2.0.
+The `sc-dolt` row is planning-only until [sc-dolt plan](plans/maintenance/sc-dolt-plan.md)
+lifts hold and implementation amends this table.
 Its default DTO graph and optional scheduler edge are defined by
 REQ-RUN-0332 and NFR-CRNC-0001; no reverse core command/runtime edge is allowed.
 

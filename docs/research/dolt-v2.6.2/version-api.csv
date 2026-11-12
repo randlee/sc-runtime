@@ -1,0 +1,101 @@
+kind,name,contract_note,source
+procedure,dolt_add,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_backup,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_branch,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_checkout,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_cherry_pick,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_clean,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_clone,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_commit,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_commit_all,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_commit_hash_out,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_conflicts_resolve,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_count_commits,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_fetch,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_undrop,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_update_column_tag,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_purge_dropped_databases,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_rebase,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_rm,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_gc,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_thread_dump,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_merge,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_pull,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_push,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_remote,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_reset,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_revert,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_squash_history,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stash,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_tag,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_verify_constraints,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_restart,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_stop,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_info,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_purge,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_wait,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_flush,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_once,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_gc,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+procedure,dolt_stats_timers,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dprocedures/init.go:22-65
+scalar_function,dolt_hashof,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,hashof (deprecated alias),registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_version,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_storage_format,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,active_branch,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_merge_base,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,has_ancestor,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_hashof_table,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_hashof_db,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+scalar_function,dolt_join_cost,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dfunctions/init.go:19-30
+table_function,DOLT_DIFF,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_DIFF_STAT,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_DIFF_SUMMARY,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_BRANCH_STATUS,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_LOG,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_PATCH,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_PREVIEW_MERGE_CONFLICTS_SUMMARY,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_PREVIEW_MERGE_CONFLICTS,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_SCHEMA_DIFF,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_REFLOG,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_QUERY_DIFF,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_TEST_RUN,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_JSON_DIFF,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+table_function,DOLT_MERGE_BASES,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/dtablefunctions/init.go:19-34
+generated_system_table,dolt_branches,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_remote_branches,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_log,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_conflicts,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_constraint_violations,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_commits,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_commit_ancestors,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_remotes,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_help,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_backups,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_stashes,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_branch_activity,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_status,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_status_ignored,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_diff_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_commit_diff_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_history_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_conflicts_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_constraint_violations_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+generated_system_table,dolt_workspace_<table>,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/doltdb/system_table.go:149-178
+resolved_system_table,dolt_schema_conflicts,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_merge_status,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_tags,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_statistics,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_nonlocal_tables,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_docs,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_query_catalog,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_schemas,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_procedures,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_ignore,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_rebase,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_tests,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_ci_workflows and subordinate CI tables,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_branch_control (server privilege table),registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_branch_namespace_control (server privilege table),registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_diff,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
+resolved_system_table,dolt_column_diff,registered/resolved SQL surface; see JSON/report for contract and classification,go/libraries/doltcore/sqle/database.go and sqle/dtables
