@@ -35,6 +35,10 @@ of the CLI.
 ## REQ-RT-0001: `DaemonBuilder` and the fixed start-up order of `run()`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -216,6 +220,10 @@ last so no request is accepted before it can be served.
 ## REQ-RT-0002: Hard singleton through an OS lock on `daemon.lock`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -281,6 +289,10 @@ stale-PID file to clean up and no race between checking and claiming.
 ## REQ-RT-0003: The project's `Stores` type is opaque to `sc-runtime`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -329,6 +341,10 @@ that in project code, and lets a project with no database use the crate.
 ## REQ-RT-0004: Routes mounted on the daemon's single router
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -416,6 +432,10 @@ versions change and this shape does not.
 ## REQ-RT-0005: Graceful shutdown on SIGINT and SIGTERM
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -467,9 +487,6 @@ shutdown sequence continues, and a signal-initiated `run()` still returns
 wire outcomes are existing runtime behavior; Phase B observability reports
 them but does not change them.
 
-**OPEN:** Windows console close and service stop remain outside this signal
-contract. Ctrl-Break is selected for Phase C; implementation is planned.
-
 ### Rationale
 
 Daemons are restarted by people, by service managers and by tests. A restart
@@ -505,11 +522,20 @@ machine, never on a developer's host
    which endpoint and instance-lock cleanup complete and `run()` returns
    `Ok(())`.
 
+### Implementation Notes
+
+OPEN: Windows console close and service stop remain outside this signal
+contract. Ctrl-Break is selected for Phase C; implementation is planned.
+
 ---
 
 ## REQ-RT-0006: Test fixture `DaemonFixture` in the `testing` module
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-24  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -569,6 +595,31 @@ that string and does not invent an endpoint. On Windows the caller supplies
 `endpoint_flag`, `transport.endpoint`, or `transport.tcp_port` before
 `start`. The parallelism test runs two fixtures.
 
+Phase C fixture cleanup target amendment:
+
+An additive `DaemonFixture::start_with_cleanup` accepts the existing fixture
+setup/routes plus a once-only asynchronous application cleanup closure and
+runs production `run_with_cleanup` through the same internal runner. Ordinary
+start delegates with empty cleanup. On normal stop and startup errors, preserve
+primary runtime error, drop unused setup closures before cleanup, retain
+successful stores/logger/instance lock until cleanup finishes, release endpoint
+in existing order, and physically join the fixture thread on shutdown/drop.
+Tests coordinate blocked cleanup, lock contention, startup failure, parallel
+fixtures, endpoint closure and startup-timeout no-detachment. No new public
+shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
+
+The existing transport/runtime binds port zero once and reports the actual
+bound endpoint while retaining its listener. Cleanup fixtures preserve that
+continuous ownership and public endpoint accessor; reserve/drop/rebind is
+forbidden, as are retry/sleep/timeout workarounds for the port race. Add
+ready-state `run_with_cleanup_and_bound(on_bound,cleanup)` for production
+real-signal child tests: one callback after successful bind reports the actual
+Endpoint while the listener remains owned; no callback on pre-bind failure.
+The recipient confirms health before signaling. Ordinary run/run_with_cleanup
+delegate with a no-op callback; existing error/cleanup/ownership order remains.
+This extends REQ-RT-0001's public ready-state surface without a transport API
+change or exposing the private fixture shutdown trigger.
+
 ### Rationale
 
 Every generated project tests its operations against a real daemon. Without
@@ -610,36 +661,13 @@ spawns a test helper, never the generated CLI binary
 7. `cargo test -p sc-runtime` passes under the default parallel runner, and
    passes when two such runs execute at the same time.
 
----
-
-### Phase C fixture cleanup target amendment
-
-An additive `DaemonFixture::start_with_cleanup` accepts the existing fixture
-setup/routes plus a once-only asynchronous application cleanup closure and
-runs production `run_with_cleanup` through the same internal runner. Ordinary
-start delegates with empty cleanup. On normal stop and startup errors, preserve
-primary runtime error, drop unused setup closures before cleanup, retain
-successful stores/logger/instance lock until cleanup finishes, release endpoint
-in existing order, and physically join the fixture thread on shutdown/drop.
-Tests coordinate blocked cleanup, lock contention, startup failure, parallel
-fixtures, endpoint closure and startup-timeout no-detachment. No new public
-shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
-
-The existing transport/runtime binds port zero once and reports the actual
-bound endpoint while retaining its listener. Cleanup fixtures preserve that
-continuous ownership and public endpoint accessor; reserve/drop/rebind is
-forbidden, as are retry/sleep/timeout workarounds for the port race. Add
-ready-state `run_with_cleanup_and_bound(on_bound,cleanup)` for production
-real-signal child tests: one callback after successful bind reports the actual
-Endpoint while the listener remains owned; no callback on pre-bind failure.
-The recipient confirms health before signaling. Ordinary run/run_with_cleanup
-delegate with a no-op callback; existing error/cleanup/ownership order remains.
-This extends REQ-RT-0001's public ready-state surface without a transport API
-change or exposing the private fixture shutdown trigger.
-
 ## REQ-RT-0007: `run()` returns the typed error `RuntimeError`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -718,6 +746,10 @@ caller needs a variant to branch on and not a string to parse.
 ## REQ-RT-0008: `run()` resolves instance root and endpoint via `sc-transport`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-24  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -838,6 +870,10 @@ machine, never on a developer's host
 ## NFR-RT-0001: `sc-runtime` is assembly only, no registry, macro or wrapper
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-04  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -916,6 +952,10 @@ libraries, and would be code every project has to learn.
 ## NFR-RT-0002: No sqlx, no `sc-observability`, no config loading
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -977,6 +1017,10 @@ lets the project report a config error before anything else starts.
 ## NFR-RT-0003: Allowed dependencies of the `sc-runtime` crate
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-04  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -1057,6 +1101,10 @@ would reject one.
 ## NFR-RT-0004: No public function in `sc-runtime` panics
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -1106,7 +1154,6 @@ decision [ADR-RUN-0006](../architecture.md) is that every library API returns
    `sc-runtime`, including the constructor of `testing::DaemonFixture`,
    returns `Result<_, RuntimeError>`, and no public signature names
    `anyhow::Error` or `Box<dyn Error>`.
-
 
 Phase C raw-input clarification: `mcp_request_body` only reads privately retained
 original JSON POST bytes from ordinary RMCP HTTP Parts. The attachment retains

@@ -35,6 +35,10 @@ uses it to parse the answer and to print it for `--json`.
 ## REQ-CMD-0001: Response envelope type `Envelope<T>` and its JSON shape
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -154,13 +158,17 @@ sides agree on the shape at compile time.
 
 ## REQ-CMD-0002: Typed error `OpError` and its five fields
 
-**2026-10-31 amendment:** ADR-RUN-0017 temporarily replaces the caret-only
-types requirement below with exact registry `=1.5.0`. OpError wire fields and
-serialization remain unchanged; upstream cleanup removes the pin.
-
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 
 ### Requirement Statement
+
+2026-10-31 amendment: ADR-RUN-0017 temporarily replaces the caret-only
+types requirement below with exact registry `=1.5.0`. OpError wire fields and
+serialization remain unchanged; upstream cleanup removes the pin.
 
 The crate `sc-command` MUST export a public type `sc_command::OpError` from
 its crate root, available with default features. `OpError` is the error half
@@ -295,11 +303,21 @@ act on.
    `OpError: Debug + Clone + PartialEq + Display + std::error::Error` and
    `ErrorKind: Debug + Clone + PartialEq + Display`.
 
+### Related Documents
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 amendment
+
 ---
 
 ## REQ-CMD-0003: `From<Result<T, OpError>>` for `Envelope<T>`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -357,6 +375,10 @@ project writes its own success-or-failure wrapping code.
 ## REQ-CMD-0004: axum `IntoResponse` for `Envelope<T>` (`server` feature)
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -432,6 +454,10 @@ crate means every SC daemon maps the same error kind to the same status.
 ## REQ-CMD-0005: `into_mcp()` to rmcp `CallToolResult` (`server` feature)
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -537,6 +563,10 @@ the same JSON as a string.
 ## REQ-CMD-0006: `Envelope` JSON round-trip is lossless for CLI `--json`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -603,7 +633,15 @@ envelope object or of the error object is rejected by
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
-**Phase C frozen amendment:** use only the `~3.8` RMCP
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
+
+### Requirement Statement
+
+Phase C frozen amendment: use only the `~3.8` RMCP
 minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
 alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
 matrix. All optional/server/defaults-off gating and remaining dependency,
@@ -623,14 +661,10 @@ not a derive over internal enum variants. Foreign ErrorCode is represented by
 its canonical serialized leaf shape inside the owned schema, without orphan
 impls or duplicate error models. REQ-CMD-0001/0002 wire behavior is unchanged.
 
-**2026-10-31 amendment:** ADR-RUN-0017 adds an unconditional neutral
+2026-10-31 amendment: ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
 only std. Neither activates server/axum/rmcp. The exact types pin is temporary;
 no third-party dependency is added.
-
-**Status:** Active  
-
-### Requirement Statement
 
 In `crates/sc-command/Cargo.toml` the dependencies `axum` and `rmcp` MUST be
 declared `optional = true`. They MUST be enabled only by a cargo feature
@@ -693,18 +727,34 @@ daemon and the CLI share one crate.
    7 plus exactly one line beginning with `axum ` and one beginning with
    `rmcp `, and no other line.
 
+### Related Documents
+
+**Requirements:**
+
+- REQ-CMD-0005 — Phase C frozen amendment
+- REQ-CMD-0001 — Phase C frozen amendment
+
+**Architecture Decisions:**
+
+- ADR-RUN-0203 — Phase C frozen amendment
+- ADR-RUN-0017 — 2026-10-31 amendment
+
 ---
 
 ## NFR-CMD-0002: `sc-command` dependency boundary
 
-**2026-10-31 amendment:** command remains a sibling-free leaf; its sole
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
+
+### Requirement Statement
+
+2026-10-31 amendment: command remains a sibling-free leaf; its sole
 additional dependent is temporarily cron for the observability port with
 defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
 transitive identities for every production feature, not just direct normal edges.
-
-**Status:** Active  
-
-### Requirement Statement
 
 `sc-command` MUST NOT depend on any other crate of this workspace:
 `sc-config`, `sc-transport` or `sc-runtime`.
@@ -772,15 +822,19 @@ error code and remediation types are defined there
 
 ## NFR-CMD-0003: `sc-command` never panics; `into_mcp` error exception
 
-**2026-10-31 explicit exception:** ADR-RUN-0017 allows only the fixed
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
+
+### Requirement Statement
+
+2026-10-31 explicit exception: ADR-RUN-0017 allows only the fixed
 `ServiceName::new("noop")` invariant under exact inspected types 1.5.0,
 never caller/environment data. `CanonicalLog::emit` returns canonical foreign
 EventError. The rest of this panic/error rule remains in force; moving an
 existing expect into command without this amendment would violate it.
-
-**Status:** Active  
-
-### Requirement Statement
 
 No public function, method or trait implementation of `sc-command` may panic
 on any caller input. This covers constructors of `Envelope<T>` and
@@ -843,3 +897,9 @@ rule does not reject the two signatures that rmcp and axum require.
    `serde::Serialize` and `serde::Deserialize` implementations, whose error
    types serde dictates, the only public function returning a `Result` is
    `IntoMcp::into_mcp`, and its error type is rmcp's `McpError`.
+
+### Related Documents
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 explicit exception

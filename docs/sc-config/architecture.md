@@ -50,8 +50,25 @@ observability, and nothing in this workspace is a dependency of it.
 ## ADR-CFG-0001: `sc-config` returns `ConfigError` values and never panics
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document
+
+**Requirements:**
+
+- NFR-CFG-0001 — public API returns `Result<T, ConfigError>`; no panics
+- REQ-CFG-0004 — the `ConfigError` variants and the data each carries
+- NFR-RUN-0009 — owner of the list of banned panicking constructs for the four library crates
+
+**Architecture Decisions:**
+
+- ADR-RUN-0006 — the repository-wide rule that public library APIs return typed errors and do not panic
 
 ### Context
 
@@ -60,9 +77,7 @@ reads JSON files, applies environment-variable overrides, and deserialises the
 result into the caller's serde type. A program calls it first in `main`,
 before logging or any other error reporting is initialised. Its failures are
 user mistakes, such as a typo in a JSON file or a missing file, far more often
-than bugs. A panic at that point prints a Rust backtrace that tells the user
-nothing about which file to fix, and an agent driving the program cannot parse
-it. The design states that every `sc-config` method returns a discriminated
+than bugs. The design states that every `sc-config` method returns a discriminated
 union, in Rust an enum such as `Result<T, ConfigError>` with a typed error
 enum, and that there are no panics. The design also limits the crate's
 dependencies to `serde` and `serde_json`, which rules out error-helper crates.
@@ -115,6 +130,12 @@ carry a source location.
 | Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
 | Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
 
+### Rationale
+
+A panic at that point prints a Rust backtrace that tells the user
+nothing about which file to fix, and an agent driving the program cannot parse
+it.
+
 ### Consequences
 
 - The `main.rs` of a generated project matches on the result of
@@ -129,43 +150,52 @@ carry a source location.
 
 ### Alternatives Considered
 
-- `thiserror` to derive `Display` and `Error`. Rejected: it adds a third
-  dependency and a proc-macro compile step to save a few dozen lines for one
-  enum.
-- `anyhow::Error` as the public error type. Rejected: it is opaque, so a
-  caller cannot branch on the failure or read the file path as data, and it is
-  also an extra dependency.
-- Panicking on a missing `default.json`, on the grounds that the program
-  cannot continue anyway. Rejected: whether to continue is the caller's
-  decision, and a panic before logging exists is the least diagnosable failure
-  a program can have.
+#### Alternative 1: `thiserror` to derive `Display` and `Error`
+
+**Why Rejected:**
+
+it adds a third dependency and a proc-macro compile step to save a few dozen lines for one enum.
+
+#### Alternative 2: `anyhow::Error` as the public error type
+
+**Why Rejected:**
+
+it is opaque, so a caller cannot branch on the failure or read the file path as data, and it is also an extra dependency.
+
+#### Alternative 3: Panicking on a missing `default.json`, on the grounds that the program cannot continue anyway
+
+**Why Rejected:**
+
+whether to continue is the caller's decision, and a panic before logging exists is the least diagnosable failure a program can have.
 
 ### Implementation
 
-**Enforced by:** the `req-qa` review agent (`.claude/agents/req-qa.md`)
+Enforced by: the `req-qa` review agent (`.claude/agents/req-qa.md`)
 checking code changes against [NFR-CFG-0001](requirements.md), which holds the
 grep patterns and malformed-input tests; the `rust-best-practices-agent`
 review agent (`.claude/agents/rust-best-practices-agent.md`) checking for
 panicking constructs and opaque error types in the public API.
-
-### Related Documents
-
-- [NFR-CFG-0001](requirements.md): public API returns
-  `Result<T, ConfigError>`; no panics
-- [REQ-CFG-0004](requirements.md): the `ConfigError` variants and the data
-  each carries
-- [ADR-RUN-0006](../architecture.md): the repository-wide rule that public
-  library APIs return typed errors and do not panic
-- [NFR-RUN-0009](../requirements.md): owner of the list of banned panicking
-  constructs for the four library crates
 
 ---
 
 ## ADR-CFG-0002: Merge layers as `serde_json::Value`, deserialise once
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document
+
+**Requirements:**
+
+- REQ-CFG-0001 — file layers and the `merge` rules
+- REQ-CFG-0002 — environment-variable naming, value parsing and path rules
+- REQ-CFG-0004 — the deserialisation error lists the contributing files and variables
 
 ### Context
 
@@ -181,10 +211,7 @@ this document ([REQ-CFG-0002](requirements.md)).
 Layering can be done in two places. It can be done on typed structs: each
 layer is deserialised into a "partial" version of the caller's type in which
 every field is `Option`, and the partials are merged field by field. Or it can
-be done on untyped JSON before any typed deserialisation happens. The typed
-route forces every project to write and maintain a second, parallel struct for
-each config struct, or forces this crate to ship a derive macro to generate
-one.
+be done on untyped JSON before any typed deserialisation happens.
 
 ### Decision
 
@@ -202,6 +229,13 @@ one.
    `serde_json::from_value`. No layer is deserialised into `T` on its own.
 5. `sc-config` defines no schema, no partial-struct trait and no derive macro.
 6. The only file format is JSON.
+
+### Rationale
+
+The typed
+route forces every project to write and maintain a second, parallel struct for
+each config struct, or forces this crate to ship a derive macro to generate
+one.
 
 ### Consequences
 
@@ -223,19 +257,31 @@ one.
 
 ### Alternatives Considered
 
-- Partial-struct merging: deserialise each layer into an all-`Option` copy of
-  the caller's type and merge field by field. Rejected: every project would
-  maintain a parallel struct per config struct, or this crate would need a
-  proc-macro, which breaks the two-dependency limit.
-- A bespoke configuration language with its own layering syntax. Rejected: it
-  is more code and a new format for users to learn, where JSON plus a merge
-  function does the job.
-- TOML or YAML files. Rejected: the design specifies JSON, and each would add
-  a parser dependency beyond `serde` and `serde_json`.
+#### Alternative 1: Partial-struct merging
+
+**Description:**
+
+Deserialise each layer into an all-`Option` copy of the caller's type and merge field by field.
+
+**Why Rejected:**
+
+every project would maintain a parallel struct per config struct, or this crate would need a proc-macro, which breaks the two-dependency limit.
+
+#### Alternative 2: A bespoke configuration language with its own layering syntax
+
+**Why Rejected:**
+
+it is more code and a new format for users to learn, where JSON plus a merge function does the job.
+
+#### Alternative 3: TOML or YAML files
+
+**Why Rejected:**
+
+the design specifies JSON, and each would add a parser dependency beyond `serde` and `serde_json`.
 
 ### Implementation
 
-**Enforced by:** the `arch-qa` review agent (`.claude/agents/arch-qa.md`),
+Enforced by: the `arch-qa` review agent (`.claude/agents/arch-qa.md`),
 which checks every plan and code change touching `crates/sc-config` against
 this decision: one `serde_json::from_value::<T>` call on the merged value, no
 per-layer typed deserialisation, no partial-struct trait or macro, no parser
@@ -243,31 +289,39 @@ other than `serde_json`. The merge and override unit tests required by
 [REQ-CFG-0001](requirements.md) and [REQ-CFG-0002](requirements.md) check the
 behaviour.
 
-### Related Documents
-
-- [REQ-CFG-0001](requirements.md): file layers and the `merge` rules
-- [REQ-CFG-0002](requirements.md): environment-variable naming, value parsing
-  and path rules
-- [REQ-CFG-0004](requirements.md): the deserialisation error lists the
-  contributing files and variables
-
 ---
 
 ## ADR-CFG-0003: `sc-config` is synchronous with two dependencies
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19 (dependency list; reload, notification and async deferred)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and async deferred)
+
+**Requirements:**
+
+- NFR-CFG-0002 — dependencies are `serde` and `serde_json` only
+- NFR-CFG-0003 — synchronous API in v0.1; reload, notification and async out of scope
+- REQ-RUN-0005 — owner of the workspace-internal edges and forbidden edges of all four crates
+- NFR-RUN-0001 — hold the OPEN on cargo feature unification under `cargo build --workspace`
+
+**Architecture Decisions:**
+
+- ADR-RUN-0007 — the repository is async end to end on Tokio, and records `sc-config` as the synchronous exception
+- ADR-RUN-0003 — hold the OPEN on cargo feature unification under `cargo build --workspace`
 
 ### Context
 
 `sc-config` (`crates/sc-config`) is linked into every daemon and every CLI
 built on this repository, and is meant to be usable by any Rust program on its
 own. It is the first call in `main`. Automatic reloading, change notification
-and async interop are wanted eventually. Building them now would bring an
-async runtime (`tokio`) and a file watcher into every program that only reads
-its configuration once at start-up, including small CLIs where compile time
-and binary size matter. The design lists the crate's dependencies as `serde`
+and async interop are wanted eventually. The design lists the crate's dependencies as `serde`
 and `serde_json`, states that `sc-observability` and its OTel export crate
 (`sc-observability-otlp`) stay independent of `sc-config`, and records the
 reload features as a note for later, possibly as a separate
@@ -307,6 +361,13 @@ reload features as a note for later, possibly as a separate
    `sc-config-load-helper` is autodiscovered from `src/bin/` in this
    checkout and excluded from the published package. It is not a facade item.
 
+### Rationale
+
+Building them now would bring an
+async runtime (`tokio`) and a file watcher into every program that only reads
+its configuration once at start-up, including small CLIs where compile time
+and binary size matter.
+
 ### Consequences
 
 - A CLI pays nothing for configuration beyond `serde` and `serde_json`, which
@@ -323,22 +384,15 @@ reload features as a note for later, possibly as a separate
 
 ### Alternatives Considered
 
-- Async and reload support inside `sc-config` behind a Cargo feature.
-  Rejected: cargo unifies the features of a crate across all packages built
-  in one invocation, so under `cargo build --workspace` one crate enabling
-  the feature would pull `tokio` into every other user of `sc-config` in that
-  build, the CLI included; it also doubles the API surface to test. The same
-  unification applies to the `server` feature of `sc-transport` and
-  `sc-command`. Whether workspace-wide builds are exempt from the rule that a
-  CLI links no server-side dependency, or those crates must be split into
-  client and server crates instead, is recorded as **OPEN** in
-  [NFR-RUN-0001](../requirements.md) and
-  [ADR-RUN-0003](../architecture.md), to be measured by the spike. This ADR
-  does not depend on the outcome: `sc-config` has no such feature either way.
+#### Alternative 1: Async and reload support inside `sc-config` behind a Cargo feature
+
+**Why Rejected:**
+
+cargo unifies the features of a crate across all packages built in one invocation, so under `cargo build --workspace` one crate enabling the feature would pull `tokio` into every other user of `sc-config` in that build, the CLI included; it also doubles the API surface to test. The same unification applies to the `server` feature of `sc-transport` and `sc-command`. Whether workspace-wide builds are exempt from the rule that a CLI links no server-side dependency, or those crates must be split into client and server crates instead, is recorded as **OPEN** in [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md), to be measured by the spike. This ADR does not depend on the outcome: `sc-config` has no such feature either way.
 
 ### Implementation
 
-**Enforced by:** `boundaries/sc-config/sc-config.toml`, checked by
+Enforced by: `boundaries/sc-config/sc-config.toml`, checked by
 `sc-lint lint sc-boundary`. That manifest's `forbidden_edges` lists
 workspace-member targets only; this tree has none, so the list is empty.
 [REQ-RUN-0005](../requirements.md) still owns the full forbidden-name policy.
@@ -347,16 +401,3 @@ The `Cargo.toml` inspection in [NFR-CFG-0002](requirements.md) and
 a forbidden crate name followed by a space, including
 `sc-observability-types`. The `async fn` and `.await` grep in
 [NFR-CFG-0003](requirements.md) covers the synchronous rule.
-
-### Related Documents
-
-- [NFR-CFG-0002](requirements.md): dependencies are `serde` and `serde_json`
-  only
-- [NFR-CFG-0003](requirements.md): synchronous API in v0.1; reload,
-  notification and async out of scope
-- [ADR-RUN-0007](../architecture.md): the repository is async end to end on
-  Tokio, and records `sc-config` as the synchronous exception
-- [REQ-RUN-0005](../requirements.md): owner of the workspace-internal edges
-  and forbidden edges of all four crates
-- [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md):
-  hold the OPEN on cargo feature unification under `cargo build --workspace`

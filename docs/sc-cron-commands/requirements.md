@@ -6,6 +6,14 @@ existing no-product-API rule. It is not an ATM implementation or dependency.
 
 ## REQ-CRNC-0001: One standard versioned cron command contract
 
+**Status:** Approved  
+**Version:** 1.0.0  
+**Created:** 2026-11-02  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
+
 Provide `cron.start`, `cron.end` and `cron.list` through strict version-1 JSON
 DTOs and existing sc-command Envelope/OpError. CLI, REST and MCP projections
 use the same request, typed result and namespaced error codes. Start selects
@@ -23,7 +31,25 @@ SQL, environment values, source code or payload in diagnostics. Read views
 exclude sensitive source/environment/payload unless a separate authorized
 application projection explicitly exposes them.
 
+### Rationale
+
+This optional library reconciles the new human command requirement with the scheduler core's existing no-product-API rule.
+
+### Success Criteria
+
+### Implementation Notes
+
+Phase C target, planned and unimplemented.
+
 ## REQ-CRNC-0002: Optional executor and actual opt-in UI wiring
+
+**Status:** Approved  
+**Version:** 1.0.0  
+**Created:** 2026-11-02  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
 
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
@@ -35,24 +61,41 @@ policy; their task/physical-join ownership, persistence truth, authorization
 and error mapping responsibilities must be documented rather than inheriting
 the bundled cooperative guarantee. Standard validation and scope propagation
 remain mandatory for the standard implementation.
-C-5 implements operations for real Scheduler; c-6 implements the executor with
-dev-only operation doubles. Unsupported Monty fails before persistence.
+Unsupported Monty fails before persistence.
 Selected generator configuration installs actual CLI start/end/list, HTTP and
 optional MCP projections calling this same executor; a recommended example or
 DTO-only library does not satisfy selected wiring. `cron_commands=false` is
 the generation default; `true` requires cron selected and does not enable MCP
-when MCP is disabled. C-3 prepares injectable projections with test-only executor
-doubles; c-4 supplies real selected root binding after real c-5/c-6 artifacts.
-No production success/unsupported stub satisfies this requirement. Existing
+when MCP is disabled. No production success/unsupported stub satisfies this requirement. Existing
 applications can use the core with no commands. The existing adapter README
 provides one working selected-default recipe with bundled store, explicit
 worker/target registration and startup, commands, and stop/join/outcome handling;
 it links the core custom-store example and describes supported replacement.
-The generated-consumer and registry-only proofs consume that recipe using
-public APIs and documented selection, without manual framework-source edits.
 No consumer-product migration or automatic job start is implied.
 
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] The generated-consumer and registry-only proofs consume that recipe using public APIs and documented selection, without manual framework-source edits.
+
+### Implementation Notes
+
+Phase C target, planned and unimplemented.
+
+C-5 implements operations for real Scheduler; c-6 implements the executor with dev-only operation doubles. C-3 prepares injectable projections with test-only executor doubles; c-4 supplies real selected root binding after real c-5/c-6 artifacts.
+
 ## NFR-CRNC-0001: Minimal independent dependency graphs
+
+**Status:** Approved  
+**Version:** 1.0.0  
+**Created:** 2026-11-02  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
 
 DTO-only defaults depend on serde/serde_json and defaults-off sc-command;
 exclude cron, SQLite, Tokio, Monty, clap, Axum, RMCP and command/server. The
@@ -68,10 +111,22 @@ baseline before c-3/c-6 parallel work. Schema is independent of scheduler and
 adds no cron/SQLite/Tokio/Monty/Axum/RMCP/command-server edge. Defaults activate
 neither feature. Selected daemon/service projections enable schema on their
 own edges; isolated CLI defaults do not. No foreign orphan impl, second wire DTO
-or generic schema substitutes for the typed canonical contract. C-3 checks real
-typed projections; c-6 preserves/tests all feature combinations; c-4 compares
-actual tools/list and OpenAPI schemas in its existing composition fixture.
+or generic schema substitutes for the typed canonical contract. 
 The command schema feature supplies canonical owner-local Envelope<T>, OpError
 and ErrorKind traits matching their existing custom serialization exactly.
 Typed Envelope<CronResponse> and all nested schema types compile under the
 same identities; no copied envelope/error model or generic response schema.
+
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] C-3 checks real typed projections.
+- [ ] c-6 preserves/tests all feature combinations.
+- [ ] c-4 compares actual tools/list and OpenAPI schemas in its existing composition fixture.
+
+### Implementation Notes
+
+Phase C target, planned and unimplemented.

@@ -36,6 +36,10 @@ they agree on the endpoint and the instance root.
 ## REQ-CFG-0001: `load` merges `default.json` and `local.json`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -170,6 +174,10 @@ equality, so key order is irrelevant.
 ## REQ-CFG-0002: Environment overrides named `APP__KEY__KEY`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -235,24 +243,24 @@ Applying an override with key path `k1, k2, ..., kn`:
 14. Overrides MUST take precedence over `config/default.json` and
     `config/local.json`.
 
-**Decided:** An application name is `sc_config::AppName`, not a free `&str`.
+Decided: An application name is `sc_config::AppName`, not a free `&str`.
 `AppName::new` accepts only ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length 1
 through 64 bytes. Every other string is `ConfigError::InvalidName` with code
 `APP.INVALID_NAME`. The only accept and reject list is
 `tests/fixtures/app-name-vectors.json`.
 
-**Decided:** An empty path segment is the cannot-be-applied failure
+Decided: An empty path segment is the cannot-be-applied failure
 (`ConfigError::Override`, code `CFG.OVERRIDE`). `MY_APP__`, `MY_APP__A____B`,
 and `MY_APP__A__` each return that variant and carry the variable name. The
 variable is not ignored.
 
-**Decided:** Matching variables are applied in ascending order of the
+Decided: Matching variables are applied in ascending order of the
 variable name's encoded bytes. Process-environment order is not used. A name
 that is a byte-prefix of another is applied first, so
 `MY_APP__DAEMON__PORT` wins over `MY_APP__DAEMON` on the keys the longer path
 sets.
 
-**Decided:** A variable whose encoded name starts with the prefix, and whose
+Decided: A variable whose encoded name starts with the prefix, and whose
 name or value is not valid Unicode, returns `ConfigError::NonUnicode` (code
 `CFG.NON_UNICODE`) and carries the name as `OsString`. A non-Unicode name
 that does not start with the prefix is ignored. The load does not panic and
@@ -358,6 +366,10 @@ process environment variables.
 ## REQ-CFG-0003: `Loader` takes explicit config directory and environment
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -406,7 +418,7 @@ decided in this document; the design fixes only the file names
 `config/default.json` and `config/local.json`. The call takes
 `AppName::new("my-app")`.
 
-**Decided:** `Loader::new(app: AppName, config_dir: PathBuf, environment: Vec<(OsString, OsString)>) -> Loader`.
+Decided: `Loader::new(app: AppName, config_dir: PathBuf, environment: Vec<(OsString, OsString)>) -> Loader`.
 The constructor stores those arguments and does not return `Result`.
 `Loader::load` and `load` return `Result<T, ConfigError>`. Environment pairs
 are `OsString` so a non-Unicode value is reported instead of panicking.
@@ -461,6 +473,10 @@ for the tests of any program that uses it.
 ## REQ-CFG-0004: `ConfigError` variants name the file or variable at fault
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -495,7 +511,7 @@ message string.
    is found in the merged document, where the origin of a value is no longer
    known.
 
-**Decided:** The five load failures are `MissingDefault { path }`,
+Decided: The five load failures are `MissingDefault { path }`,
 `Read { path, source }` where `source` is `std::io::Error`,
 `Parse { path, line, column, message }`, `Override { variable }`, and
 `Deserialize { message, files, variables }`. Name construction adds
@@ -551,6 +567,10 @@ directory and an in-memory environment.
 ## NFR-CFG-0001: Public API returns `Result<T, ConfigError>`; no panics
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -591,7 +611,7 @@ commented exception. Test code is exempt. This item applies that rule to
 8. Code inside `#[cfg(test)]` modules and under `crates/sc-config/tests/` is
    exempt from entries 4 and 5.
 
-**Decided:** Only an operation that can fail returns `Result<T, ConfigError>`.
+Decided: Only an operation that can fail returns `Result<T, ConfigError>`.
 `Loader::new` stores a validated `AppName` plus the caller's directory and
 environment, so it returns `Loader`. `AppName::new` can fail and returns
 `Result<AppName, ConfigError>`. [NFR-RUN-0009](../requirements.md) requires
@@ -638,6 +658,10 @@ code.
 ## NFR-CFG-0002: `sc-config` depends only on `serde` and `serde_json`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -662,7 +686,7 @@ third-party list.
    [REQ-RUN-0005](../requirements.md). This item adds only the `cargo tree`
    check in criterion 3.
 
-**Decided:** `[dev-dependencies]` is empty. Tests create a private directory
+Decided: `[dev-dependencies]` is empty. Tests create a private directory
 under `std::env::temp_dir` and remove it when the test ends. No third test
 crate is added.
 
@@ -699,6 +723,10 @@ circular: logging is configured from the values this crate loads.
 ## NFR-CFG-0003: `sc-config` API is synchronous in v0.1
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 

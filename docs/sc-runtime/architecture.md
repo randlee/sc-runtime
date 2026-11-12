@@ -71,6 +71,46 @@ decision.
 
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
 
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
+**Decision Date:** 2026-09-19  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "The crates" (sc-runtime is a bootstrap, not a framework layer); applies repo [ADR-RUN-0001](../architecture.md), [ADR-RUN-0201](../architecture.md)
+
+**Requirements:**
+
+- REQ-RT-0001
+- REQ-RT-0008
+- NFR-RT-0001
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 amendment
+- ADR-RT-0005 — Amended by: ADR-RT-0005 for the additive ready-state cleanup boundary.
+- ADR-TRN-0002
+
+### Context
+
+The crate `sc-runtime` (`crates/sc-runtime`) is the one place where a
+generated project's daemon is put together: singleton lock, stores, router,
+listener. An assembly point like this tends to grow into a framework layer
+with lifecycle hooks, plugin points and a configurable start-up sequence.
+
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+The same crate owns the one endpoint resolver that the daemon and the CLI
+share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
+the daemon has to call it, and the builder has only five methods through
+which inputs could arrive.
+
+### Decision
+
 Phase C narrow public-surface reconciliation: NFR-RT-0001's closed table and
 rustdoc criterion include existing run_with_cleanup and the approved bound
 receipt alternative run_with_cleanup_and_bound. These remain Ready-only
@@ -82,37 +122,10 @@ free function authorized: it is gated by `test-util`, composes existing
 middleware on an ordinary Axum router, and adds no builder method, callback,
 lifecycle hook, or assembly behavior.
 
-**2026-10-31 amendment:** ADR-RUN-0017 changes only canonical port ownership
+2026-10-31 amendment: ADR-RUN-0017 changes only canonical port ownership
 to command for initial release; the existing command edge carries it. No
 assembly phase, lifecycle or dependency budget is added. Upstream direct Arc
 cleanup is future work.
-
-**Status:** Active  
-**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
-**Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "The crates" (sc-runtime is a bootstrap, not a framework layer); applies repo [ADR-RUN-0001](../architecture.md), [ADR-RUN-0201](../architecture.md)  
-
-### Context
-
-The crate `sc-runtime` (`crates/sc-runtime`) is the one place where a
-generated project's daemon is put together: singleton lock, stores, router,
-listener. An assembly point like this tends to grow into a framework layer
-with lifecycle hooks, plugin points and a configurable start-up sequence.
-Two repo-level decisions rule that out. The framework instantiates parts and
-the project wires them in ordinary Rust, with no registry and no wrapper
-types ([ADR-RUN-0001](../architecture.md)). The daemon is the only process
-that opens the local database, guarded by an OS lock on
-`<instance-root>/daemon.lock` ([ADR-RUN-0201](../architecture.md)), so
-start-up order is a safety property and not a preference.
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
-The same crate owns the one endpoint resolver that the daemon and the CLI
-share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
-the daemon has to call it, and the builder has only five methods through
-which inputs could arrive.
-
-### Decision
 
 `DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
 `NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
@@ -174,6 +187,15 @@ returns one endpoint, and step 5 binds that endpoint.
 `sc_transport::resolve_endpoint_from_env`, which reads `SC_ENDPOINT`. The
 name does not appear in this crate ([REQ-RT-0008](requirements.md)).
 
+### Rationale
+
+Two repo-level decisions rule that out. The framework instantiates parts and
+the project wires them in ordinary Rust, with no registry and no wrapper
+types ([ADR-RUN-0001](../architecture.md)). The daemon is the only process
+that opens the local database, guarded by an OS lock on
+`<instance-root>/daemon.lock` ([ADR-RUN-0201](../architecture.md)), so
+start-up order is a safety property and not a preference.
+
 ### Consequences
 
 Start-up behaviour is identical in every project and can be read in one
@@ -187,19 +209,35 @@ and `sc-command`.
 
 ### Alternatives Considered
 
-- **Lifecycle hooks** (`on_before_bind`, `on_after_stores` and similar):
-  rejected because each hook is framework API a project must learn, and the
-  project's own closures already give it a place to run code at each stage.
-- **A plugin registry** in which components register themselves with the
-  daemon: rejected because it puts a framework-owned abstraction between the
-  project and axum and rmcp, which the repo-level decision forbids.
-- **A configurable step order**: rejected because lock-before-stores and
-  bind-last are safety properties; making them configurable makes them
-  breakable.
+#### Alternative 1: Lifecycle hooks
+
+**Description:**
+
+(`on_before_bind`, `on_after_stores` and similar)
+
+**Why Rejected:**
+
+Rejected because each hook is framework API a project must learn, and the project's own closures already give it a place to run code at each stage.
+
+#### Alternative 2: A plugin registry
+
+**Description:**
+
+In which components register themselves with the daemon
+
+**Why Rejected:**
+
+Rejected because it puts a framework-owned abstraction between the project and axum and rmcp, which the repo-level decision forbids.
+
+#### Alternative 3: A configurable step order
+
+**Why Rejected:**
+
+Rejected because lock-before-stores and bind-last are safety properties; making them configurable makes them breakable.
 
 ### Implementation
 
-**Enforced by:** the step-order and failure-stops-later-steps tests required
+Enforced by: the step-order and failure-stops-later-steps tests required
 by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
@@ -207,21 +245,30 @@ line outside test code; `arch-qa` architecture review of the public surface
 of `DaemonBuilder` (exactly `stores`, `routes`, `mcp`, `logger`, `run`,
 `run_with_cleanup`, `run_with_cleanup_and_bound`; terminal runs are Ready-only).
 
-### Related Documents
-
-- [REQ-RT-0001](requirements.md)
-- [REQ-RT-0008](requirements.md)
-- [ADR-TRN-0002](../sc-transport/architecture.md)
-- [NFR-RT-0001](requirements.md)
-
 ---
 
 ## ADR-RT-0002: Daemon singleton by `fd-lock` on `daemon.lock`
 
 **Status:** Active  
-**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-30  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "Runtime architecture"  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "Runtime architecture"
+
+**Requirements:**
+
+- REQ-RT-0002
+- REQ-TRN-0004
+
+**Architecture Decisions:**
+
+- ADR-RT-0005 — Amended by: ADR-RT-0005 for the additive ready-state cleanup boundary.
+- ADR-TRN-0006
 
 ### Context
 
@@ -232,9 +279,6 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 Tests supply a tempdir. The limit exists because the daemon is the only process
 allowed to open the local database and SQLite allows one writer. Singletons
 are commonly implemented with a PID file or by probing the listening port.
-A PID file goes stale when the process crashes, and PIDs are reused. Probing
-a port or socket races: two daemons can both probe, both see nothing, and
-both start. Both need clean-up code that does not run on a crash.
 
 ### Decision
 
@@ -246,6 +290,12 @@ returns the "lock held" variant of `RuntimeError` without waiting: the
 attempt is a non-blocking try-lock (decided in this document; the design
 states the exclusive lock but not whether the attempt waits). The crate
 writes no PID file and probes no port.
+
+### Rationale
+
+A PID file goes stale when the process crashes, and PIDs are reused. Probing
+a port or socket races: two daemons can both probe, both see nothing, and
+both start. Both need clean-up code that does not run on a crash.
 
 ### Consequences
 
@@ -264,47 +314,65 @@ protected.
 
 ### Alternatives Considered
 
-- **PID file**: a file holding the daemon's process id, checked at start.
-  Rejected because it goes stale after a crash and PID reuse makes the check
-  unreliable.
-- **Port or socket probing**: try to connect, and start only if nothing
-  answers. Rejected because two starters race, and a hung daemon looks
-  absent.
-- **A lock inside the database**: rejected because it requires opening the
-  database first, which is exactly what a second daemon must never do, and
-  because `sc-runtime` has no database dependency.
+#### Alternative 1: PID file
+
+**Description:**
+
+A file holding the daemon's process id, checked at start.
+
+**Why Rejected:**
+
+Rejected because it goes stale after a crash and PID reuse makes the check unreliable.
+
+#### Alternative 2: Port or socket probing
+
+**Description:**
+
+Try to connect, and start only if nothing answers.
+
+**Why Rejected:**
+
+Rejected because two starters race, and a hung daemon looks absent.
+
+#### Alternative 3: A lock inside the database
+
+**Why Rejected:**
+
+Rejected because it requires opening the database first, which is exactly what a second daemon must never do, and because `sc-runtime` has no database dependency.
 
 ### Implementation
 
-**Enforced by:** the two-daemon test required by
+Enforced by: the two-daemon test required by
 [REQ-RT-0002](requirements.md): a second `run()` on the same instance root
 returns the "lock held" error and its stores closure never runs.
 `crates/sc-runtime/Cargo.toml` lists `fd-lock`.
-
-### Related Documents
-
-- [REQ-RT-0002](requirements.md)
-- [REQ-TRN-0004](../sc-transport/requirements.md)
-- [ADR-TRN-0006](../sc-transport/architecture.md)
 
 ---
 
 ## ADR-RT-0003: The project's `Stores`, router and rmcp service pass through
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-30  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "The crates" (`Stores` is a plain struct defined by the project); applies repo [ADR-RUN-0001](../architecture.md)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "The crates" (`Stores` is a plain struct defined by the project); applies repo [ADR-RUN-0001](../architecture.md)
+
+**Requirements:**
+
+- REQ-RT-0003
+- REQ-RT-0004
+- NFR-RT-0002
 
 ### Context
 
 A generated project has one or two stores, each a project-owned crate bound
 to one sqlx driver (SQLite, Postgres). `sc-runtime` sits between the code
-that opens those stores and the routes and MCP tools that use them. If it
-constructed the stores itself it would need a sqlx dependency, knowledge of
-each backend, and an opinion about how many stores a project has. The
-repo-level decision is that the framework instantiates and the project wires,
-with no wrapper around an axum, rmcp or sqlx type
-([ADR-RUN-0001](../architecture.md)).
+that opens those stores and the routes and MCP tools that use them.
 
 ### Decision
 
@@ -321,43 +389,7 @@ mode is configured by the generated project's `mcp::service`
 migrations happen inside the project's closure. API names are illustrative
 until the contract sprint pins them.
 
-### Consequences
-
-`sc-runtime` has no sqlx dependency, and a project with no database at all
-can use it (for example with `Stores = ()`). Which route uses which store
-stays entirely in project code. The crate cannot offer store-aware features
-such as a database health check or a migration command; a project adds those
-in its own router. The health route `sc-runtime` mounts therefore reports on
-the process only.
-
-### Alternatives Considered
-
-- **A `Store` trait the framework calls** (for example `open`, `migrate`,
-  `health`): rejected because it makes the framework define what a store is
-  and forces every project store to fit it.
-- **Built-in pool construction** from config inside `sc-runtime`: rejected
-  because it requires a sqlx dependency and per-backend code in this crate,
-  and sqlx requires one crate per database for checked queries.
-
-### Implementation
-
-**Enforced by:** the `forbidden_edges` entry `sc-runtime -> sqlx` in the
-boundary manifest under `boundaries/sc-runtime/`, checked by
-`sc-lint-boundary` through `just lint`; `cargo tree -p sc-runtime -e normal
---prefix none` printing no line beginning with `sqlx ` or `sqlx-`
-([NFR-RT-0002](requirements.md)); the opaque-`Stores` tests required by
-[REQ-RT-0003](requirements.md); `arch-qa` review that no public type wraps an
-`axum`, `rmcp` or `sqlx` type.
-
-### Related Documents
-
-- [REQ-RT-0003](requirements.md)
-- [REQ-RT-0004](requirements.md)
-- [NFR-RT-0002](requirements.md)
-
----
-
-### Phase C MCP input clarification
+Phase C MCP input clarification:
 
 The ordinary project-supplied StreamableHttpService enters through `.mcp(...)`.
 Private middleware retains original JSON POST bytes in an HTTP extension under
@@ -371,21 +403,80 @@ while arbitrary Value payloads and unrelated tools keep their own JSON semantics
 Normal serde_json is removed; test-only parsing is a dev dependency. No extra
 public test middleware helper, RMCP wrapper or command registry is introduced.
 
+### Rationale
+
+If it
+constructed the stores itself it would need a sqlx dependency, knowledge of
+each backend, and an opinion about how many stores a project has. The
+repo-level decision is that the framework instantiates and the project wires,
+with no wrapper around an axum, rmcp or sqlx type
+([ADR-RUN-0001](../architecture.md)).
+
+### Consequences
+
+`sc-runtime` has no sqlx dependency, and a project with no database at all
+can use it (for example with `Stores = ()`). Which route uses which store
+stays entirely in project code. The crate cannot offer store-aware features
+such as a database health check or a migration command; a project adds those
+in its own router. The health route `sc-runtime` mounts therefore reports on
+the process only.
+
+### Alternatives Considered
+
+#### Alternative 1: A `Store` trait the framework calls
+
+**Description:**
+
+(for example `open`, `migrate`, `health`)
+
+**Why Rejected:**
+
+Rejected because it makes the framework define what a store is and forces every project store to fit it.
+
+#### Alternative 2: Built-in pool construction
+
+**Description:**
+
+From config inside `sc-runtime`
+
+**Why Rejected:**
+
+Rejected because it requires a sqlx dependency and per-backend code in this crate, and sqlx requires one crate per database for checked queries.
+
+### Implementation
+
+Enforced by: the `forbidden_edges` entry `sc-runtime -> sqlx` in the
+boundary manifest under `boundaries/sc-runtime/`, checked by
+`sc-lint-boundary` through `just lint`; `cargo tree -p sc-runtime -e normal
+--prefix none` printing no line beginning with `sqlx ` or `sqlx-`
+([NFR-RT-0002](requirements.md)); the opaque-`Stores` tests required by
+[REQ-RT-0003](requirements.md); `arch-qa` review that no public type wraps an
+`axum`, `rmcp` or `sqlx` type.
+
 ## ADR-RT-0004: `DaemonFixture` runs the real daemon
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-30  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "The crates" (`DaemonFixture` starts a daemon on a tempdir instance root per test)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "The crates" (`DaemonFixture` starts a daemon on a tempdir instance root per test)
+
+**Requirements:**
+
+- REQ-RT-0006
+- REQ-RT-0005
+- NFR-RUN-0005
 
 ### Context
 
 Generated projects test each operation through REST, MCP and the CLI client.
 Test fixtures often take a shortcut, such as calling the axum router
-in-process with no listener. Such tests skip the lock, the bind, the
-transport and shutdown, and drift from production behaviour without anyone
-noticing. A single daemon shared by all tests in a binary avoids the start-up
-cost but makes tests share a database and a socket, so they cannot run in
-parallel or in isolation.
+in-process with no listener.
 
 ### Decision
 
@@ -418,6 +509,14 @@ On Windows the fixture does not invent an endpoint. The caller sets
 `start`. A fresh temporary instance root still isolates the lock file. The
 fixture module is behind the non-default `test-util` feature.
 
+### Rationale
+
+Such tests skip the lock, the bind, the
+transport and shutdown, and drift from production behaviour without anyone
+noticing. A single daemon shared by all tests in a binary avoids the start-up
+cost but makes tests share a database and a socket, so they cannot run in
+parallel or in isolation.
+
 ### Consequences
 
 Every test exercises lock, bind, transport and shutdown. On platforms whose
@@ -431,28 +530,55 @@ up as a failure in many tests at once, which is the intended signal.
 
 ### Alternatives Considered
 
-- **An in-memory router mode** that calls the router with no listener:
-  rejected because it skips lock, bind, transport and shutdown, the parts
-  most likely to differ between test and production.
-- **One shared daemon per test binary**: rejected because tests would share
-  state and a socket, could not run in parallel safely, and would break the
-  repo-level rule that every test uses its own tempdir instance root.
+#### Alternative 1: An in-memory router mode
+
+**Description:**
+
+That calls the router with no listener
+
+**Why Rejected:**
+
+Rejected because it skips lock, bind, transport and shutdown, the parts most likely to differ between test and production.
+
+#### Alternative 2: One shared daemon per test binary
+
+**Why Rejected:**
+
+Rejected because tests would share state and a socket, could not run in parallel safely, and would break the repo-level rule that every test uses its own tempdir instance root.
 
 ### Implementation
 
-**Enforced by:** `req-qa` requirements review of the tests required by
+Enforced by: `req-qa` requirements review of the tests required by
 [REQ-RT-0006](requirements.md), in particular the concurrent-fixtures test,
 the `SC_ENDPOINT` child-process test and the stop-one-of-two test;
 inspection that `DaemonFixture` calls `Daemon::builder()` and has no separate
 serve path.
 
+## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-30  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
+**Decision Date:** 2026-10-30  
+
 ### Related Documents
 
-- [REQ-RT-0006](requirements.md)
-- [REQ-RT-0005](requirements.md)
-- [NFR-RUN-0005](../requirements.md)
+Source: B18 corrective lifecycle integration; preserves the existing startup contract and application-owned workers/logger.
 
-## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+**Architecture Decisions:**
+
+- ADR-RT-0001 — Amends: ADR-RT-0001 and ADR-RT-0002
+- ADR-RT-0002 — Amends: ADR-RT-0001 and ADR-RT-0002
+
+### Context
+
+An application can start a background worker from its existing stores closure
+after the runtime acquires `daemon.lock`. The SDK must provide a general cleanup boundary without
+importing cron or choosing application policy.
+
+### Decision
 
 NFR-RT-0001's exact seven-method surface includes this existing cleanup
 terminal method and the bound-receipt alternative alongside run. All three
@@ -473,21 +599,6 @@ runner and preserves the existing transport port-zero ownership handshake.
 One actual Endpoint callback while the listener is retained supports isolated
 real-signal test IPC; it is not a health signal. No reserve/drop/rebind helper,
 retry/sleep workaround, new transport API or alternate lifecycle is introduced.
-
-**Status:** Active  
-**Decision Date:** 2026-10-30  
-**Amends:** ADR-RT-0001 and ADR-RT-0002  
-**Source:** B18 corrective lifecycle integration; preserves the existing startup contract and application-owned workers/logger.
-
-### Context
-
-An application can start a background worker from its existing stores closure
-after the runtime acquires `daemon.lock`. Releasing that lock when HTTP serving
-stops, before the application joins its worker, permits a replacement daemon to
-start overlapping work. The SDK must provide a general cleanup boundary without
-importing cron or choosing application policy.
-
-### Decision
 
 1. The ready-state `DaemonBuilder` adds `run_with_cleanup(cleanup)`, with
    `FCleanup: FnOnce() -> Cleanup` and `Cleanup: Future<Output = ()>`. It
@@ -524,6 +635,12 @@ importing cron or choosing application policy.
    operations    cannot be forcibly preempted. Ownership must be joined before
    claiming    cleanup completion, even when a cooperative deadline was missed.
 
+### Rationale
+
+Releasing that lock when HTTP serving
+stops, before the application joins its worker, permits a replacement daemon to
+start overlapping work.
+
 ### Consequences
 
 This explicitly amends ADR-RT-0001's no-callback restriction only for the
@@ -536,7 +653,7 @@ application-owned observability lifecycle remain unchanged.
 
 ### Implementation
 
-**Enforced by:** the runtime lifecycle regressions in
+Enforced by: the runtime lifecycle regressions in
 `crates/sc-runtime/src/tests/lifecycle.rs`, including retained successful
 stores/lock/logger during cleanup, replacement-daemon rejection until cleanup
 returns, and early unused-closure disposal; the generated production composition

@@ -36,6 +36,10 @@ pair, not only sc-runtime ones.
 ## REQ-TRN-0001: Endpoint resolution order in `sc-transport`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -208,6 +212,10 @@ resolves the daemon's bind endpoint only through this resolver
 ## REQ-TRN-0002: Instance root directory resolution in `sc-transport`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -302,6 +310,10 @@ that tests run in parallel and never touch a developer's real daemon
 ## REQ-TRN-0003: UDS and TCP listener binding behind the `server` feature
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -381,6 +393,10 @@ uses this crate must not link axum.
 ## REQ-TRN-0004: UDS socket file permissions and stale-file replacement
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -467,6 +483,10 @@ instance roots may resolve to the same overridden socket path.
 ## REQ-TRN-0005: Typed HTTP client `Client` built on reqwest
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -545,6 +565,10 @@ the two crates must stay independent so either can be used alone
 ## REQ-TRN-0006: Typed error `DaemonNotRunning` (`DAEMON.NOT_RUNNING`)
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -627,6 +651,10 @@ live. a-6 maps the string and chooses `suggested_action`, including any
 ## NFR-TRN-0001: `sc-transport` links axum only behind `server`
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -698,6 +726,10 @@ therefore all run with `-p sc-transport`.
 ## NFR-TRN-0002: No `hyperlocal`, custom connector or hand-written HTTP
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -733,6 +765,10 @@ Standard crates used the documented way mean less code to own and review.
 ## NFR-TRN-0003: `sc-transport` depends on no other workspace crate
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -820,6 +856,10 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 ## NFR-TRN-0004: `sc-transport` returns `TransportError`, never panics
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 
 ### Requirement Statement
 

@@ -39,8 +39,20 @@ operations or stores.
 ## ADR-TRN-0001: Client uses reqwest `unix_socket`, no custom connector
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19
+
+**Requirements:**
+
+- REQ-TRN-0005
+- NFR-TRN-0002
 
 ### Context
 
@@ -50,8 +62,7 @@ transport is a Unix domain socket (UDS); on Windows and for cross-host use
 it is TCP. Most Rust HTTP clients historically spoke only TCP, so an early
 draft of this project assumed HTTP over a Unix socket needed the
 `hyperlocal` crate or a hand-written hyper connector. That is no longer
-true: reqwest 0.13 provides `ClientBuilder::unix_socket(path)`. The project
-prefers standard crates used the documented way over code it must own.
+true: reqwest 0.13 provides `ClientBuilder::unix_socket(path)`.
 
 ### Decision
 
@@ -76,7 +87,7 @@ headers are added on `ClientOptions`. v0.1 does not define that type.
 A caller with a longer operation waits for that type; it does not fork the
 client to set a timeout.
 
-### Error inventory
+Error inventory:
 
 Every `TransportError` variant is a `Result` value. `code()` returns the
 stable code and is the source of truth; the `code` field is informational
@@ -100,6 +111,11 @@ Variants that carry `cause` return that `TransportCause` from `Error::source`.
 | `EndpointBusy` | Another listener holds the endpoint lock | `TRANSPORT.ENDPOINT_BUSY` | `endpoint`, `cause` | Leave the live socket in place |
 | `NotASocket` | The UDS path exists and is not a socket | `TRANSPORT.NOT_A_SOCKET` | `endpoint`, `cause` | The path is left unchanged |
 
+### Rationale
+
+The project
+prefers standard crates used the documented way over code it must own.
+
 ### Consequences
 
 One well-known HTTP client serves both transports, and the UDS path adds no
@@ -109,16 +125,29 @@ no UDS client on Windows; that is why the Windows default endpoint is TCP on
 
 ### Alternatives Considered
 
-- `hyperlocal`: a crate that adds a Unix-socket connector to hyper.
-  Rejected because it is an extra dependency and a lower-level client API
-  for something reqwest now does itself.
-- A bespoke hyper connector: a type written in this crate that opens a
-  `UnixStream` for hyper. Rejected because it is custom code to write, test
-  and maintain where a standard tool already does the job.
+#### Alternative 1: `hyperlocal`
+
+**Description:**
+
+A crate that adds a Unix-socket connector to hyper.
+
+**Why Rejected:**
+
+Rejected because it is an extra dependency and a lower-level client API for something reqwest now does itself.
+
+#### Alternative 2: A bespoke hyper connector
+
+**Description:**
+
+A type written in this crate that opens a `UnixStream` for hyper.
+
+**Why Rejected:**
+
+Rejected because it is custom code to write, test and maintain where a standard tool already does the job.
 
 ### Implementation
 
-**Enforced by:** inspection of `crates/sc-transport/Cargo.toml` (no
+Enforced by: inspection of `crates/sc-transport/Cargo.toml` (no
 `hyperlocal`; `reqwest` at `0.13` with `json` and without `rustls`);
 `cargo tree -p sc-transport -e normal --prefix none`, with and without
 `--features server`, printing no line beginning with `hyperlocal ` or
@@ -126,18 +155,27 @@ no UDS client on Windows; that is why the Windows default endpoint is TCP on
 `dependencies` integration test. The `arch-qa` review agent checks the
 source for a custom connector or hand-written HTTP.
 
-### Related Documents
-
-- [REQ-TRN-0005](requirements.md)
-- [NFR-TRN-0002](requirements.md)
-
 ---
 
 ## ADR-TRN-0002: One endpoint resolver shared by daemon and CLI
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-10-23  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19
+
+**Requirements:**
+
+- REQ-TRN-0001
+- REQ-TRN-0002
+- REQ-RT-0008
+- REQ-RUN-0310
 
 ### Context
 
@@ -145,8 +183,7 @@ A daemon and its CLI are separate binaries. The CLI must find the address
 the daemon listens on with no coordination at run time: there is no
 registry process to ask. The address can come from several places: a
 `--endpoint` command-line flag, the `SC_ENDPOINT` environment variable, the
-project's configuration, or a platform default. If each binary combined
-those sources with its own code, they could disagree and never meet. Tests
+project's configuration, or a platform default. Tests
 and multi-instance setups also need to move both binaries to another
 address with one setting.
 
@@ -213,9 +250,10 @@ design names the sources but not their precedence. The Windows address
 `127.0.0.1` is stated by the design; that the Windows port comes from
 configuration is decided in this document.
 
-**OPEN:** Whether v0.1 of the template renders a default TCP port into a
-generated project's configuration is not decided
-([REQ-RUN-0301](../requirements.md)). This crate does not close that point.
+### Rationale
+
+If each binary combined
+those sources with its own code, they could disagree and never meet.
 
 ### Consequences
 
@@ -227,20 +265,47 @@ binary passes those values in. A user who sets `SC_ENDPOINT` for the CLI but
 not for the daemon will still get a mismatch; the resolver cannot prevent
 different inputs.
 
+**Neutral:**
+
+- OPEN: Whether v0.1 of the template renders a default TCP port into a
+  generated project's configuration is not decided
+  ([REQ-RUN-0301](../requirements.md)). This crate does not close that point.
+
 ### Alternatives Considered
 
-- Discovery files: the daemon writes its address to a file that the CLI
-  reads. Rejected because it adds state that goes stale after a crash, and
-  the file's own location would still need a shared resolver.
-- Port scanning: the CLI probes a port range for the daemon. Rejected
-  because it is slow, unreliable, and does not apply to UDS.
-- Separate client and server defaults: each binary holds its own default
-  logic. Rejected because the two copies can drift apart, which is the exact
-  failure this decision removes.
+#### Alternative 1: Discovery files
+
+**Description:**
+
+The daemon writes its address to a file that the CLI reads.
+
+**Why Rejected:**
+
+Rejected because it adds state that goes stale after a crash, and the file's own location would still need a shared resolver.
+
+#### Alternative 2: Port scanning
+
+**Description:**
+
+The CLI probes a port range for the daemon.
+
+**Why Rejected:**
+
+Rejected because it is slow, unreliable, and does not apply to UDS.
+
+#### Alternative 3: Separate client and server defaults
+
+**Description:**
+
+Each binary holds its own default logic.
+
+**Why Rejected:**
+
+Rejected because the two copies can drift apart, which is the exact failure this decision removes.
 
 ### Implementation
 
-**Enforced by:** the precedence unit tests of
+Enforced by: the precedence unit tests of
 [REQ-TRN-0001](requirements.md); the end-to-end tests of
 [REQ-RUN-0310](../requirements.md) and
 [REQ-RT-0008](../sc-runtime/requirements.md), in which a client and a daemon
@@ -250,23 +315,30 @@ agent, of non-test Rust source under `crates/` and `template/`: the strings
 `crates/sc-transport`, and no literal TCP port number appears as a default
 anywhere.
 
-### Related Documents
-
-- [REQ-TRN-0001](requirements.md)
-- [REQ-TRN-0002](requirements.md)
-- [REQ-RT-0008](../sc-runtime/requirements.md)
-- [REQ-RUN-0310](../requirements.md)
-
 ---
 
 ## ADR-TRN-0003: Response types and `OpError` mapping belong to the caller
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Amended:** 2026-10-23 by sprint a-3. `DaemonNotRunning` carries `code`,
-the endpoint, and the cause. Sprint a-1 (2026-10-24,
-[ADR-RUN-0004](../architecture.md)) kept the code a `&'static str`.
-**Source:** decided in this document; applies repo [ADR-RUN-0003](../architecture.md)  
+
+### Related Documents
+
+Source: decided in this document; applies repo [ADR-RUN-0003](../architecture.md)
+
+**Requirements:**
+
+- REQ-TRN-0005
+- REQ-TRN-0006
+- NFR-TRN-0003
+
+**Architecture Decisions:**
+
+- ADR-RUN-0004 — Amended
 
 ### Context
 
@@ -275,13 +347,13 @@ Two facts pull `sc-transport` toward knowing the types of the crate
 `Envelope<Widget>` from `client.post(...)`, and `Envelope<T>` is defined in
 `sc-command`. Second, `DAEMON.NOT_RUNNING` is an error code in the sc-ai-cli
 error convention, whose error type `OpError` is also defined in
-`sc-command`. But the repository rule is that `sc-config`, `sc-transport`
-and `sc-command` are standalone crates with no dependency edges among them,
-so each can be published and used alone
-([ADR-RUN-0003](../architecture.md)). A dependency from `sc-transport` on
-`sc-command` would break that rule.
+`sc-command`.
 
 ### Decision
+
+Amended: 2026-10-23 by sprint a-3. `DaemonNotRunning` carries `code`,
+the endpoint, and the cause. Sprint a-1 (2026-10-24,
+[ADR-RUN-0004](../architecture.md)) kept the code a `&'static str`.
 
 1. The `sc-transport` client methods `get` and `post` are generic over the
    response type `T: serde::de::DeserializeOwned`. The caller names the
@@ -306,6 +378,14 @@ The method and type names above are the pinned public contract. This
 decision was made in this document; the sc-runtime design does not state
 where the mapping lives.
 
+### Rationale
+
+But the repository rule is that `sc-config`, `sc-transport`
+and `sc-command` are standalone crates with no dependency edges among them,
+so each can be published and used alone
+([ADR-RUN-0003](../architecture.md)). A dependency from `sc-transport` on
+`sc-command` would break that rule.
+
 ### Consequences
 
 There is no dependency edge among the standalone crates, and `sc-transport`
@@ -317,15 +397,21 @@ other at compile time.
 
 ### Alternatives Considered
 
-- `sc-transport` depends on `sc-command` and returns `OpError` directly.
-  Rejected because it adds an edge between two crates that must stay
-  standalone, and forces every user of the transport to take the envelope.
-- A shared types crate that both depend on. Rejected because it is a fifth
-  crate to publish and version for the sake of two strings.
+#### Alternative 1: `sc-transport` depends on `sc-command` and returns `OpError` directly
+
+**Why Rejected:**
+
+Rejected because it adds an edge between two crates that must stay standalone, and forces every user of the transport to take the envelope.
+
+#### Alternative 2: A shared types crate that both depend on
+
+**Why Rejected:**
+
+Rejected because it is a fifth crate to publish and version for the sake of two strings.
 
 ### Implementation
 
-**Enforced by:** `cargo tree -p sc-transport -e normal --prefix none`, with
+Enforced by: `cargo tree -p sc-transport -e normal --prefix none`, with
 and without `--features server`, printing no line beginning with
 `sc-config `, `sc-command `, `sc-runtime `, `sc-runtime-db-sqlite `,
 `sc-cron `, `sc-observability `, `sc-observability-types `, or
@@ -342,19 +428,25 @@ feature key. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0.
 That the source never names `Envelope` or `OpError` is checked by the
 inspection criterion of [REQ-TRN-0005](requirements.md).
 
-### Related Documents
-
-- [REQ-TRN-0005](requirements.md)
-- [REQ-TRN-0006](requirements.md)
-- [NFR-TRN-0003](requirements.md)
-
 ---
 
 ## ADR-TRN-0004: The `server` cargo feature gates axum and listener binding
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19; applies repo [ADR-RUN-0003](../architecture.md)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19; applies repo [ADR-RUN-0003](../architecture.md)
+
+**Requirements:**
+
+- NFR-TRN-0001
+- REQ-TRN-0003
 
 ### Context
 
@@ -362,10 +454,7 @@ The crate `sc-transport` has two halves with different users. Listener
 binding exists to feed `axum::serve` in a daemon, so it needs axum. Endpoint
 resolution and the HTTP client are used by a CLI, and a CLI binary must link
 none of axum, rmcp or sqlx: they would multiply its build time and binary
-size. Both halves must agree on endpoints, so they belong in one crate. The
-repository rule is that server-side code in the standalone crates sits
-behind a `server` cargo feature that is off by default
-([ADR-RUN-0003](../architecture.md)).
+size.
 
 ### Decision
 
@@ -390,6 +479,13 @@ the crate. a-5 deletes that `[workspace]` table, `[workspace.package]`, and
 `Cargo.lock` when it adds the member. A package cannot belong to two
 workspaces. Do not copy the leaf workspace into a generated consumer.
 
+### Rationale
+
+Both halves must agree on endpoints, so they belong in one crate. The
+repository rule is that server-side code in the standalone crates sits
+behind a `server` cargo feature that is off by default
+([ADR-RUN-0003](../architecture.md)).
+
 ### Consequences
 
 A CLI that depends on `sc-transport` links tokio and reqwest but not axum.
@@ -402,25 +498,25 @@ axum" is therefore defined for a CLI built as its own selection
 (`cargo build -p cli`), and evidence must come from `cargo tree` on the CLI
 or on this crate alone, not from a workspace build.
 
-**OPEN:** Whether workspace-wide builds are exempt from the no-axum
-property, or the crate must instead be split into a client crate and a
-server crate, is not decided; the spike must measure it. The open point is
-owned by [NFR-RUN-0001](../requirements.md) and
-[ADR-RUN-0003](../architecture.md).
+**Neutral:**
+
+- OPEN: Whether workspace-wide builds are exempt from the no-axum
+  property, or the crate must instead be split into a client crate and a
+  server crate, is not decided; the spike must measure it. The open point is
+  owned by [NFR-RUN-0001](../requirements.md) and
+  [ADR-RUN-0003](../architecture.md).
 
 ### Alternatives Considered
 
-- Separate client and server crates (for example `sc-transport-client` and
-  `sc-transport-server`). Not chosen because it doubles the crates to
-  publish and version, and splits the shared endpoint resolver across crates
-  or forces a third one. It is not equivalent to the feature: a crate split
-  keeps axum out of a CLI even in a workspace-wide build, which the feature
-  does not. It is reconsidered if the OPEN above is resolved against the
-  feature.
+#### Alternative 1: Separate client and server crates (for example `sc-transport-client` and `sc-transport-server`)
+
+**Why Rejected:**
+
+Not chosen because it doubles the crates to publish and version, and splits the shared endpoint resolver across crates or forces a third one. It is not equivalent to the feature: a crate split keeps axum out of a CLI even in a workspace-wide build, which the feature does not. It is reconsidered if the OPEN above is resolved against the feature.
 
 ### Implementation
 
-**Enforced by:** `cargo tree -p sc-transport -e normal --prefix none`
+Enforced by: `cargo tree -p sc-transport -e normal --prefix none`
 printing no line beginning with `axum ` (the name followed by a space), and
 the same command with `--features server` printing one; `just test` running
 `cargo test -p sc-transport` and `cargo test -p sc-transport --features
@@ -429,18 +525,26 @@ has no cargo-feature key, so `sc-lint-boundary` does not enforce this
 decision; it enforces only the inter-crate edges of
 [NFR-TRN-0003](requirements.md).
 
-### Related Documents
-
-- [NFR-TRN-0001](requirements.md)
-- [REQ-TRN-0003](requirements.md)
-
 ---
 
 ## ADR-TRN-0005: Transport access control is UDS file permissions only
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19
+
+**Requirements:**
+
+- REQ-TRN-0004
+- REQ-TRN-0001
+- REQ-TRN-0003
 
 ### Context
 
@@ -453,8 +557,7 @@ per-application, per-user directory resolved by sc-transport, or an
 explicitly supplied path. On Unix the default base is non-empty
 `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`. On Windows the base is
 `LOCALAPPDATA`. The path is `<base>/<app>`
-([REQ-TRN-0002](requirements.md)). A UDS file can be protected by ordinary
-file permissions, the approach dockerd uses. A TCP port has no such
+([REQ-TRN-0002](requirements.md)). A TCP port has no such
 protection: any local process, and for a non-loopback address any host that
 can route to it, can connect. The sc-runtime design raises bearer tokens for
 TCP listeners, and `Origin` and `Host` header checks on the `/mcp` route, as
@@ -481,6 +584,11 @@ protected.
 5. The socket file mode is `0o600`. The mode is set on the socket file only.
    The instance-root directory is left unchanged.
 
+### Rationale
+
+A UDS file can be protected by ordinary
+file permissions, the approach dockerd uses.
+
 ### Consequences
 
 The default transport on macOS and Linux needs no port, no token and no
@@ -494,55 +602,84 @@ limits are accepted for v0.1.
 
 ### Alternatives Considered
 
-- A bearer token on TCP listeners: the daemon writes a secret to a
-  user-only file and the client sends it in a header. Deferred because it
-  needs token creation, storage and rotation code on both sides, and the
-  default transport does not need it.
-- `Origin` and `Host` header checks on `/mcp`: reject requests that come
-  from a browser page or a rebound DNS name. Deferred for the same reason;
-  it matters only when a daemon listens on TCP.
-- UDS peer-credential checks (`SO_PEERCRED` and similar): the daemon asks
-  the kernel for the connecting user id. Rejected because file permissions
-  already restrict who can connect, and the call differs per platform.
-- No TCP support until authentication exists. Rejected because Windows has
-  no UDS client in reqwest, so Windows would have no transport at all.
+#### Alternative 1: A bearer token on TCP listeners
+
+**Description:**
+
+The daemon writes a secret to a user-only file and the client sends it in a header.
+
+**Why Rejected:**
+
+Deferred because it needs token creation, storage and rotation code on both sides, and the default transport does not need it.
+
+#### Alternative 2: `Origin` and `Host` header checks on `/mcp`
+
+**Description:**
+
+Reject requests that come from a browser page or a rebound DNS name.
+
+**Why Rejected:**
+
+Deferred for the same reason; it matters only when a daemon listens on TCP.
+
+#### Alternative 3: UDS peer-credential checks (`SO_PEERCRED` and similar)
+
+**Description:**
+
+The daemon asks the kernel for the connecting user id.
+
+**Why Rejected:**
+
+Rejected because file permissions already restrict who can connect, and the call differs per platform.
+
+#### Alternative 4: No TCP support until authentication exists
+
+**Why Rejected:**
+
+Rejected because Windows has no UDS client in reqwest, so Windows would have no transport at all.
 
 ### Implementation
 
-**Enforced by:** the permission test of [REQ-TRN-0004](requirements.md)
+Enforced by: the permission test of [REQ-TRN-0004](requirements.md)
 (criterion 1: `mode & 0o077 == 0` after bind); the Windows default test of
 [REQ-TRN-0001](requirements.md) (criterion 5: the address is `127.0.0.1`);
 the `arch-qa` review agent checks that `crates/sc-transport/src` and
 `crates/sc-runtime/src` contain no token, `Origin` or `Host` check and no
 default TCP address other than `127.0.0.1`.
 
-### Related Documents
-
-- [REQ-TRN-0004](requirements.md)
-- [REQ-TRN-0001](requirements.md)
-- [REQ-TRN-0003](requirements.md)
-
 ---
 
 ## ADR-TRN-0006: endpoint lock guards UDS replacement and listener lifetime
 
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** decided in this document; the sc-runtime design does not state it  
+
+### Related Documents
+
+Source: decided in this document; the sc-runtime design does not state it
+
+**Requirements:**
+
+- REQ-TRN-0004
+- REQ-TRN-0003
+
+**Architecture Decisions:**
+
+- ADR-TRN-0005
 
 ### Context
 
 A Unix domain socket (UDS) listener is a file. When a daemon process dies
 without cleaning up (a crash, `kill -9`, power loss) the file stays, and the
-next attempt to bind the same path fails with "address in use". A daemon
-that cannot restart after a crash without manual cleanup is not acceptable.
+next attempt to bind the same path fails with "address in use".
 But a socket file that exists may also belong to a daemon that is alive, and
 removing it cuts that daemon off from every new client. The listener-binding
 function of `sc-transport` (`bind(&Endpoint)`, behind the `server` cargo
-feature) cannot tell the two cases apart reliably with a connect probe. The runtime's `<instance-root>/daemon.lock` is not sufficient:
-two daemons may use different instance roots while an endpoint override makes
-them target the same UDS path. Ownership must therefore be scoped to the
-endpoint itself and must also protect standalone users of `sc-transport`.
+feature) cannot tell the two cases apart reliably with a connect probe.
 
 ### Decision
 
@@ -569,6 +706,16 @@ endpoint itself and must also protect standalone users of `sc-transport`.
 7. When the existing path is not a socket, `bind` returns
    `TransportError::NotASocket` and leaves the path in place.
 
+### Rationale
+
+A daemon
+that cannot restart after a crash without manual cleanup is not acceptable.
+
+The runtime's `<instance-root>/daemon.lock` is not sufficient:
+two daemons may use different instance roots while an endpoint override makes
+them target the same UDS path. Ownership must therefore be scoped to the
+endpoint itself and must also protect standalone users of `sc-transport`.
+
 ### Consequences
 
 A daemon restarts cleanly after a crash with no manual step, and endpoint
@@ -583,27 +730,32 @@ inner socket and stops `accept` instead of retrying forever.
 
 ### Alternatives Considered
 
-- Connect probe: try to connect to the existing socket and unlink only if
-  the connection is refused. Rejected because there is a race between the
-  probe and the unlink, a live but overloaded daemon can look dead, and it
-  duplicates a guarantee the singleton lock already gives.
-- Fail with "address in use" and leave cleanup to the caller or the user.
-  Rejected because every restart after a crash would then need a manual
-  step or the same unlink code copied into every caller.
-- Rely only on `sc-runtime`'s instance lock. Rejected because an endpoint
-  override may point two independently locked instance roots at the same
-  socket.
+#### Alternative 1: Connect probe
+
+**Description:**
+
+Try to connect to the existing socket and unlink only if the connection is refused.
+
+**Why Rejected:**
+
+Rejected because there is a race between the probe and the unlink, a live but overloaded daemon can look dead, and it duplicates a guarantee the singleton lock already gives.
+
+#### Alternative 2: Fail with "address in use" and leave cleanup to the caller or the user
+
+**Why Rejected:**
+
+Rejected because every restart after a crash would then need a manual step or the same unlink code copied into every caller.
+
+#### Alternative 3: Rely only on `sc-runtime`'s instance lock
+
+**Why Rejected:**
+
+Rejected because an endpoint override may point two independently locked instance roots at the same socket.
 
 ### Implementation
 
-**Enforced by:** the stale-socket, competing-owner, rustdoc, cleanup, and
+Enforced by: the stale-socket, competing-owner, rustdoc, cleanup, and
 no-probe criteria of [REQ-TRN-0004](requirements.md); on the caller side, the
 start-up order of `sc_runtime`'s `run()`, which takes `daemon.lock` before
 `bind` acquires endpoint ownership
 ([REQ-RT-0001](../sc-runtime/requirements.md)).
-
-### Related Documents
-
-- [REQ-TRN-0004](requirements.md)
-- [REQ-TRN-0003](requirements.md)
-- [ADR-TRN-0005](architecture.md)

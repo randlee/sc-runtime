@@ -1,8 +1,18 @@
 # sc-cron Requirements
 
-**Status:** Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [ADR-RUN-0013](../architecture.md), and [ADR-RUN-0016](../architecture.md). Sprints `b-3` through `b-17` implement these items.
+**Status:** Active
+
+Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [ADR-RUN-0013](../architecture.md), and [ADR-RUN-0016](../architecture.md). Sprints `b-3` through `b-17` implement these items.
 
 ## REQ-CRON-0001: Workspace member
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-10-25  
+**Owner:** randlee  
+
+### Requirement Statement
 
 `crates/sc-cron` is a workspace member, ported from beads-cache
 `crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
@@ -22,14 +32,45 @@ fifth public library. Registry types use compatible `1.5.0`, unified to exact
 nor command/test-util; test doubles use dev-dependencies only. The current
 local facade is removed during implementation before initial publication.
 Capability-proven upstream cleanup removes cron -> command and restores the
-original no-sibling boundary. Isolated default/Monty consumers must prove no
-axum/rmcp/server leakage; workspace feature unification is not that proof.
+original no-sibling boundary.
+
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] Isolated default/Monty consumers must prove no axum/rmcp/server leakage; workspace feature unification is not that proof.
 
 ## REQ-CRON-0002: Normal crontab strings
 
-A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week. `*/5 * * * *` means every fifth minute.
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-10-25  
+**Owner:** randlee  
+
+### Requirement Statement
+
+A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
+
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] `*/5 * * * *` means every fifth minute.
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
 
 sc-cron is a general-purpose scheduler for application-defined jobs. A schedule row names an in-process `Job`, a Python module, or `Monty { source }` under optional feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`. It has no consumer-specific beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. The consumer owns that API and configures schedule limits; sc-cron does not read sc-config.
 
@@ -41,11 +82,39 @@ MVP accepts application-supplied Monty source without signatures, a separate scr
 
 The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoint VM limits, and joined shutdown behavior remain as specified by ADR-RUN-0013. Host calls use the production `drive_feed` resume loop; the cfg(test) helper is not a separate production path.
 
+### Rationale
+
+### Success Criteria
+
 ## REQ-CRON-0004: One configuration table
 
-The bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-10-25  
+**Owner:** randlee  
+
+### Requirement Statement
+
+The bundled store creates one schedule table. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
+
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] A test writes a row without constructing `SqliteWriter`.
 
 ## REQ-CRON-0005: One error enum
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-10-25  
+**Owner:** randlee  
+
+### Requirement Statement
 
 Phase C planned amendment: cooperative operation failures remain CronError::Store
 with non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and
@@ -95,7 +164,19 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 
 Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.
 
+### Rationale
+
+### Success Criteria
+
 ## REQ-CRON-0019: Explicit Python and Monty hook environment
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-28  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
 
 Python and Monty schedule rows share one `HookEnvironment`; existing
 constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
@@ -146,14 +227,48 @@ formatting omits their contents. This exact-value replacement mitigates
 accidental propagation; trusted hooks can transform or exfiltrate values and
 remain outside an untrusted-code boundary.
 
+### Rationale
+
+### Success Criteria
+
 ## NFR-CRON-0001: Allowed third-party dependencies
 
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-27  
+**Last Updated:** 2026-10-27  
+**Owner:** randlee  
+
+### Requirement Statement
+
 This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. Only the temporary defaults-off command contract edge in ADR-RUN-0017
-is allowed; no other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+is allowed; no other workspace crate is allowed.
 
 The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] The `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml` enforce that feature `monty` stays optional: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only.
+
+### Related Documents
+
+**Requirements:**
+
+- [REQ-RUN-0005](../requirements.md) — point 4 points here
+
 ## NFR-CRON-0002: Environment isolation and redaction
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-28  
+**Last Updated:** 2026-10-28  
+**Owner:** randlee  
+
+### Requirement Statement
 
 Environment names use `[A-Za-z_][A-Za-z0-9_]*`. Construction, persistence,
 row decode, and execution enforce 256 bytes per name, 16 `.env` sources, 128 entries, 16 KiB per stored/resolved
@@ -178,9 +293,7 @@ recovery text, `RunOutcome`, tracing, canonical events, or persisted stop
 reasons. Stable metadata that happens to equal a short value is not rewritten.
 `ChildEnv`, `ChildSpec`, and `PythonHook` use value-free custom `Debug` just
 like the environment model. Direct `HookOutput` field access is the sole
-trusted raw-output exception. Tests make Python,
-Monty, both CLI adapter, and resolver paths echo canaries and prove redaction, positive
-delivery, and absence of a non-allowlisted daemon secret. Resolution performs
+trusted raw-output exception. Resolution performs
 file I/O off the async hot path, holds no store connection or synchronous lock
 across await, and calls no `std::env::set_var` or `std::env::remove_var`.
 
@@ -191,8 +304,7 @@ example and custom closure setup are in [monty-generated-example.md](monty-gener
 The b-16 child environment is explicitly empty; the resolved-snapshot text
 above is the b-17 successor contract.
 
-
-### Shared hook environment implementation (B17)
+Shared hook environment implementation (B17):
 
 `sc-cron::HookEnvironment` is the validated, canonical schedule policy;
 `HookEnvironmentHost` is separately injected daemon authorization. Names use
@@ -228,6 +340,14 @@ reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
 
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] Tests make Python, Monty, both CLI adapter, and resolver paths echo canaries and prove redaction, positive delivery, and absence of a non-allowlisted daemon secret.
+
 ## Phase C approved target contract (planned, not implemented)
 
 The following additive requirements describe the approved next release; they
@@ -236,6 +356,14 @@ core remains free of product HTTP/MCP/CLI APIs. A separate optional standard
 command adapter is permitted by ADR-RUN-0019.
 
 ## REQ-CRON-0020: Public receiver and cooperative owned shutdown
+
+**Status:** Approved  
+**Version:** 1.0.0  
+**Created:** 2026-11-02  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
+
+### Requirement Statement
 
 The crate exposes the same nominal canonical logging receiver and supporting
 values through `sc_cron::observability`; no parallel trait is introduced.
@@ -247,9 +375,7 @@ Cooperative custom providers must truthfully declare support and forward the
 live operation scope, fencing/query semantics and outcome/ownership contract
 using their own mechanisms. SQLite-specific callbacks apply to the bundled
 SqliteScheduleStore, not to every provider. Legacy/custom integrations may use
-the existing caller-owned path with explicitly documented guarantees. The cron
-README and isolated external consumer prove one custom field and the chosen
-cooperative-or-legacy lifecycle through public scheduling/query/end APIs.
+the existing caller-owned path with explicitly documented guarantees.
 An opt-in cooperative mode rejects unsupported stores before starting work.
 It installs one shared operation context before initial load, queue submission,
 lock acquisition, reload, decode and all persistence/retry/end paths. Context
@@ -283,7 +409,27 @@ Legacy direct calls remain
 caller-owned. Preserve bundled schema, generation fencing, stop-before-tick, existing
 Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 
+### Rationale
+
+### Success Criteria
+
+**Acceptance Criteria:**
+
+- [ ] The cron README and isolated external consumer prove one custom field and the chosen cooperative-or-legacy lifecycle through public scheduling/query/end APIs.
+
+### Implementation Notes
+
+Phase C approved target contract (planned, not implemented).
+
 ## REQ-CRON-0021: Tracked public operations and bounded schedule query
+
+**Status:** Approved  
+**Version:** 1.0.0  
+**Created:** 2026-11-02  
+**Last Updated:** 2026-11-02  
+**Owner:** randlee  
+
+### Requirement Statement
 
 The standard Scheduler path has finite shared intake for public context-aware
 start/end/query roots: default64, validated pre-start capacity 1..=65536,
@@ -312,7 +458,7 @@ sharing stop/admission state and the earliest deadline; no independent registry.
 No new job kind, job registry, second database or arbitrary hard-delete command
 is implied. Ordinary registration continues through REQ-CRON-0003 APIs.
 
-### C1 application-owned control construction
+C1 application-owned control construction:
 
 The ordinary-feature `WorkerStopControl::new()` factory creates a live
 operation scope inside its owning Tokio runtime, without a Scheduler,
@@ -323,3 +469,11 @@ revokes existing and newly obtained scopes even when G was in the future.
 The runtime must remain alive for independent status notifications. A checked
 ShutdownBudget has private fields and read-only grace()/cleanup() accessors;
 K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
+
+### Rationale
+
+### Success Criteria
+
+### Implementation Notes
+
+Phase C approved target contract (planned, not implemented).

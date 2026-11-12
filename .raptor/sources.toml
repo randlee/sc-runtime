@@ -3,4 +3,17 @@ schema_version = "1.0.0"
 [[sources]]
 root = "docs"
 include = ["requirements.md", "architecture.md", "*/requirements.md", "*/architecture.md"]
-exclude = []
+exclude = [
+  "sc-cron/architecture.md",
+  "sc-runtime-db-sqlite/architecture.md",
+  "sc-runtime-cli/requirements.md",
+  "sc-runtime-cli/architecture.md",
+  "sc-runtime-core/requirements.md",
+  "sc-runtime-core/architecture.md",
+  "sc-runtime-daemon/requirements.md",
+  "sc-runtime-daemon/architecture.md",
+  "sc-runtime-mcp-stdio/requirements.md",
+  "sc-runtime-mcp-stdio/architecture.md",
+  "sc-runtime-web/requirements.md",
+  "sc-runtime-web/architecture.md",
+]
