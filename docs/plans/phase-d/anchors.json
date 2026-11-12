@@ -1385,6 +1385,13 @@
           "item": "run-d-8",
           "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T04:28:13+00:00",
+          "event": "excluded",
+          "item": "run-d-6",
+          "reason": "d-6 declares no added or retained upper bound beyond Cargo caret (rusqlite ^0.41; 0.42 is a qualification job only), which ANC-019's scope excludes.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1399,6 +1406,10 @@
         {
           "item": "run-d-8",
           "reason": "d-8 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-mysql/sqlx-macros, which ANC-019's scope excludes."
+        },
+        {
+          "item": "run-d-6",
+          "reason": "d-6 declares no added or retained upper bound beyond Cargo caret (rusqlite ^0.41; 0.42 is a qualification job only), which ANC-019's scope excludes."
         }
       ]
     },
