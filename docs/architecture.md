@@ -323,6 +323,8 @@ This documentation amendment claims no implementation, QA or publication pass.
 
 ## ADR-RUN-0001: Framework instantiates, project wires; no command registry
 
+**Amended 2026-11-12 (owner requirement change).** No command path must be hand-written. Directly written code is the interim form; follow-up consumer-side generators operate in the consuming project against a delivered sc-runtime. Historical no-registry/no-generator clauses below do not prohibit that shared path or those future generators. Default direct Tcli-to-Tsql conversion needs no custom transform. No generator is built in Phase D; unrelated transport-wrapper and lint/workflow ownership rules remain unchanged. Owner item 6.
+
 **Status:** Active — amended 2026-11-11  
 **Amended 2026-11-11 (PRD v2.0 §3, §9).** The owner's principle stands: the framework instantiates, the project wires. The mechanism in points 1 and 2 (every operation hand-written as its own REST handler, MCP tool and CLI command, with no shared command path) was a design recommendation chosen to reach an MVP without a code generator. It is the interim form. The target is the PRD §3 command pattern: one shared write path and one shared read path, with the project supplying `Tcli`, `Tsql` and the transform. "No command registry" does not forbid that shared path.
 
@@ -352,14 +354,13 @@ command is. A project could then do only what the wrappers expose.
 
 ### Decision
 
-1. An operation MUST be defined in project code as two request/response
-   structs in the generated project's `api-types` crate plus one `async fn` in
-   its `service` crate, of the form
+1. An operation supplies request/response types and uses the shared command path.
+   The interim project service function has the form
    `pub async fn create_widget(s: &Stores, input: CreateWidget) -> Result<Widget, OpError>`.
 2. The REST handler (`daemon/src/routes.rs`, `#[utoipa::path]` plus an axum
    handler), the MCP tool (`daemon/src/mcp.rs`, rmcp `#[tool]`) and the CLI
-   command (`cli` crate, clap derive) MUST each be written with that library's
-   own derive or macro. Each MUST only deserialise into the `api-types` struct
+   command (`cli` crate, clap derive) use each library's normal API; their source
+   may be written directly or generated in a consumer follow-up. Each MUST only deserialise into the `api-types` struct
    and call the service function (the CLI reaches it over HTTP).
 3. `sc_runtime::Daemon::builder()` in `crates/sc-runtime` is the single
    assembly point. It MUST do assembly only, in this order: take the config the
@@ -368,9 +369,9 @@ command is. A project could then do only what the wrappers expose.
    merge the project's router, the OpenAPI document route, a health route and
    the MCP service if one was given; bind the listener through `sc-transport`
    and serve with graceful shutdown on SIGINT and SIGTERM.
-4. The workspace library crates MUST NOT contain a command registry, a proc-macro,
-   a code generator, or a public type that wraps or re-exports an Axum, rmcp or
-   sqlx type.
+4. The library crates do not implement a command generator in Phase D.
+   Consumer-side generation is follow-up work and is permitted. The library
+   crates MUST NOT introduce public wrappers or re-exports of Axum, rmcp or sqlx types.
 5. The project MUST pass the builder an ordinary `utoipa_axum::OpenApiRouter`
    and, optionally, an ordinary rmcp service, each returned from a closure.
 6. `Stores` is a plain struct defined by the project. `sc-runtime` MUST NOT
@@ -415,8 +416,7 @@ sc-lint project and is not built in this repository
 **Enforced by:** `arch-qa` review of each change against the six points above.
 That review is the mechanism for point 4's ban on public types that wrap or
 re-export an Axum, rmcp or sqlx type, because `sc-lint-boundary` has no
-wrapper-type analysis; [NFR-RUN-0003](requirements.md) (the repository contains no command
-registry, macro system, code generator, portable query layer or wrapper type),
+wrapper-type analysis; [NFR-RUN-0003](requirements.md) (standard APIs and the amended Phase D scope),
 with its `proc-macro` and `macro_rules!` greps; the `[public] facade` list in
 the `sc-runtime` boundary manifest under `boundaries/sc-runtime/`, checked by
 `sc-lint-boundary` through `just lint`, which makes every addition to the
@@ -425,8 +425,8 @@ crate's exported items a visible manifest change for that review.
 
 ### Related Documents
 
-- [NFR-RUN-0003](requirements.md): standard crates used the documented way; no registry,
-  macro system, generator or wrapper type.
+- [NFR-RUN-0003](requirements.md): standard crates used the documented way;
+  shared paths and future consumer-side generation are permitted.
 - [REQ-RUN-0201](requirements.md): one operation reaches SQL from REST, MCP and the CLI only
   through one service function.
 - [REQ-RT-0001](sc-runtime/requirements.md): the builder and its fixed step order.
@@ -1172,6 +1172,8 @@ criterion for the request paths of `crates/sc-transport` and
 ---
 
 ## ADR-RUN-0008: Requirements must mean less code; prefer standard designs
+
+**Amended 2026-11-12 (owner requirement change).** No command path must be hand-written. Directly written code is the interim form; follow-up consumer-side generators operate in the consuming project against a delivered sc-runtime. Historical no-registry/no-generator clauses below do not prohibit that shared path or those future generators. Default direct Tcli-to-Tsql conversion needs no custom transform. No generator is built in Phase D; unrelated transport-wrapper and lint/workflow ownership rules remain unchanged. Owner item 6.
 
 **Status:** Active  
 **Amended 2026-11-11 (PRD §3, §4, §9).** The owner's principle stands: requirements must mean less code. The prohibited-construct list in point 4 is amended in [NFR-RUN-0003](requirements.md): it does not forbid the shared command path or `Storage<T>`, and a generator is undecided. Hand-writing every operation through 22 files is more code, not less.
@@ -2045,6 +2047,8 @@ stores follow this contract. They do not clear the table before the write.
 ---
 
 ## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Amended 2026-11-12 (owner requirement change).** No command path must be hand-written. Directly written code is the interim form; follow-up consumer-side generators operate in the consuming project against a delivered sc-runtime. Historical no-registry/no-generator clauses below do not prohibit that shared path or those future generators. Default direct Tcli-to-Tsql conversion needs no custom transform. No generator is built in Phase D; unrelated transport-wrapper and lint/workflow ownership rules remain unchanged. Owner item 6.
 
 **Status:** Deferred (PRD v2.0 §9, 2026-11-11)  
 Synchronization between databases is deferred by the owner. This ADR binds nothing until it is taken up again.
@@ -2956,6 +2960,8 @@ exfiltration by trusted hook code.
 
 ## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
 
+**Amended 2026-11-12 (owner requirement change).** No command path must be hand-written. Directly written code is the interim form; follow-up consumer-side generators operate in the consuming project against a delivered sc-runtime. Historical no-registry/no-generator clauses below do not prohibit that shared path or those future generators. Default direct Tcli-to-Tsql conversion needs no custom transform. No generator is built in Phase D; unrelated transport-wrapper and lint/workflow ownership rules remain unchanged. Owner item 6.
+
 **Status:** Active  
 **Amended 2026-11-11 (PRD §3, §9).** The clauses "These commands do not add a command registry" and "Framework crates do not move rows" in point 4 bind nothing: the first does not forbid the shared command path, and row movement is deferred with synchronization.
 
@@ -2967,7 +2973,7 @@ exfiltration by trusted hook code.
 1. A layout that has a store renders general database commands on the CLI, MCP, and HTTP. The set includes `delete row <table> <id>`. The commands are on by default.
 2. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. The worked example remains `widget.create` and `widget.get`.
 3. A flag removes the general commands from those three surfaces. A layout with no database renders none of them.
-4. The consumer adaptor moves rows. These commands do not add a command registry. Framework crates do not move rows.
+4. Row synchronization remains deferred. General commands may use the shared command path; they impose no hand-writing or future consumer-generator restriction.
 
 ### Related Documents
 
@@ -3319,7 +3325,7 @@ Verified on `develop` at `4da05e3`:
 5. Callers enqueue and await without blocking or wrapping storage calls in `spawn_blocking`. Synchronous rusqlite work stays on dedicated writer/reader threads. Only the SQLite writer thread drives its own runtime with `Runtime::block_on` under ADR-RUN-0011; reader workers receive with `blocking_recv`, have no runtime and need no exception. The yield-based drain remains `tokio::task::yield_now`. This storage rule does not change sc-config's synchronous scope or make pure constructors/parsers async.
 6. Cron is a `CronRow` struct stored through `Storage<CronRow>` in the application's database (the SQLite database when the layout has one). There is no `cron.db` and no `cron.database_path`.
 7. Cron requires a database. The generator rejects `db = none` with `cron = true`.
-8. Anything a table needs beyond read and write is an extension trait over `Storage<T>` (PRD-STO-5). Existing cron callers need `CronStorage: Storage<CronRow>` for atomic conditional and multi-row operations, including generation-fenced writes, row-limit/active-name admission, `set_enabled_many` and `replace_and_set_enabled`. Domain policy remains in cron; the storage extension keeps the check and mutation atomic across independent callers. Separate read/check/write calls are not equivalent.
+8. Anything a table needs beyond read and write is an extension trait over `Storage<T>` (PRD-STO-5). CronStore privately wraps generic storage and exposes CronStorage for atomic conditional and multi-row operations, including generation-fenced writes, row-limit/active-name admission, `set_enabled_many` and `replace_and_set_enabled`. Domain policy remains in cron; the storage extension keeps the check and mutation atomic across independent callers. Separate read/check/write calls are not equivalent.
 
 ### Consequences
 
@@ -3336,13 +3342,16 @@ Superseded in whole or in part:
 - ADR-RUN-0301: the `store-sqlite` column of point 1 (sqlx `sqlite` driver) and point 2 (`EngineStore`).
 - REQ-CRON-0004 (the bundled own-file store) and the own-file guard in `crates/sc-cron/src/sqlite.rs`.
 
-### Open — owner decides, nothing assumed
+### Exact Phase D contract proposed for ratification (2026-11-12)
 
-1. Exact method set. Sketch only: `read(key) -> Option<T>`, `read_all() -> Vec<T>`, `write(&T)`. Whether delete exists.
-2. How `T` names its table, columns and key (derive, or a small hand-written impl).
-3. Who creates and migrates tables.
-4. Where the trait and each implementation live. Owner note, 2026-11-11: sc-runtime is too big; new work should be one crate per repo.
-5. Synchronization between databases: deferred by the owner, 2026-11-11 ("We will worry about synchronization once [we] copy the code we already have to build sc-runtime"). `Storage<T>` stays read and write until then.
+1. `sc-storage` is std-only. Its one async `Storage<T>` exposes read/read_all/write and the shared `AtomicStorage::transaction(spec, producer)` operation. `StorageRow` supplies validated row/table/key descriptors, encoding and decoding; generic transaction handles provide read/write/insert/delete for multiple row types in one atomic unit. Consumer schemas, row types and migrations remain above engines. SQLite, Postgres and MySQL implement that same contract.
+2. Each retry starts a fresh owned `Send + 'static` producer future. Phase D transaction properties are name and read-only/read-write mode; bounded retry/deadline defaults live in engine configuration. This does not forbid later per-transaction retry policy. The transaction spec uses constructors/accessors and an extensible, non-exhaustive public shape so that addition does not break consumer construction. Preserve name, queue wait, run time, row operations and outcome observations.
+3. Generic engines quote validated identifiers and bind values; public storage operations return typed `StorageError` with stable code, retryability, source and recovery and never panic. SQLite uses bounded async admission, one dedicated writer owning the sole write-mode connection, reader workers and replies only after commit. Only its writer drives `Runtime::block_on`; callers never block or wrap storage submission in `spawn_blocking`. A yielded write body rolls back with a typed error; writer failure fails all admitted replies and closes admission.
+4. `CronStore<S>` privately wraps generic storage and exposes policy-checked `CronStorage`, without a public raw-write supertrait. Active-name admission, schedule row limits, generation fencing and multi-row operations run atomically once in sc-cron. Application SQLite and cron share one database by default; cron plus no-database generation is rejected. Legacy source import is read-only, idempotent, field-preserving and refuses collisions atomically.
+5. sc-cron owns both `CronRow` and the compiled-session `MontyBlobRow` table/migration via generic row storage. Source remains authoritative; compile on schedule write, reject invalid source, then dump before any run. Cache key is sc-sha SHA-256(source) plus Monty dump version. Missing/stale/corrupt/unreadable-version or missing required cron hook names triggers recompilation and overwrite, with no run state persisted. No backend gains cron-specific code.
+6. Concrete backend factories/open options belong to their engines; application WidgetStorage/OpenWidgetStore/StoresView extensions retain generated IDs and current CRUD behavior. Only SQLite gets a published engine crate this phase; generic Postgres/MySQL implementations remain generated and require template updates/regeneration for engine-code fixes. Nine public crates release together at0.3.0, including independent sc-storage and sc-monty. Synchronization and unspecified permissions remain deferred.
+
+This is a proposed contract, not an assertion of owner ratification or implemented/tested behavior. D-5 prototypes the real interfaces and obtains owner ratification before closing; dependent implementation and publication remain blocked until ADR-RUN-0020/0021 are Active.
 
 ### Standalone consumer migration
 
@@ -3416,7 +3425,7 @@ Read on `develop` at `4da05e3` (Source line and the opening decision points of e
 ### Open — owner decides, nothing assumed
 
 1. What the access and permission differences between CLI, MCP and HTTP are.
-2. How an app supplies its transform, and what the transform may call (for example, reading storage).
+2. Later second-input, typed no-write and atomic-transform behaviors: preserved options, not built in Phase D; the provisional contract is specified below.
 3. Paths that do not fit write or read ("There will be additional paths like this, but they could all follow this pattern").
 
 ### Monty
@@ -3425,4 +3434,15 @@ Owner, 2026-11-11: "Monty is NOT out of scope. Monty is done." Monty is part of 
 
 ### Not decided
 
-Code generation for this pattern (sc-compose at the consumer end, or a syn-based generator). Only the generator is deferred: a hand-written shared read/write path and a real Python/Monty transform caller fulfill PRD-CMD-4/5 without waiting for a generator choice. Owner intent is recorded in the ADR-RUN-0020 draft.
+Consumer-side code generation is follow-up work against a delivered sc-runtime. Directly written shared read/write code is the interim form, never a requirement to hand-write it. Plain Tcli-to-Tsql conversion requires no custom transform. Phase D implements the shared path and real Python/Monty transform caller without building a generator (owner item 6).
+
+
+### Exact Phase D command and interpreter contract proposed for ratification (2026-11-12)
+
+1. sc-command owns plain async `storage_read(action, transform, key)`/`storage_write(action, transform, input)`, typed `StorageCommandError` and an open Transform seam. The default is plain type conversion; custom app business rules replace it. The app supplies a typed async storage action: widget actions use Storage<T>/WidgetStorage, cron actions use policy-checked CronStorage. Helpers own conversion/transform/error composition once; no raw-row fallback bypasses cron checks.
+2. Transform and both helpers are documented as provisional in0.3.0. Extensible input/context and typed outcome construction, with compatible default methods where needed, preserve later addition of a second input, Ok with no write distinct from Err, and transforms inside an atomic transaction. Phase D builds none of those three behaviors and imposes no permanent prohibition. Its interpreter transform completes before the storage transaction.
+3. sc-monty is the one Monty implementation: compile, compiled session, limits, host dispatch, typed errors and session dump/load. It exposes a compiled session and value-level `MontyInvoke<Tin,Tout>` (script, function name, inputs -> output). Production dependencies are only pydantic Monty crates: no sc-*, Tokio, serde_json, cron types or reserved cron names. Start with an exact copy of current sc-cron code AND unit/integration tests, passing before extension; preserve all assertions through extraction. No second interpreter host remains in cron, command or template code.
+4. sc-cron consumes sc-monty and owns JSON/value conversion and cron-specific adaptation; hooks receive values, never JSON strings. d-10 calls sc-monty directly with runtime-loaded source that can be replaced without rebuilding. The app's bounded blocking adapter keeps interpreter work off Tokio request workers; it never blocks storage submission. No-cron generated applications can select Monty independently.
+5. Widget create/delete use storage_write; widget get uses storage_read. Cron start/end use storage_write and list uses storage_read, preserving policy-checked CronStorage actions. An app can append/modify user JSON before cron.start persists its script-plus-data schedule. Internal scheduler lifecycle transitions stay in domain transactions because they are not user commands. All CLI/MCP/HTTP surfaces use these same application paths.
+
+ADR-RUN-0020 and ADR-RUN-0021 remain Proposed until the owner ratifies this exact contract. No ratification is inferred from this amendment.

@@ -4,6 +4,8 @@
 
 ## REQ-CRON-0001: Workspace member
 
+**Amended 2026-11-12 (owner requirement change).** Phase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage. Owner items 1/2/5 and single-implementation ruling supersede conflicting historical dependency wording below.
+
 `crates/sc-cron` is a workspace member, ported from beads-cache
 `crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
 only a temporary normal `sc-command` 0.2.0 Phase C dependency (initial
@@ -31,6 +33,8 @@ A schedule uses a normal crontab string of five fields: minute, hour, day of mon
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 
+**Amended 2026-11-12 (owner requirement change).** All Monty execution calls sc-monty. Retain the existing cron host adapters, capability behavior and unit/integration assertions as thin value-level adapters, not another interpreter host. A schedule supplies Monty or Python source plus JSON data, which the embedding application can enrich in the shared cron.start transform before persistence. cron.start and cron.end use storage_write with policy-checked CronStorage actions; cron.list uses storage_read. Internal scheduler lifecycle operations retain domain transactions because they are not user commands. Owner items 1/5.
+
 sc-cron is a general-purpose scheduler for application-defined jobs. A schedule row names an in-process `Job`, a Python module, or `Monty { source }` under optional feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`. It has no consumer-specific beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. The consumer owns that API and configures schedule limits; sc-cron does not read sc-config.
 
 Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its validated `MontyHostName`, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. `MontyHostName::new` validates the identifier and `as_str()` borrows it; registry keys use the same type while registration still accepts strings. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
@@ -42,6 +46,8 @@ MVP accepts application-supplied Monty source without signatures, a separate scr
 The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoint VM limits, and joined shutdown behavior remain as specified by ADR-RUN-0013. Host calls use the production `drive_feed` resume loop; the cfg(test) helper is not a separate production path.
 
 ## REQ-CRON-0004: One configuration table
+
+**Amended 2026-11-12 (owner requirement change).** In addition to CronRow, sc-cron owns MontyBlobRow and its table/migration through generic Storage<T>. When a schedule is written, compile its source and reject a compile failure before any tick. Save the session dump immediately after compile and before execution. Key the blob by sc-sha SHA-256 of the exact source plus Monty dump version; the source in the schedule row remains authoritative. Use only a matching source/version blob. Missing/corrupt/unreadable-version bytes or missing cron_stop/cron_tick are cache misses: recompile source and overwrite the pre-run blob. Persist no run state. No generic backend gains cron row types or SQL. This additional cache table supersedes the old one-table-only interpretation, not the schedule-row admission limit. Owner item 2.
 
 **Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.
 

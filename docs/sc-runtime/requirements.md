@@ -839,6 +839,8 @@ machine, never on a developer's host
 
 ## NFR-RT-0001: `sc-runtime` is assembly only, no registry, macro or wrapper
 
+**Amended 2026-11-12 (owner requirement change).** The assembly-only scope of the sc-runtime crate does not require hand-written command paths or forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared sc-command path and default plain conversion; generator implementation remains follow-up work. Owner item 6.
+
 **Status:** Active  
 **Amended 2026-11-11 (PRD §3, §9).** This item describes the `sc-runtime` crate as it is. PRD §3 requires a shared command path in the product. Which crate or repository holds it is undecided (PRD §9), so this item must not be read as forbidding that path from existing. The macro clause follows the generator decision.
 
