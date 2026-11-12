@@ -39,6 +39,10 @@ Intent: `docs/plans/phase-d/intent.md`
 | ANC-031 | locked | cron keeps caller-supplied row limit | 2026-11-11 |
 | ANC-032 | locked | SQLite/Postgres/MySQL implement one Storage<T> | 2026-11-11 |
 | ADR-RUN-0011 | locked | block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended d9dd55e) | 2026-11-11 |
+| ANC-033 | locked | generic atomic unit per engine | 2026-11-12 |
+| ANC-034 | locked | no consumer table code in storage backends | 2026-11-12 |
+| ANC-035 | locked | public storage functions do not panic | 2026-11-12 |
+| ANC-036 | locked | writer panic reaches waiting callers as error | 2026-11-12 |
 
 ## ANC-001
 
@@ -697,3 +701,83 @@ Beads: anchor `run-n3n7`, plan questions `run-n3n7.1`, dev questions `run-n3n7.2
 Fixtures:
 - pass: Runtime::block_on appears only in the SQLite writer thread that owns its runtime; reader threads receive with blocking_recv.
 - fail: Reader-pool threads each build a current-thread runtime and call Runtime::block_on to receive requests.
+
+## ANC-033
+
+Anchor: The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).
+
+> Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.
+
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+
+Summary: generic atomic unit per engine
+
+Scope: plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)
+
+Deterministic check to pair with the development gate: sc-storage exposes the atomic-unit operation; SQLite, Postgres and MySQL implementations each pass one shared conformance test where a failing operation rolls back the earlier ones
+
+Beads: anchor `run-gar9`, plan questions `run-gar9.1`, dev questions `run-gar9.2`
+
+Fixtures:
+- pass: sc-storage defines Storage::transaction(name, producer), whose body reads and writes rows atomically; the SQLite writer runs it in one savepoint and the Postgres and MySQL stores run it in one sqlx begin/commit, all passing one shared rollback conformance test.
+- fail: Storage<T> offers only read, read_all and write; callers that need several rows changed together issue separate writes, and only the SQLite backend gets a bespoke batch method.
+
+## ANC-034
+
+Anchor: Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer's table (for example cron rows).
+
+> No storage backend contains code for a specific consumer's table.
+
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+
+Summary: no consumer table code in storage backends
+
+Scope: plan items that change a storage backend crate (sc-runtime-db-sqlite, template store-sqlite/store-postgres/store-mysql)
+
+Deterministic check to pair with the development gate: grep storage backend crates for CronRow, cron table DDL or cron SQL: no hits; cargo tree -p sc-runtime-db-sqlite --all-features has no sc-cron
+
+Beads: anchor `run-q03u`, plan questions `run-q03u.1`, dev questions `run-q03u.2`
+
+Fixtures:
+- pass: sc-runtime-db-sqlite implements Storage<T> generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction.
+- fail: sc-runtime-db-sqlite adds an optional cron feature with a cron_jobs table definition and fenced record_run SQL for CronRow.
+
+## ANC-035
+
+Anchor: Public storage functions MUST NOT panic.
+
+> public storage functions return `Result<T, E>` with a typed error and do not panic
+
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+
+Summary: public storage functions do not panic
+
+Scope: plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)
+
+Deterministic check to pair with the development gate: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates
+
+Beads: anchor `run-vjhq`, plan questions `run-vjhq.1`, dev questions `run-vjhq.2`
+
+Fixtures:
+- pass: Every public function in sc-storage and the SQLite writer returns a Result with a typed error; invalid input and closed channels become error variants, and the crates deny unwrap and expect.
+- fail: The writer's public send() calls .expect("writer channel closed") and the store helper unwraps the decoded row.
+
+## ANC-036
+
+Anchor: If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.
+
+> a panic on the writer thread reaches every waiting caller as an error, never a hang
+
+Said by randlee, storage contract direction: atomic transactions, cron feature withdrawn, 2026-11-12. Status: locked. Version 2.
+
+Summary: writer panic reaches waiting callers as error
+
+Scope: plan items that implement or change the SQLite writer thread, its request channel or its reply path
+
+Deterministic check to pair with the development gate: deterministic test: a request that panics on the writer thread makes every pending caller receive an error; no await hangs (no sleeps)
+
+Beads: anchor `run-cdtx`, plan questions `run-cdtx.1`, dev questions `run-cdtx.2`
+
+Fixtures:
+- pass: The writer thread runs each request under catch_unwind; on panic it fails the request and drains the channel, so every queued caller receives StorageError::WriterPanicked.
+- fail: If a request panics, the writer thread exits and queued callers' oneshot replies are never sent, so their awaits never complete.

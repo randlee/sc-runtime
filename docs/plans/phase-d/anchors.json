@@ -2085,6 +2085,222 @@
           "previous_statement": "In production code under crates/ and template/, only the SQLite writer's dedicated OS thread may call block_on (Runtime::block_on, Handle::block_on or futures::executor::block_on)."
         }
       ]
+    },
+    {
+      "id": "ANC-033",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+      "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "summary": "generic atomic unit per engine",
+      "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+      "deterministic_check": "sc-storage exposes the atomic-unit operation; SQLite, Postgres and MySQL implementations each pass one shared conformance test where a failing operation rolls back the earlier ones",
+      "fixtures": {
+        "pass": [
+          "sc-storage defines Storage::transaction(name, producer), whose body reads and writes rows atomically; the SQLite writer runs it in one savepoint and the Postgres and MySQL stores run it in one sqlx begin/commit, all passing one shared rollback conformance test."
+        ],
+        "fail": [
+          "Storage<T> offers only read, read_all and write; callers that need several rows changed together issue separate writes, and only the SQLite backend gets a bespoke batch method."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-gar9",
+        "plan_questions": "run-gar9.1",
+        "dev_questions": "run-gar9.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-12T03:24:08+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-12T03:25:46+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T03:26:16+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-gar9",
+            "plan_questions": "run-gar9.1",
+            "dev_questions": "run-gar9.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-034",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Storage backend crates MUST NOT include any type, schema or SQL that is specific to one consumer's table (for example cron rows).",
+      "quote": "No storage backend contains code for a specific consumer's table.",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "summary": "no consumer table code in storage backends",
+      "scope": "plan items that change a storage backend crate (sc-runtime-db-sqlite, template store-sqlite/store-postgres/store-mysql)",
+      "deterministic_check": "grep storage backend crates for CronRow, cron table DDL or cron SQL: no hits; cargo tree -p sc-runtime-db-sqlite --all-features has no sc-cron",
+      "fixtures": {
+        "pass": [
+          "sc-runtime-db-sqlite implements Storage<T> generically over a row codec; CronRow, its table definition and the fencing SQL live in sc-cron, which uses the generic transaction."
+        ],
+        "fail": [
+          "sc-runtime-db-sqlite adds an optional cron feature with a cron_jobs table definition and fenced record_run SQL for CronRow."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-q03u",
+        "plan_questions": "run-q03u.1",
+        "dev_questions": "run-q03u.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-12T03:25:35+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-12T03:25:46+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T03:26:18+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-q03u",
+            "plan_questions": "run-q03u.1",
+            "dev_questions": "run-q03u.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-035",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Public storage functions MUST NOT panic.",
+      "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "summary": "public storage functions do not panic",
+      "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+      "deterministic_check": "sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
+      "fixtures": {
+        "pass": [
+          "Every public function in sc-storage and the SQLite writer returns a Result with a typed error; invalid input and closed channels become error variants, and the crates deny unwrap and expect."
+        ],
+        "fail": [
+          "The writer's public send() calls .expect(\"writer channel closed\") and the store helper unwraps the decoded row."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-vjhq",
+        "plan_questions": "run-vjhq.1",
+        "dev_questions": "run-vjhq.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-12T03:25:35+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-12T03:25:46+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T03:26:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-vjhq",
+            "plan_questions": "run-vjhq.1",
+            "dev_questions": "run-vjhq.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-036",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.",
+      "quote": "a panic on the writer thread reaches every waiting caller as an error, never a hang",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-12",
+      "context": "storage contract direction: atomic transactions, cron feature withdrawn",
+      "summary": "writer panic reaches waiting callers as error",
+      "scope": "plan items that implement or change the SQLite writer thread, its request channel or its reply path",
+      "deterministic_check": "deterministic test: a request that panics on the writer thread makes every pending caller receive an error; no await hangs (no sleeps)",
+      "fixtures": {
+        "pass": [
+          "The writer thread runs each request under catch_unwind; on panic it fails the request and drains the channel, so every queued caller receives StorageError::WriterPanicked."
+        ],
+        "fail": [
+          "If a request panics, the writer thread exits and queued callers' oneshot replies are never sent, so their awaits never complete."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-cdtx",
+        "plan_questions": "run-cdtx.1",
+        "dev_questions": "run-cdtx.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-12T03:25:36+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-12T03:25:46+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-12T03:26:21+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-cdtx",
+            "plan_questions": "run-cdtx.1",
+            "dev_questions": "run-cdtx.2"
+          }
+        }
+      ]
     }
   ]
 }
