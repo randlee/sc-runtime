@@ -98,6 +98,11 @@ Scope: Changes scripts/new_project.py, the sc-compose executable selection logic
 
 Deterministic check to pair with the development gate: Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-8`: d-8 changes MySQL storage crate dependencies only, not template generation's sc-compose version selection.
+- `run-d-10`: d-10 changes generated service code; it does not change new_project.py or sc-compose version selection.
+- `run-d-11`: d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.
+
 Beads: anchor `run-d4yq`, plan questions `run-d4yq.1`, dev questions `run-d4yq.2`
 
 Fixtures:
@@ -358,6 +363,9 @@ Scope: Changes registry dependency requirements in published crates or template 
 
 Deterministic check to pair with the development gate: Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
+
 Beads: anchor `run-41jv`, plan questions `run-41jv.1`, dev questions `run-41jv.2`
 
 Fixtures:
@@ -380,6 +388,8 @@ Deterministic check to pair with the development gate: Plan: requires passing lo
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-4`: d-4 changes no registry dependency range; d-3 owns the dependency ranges and their minimum/latest CI jobs.
+- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
+- `run-d-10`: d-10 changes no registry dependency range.
 
 Beads: anchor `run-qxzw`, plan questions `run-qxzw.1`, dev questions `run-qxzw.2`
 
@@ -418,6 +428,9 @@ Summary: Additional upper bounds explain their known break
 Scope: Adds or retains an explicit third-party dependency upper bound beyond Cargo standard SemVer compatibility. Normal caret compatibility boundaries and internal path package identity versions are excluded. Applies to published crates, generated templates, and test manifests.
 
 Deterministic check to pair with the development gate: Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: d-9 changes no registry dependency range; sc-cron inherits the workspace rusqlite range registered and qualified in d-5.
 
 Beads: anchor `run-weer`, plan questions `run-weer.1`, dev questions `run-weer.2`
 
@@ -465,6 +478,9 @@ Deterministic check to pair with the development gate: generated SQLite+cron app
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.
 - `run-d-6`: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.
+- `run-d-7`: Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.
+- `run-d-9`: Defaulting cron rows into the app's SQLite file is generated-app composition wired in d-11; d-9 is engine-neutral.
+- `run-d-12`: The default cron-in-app-SQLite configuration is composed and satisfied in d-11; d-12 consumes it for the beads-cache migration.
 
 Beads: anchor `run-x17o`, plan questions `run-x17o.1`, dev questions `run-x17o.2`
 
@@ -488,6 +504,11 @@ Deterministic check to pair with the development gate: grep: no SQLite write pat
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-10`: d-10 does not touch the SQLite backend or its writer, which d-6 owns.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-b3q4`, plan questions `run-b3q4.1`, dev questions `run-b3q4.2`
 
@@ -511,6 +532,10 @@ Deterministic check to pair with the development gate: grep: one write-mode Conn
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-wq51`, plan questions `run-wq51.1`, dev questions `run-wq51.2`
 
@@ -534,6 +559,10 @@ Deterministic check to pair with the development gate: deterministic test: reply
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-ox1n`, plan questions `run-ox1n.1`, dev questions `run-ox1n.2`
 
@@ -557,6 +586,10 @@ Deterministic check to pair with the development gate: deterministic test: N wri
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-g9ca`, plan questions `run-g9ca.1`, dev questions `run-g9ca.2`
 
@@ -577,6 +610,11 @@ Summary: no spawn_blocking to reach writer
 Scope: plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store
 
 Deterministic check to pair with the development gate: grep: no spawn_blocking in callers of the SQLite writer
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
 
 Beads: anchor `run-x8rt`, plan questions `run-x8rt.1`, dev questions `run-x8rt.2`
 
@@ -600,6 +638,10 @@ Deterministic check to pair with the development gate: grep: writer submit API i
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.
+- `run-d-7`: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-8`: d-8 is the MySQL backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+- `run-d-9`: d-9 builds sc-cron over the engine-neutral Storage<CronRow> contract; it does not change the SQLite writer, which d-6 owns.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-n4fl`, plan questions `run-n4fl.1`, dev questions `run-n4fl.2`
 
@@ -620,6 +662,9 @@ Summary: no sqlx SQLite driver in SQLite app tree
 Scope: plan items that change SQLite-related dependencies, the generated template's SQLite store, or sc-cron's storage dependencies
 
 Deterministic check to pair with the development gate: cargo tree -e normal on generated SQLite app: no sqlx-sqlite
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: The generated SQLite app's cargo tree is composed and checked in d-11; d-10 adds no SQLite dependency.
 
 Beads: anchor `run-d6no`, plan questions `run-d6no.1`, dev questions `run-d6no.2`
 
@@ -644,6 +689,11 @@ Deterministic check to pair with the development gate: generation test: cron ena
 Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-5`: d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.
 - `run-d-6`: Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.
+- `run-d-7`: Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.
+- `run-d-8`: Rejecting cron with the no-database layout is template generation work in d-11; d-8 changes no generator.
+- `run-d-9`: Rejecting cron with the no-database layout is template generation work in d-11; d-9 changes no generator.
+- `run-d-10`: d-10 changes no generation options, layouts or cron feature; d-11 owns the no-database cron rejection.
+- `run-d-12`: Template rejection of cron with the no-database layout is owned and satisfied by d-11.
 
 Beads: anchor `run-1opo`, plan questions `run-1opo.1`, dev questions `run-1opo.2`
 
@@ -669,6 +719,9 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-3`: d-3 only qualifies dependency ranges; cron schedule-name uniqueness on the app database is owned by d-9.
 - `run-d-5`: d-5 defines the generic transaction; sc-cron's active-name rejection over it is implemented and its tests ported in d-9.
 - `run-d-6`: One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
+- `run-d-7`: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
+- `run-d-8`: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
+- `run-d-12`: Active-name rejection is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate.
 
 Beads: anchor `run-z85b`, plan questions `run-z85b.1`, dev questions `run-z85b.2`
 
@@ -694,6 +747,9 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `run-d-3`: d-3 only qualifies dependency ranges; the cron row-limit refusal on the app database is owned by d-9.
 - `run-d-5`: d-5 defines the generic transaction; sc-cron's row-limit refusal over it is implemented and its tests ported in d-9.
 - `run-d-6`: The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
+- `run-d-7`: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
+- `run-d-8`: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-8 has no cron code.
+- `run-d-12`: Row-limit refusal is implemented with ported tests in d-9 and verified live in d-11; d-12 consumes the published crate.
 
 Beads: anchor `run-9pf5`, plan questions `run-9pf5.1`, dev questions `run-9pf5.2`
 
@@ -715,6 +771,11 @@ Scope: plan items that define the storage trait or implement a SQLite, Postgres 
 
 Deterministic check to pair with the development gate: grep: impl Storage<..> for each of the SQLite, Postgres and MySQL backends; same trait path
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-9`: d-9 consumes Storage<T> in sc-cron and implements no SQLite, Postgres or MySQL backend.
+- `run-d-10`: d-10 consumes Storage<T> through the shared double and implements no engine backend.
+- `run-d-12`: Backend Storage<T> conformance is delivered by d-6, d-7, d-8 and verified in d-11; d-12 publishes the crates.
+
 Beads: anchor `run-7vxt`, plan questions `run-7vxt.1`, dev questions `run-7vxt.2`
 
 Fixtures:
@@ -734,6 +795,10 @@ Summary: block_on banned except SQLite writer thread (ADR-RUN-0011 pt1, amended 
 Scope: plan items that change async/blocking rules, the SQLite writer or reader pool, or code that bridges sync and async
 
 Deterministic check to pair with the development gate: grep -rn 'block_on' crates/ template/ --include=*.rs excluding tests: only hit is inside the SQLite writer thread module
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-7`: d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.
+- `run-d-8`: d-8 adds async sqlx MySQL code only; it introduces no blocking bridge and does not touch the SQLite writer thread.
 
 Beads: anchor `run-n3n7`, plan questions `run-n3n7.1`, dev questions `run-n3n7.2`
 
@@ -755,6 +820,10 @@ Scope: plan items that define or change the storage contract (Storage<T>, sc-sto
 
 Deterministic check to pair with the development gate: sc-storage exposes the atomic-unit operation; SQLite, Postgres and MySQL implementations each pass one shared conformance test where a failing operation rolls back the earlier ones
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: d-10 consumes the storage contract; the generic atomic operation is defined in d-5 and implemented by d-6, d-7 and d-8.
+- `run-d-12`: The generic atomic operation is defined in d-5, implemented in d-6, d-7, d-8 and exercised in d-11; d-12 publishes the crates.
+
 Beads: anchor `run-gar9`, plan questions `run-gar9.1`, dev questions `run-gar9.2`
 
 Fixtures:
@@ -774,6 +843,10 @@ Summary: no consumer table code in storage backends
 Scope: plan items that change a storage backend crate (sc-runtime-db-sqlite, template store-sqlite/store-postgres/store-mysql)
 
 Deterministic check to pair with the development gate: grep storage backend crates for CronRow, cron table DDL or cron SQL: no hits; cargo tree -p sc-runtime-db-sqlite --all-features has no sc-cron
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-10`: d-10 touches no storage backend crate; its application stores live in the application layer.
+- `run-d-12`: Backend neutrality is owned by d-5 through d-8 and verified in d-11; d-12 publishes the crates.
 
 Beads: anchor `run-q03u`, plan questions `run-q03u.1`, dev questions `run-q03u.2`
 
@@ -814,6 +887,10 @@ Summary: writer panic reaches waiting callers as error
 Scope: plan items that implement or change the SQLite writer thread, its request channel or its reply path
 
 Deterministic check to pair with the development gate: deterministic test: a request that panics on the writer thread makes every pending caller receive an error; no await hangs (no sleeps)
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `run-d-11`: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.
+- `run-d-12`: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
 
 Beads: anchor `run-cdtx`, plan questions `run-cdtx.1`, dev questions `run-cdtx.2`
 
