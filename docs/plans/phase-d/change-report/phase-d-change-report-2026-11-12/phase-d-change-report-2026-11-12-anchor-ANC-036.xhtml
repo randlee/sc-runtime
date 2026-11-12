@@ -1,0 +1,134 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-036">
+  <div class="section-head">
+    <h2>ANC-036 <span class="status status-locked">locked</span> <span class="small">bead run-cdtx</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-cdtx&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-5&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-11&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-12&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.&quot;
+    }
+  ],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T03:46:06+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T03:46:44+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T03:53:31+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: true&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T06:40:50+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: true&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-036&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;a panic on the writer thread reaches every waiting caller as an error, never a hang&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;locked&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;2&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-036 (locked v2 -&gt; locked v2)
+Statement: If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.
+Quote: a panic on the writer thread reaches every waiting caller as an error, never a hang
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Excluded for run-d-5: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.
+Excluded for run-d-11: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.
+Excluded for run-d-12: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.
+2026-11-12T03:46:06+00:00 excluded: item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: false
+2026-11-12T03:46:44+00:00 excluded: item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: false
+2026-11-12T03:53:31+00:00 excluded: item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: false
+2026-11-12T06:40:50+00:00 excluded: item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: true
+2026-11-12T06:40:50+00:00 excluded: item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true
+2026-11-12T06:40:50+00:00 excluded: item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: true">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">If the SQLite writer thread panics, every caller waiting on it MUST receive an error rather than waiting indefinitely.</p>
+  <p class="quote">&#x201C;a panic on the writer thread reaches every waiting caller as an error, never a hang&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>locked</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>2</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p class="small">Text unchanged.</p>
+
+  <details>
+    <summary>History since the baseline (6)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T03:46:06+00:00</td><td>excluded</td><td>item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: false</td></tr>
+        <tr><td>2026-11-12T03:46:44+00:00</td><td>excluded</td><td>item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: false</td></tr>
+        <tr><td>2026-11-12T03:53:31+00:00</td><td>excluded</td><td>item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: false</td></tr>
+        <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-11; reason: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.; replaced: true</td></tr>
+        <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-12; reason: d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.; replaced: true</td></tr>
+        <tr><td>2026-11-12T06:40:50+00:00</td><td>excluded</td><td>item: run-d-5; reason: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.; replaced: true</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details open="open">
+    <summary>Exclusions (3)</summary>
+    <table>
+      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">run-d-5</th><td>d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-11</th><td>Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-12</th><td>d-12 migrates beads-cache onto and publishes the 0.3.0 crates; SQLite writer behaviour is implemented and tested in d-6 and composed in d-11.</td><td>added</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>

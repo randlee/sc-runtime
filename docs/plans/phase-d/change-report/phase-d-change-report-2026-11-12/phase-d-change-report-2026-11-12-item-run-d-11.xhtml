@@ -1,0 +1,510 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-item" id="item-run-d-11">
+  <div class="section-head">
+    <h2>run-d-11 <span class="unit-title">d-11: generated-app-composition</span> <span class="status status-pass">PASS</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy item data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;changes&quot;: [
+    {
+      &quot;after_chars&quot;: 1572,
+      &quot;before_chars&quot;: 1085,
+      &quot;field&quot;: &quot;description&quot;
+    },
+    {
+      &quot;after_chars&quot;: 6307,
+      &quot;before_chars&quot;: 2942,
+      &quot;field&quot;: &quot;acceptance_criteria&quot;
+    },
+    {
+      &quot;after_chars&quot;: 1208,
+      &quot;before_chars&quot;: 1103,
+      &quot;field&quot;: &quot;design&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+      &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+      &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+      &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+      &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+    }
+  ],
+  &quot;first&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T03:45:17+00:00&quot;,
+    &quot;excluded&quot;: [],
+    &quot;failing&quot;: [
+      &quot;ANC-036&quot;,
+      &quot;ANC-003&quot;,
+      &quot;ANC-012&quot;,
+      &quot;ANC-016&quot;,
+      &quot;ANC-019&quot;,
+      &quot;ANC-025&quot;,
+      &quot;ANC-027&quot;,
+      &quot;ANC-028&quot;,
+      &quot;ANC-031&quot;,
+      &quot;ANC-033&quot;
+    ],
+    &quot;pass&quot;: false,
+    &quot;run_id&quot;: &quot;plan-20261112T034517Z-run-d-11&quot;,
+    &quot;score&quot;: &quot;12/22&quot;,
+    &quot;status&quot;: &quot;fail&quot;
+  },
+  &quot;id&quot;: &quot;run-d-11&quot;,
+  &quot;last&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T07:03:34+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+        &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+        &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+        &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+        &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+      }
+    ],
+    &quot;failing&quot;: [],
+    &quot;pass&quot;: true,
+    &quot;run_id&quot;: &quot;plan-20261112T070334Z-run-d-11&quot;,
+    &quot;score&quot;: &quot;20/20&quot;,
+    &quot;status&quot;: &quot;pass&quot;
+  },
+  &quot;runs&quot;: 13,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;text_note&quot;: &quot;&quot;,
+  &quot;text_source&quot;: &quot;bd&quot;,
+  &quot;title&quot;: &quot;d-11: generated-app-composition&quot;,
+  &quot;trail&quot;: [
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:45:17+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-036&quot;,
+        &quot;ANC-003&quot;,
+        &quot;ANC-012&quot;,
+        &quot;ANC-016&quot;,
+        &quot;ANC-019&quot;,
+        &quot;ANC-025&quot;,
+        &quot;ANC-027&quot;,
+        &quot;ANC-028&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T034517Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;12/22&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:53:17+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-024&quot;,
+        &quot;ANC-025&quot;,
+        &quot;ANC-016&quot;,
+        &quot;ANC-028&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T035317Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;16/20&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:09:26+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-028&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T040926Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:27:44+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T042744Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;18/18&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:45:10+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T044510Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:47:26+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T044726Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:49:57+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T044957Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:09:57+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T050957Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:11:50+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T051150Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:14:49+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T051449Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;18/18&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:09:01+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-11 composes generated apps; sc-compose 1.8.0 generation compatibility is owned and satisfied by d-4.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T060901Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;17/18&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:45:53+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-005&quot;,
+        &quot;ANC-015&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T064553Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;19/21&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T07:03:34+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-015&quot;,
+          &quot;reason&quot;: &quot;d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T070334Z-run-d-11&quot;,
+      &quot;score&quot;: &quot;20/20&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;url&quot;: &quot;&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-11: d-11: generated-app-composition
+Gate FAIL 12/22 -&gt; PASS 20/20 over 13 runs.
+Failing at first run: ANC-036, ANC-003, ANC-012, ANC-016, ANC-019, ANC-025, ANC-027, ANC-028, ANC-031, ANC-033.
+Failing now: none.
+Excluded ANC-015: d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.
+Excluded ANC-024: Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
+Excluded ANC-025: Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.
+Excluded ANC-036: Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.
+Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
+    </div>
+  </div>
+
+  <table class="gate">
+    <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>12/22</td><td>ANC-036, ANC-003, ANC-012, ANC-016, ANC-019, ANC-025, ANC-027, ANC-028, ANC-031, ANC-033</td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>20/20</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <details class="trail">
+    <summary>All 13 runs</summary>
+    <table>
+      <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
+      <tbody>
+        <tr><td><code>plan-20261112T034517Z-run-d-11</code></td><td>2026-11-12T03:45:17+00:00</td><td><span class="status status-fail">FAIL</span></td><td>12/22</td><td>ANC-036, ANC-003, ANC-012, ANC-016, ANC-019, ANC-025, ANC-027, ANC-028, ANC-031, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T035317Z-run-d-11</code></td><td>2026-11-12T03:53:17+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/20</td><td>ANC-024, ANC-025, ANC-016, ANC-028</td></tr>
+        <tr><td><code>plan-20261112T040926Z-run-d-11</code></td><td>2026-11-12T04:09:26+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-028</td></tr>
+        <tr><td><code>plan-20261112T042744Z-run-d-11</code></td><td>2026-11-12T04:27:44+00:00</td><td><span class="status status-pass">PASS</span></td><td>18/18</td><td></td></tr>
+        <tr><td><code>plan-20261112T044510Z-run-d-11</code></td><td>2026-11-12T04:45:10+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T044726Z-run-d-11</code></td><td>2026-11-12T04:47:26+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T044957Z-run-d-11</code></td><td>2026-11-12T04:49:57+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T050957Z-run-d-11</code></td><td>2026-11-12T05:09:57+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T051150Z-run-d-11</code></td><td>2026-11-12T05:11:50+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T051449Z-run-d-11</code></td><td>2026-11-12T05:14:49+00:00</td><td><span class="status status-pass">PASS</span></td><td>18/18</td><td></td></tr>
+        <tr><td><code>plan-20261112T060901Z-run-d-11</code></td><td>2026-11-12T06:09:01+00:00</td><td><span class="status status-fail">FAIL</span></td><td>17/18</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T064553Z-run-d-11</code></td><td>2026-11-12T06:45:53+00:00</td><td><span class="status status-fail">FAIL</span></td><td>19/21</td><td>ANC-005, ANC-015</td></tr>
+        <tr><td><code>plan-20261112T070334Z-run-d-11</code></td><td>2026-11-12T07:03:34+00:00</td><td><span class="status status-pass">PASS</span></td><td>20/20</td><td></td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-015">ANC-015</a></th><td>d-11 changes generated layouts, setup documentation and generation tests; it does not edit any repository skill script/instruction that checks the sc-compose CLI version. d-4 owns those skill lower-bound checks, so ANC-015 does not govern d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>Reply-after-commit is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>Single-transaction commit of queued writes is implemented and tested in d-6; d-11 composes the writer by reference to the root writer constraints.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-036">ANC-036</a></th><td>Writer-panic delivery to every waiting caller is implemented and tested in d-6; d-11 only composes the writer into generated apps.</td><td>this round</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Text: first judged to now</h3>
+  <p class="small">Source: bd</p>
+  <details open="open">
+    <summary>description</summary>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="eq">1. Wire real generated service/storage/cron in daemon/CLI/schema/config/hooks/wizard for SQLite/Postgres/MySQL and supported combined layouts. SQLite app data and cron rows default to one app file and the same SqliteDatabase/channel writer; remove cron.db/database_path and SQLx SQLite driver — REQ-RUN-0328; ANC-021/028/032.</div><div class="eq">2. Reject db=none+cron=true before generation. Invoke d-9 migration only on an explicitly supplied legacy cron file, preserving existing rows; no ongoing second cron database — REQ-RUN-0326; ANC-029.</div><div class="eq">3. Exercise actual CLI/HTTP/MCP read/write paths with real Python/Monty transforms and live claimed engines; update generation/getting-started docs and generation tests with the shipped0.3.0 interfaces — REQ-RUN-0201/0302/0702; ADR-RUN-0021.</div><div class="eq"></div><div class="ad">+ 4. Deliver the compatible-generation manifest enumeration/check as one callable check_dependency_manifests(paths) in tests/unit/generation/test_runtime_ecosystem_upgrade.py. d-11 alone owns that function/file; it accepts manifest paths and returns file/line violations under ANC-016/019. Generation tests invoke it; d-12 passes additional unpacked package and owned test manifests to the same function without copying it or changing this file — ADR-RUN-0005 interim check; sc-lint#936.</div><div class="ad">+ </div><div class="eq">## This sprint does not close</div><div class="eq">Eight-crate publication and actual upstream beads-cache migration/registry-only proof are d-12. This sprint runs development-source generated consumers and may not call them registry proof. No synchronization/code generator/config reload/unspecified permissions feature.</div></div>
+  </details>
+  <details>
+    <summary>acceptance_criteria</summary>
+    <div class="diff"><div class="ch">req:REQ-RUN-0328/shared-storage — Live generated SQLite app+cron rows use the same database/handle, one writer owning its only write connection, <del>queued</del><ins>per</ins> <del>transactions</del><ins>root</ins> <del>with</del><ins>writer</ins> <del>replies after commit.</del><ins>constraints.</ins> Async callers await without blocking/spawn_blocking. cargo metadata/tree shows one patched libsqlite3-sys&gt;=0.39 and no SQLx SQLite driver, for cron on/off and selected combined layouts; cargo deny check advisories clears target SQLite/rmcp advisories. <del>Readers</del><ins>Reader blocking_recv runs only on dedicated non-async worker threads with no runtime; async storage callers never block or</ins> use <del>blocking_recv</del><ins>spawn_blocking</ins> <del>and</del><ins>to</ins> <del>no</del><ins>submit</ins> <del>runtime.</del><ins>writes (ANC-027).</ins> Other engines implement shared Storage&lt;T&gt; without SQLite exposure unless selected.</div><div class="eq">req:REQ-CRON-0004/app-db — Preserve one active schedule per name, caller-supplied row limits including unlimited, stable IDs and per-row (id,generation) FENCED rejection; atomic set_enabled_many/replace_and_set_enabled remain all-or-nothing. Port actual two-process assertions with controlled process/channel barriers; preserve source crosswalk semantics. Populated cron.db migration retains every schedule field in app DB and reruns safely.</div><div class="eq">req:REQ-RUN-0326/layouts — db=none+cron rejected before any generated output; supported layouts render/build and actual cron uses app storage, no cron.db default setting.</div><div class="eq">req:REQ-RUN-0201/transforms — Actual CLI/HTTP/MCP service read/write runs the real Python/Monty transform; failures retain typed errors. Live SQLite/Postgres/MySQL services and selected combined layouts execute actual end-to-end procedures; no doubles stand in for engine/transport proof.</div><div class="eq">Required: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml; full generation unittest suite, tests/integration/storage-v2 live engine/transport procedures and target advisory checks on fresh generated resolves. Required minimum/latest generated CI jobs run, driven by d-3 recipes. Docs/links match actual generated APIs. No publication proof claimed.</div><div class="eq">Run the ONE shared async CronStorage conformance suite on actual generic SQLite/Postgres/MySQL providers through sc-cron CronStore; deterministic two-process providers port active-name/limit/fencing/atomic cases. Backends contain no CronRow type/schema/SQL. Legacy migration is d-9 app-owned code invoked by composition. Public storage failure/panic tests use typed Result semantics and real waiting callers, not a delay heuristic.</div><div class="rm">- Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies plus patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. No-Panic/await analyzer actual external gates apply to changed storage code; blocked external rules remain visible, no fabricated pass.</div><div class="ad">+ Full generated sqlite-postgres and sqlite-mysql layouts MUST resolve, build and execute with direct SQLx core/engine/macros dependencies selecting no SQLite feature, so no sqlx SQLite driver is in any graph, plus the patched rusqlite backend; current umbrella sets are known incompatible. Live query!/offline/migration behavior must pass, not inferred from lead cargo-check probe. Use cargo tree -i libsqlite3-sys (one selected&gt;=0.39) and -i sqlx-sqlite (no selected package), never Cargo.lock. Existing CLI/daemon/schema/api-types tests are this sprint&#x27;s owned regressions. Actual sc-lint#931 no-panic and transaction-body analyzer checks apply to changed template storage code; until delivered and passing, closure remains blocked. Record their actual commands and external state when available; runtime tests never substitute for static analysis.</div><div class="ad">+ req:REQ-RUN-0328/mixed-dependencies — Direct sqlx-core/engine/macros requirements select NO SQLite feature; cargo tree -i sqlx-sqlite selects no package in sqlite-postgres/sqlite-mysql too. Generated/production crates gain no sc-compose or ATM dependency, enforced by existing boundary lint (ANC-012/028).</div><div class="ad">+ req:REQ-CRON-0004/limit — The live shared app database refuses new schedule rows at the embedding app&#x27;s configured row limit; exercise the ported case against real providers (ANC-031). The conformance suite executes the generic atomic multi-row operation on SQLite, Postgres and MySQL, proving all-or-nothing behavior (ANC-033).</div><div class="ad">+ req:REQ-RUN-0328/compatible-generation — The manifest regression test resolves at latest compatible versions and fails on any exact or tilde requirement in production or generated template manifests, and on any extra upper bound without an adjacent comment naming the demonstrated break; such a bound starts at the first release that has the break, so no release in the minimum version&#x27;s Cargo-compatible line is excluded unless it has that named, demonstrated break. Every other requirement is a normal caret that admits newer compatible releases (ANC-016/019).</div><div class="ad">+ req:REQ-RUN-0328/selected-native-tree — The cargo tree of EVERY selected layout (SQLite alone, cron on/off, sqlite-postgres and sqlite-mysql) contains NO sqlx SQLite driver crate. SQLx direct core/driver/macros crates are selected only for Postgres/MySQL; cargo tree -i sqlx-sqlite must select nothing in every case (ANC-028).</div><div class="ad">+ req:REQ-RUN-0328/manifest-handoff — The compatible-generation test and callable check_dependency_manifests(paths) use the same enumeration and rule implementation. Its input accepts generated/source manifests and unpacked Cargo.toml/Cargo.toml.orig so d-12 can check archive requirements and their adjacent break comments. Deliver the callable and its tests at d-11 sanity closure; d-12 owns only added input assembly, invocation and release fixtures. Remove the interim rule when equivalent sc-lint#936 lint is shipped and adopted, as recorded by d-5 in ADR-RUN-0005.</div><div class="ad">+ req:REQ-RUN-0328/generator-compatibility — Generation/setup instructions declare the repository sc-compose CLI minimum as &gt;=1.8.0, using .sc/generation-tools.json as the source. Run the supported layout generation procedures with CLI1.8.0 and compatible CLI commands; generation succeeds at that floor. d-4 owns that declared tool requirement and executable-selection check; d-11 updates the layout instructions and generation tests using it (ANC-003/005).</div><div class="ad">+ req:REQ-RUN-0328/admitted-versions — Replace frozen single-version expectations in this sprint&#x27;s manifest regression with minimum/latest allowed selection checks. The rmcp ^3.9, utoipa ^6.0.0, utoipa-axum ^0.3.0 and schemars ^1.2.3 requirements admit newer releases in their Cargo-compatible lines without editing an SDK manifest or republishing it. Resolved identity remains unique per package, but a chosen CI lockfile version is never a consumer requirement (ANC-016/017; ADR-RUN-0203).</div></div>
+  </details>
+  <details>
+    <summary>design</summary>
+    <div class="diff"><div class="eq">Consumes d-6 generic writer/reader/atomic implementation; d-7/8 live engine backends; d-9 CronStore/schema/migration and async scheduler/command adapters; d-10 reusable command/real transform service; d-4 executable-selection/archive generation tooling. These artifacts cannot be moved into the signatures-only contract. All selected SQLite components receive cloned handles from one database factory. Preserve root ANC-021..028 writer constraints; per root writer constraints. No sc-compose/ATM release dependency.</div><div class="ch">Feature acceptance is owned here once. Boundary tests elsewhere establish their implementation side only. Generated engines use one shared Storage&lt;T&gt;; PostgreSQL/MySQL-only layouts must not select SQLx SQLite/native libs. Combined layouts selecting SQLite use the shared writer for app/cron SQLite rows. <del>Package</del><ins>d-12</ins> <del>release</del><ins>is the next dependent sprint</ins> and <del>beads-cache</del><ins>consumes</ins> <del>are</del><ins>this</ins> <del>independent</del><ins>sprint&#x27;s</ins> <del>sibling</del><ins>manifest</ins> <del>integration:</del><ins>enumeration</ins> <del>no</del><ins>after</ins> <del>edge</del><ins>d-11</ins> <del>from</del><ins>sanity closes. The checker file stays d-11-owned;</ins> d-12 <del>to</del><ins>imports</ins> <del>this</del><ins>the</ins> <del>generated</del><ins>callable</ins> <del>wiring.</del><ins>and extends its input paths only.</ins> d-12&#x27;s <del>registry</del><ins>runtime</ins> subject is <del>the </del>upstream <del>application</del><ins>beads-cache</ins> plus server/helper <del>consumers,</del><ins>consumers;</ins> <del>not</del><ins>its release validation waits for</ins> this <del>template.</del><ins>handoff.</ins> Both<del> sibling</del> integrations must pass before phase release is accepted.</div></div>
+  </details>
+</section>

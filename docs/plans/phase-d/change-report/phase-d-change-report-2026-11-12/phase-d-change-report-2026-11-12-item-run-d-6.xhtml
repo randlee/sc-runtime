@@ -1,0 +1,526 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-item" id="item-run-d-6">
+  <div class="section-head">
+    <h2>run-d-6 <span class="unit-title">d-6: sqlite-storage</span> <span class="status status-pass">PASS</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy item data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;changes&quot;: [
+    {
+      &quot;after_chars&quot;: 2593,
+      &quot;before_chars&quot;: 1689,
+      &quot;field&quot;: &quot;description&quot;
+    },
+    {
+      &quot;after_chars&quot;: 4675,
+      &quot;before_chars&quot;: 1869,
+      &quot;field&quot;: &quot;acceptance_criteria&quot;
+    },
+    {
+      &quot;after_chars&quot;: 1990,
+      &quot;before_chars&quot;: 1609,
+      &quot;field&quot;: &quot;design&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+      &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+      &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+      &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+      &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+    }
+  ],
+  &quot;first&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T03:42:16+00:00&quot;,
+    &quot;excluded&quot;: [],
+    &quot;failing&quot;: [
+      &quot;ANC-019&quot;,
+      &quot;ANC-032&quot;,
+      &quot;ANC-017&quot;,
+      &quot;ANC-021&quot;,
+      &quot;ANC-027&quot;,
+      &quot;ANC-029&quot;,
+      &quot;ANC-030&quot;,
+      &quot;ANC-031&quot;,
+      &quot;ANC-033&quot;
+    ],
+    &quot;pass&quot;: false,
+    &quot;run_id&quot;: &quot;plan-20261112T034216Z-run-d-6&quot;,
+    &quot;score&quot;: &quot;12/21&quot;,
+    &quot;status&quot;: &quot;fail&quot;
+  },
+  &quot;id&quot;: &quot;run-d-6&quot;,
+  &quot;last&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T07:19:39+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+        &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+        &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+        &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+        &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+      }
+    ],
+    &quot;failing&quot;: [],
+    &quot;pass&quot;: true,
+    &quot;run_id&quot;: &quot;plan-20261112T071939Z-run-d-6&quot;,
+    &quot;score&quot;: &quot;17/17&quot;,
+    &quot;status&quot;: &quot;pass&quot;
+  },
+  &quot;runs&quot;: 13,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;text_note&quot;: &quot;&quot;,
+  &quot;text_source&quot;: &quot;bd&quot;,
+  &quot;title&quot;: &quot;d-6: sqlite-storage&quot;,
+  &quot;trail&quot;: [
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:42:16+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;,
+        &quot;ANC-032&quot;,
+        &quot;ANC-017&quot;,
+        &quot;ANC-021&quot;,
+        &quot;ANC-027&quot;,
+        &quot;ANC-029&quot;,
+        &quot;ANC-030&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T034216Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;12/21&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:53:10+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-032&quot;,
+        &quot;ANC-017&quot;,
+        &quot;ANC-019&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T035310Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;13/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:06:29+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T040629Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:27:39+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-012&quot;,
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T042739Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;15/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:31:02+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-6 declares no added or retained upper bound beyond Cargo caret (rusqlite ^0.41; 0.42 is a qualification job only), which ANC-019&#x27;s scope excludes.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-9 and d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T043102Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/16&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:44:35+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-6 keeps rusqlite on a plain ^0.41 caret with no extra upper bound; an optional 0.42 widening after separate qualification widens the range rather than adding a cap, so ANC-019&#x27;s scope does not apply.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T044435Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/16&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:22:05+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T052205Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:27:06+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T052706Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:34:47+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T053447Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:08:54+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T060854Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:45:48+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T064548Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;16/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T07:02:54+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T070254Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;17/17&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T07:19:39+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T071939Z-run-d-6&quot;,
+      &quot;score&quot;: &quot;17/17&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;url&quot;: &quot;&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-6: d-6: sqlite-storage
+Gate FAIL 12/21 -&gt; PASS 17/17 over 13 runs.
+Failing at first run: ANC-019, ANC-032, ANC-017, ANC-021, ANC-027, ANC-029, ANC-030, ANC-031, ANC-033.
+Failing now: none.
+Excluded ANC-021: d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.
+Excluded ANC-029: Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.
+Excluded ANC-030: One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
+Excluded ANC-031: The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.
+Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
+    </div>
+  </div>
+
+  <table class="gate">
+    <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>12/21</td><td>ANC-019, ANC-032, ANC-017, ANC-021, ANC-027, ANC-029, ANC-030, ANC-031, ANC-033</td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>17/17</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <details class="trail">
+    <summary>All 13 runs</summary>
+    <table>
+      <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
+      <tbody>
+        <tr><td><code>plan-20261112T034216Z-run-d-6</code></td><td>2026-11-12T03:42:16+00:00</td><td><span class="status status-fail">FAIL</span></td><td>12/21</td><td>ANC-019, ANC-032, ANC-017, ANC-021, ANC-027, ANC-029, ANC-030, ANC-031, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T035310Z-run-d-6</code></td><td>2026-11-12T03:53:10+00:00</td><td><span class="status status-fail">FAIL</span></td><td>13/17</td><td>ANC-032, ANC-017, ANC-019, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T040629Z-run-d-6</code></td><td>2026-11-12T04:06:29+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-019</td></tr>
+        <tr><td><code>plan-20261112T042739Z-run-d-6</code></td><td>2026-11-12T04:27:39+00:00</td><td><span class="status status-fail">FAIL</span></td><td>15/17</td><td>ANC-012, ANC-019</td></tr>
+        <tr><td><code>plan-20261112T043102Z-run-d-6</code></td><td>2026-11-12T04:31:02+00:00</td><td><span class="status status-pass">PASS</span></td><td>16/16</td><td></td></tr>
+        <tr><td><code>plan-20261112T044435Z-run-d-6</code></td><td>2026-11-12T04:44:35+00:00</td><td><span class="status status-pass">PASS</span></td><td>16/16</td><td></td></tr>
+        <tr><td><code>plan-20261112T052205Z-run-d-6</code></td><td>2026-11-12T05:22:05+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T052706Z-run-d-6</code></td><td>2026-11-12T05:27:06+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T053447Z-run-d-6</code></td><td>2026-11-12T05:34:47+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T060854Z-run-d-6</code></td><td>2026-11-12T06:08:54+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-016</td></tr>
+        <tr><td><code>plan-20261112T064548Z-run-d-6</code></td><td>2026-11-12T06:45:48+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/17</td><td>ANC-019</td></tr>
+        <tr><td><code>plan-20261112T070254Z-run-d-6</code></td><td>2026-11-12T07:02:54+00:00</td><td><span class="status status-pass">PASS</span></td><td>17/17</td><td></td></tr>
+        <tr><td><code>plan-20261112T071939Z-run-d-6</code></td><td>2026-11-12T07:19:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>17/17</td><td></td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-021">ANC-021</a></th><td>d-6 is generic SQLite storage with no cron; default cron placement in the app SQLite file is wired by d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>Rejecting cron with the no-database template layout is template generation work in d-11, not generic SQLite storage.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-030">ANC-030</a></th><td>One-active-schedule-per-name is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-031">ANC-031</a></th><td>The cron row limit is sc-cron domain policy implemented over the generic transaction in d-9; d-6 has no cron schema.</td><td>this round</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Text: first judged to now</h3>
+  <p class="small">Source: bd</p>
+  <details open="open">
+    <summary>description</summary>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="ch">1. Implement <del>generic</del><ins>the shared sc-storage</ins> Storage&lt;T&gt; <ins>trait </ins>and <del>named</del><ins>its generic transaction operation that runs several row operations as one</ins> atomic <del>transaction producer/future</del><ins>unit</ins> over <del>the atm-core-derived</del><ins>a</ins> bounded <del>channel,</del><ins>channel whose design is adapted from atm-core (copied code, no dependency),</ins> single writer and reader pool. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.</div><div class="eq">2. Enforce transaction-body non-suspension: Pending rolls back with typed error, failed/panicked body never commits. Public storage APIs return typed Result and never panic; writer panic terminates/fails every pending/in-flight/queued caller without hangs — NFR-RUN-0002; ANC-035/036. Qualify actual external analyzer/no-panic rules for changed code, never substitute runtime polling for static analysis.</div><div class="eq">3. Generic row/migration/codec implementation contains no cron/application table type, schema or SQL. Consumer supplies row descriptors; all consumer policies live above storage. No sc-cron dependency/feature — ANC-032/034. Implement real factory/codec traits frozen in d-5, no duplicate definitions.</div><div class="ch">4. <del>Qualify</del><ins>Run</ins> <del>inherited</del><ins>the</ins> <del>rusqlite0.41</del><ins>required</ins> <del>floor</del><ins>rusqlite0.42 qualification. If its API, native-link</ins> and <del>separately0.42</del><ins>toolchain</ins> <del>before</del><ins>tests</ins> <del>widening;</del><ins>pass,</ins> <del>permit</del><ins>write</ins> <del>compatible</del><ins>the</ins> <del>patches</del><ins>shared root requirement &quot;&gt;=0.41, &lt;0.43&quot;; this admits all0.41.x</ins> and <del>justify</del><ins>additionally0.42.x.</ins> <del>extra</del><ins>If</ins> <del>upper</del><ins>a</ins> <del>caps.</del><ins>demonstrated0.42 break is found, write the plain caret &quot;0.41&quot; (^0.41) with an adjacent comment naming the break and evidence; this still admits every patch in0.41.x. The0.42 line is a separate Cargo compatibility line, not a patch upgrade within0.41.x.</ins> Thin generated SQLite <del>wrapper</del><ins>storage</ins> consumes <ins>the </ins>generic <del>storage</del><ins>backend</ins> and application-owned <del>schema,</del><ins>schema and</ins> removes SQLx SQLite/cache/config<del> when replacement compiles</del> — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Cron schema/domain policy/migration are d-9; real cron conformance and complete generated/mixed layouts are d-11; actual upstream/publication d-12. Backend tests use generic rows and do not contain a CronRow codec or cron SQL.</div><div class="ad">+ SQLite (d-6), Postgres (d-7) and MySQL (d-8) all implement the same sc-storage Storage&lt;T&gt; trait and its inherited generic AtomicStorage::transaction(spec, producer) operation; this single method runs several row operations as one atomic unit (ANC-032/033). This sprint implements Storage&lt;T&gt; for SqliteStore&lt;T&gt; using that shared trait, with no SQLite-specific parallel storage trait; it implements the SAME AtomicStorage::transaction(spec, producer) method as one writer message/savepoint.</div></div>
+  </details>
+  <details>
+    <summary>acceptance_criteria</summary>
+    <div class="diff"><div class="rm">- boundary:sc-runtime-db-sqlite — Run shared generic-row/atomic conformance on real SQLite, including create-generated-key/delete primitives for the pending template extension, transaction rollback, queue admission, batching/commit-before-reply, read-only pool, shutdown and typed errors. No table-specific backend source; no cron dependency/SQL/schema. All changed public storage functions return Result and do not panic.</div><div class="rm">- boundary:sc-runtime-db-sqlite/unsafe-body — Controlled future returns Pending: rollback + typed suspension error, no commit. Inject a writer/body panic after admitting multiple requests; await all registered replies and verify every one receives typed error, admission closes and no caller is left hanging. Drive controlled poll/barrier/channel states, no sleeps/time-race assertions. Analyzer rejects unsafe await/callee; record external rule state honestly.</div><div class="rm">- boundary:sc-runtime-db-sqlite/dependencies — Minimum/latest qualified rusqlite selections compile with required features; optional0.42 widening separately passes. cargo tree -i libsqlite3-sys shows one selected version&gt;=0.39, cargo tree -i sqlx-sqlite reports no selected package. Cargo.lock presence is not an identity check. No ATM/sc-compose release deps.</div><div class="rm">- Required: cargo test -p sc-runtime-db-sqlite --all-features; cargo clippy -p sc-runtime-db-sqlite --all-targets --all-features -- -D warnings; cargo build --workspace at this closure; configured sc-boundary and actual external transaction-safety/no-panic checks. Wrapper tests use real SQLite/generic contracts; d-11 owns full generated composition.</div><div class="rm">- Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness.</div><div class="ad">+ boundary:sc-runtime-db-sqlite — Run shared generic-row/atomic conformance on real SQLite, including create-generated-key/delete primitives for the d-5-frozen, owner-ratified template extension, transaction rollback, queue admission, batching/commit-before-reply, read-only pool, shutdown and typed errors. No table-specific backend source; no cron dependency/SQL/schema. All changed public storage functions return Result and do not panic.</div><div class="ad">+ boundary:sc-runtime-db-sqlite/unsafe-body — Controlled future returns Pending: rollback + typed suspension error, no commit. Inject a writer/body panic after admitting multiple requests; await all registered replies and verify every one receives typed error, admission closes and no caller is left hanging. Drive controlled poll/barrier/channel states, no sleeps/time-race assertions. Runtime tests reject actual suspension. The actual analyzer must reject awaits on non-transaction handles and calls to unmarked helpers; record external rule state honestly.</div><div class="ad">+ boundary:sc-runtime-db-sqlite/dependencies — Run real SQLite/atomic tests at the tested0.41 minimum and latest0.41.x, plus the required0.42 qualification at its minimum/latest selections. Neither outcome removes any0.41.x patch from the consumer requirement. cargo tree -i libsqlite3-sys shows one selected version&gt;=0.39; cargo tree -i sqlx-sqlite selects no package. Check the resolved graph, not Cargo.lock. No ATM/sc-compose release dependencies.</div><div class="ad">+ Required: cargo test -p sc-runtime-db-sqlite --all-features; cargo clippy -p sc-runtime-db-sqlite --all-targets --all-features -- -D warnings; cargo build --workspace at this closure; sc-lint lint sc-boundary --root . --config sc-lint.toml; sc-lint#931 no-panic rule and the external transaction-body analyzer must pass on this sprint&#x27;s changed storage code once delivered; until both rules exist and pass, closure stays blocked. Record the actual rule versions and commands when available, never a fabricated pass or implicit waiver. Wrapper tests use real SQLite/generic contracts; d-11 owns full generated composition.</div><div class="ad">+ Wire the single sc-storage observability wrapper defined/tested by d-5 into this engine; do not reimplement it. Engine tests use controlled observer inputs (ANC-033; NFR-RUN-0002).</div><div class="ad">+ boundary:sc-runtime-db-sqlite/ranges — CI job sqlite-rusqlite-minimum-latest runs the real SQLite/atomic tests at minimum allowed dependencies (-Z minimal-versions) and latest allowed rusqlite, not compile-only; every extra upper cap carries a manifest comment naming the demonstrated break, otherwise remove it (ANC-017/019).</div><div class="ad">+ boundary:sc-runtime-db-sqlite/callers — Async callers submit through the channel and await replies without blocking their thread or using spawn_blocking to submit writes; controlled admission/reply tests exercise this path (ANC-027).</div><div class="ad">+ boundary:sc-runtime-db-sqlite/all-ranges — sqlite-rusqlite-minimum-latest runs the REAL tests at -Z minimal-versions and latest for EVERY registry dependency range d-6 changes: rusqlite, generated SQLite wrapper and test/consumer workspace requirements. Compile-only does not count (ANC-017).</div><div class="ad">+ boundary:sc-runtime-db-sqlite/qualified-range — The tested minimum&#x27;s Cargo-compatible line is0.41.x: both the plain caret &quot;0.41&quot; and qualified &quot;&gt;=0.41, &lt;0.43&quot; admit0.41.0 and every later0.41.x patch. Only the latter additionally supports the independently qualified0.42.x line. Writer and legacy cron inherit that one root rusqlite requirement with workspace=true; no crate adds its own rusqlite/libsqlite3-sys range. libsqlite3-sys&gt;=0.39 is a selected transitive identity, not a direct pin. SDK requirements sc-storage and sc-runtime-db-sqlite use normal ^0.2.0 during development and ^0.3.0 after release conversion, admitting all patches in their respective SDK line. Store-sqlite schema uses its adopted-version path caret; tokio/serde_json inherit ^1, futures-util uses ^0.3.31 and tempfile ^3; writer Tokio uses a normal caret from its tested1.x floor. None adds an extra ceiling within its compatible line. Remove the SQLx SQLite requirement (ANC-016/017/019).</div><div class="ad">+ boundary:sc-runtime-db-sqlite/upper-bound-comments — Every additional third-party dependency upper bound this sprint writes or retains in root Cargo.toml, the writer or store-sqlite manifests MUST have a comment immediately beside that requirement identifying the actual known API, native-links or toolchain break requiring that bound, with its evidence. This applies to every extra bound, not only the documented0.42 fallback. A normal caret boundary needs no such justification. An unexplained additional bound prevents this sprint closing and fails the shared release manifest inspection (ANC-019).</div></div>
+  </details>
+  <details>
+    <summary>design</summary>
+    <div class="diff"><div class="eq">Consumes the real d-5 factory/codec/Storage/transaction declarations and prototype result. Own implementation after explicit staged manifest/lib.rs handoff; no redefinition of contract.rs. One database handle owns one writer queue/only write connection plus read-only workers. Copy only proven channel/reader plumbing from atm-core, implement the new future mechanism with explicit prototype risk. Per root writer constraints, only writer runtime drives Runtime::block_on; readers use blocking_recv, no runtime.</div><div class="eq">Read-write transaction producer executes in one savepoint inside queued outer transaction; failed/suspended body rolls back that savepoint, outer commit precedes success reply. Owned Send+&#x27;static producer creates a fresh future per attempt; SQLite body can await only tx operations. Actual Pending is rejected, even if a call would later become ready. Runtime is not the analyzer. Worker catch_unwind translates panic to typed worker-failed state, drains/fails every outstanding reply and closes admission; subsequent callers get typed failure. No public API panics.</div><div class="eq">No table-specific code or dependency on sc-cron. Storage&lt;T&gt; uses registered generic descriptor/codec; application chooses/migrates schema through generic engine API. d-6 removes SQLx SQLite only in its owned store wrapper manifest after d-5 additive registration. Package/default features remain consumer-neutral. Direct native identity is proved by cargo tree -i libsqlite3-sys; absence of sqlx-sqlite by cargo tree, not lockfile. Generic backend/native mix compile probes are boundary evidence, not complete generated app proof.</div><div class="ad">+ Root Cargo.toml staged handoff: d-5 writes workspace rusqlite ^0.41; after its sanity closes d-6 alone changes that same line to the qualified shared range in qualified-range above. Writer/legacy cron inherit it with workspace=true. d-12 subsequently edits only sc-* release version lines and never the rusqlite line. This existing d-5 -&gt; d-6 -&gt; d-12 path needs no new graph edge.</div></div>
+  </details>
+</section>
