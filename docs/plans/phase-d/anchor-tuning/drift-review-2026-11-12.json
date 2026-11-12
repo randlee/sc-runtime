@@ -157,8 +157,8 @@
         "quote": "Adds or retains an explicit third-party dependency upper bound beyond Cargo standard SemVer compatibility. Normal caret compatibility boundaries and internal path package identity versions are excluded."
       },
       "suggested_fix": "Escalate to the owner to confirm the success-branch form. Then state the classification once in d-11 compatible-generation (inherited by d-12): a '>=a, <b' range whose ceiling equals the Cargo compatibility boundary of a tested, qualified line is not an extra upper bound. Back it with a passing checker fixture, and keep a fixture where a ceiling inside a compatible line fails without a comment. Alternatively, the owner directs a comment on the qualified form.",
-      "status": "open",
-      "fix_note": "Open pending owner answer on how the shared checker classifies '>=0.41, <0.43' (runs asked the owner)."
+      "status": "owner_decision",
+      "fix_note": "Owner decision 2026-11-12 (asked by run-lead to classify d-6 rusqlite '>=0.41, <0.43' for the d-11 checker): \"Remove upper bound\". The rusqlite requirement carries no upper bound; the planner rewords d-6/d-11/d-12 accordingly and the changed sprints are re-judged."
     },
     {
       "id": "m7",
