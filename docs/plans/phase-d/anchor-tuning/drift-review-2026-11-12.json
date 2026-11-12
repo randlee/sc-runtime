@@ -1,8 +1,8 @@
 {
   "schema": "plan-anchoring/drift-review/1",
   "reviewed_at": "2026-11-12",
-  "compared": "docs/plans/phase-d/anchors.json at 4f02154 vs 964095d (field-by-field: only `exclude` lists changed; no statement, quote, scope, version or status changed; ANC-033..036 were locked at 38ce8b9, before 4f02154). Composed gate items run-d-3..run-d-12 in anchor-runs/gate-items-4f02154 vs gate-items-964095d (spot-checked against 25c7d4f, ddad9a5 and bea5d2a); bead `design`, `notes` and `metadata` fields of the same .bead.json snapshots, which the gate does not read; git diff 4f02154..964095d of docs/plans/phase-d.jsonl and phase-d-plan.md, plus the sprint-d-1..d-4 pointer replacements; latest plan-gate run JSON per item (verdicts and pre-exclusion verdicts for ANC-019 on d-6 and ANC-033/035 on d-9); planner edit logs /tmp/phase-d-gate-r1..r4/to-fix.json; batch instructions plan-gate-r1/r2/r3-fixes.md; current repo manifests, checked for real rusqlite/sqlx upper caps.",
-  "not_reviewed": "Jev was not run and no network call was made. No code was read beyond the Cargo manifests used to check whether any real cap was dropped. The anchors.md render, phase-d-dag.html and the anchor-tuning question files were not reviewed beyond the ANC-029 unwrap, which is structural only and keeps the same digest. The deleted bodies of the superseded 0.2.1 sprint-d-1..d-4 docs were not compared line by line. Intermediate rounds were only spot-checked. Final-gate verdicts for d-3, d-4, d-5 and d-7..d-10 were produced on ddad9a5 text, and for d-11 and d-12 on bea5d2a text. Those texts are byte-identical to 964095d, which was verified. Nothing here was independently verified by a second reviewer.",
+  "compared": "Two ranges are compared. Range 1 (4f02154..964095d) is the original review; its findings M1-M5 and m1-m5 have been re-statused. Range 2 (964095d..c8596c0, 23 commits) covers: anchors.json field by field (git show 964095d vs c8596c0, all 25 anchors including history prefixes) and the anchors.md render diff; composed gate items run-d-3..run-d-12 in gate-items-964095d (before) vs gate-items-c8596c0 (after), word-diffed in full, with the d-5, d-6 and d-12 bead design/metadata fields; the root bead run-phase-d before (bd history revision at 2026-11-12T04:26:03Z, the last before 964095d) vs after (06:42:19Z, identical to gate-items-ee9b472/root.bead.json; there is no root snapshot under gate-items-c8596c0); docs/plans/phase-d.jsonl diff; the triage-fe81543 failures and fix rows; the pre- and post-exclusion verdict history for the changed cells across all plan-*-run-d-*.json; the cited ADRs in docs/architecture.md; current manifests for the pin lines named in the plan; and a repo-wide grep for literal '<0.42'.",
+  "not_reviewed": "Jev was not run and no network call was made, so the beads-cache source and crates.io were not inspected. Intermediate gate-items folders between 964095d and c8596c0 were used only to date when the '>=0.41, <0.43' form appeared. Bead design fields were compared only for d-5, d-6 and d-12, plus targeted searches for ratification, rehearsal and migration text. phase-d-dag.html and the raw run JSON bodies were not reviewed beyond verdicts and answers. triage-fe81543 was read for its failures and fix rows, not audited line by line. The anchor-tuning question files were not compared beyond confirming none changed in range. No code was read beyond the manifests and scripts/adr_run_0011_grep.py. Nothing was verified by a second independent reviewer, and the M1/M2/M3/m2/m3/m5 fixes were verified by this reviewer from text only.",
   "findings": [
     {
       "id": "M1",
@@ -15,7 +15,7 @@
       },
       "suggested_fix": "Keep d-12 as the single publication blocker, but make it name the check. Run the sc-lint#931 panic rule over every crate with changed public storage functions: sc-storage, sc-runtime-db-sqlite, sc-cron/sc-cron-commands and the template stores. Run the transaction-body analyzer over changed transaction bodies. Both must be clean before the first upload. Restore 'Analyzer rejects awaits on non-tx handles and calls to unmarked helpers' and 'or a new explicit user decision; no implicit waiver' in d-5 design or d-12. Per CQA-F002, the owner sprint (d-6, and d-9 for sc-cron) runs the rule when it is available and records its state honestly. Remove the dangling 'configured sc-boundary .' fragments.",
       "status": "fixed",
-      "fix_note": "Restored actual sc-lint#931 no-panic and transaction-body analyzer requirements on changed storage code in d-5/d-6/d-9/d-11; missing rules block owner closure. Restored rejection of non-transaction awaits/unmarked helpers and no implicit waiver. d-12 names both actual rules as publication blockers once. Per lead ruling01M770ZDRPY1QTBCYK6ZN7SBM2, no rule CLI/ID exists yet: actual commands must be recorded when delivered; none invented or claimed run."
+      "fix_note": "Restored actual sc-lint#931 no-panic and transaction-body analyzer requirements on changed storage code in d-5/d-6/d-9/d-11; missing rules block owner closure. Restored rejection of non-transaction awaits/unmarked helpers and no implicit waiver. d-12 names both actual rules as publication blockers once. Per lead ruling01M770ZDRPY1QTBCYK6ZN7SBM2, no rule CLI/ID exists yet: actual commands must be recorded when delivered; none invented or claimed run. Re-verified at c8596c0 by the 2026-11-12 range review (964095d..c8596c0). d-5, d-6, d-9 and d-11 Required lines name the sc-lint#931 rule and the transaction-body analyzer with closure blocked until both pass; d-6 unsafe-body restores the non-transaction-await/unmarked-helper rejection; 'no implicit waiver' is restored; d-12 publication-gate names both rules. The dangling 'configured sc-boundary .' is replaced by 'sc-lint lint sc-boundary --root . --config sc-lint.toml'. The root design still calls rule availability d-12-only; see m8."
     },
     {
       "id": "M2",
@@ -28,7 +28,7 @@
       },
       "suggested_fix": "Ask the owner whether the released rusqlite range may widen to include 0.42 after qualification. If yes, restore round-1 deliverable 4 ('qualify 0.42 separately before widening'), require the widened bound's manifest comment, and remove the d-6 ANC-019 exclusion so the gate judges it. If no, record that user decision and delete 'optional0.42 widening separately passes' from d-6 and 'qualifies range/widening' from d-12 design so the plan is consistent.",
       "status": "fixed",
-      "fix_note": "Restored d-6 rusqlite ^0.41 baseline with no extra cap and optional released-range widening to0.42 only after separate qualification passes; aligned kept-caps and d-12 consumer range text. No dependency restriction added."
+      "fix_note": "Restored d-6 rusqlite ^0.41 baseline with no extra cap and optional released-range widening to0.42 only after separate qualification passes; aligned kept-caps and d-12 consumer range text. No dependency restriction added. Re-verified at c8596c0 by the 2026-11-12 range review (964095d..c8596c0). Owner decisions applied: 0.42 qualification is a required d-6 deliverable, the fallback is the plain caret ^0.41, there is no literal <0.42 anywhere, and the d-6 ANC-019 exclusion is removed (d-6 satisfied ANC-019 at 0.83, run plan-20261112T070254Z). The 'optional 0.42' and 'qualifies range/widening' contradictions are gone. The success-branch form '>=0.41, <0.43' raises a separate checker-classification question; see m6."
     },
     {
       "id": "M3",
@@ -41,7 +41,7 @@
       },
       "suggested_fix": "Add the round-1 sentence, unchanged in meaning, as a d-5 acceptance criterion, with a required test command in sc-storage. Keep the engines' 'wire, do not reimplement' line.",
       "status": "fixed",
-      "fix_note": "Restored controlled-clock/observer wrapper acceptance and cargo test -p sc-storage coverage in d-5, with no wall-clock/sleep/load correctness assertions. d-6/d-7/d-8 keep wiring the single wrapper."
+      "fix_note": "Restored controlled-clock/observer wrapper acceptance and cargo test -p sc-storage coverage in d-5, with no wall-clock/sleep/load correctness assertions. d-6/d-7/d-8 keep wiring the single wrapper. Re-verified at c8596c0 by the 2026-11-12 range review (964095d..c8596c0). d-5 acceptance boundary:storage-contract/observability carries the round-1 sentence plus 'cargo test -p sc-storage, including these controlled-clock wrapper cases'."
     },
     {
       "id": "M4",
@@ -54,7 +54,7 @@
       },
       "suggested_fix": "Owner updates intent.md to state that no generated graph carries a sqlx SQLite driver and that every SQLite layout receives the fixed rusqlite graph.",
       "status": "owner_decision",
-      "fix_note": "Superseded by the later user decision recorded by the lead. The plan already follows the new decision; intent.md text needs owner update."
+      "fix_note": "Superseded by the later user decision recorded by the lead. The plan already follows the new decision; intent.md text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
     },
     {
       "id": "M5",
@@ -67,7 +67,7 @@
       },
       "suggested_fix": "Owner updates intent.md to 0.3.0 across 8 crates and records the storage-contract scope as user-justified.",
       "status": "owner_decision",
-      "fix_note": "Superseded by the later user decision recorded by the lead (0.3.0 across 8 crates; one app database; storage contract). Intent text needs owner update."
+      "fix_note": "Superseded by the later user decision recorded by the lead (0.3.0 across 8 crates; one app database; storage contract). Intent text needs owner update. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
     },
     {
       "id": "m1",
@@ -80,7 +80,7 @@
       },
       "suggested_fix": "Owner refreshes the planning-status paragraph and points the governs-link at the Beads plan (run-phase-d / phase-d.jsonl).",
       "status": "owner_decision",
-      "fix_note": "Bookkeeping staleness after later user decisions; owner to refresh intent.md."
+      "fix_note": "Bookkeeping staleness after later user decisions; owner to refresh intent.md. Still open at c8596c0: intent.md did not change in 964095d..c8596c0."
     },
     {
       "id": "m2",
@@ -92,8 +92,8 @@
         "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
       },
       "suggested_fix": "Remove the run-d-9 exclusion and let d-9 be judged, or have the owner amend ANC-035's scope to name sc-cron CronStore/CronStorage explicitly. Do not narrow scope by exclusion.",
-      "status": "open",
-      "fix_note": ""
+      "status": "fixed",
+      "fix_note": "The run-d-9 exclusion on ANC-035 was removed (history 2026-11-12T06:40:50Z, exclusion_removed). d-9 now names the public Storage<CronRow> functions on CronStore and the CronStorage domain operations as changed public storage functions under ANC-035, and requires sc-lint#931 on them with no missing-rule waiver. d-9 satisfied ANC-035 at 0.96 (plan-20261112T070253Z). Verified by the 964095d..c8596c0 review. The anchor scope was not amended, so its parenthetical crate list remains."
     },
     {
       "id": "m3",
@@ -106,7 +106,7 @@
       },
       "suggested_fix": "Reword the d-5, d-6 and d-7 reasons to name d-11 as the sole owner.",
       "status": "fixed",
-      "fix_note": "run-lead re-recorded the ANC-021 exclusion reasons on run-d-5, run-d-6 and run-d-7 to name d-11 as the only owner."
+      "fix_note": "run-lead re-recorded the ANC-021 exclusion reasons on run-d-5, run-d-6 and run-d-7 to name d-11 as the only owner. Re-verified at c8596c0 by the 2026-11-12 range review (964095d..c8596c0). At c8596c0 the d-5, d-6 and d-7 reasons name only d-11."
     },
     {
       "id": "m4",
@@ -119,7 +119,7 @@
       },
       "suggested_fix": "Reword the d-11 test to fail on an exact, tilde or extra-upper requirement that lacks an adjacent comment naming its demonstrated break, matching d-12's package-caps-check.",
       "status": "owner_decision",
-      "fix_note": "Owner decision 2026-11-12: strict wording. The generated-template test fails on any exact or tilde pin, and on any extra upper bound without an adjacent comment naming the demonstrated break; such a bound starts at the first release that has the break. The drift-restored commented-pin allowance contradicted ANC-016 (d-11 r6-r8 contradicted 0.38-0.49 vs 0.73-0.80 under strict wording)."
+      "fix_note": "Owner decision 2026-11-12: strict wording. The generated-template test fails on any exact or tilde pin, and on any extra upper bound without an adjacent comment naming the demonstrated break; such a bound starts at the first release that has the break. The drift-restored commented-pin allowance contradicted ANC-016 (d-11 r6-r8 contradicted 0.38-0.49 vs 0.73-0.80 under strict wording). Verified at c8596c0: d-11 compatible-generation fails on any exact or tilde requirement and on any extra upper bound without an adjacent comment naming the demonstrated break, with the bound starting at the first broken release. d-3 now says 'replace exact/tilde pins with tested-floor caret ranges', and d-12 package-caps-check fixtures fail an exact registry pin. The earlier conflict with d-3/d-12 wording is resolved."
     },
     {
       "id": "m5",
@@ -132,7 +132,72 @@
       },
       "suggested_fix": "Restore 'validate the beads-cache migration against the exact post-conversion rehearsal archives before the first upload', attached to the one remaining rehearsal, not as a second rehearsal.",
       "status": "fixed",
-      "fix_note": "Restored actual beads-cache migration validation against the unpacked exact post-version-conversion archives before the first upload, inside the single remaining rehearsal. No duplicate rehearsal added."
+      "fix_note": "Restored actual beads-cache migration validation against the unpacked exact post-version-conversion archives before the first upload, inside the single remaining rehearsal. No duplicate rehearsal added. Re-verified at c8596c0 by the 2026-11-12 range review (964095d..c8596c0). Present in the d-12 bead design ('In the one exact post-conversion archive rehearsal, validate the actual beads-cache migration against the unpacked archives before the first upload'), not in the gate-read text."
+    },
+    {
+      "id": "M6",
+      "severity": "material",
+      "location": "anchors.json ANC-019 exclude run-d-5 (added 2026-11-12T05:27:31Z, re-recorded 06:40:50Z); run-d-5 deliverables 5 and 8, acceptance boundary:storage-contract/ranges, /adr-pins and /windows-ranges",
+      "what_changed": "A new exclusion removes d-5 from ANC-019 judging. d-5 is the sole owner of the exact-pin removals in template/Cargo.toml and template/workspace.template.toml (sc-observability/sc-observability-types =1.5.0 and utoipa =6.0.0 to carets) and in crates/sc-cron/Cargo.toml Windows dev-dependencies (win32job =2.0.3 and waitpid-any =0.3.0 to carets). d-12 says it 'does not repeat them'. Exact pins are retained explicit upper bounds, and ANC-019's own plan relevance criterion counts an item that 'changes, preserves, or explicitly specifies added or retained explicit third-party dependency upper bounds'. The reason ('adds or retains no explicit third-party upper bound') describes only d-5's end state and drops the earlier record's acknowledgement that d-5 converts those pins. The exclusion was added right after an 'underspecified' verdict (plan-20261112T052700Z: relevant 0.51/0.49, owns 0.53), not after the text was made more specific. The owner ruled that underspecified means the plan must be more specific, called exclusions a loosening tool, and refused ANC-019 exceptions for the other pin-owning sprints (d-6 and d-12). Downstream coverage partly exists: ANC-016 is judged on d-5, and d-11/d-12 run the mechanical checker on generated and packaged manifests. But the sprint that edits these lines is not judged on the anchor that governs them.",
+      "authority": {
+        "ref": "ANC-019; owner d-6/d-12 decision and the 'underspecified' ruling in the drift brief",
+        "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment."
+      },
+      "suggested_fix": "Revert: remove the run-d-5 entry from ANC-019's exclude list and let the gate judge d-5. The current d-5 text already states the obligation (all edited lines are normal carets, no extra upper bound, and any later bound starts at the first broken release with an adjacent comment), so no growth is expected. If it is still underspecified, make d-5 more specific instead of excluding it. Escalate only if the planner contends the anchor scope excludes pin removal; that is a scope question for the owner, not an exclusion.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m6",
+      "severity": "minor",
+      "location": "run-d-6 deliverable 4 and acceptance /qualified-range and /upper-bound-comments vs run-d-11 req:REQ-RUN-0328/compatible-generation and run-d-12 req:REQ-RUN-0002/package-caps",
+      "what_changed": "If 0.42 qualifies, d-6's success branch writes the root requirement '>=0.41, <0.43'. This form was introduced at e4018ab and kept through the owner's d-6 ruling. d-6 treats it as a widening with no extra bound, so it carries no comment. The shared d-11 checker, which d-12 reuses on the packaged archives where the workspace rusqlite line is inlined, fails 'any extra upper bound without an adjacent comment naming the demonstrated break' and says 'Every other requirement is a normal caret'. '>=0.41, <0.43' is not a caret, and no break at 0.43 can be named. The plan does not say how the shared checker classifies a two-line range whose ceiling is the next Cargo compatibility boundary above an independently qualified line. Jev flagged the same weak spot (triage-fe81543 R2-01: 'its qualified branch writes a literal upper boundary'). The fix added a general comment rule without resolving it. The likely outcomes at implementation are an unplanned special case in the checker or a release-gate failure.",
+      "authority": {
+        "ref": "Owner pin rule (drift brief); ANC-019 scope",
+        "quote": "Adds or retains an explicit third-party dependency upper bound beyond Cargo standard SemVer compatibility. Normal caret compatibility boundaries and internal path package identity versions are excluded."
+      },
+      "suggested_fix": "Escalate to the owner to confirm the success-branch form. Then state the classification once in d-11 compatible-generation (inherited by d-12): a '>=a, <b' range whose ceiling equals the Cargo compatibility boundary of a tested, qualified line is not an extra upper bound. Back it with a passing checker fixture, and keep a fixture where a ceiling inside a compatible line fails without a comment. Alternatively, the owner directs a comment on the qualified form.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m7",
+      "severity": "minor",
+      "location": "run-d-5 deliverables 2, 3 and 6 and acceptance boundary:storage-contract; run-d-6 boundary:sc-runtime-db-sqlite; run-d-10 boundary:template-service/preserved-crud",
+      "what_changed": "Gate-read text dropped 'PENDING USER RATIFICATION' and 'currently unbuilt, not forbidden'. It now says 'Build option (a)', 'd-5-frozen template extension', 'satisfy the Ratification gate below' and 'the tested single-row-type or multi-row-type outcome defined below'. Neither 'below' target is in the composed text the gate reads; both live only in the d-5 bead design. The substance is preserved and tightened there. Owner ratification of the extension and shape now gates d-5 closure, where before layers built at risk. Multi-type support is now a tested outcome, and closure blocks if neither contract passes. ADR-RUN-0020/0021 remain 'Proposed — Not binding'. The planning gate therefore judged d-5, d-6 and d-10 without seeing that ratification is still pending, and 'Build option (a)' reads like an owner decision that the brief does not record.",
+      "authority": {
+        "ref": "ADR-RUN-0020 status (docs/architecture.md); root design 'Ratification and external gates'",
+        "quote": "D-5 proposed template create/delete-with-generated-id extension over atomic storage preserves current DTO behavior; PENDING USER RATIFICATION."
+      },
+      "suggested_fix": "Add one sentence to the d-5 description: owner ratification of option (a) and the frozen shape is pending and gates d-5 closure; ADR-RUN-0020/0021 are Proposed. Also inline the single- or multi-row-type closure rule, or replace each 'below' with a pointer the gate can see.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m8",
+      "severity": "minor",
+      "location": "run-phase-d root design, 'Test-support ownership' paragraph (unchanged in range) vs run-d-5/d-6/d-9/d-11 Required lines (changed in range)",
+      "what_changed": "The root still says 'External static-rule availability is a d-12 publication blocker, not repeated layer closure work.' After the M1 restoration, d-5, d-6, d-9 and d-11 each block their own closure until the sc-lint#931 rule and the transaction-body analyzer exist and pass. The root's 'Ratification and external gates' paragraph notes the analyzer is 'not yet requested'. The sprint text is the stricter reading and governs, but the root contradicts it, and the schedule consequence goes unstated: four sprints cannot close until an unrequested external rule ships.",
+      "authority": {
+        "ref": "ANC-035; owner guideline 'Where anchors conflict, take the stricter reading'",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+      },
+      "suggested_fix": "Update the root sentence to match the sprints: each owner sprint is blocked until both rules exist and pass on its changed storage code, and d-12 rechecks before upload. Record the analyzer request as an explicit external blocker with its owner.",
+      "status": "open",
+      "fix_note": ""
+    },
+    {
+      "id": "m9",
+      "severity": "minor",
+      "location": "run-d-3 deliverables 1 and 4 (wave 1) vs run-d-5 deliverable 8 (wave 1, parallel); docs/architecture.md ADR-RUN-0017 and ADR-RUN-0203",
+      "what_changed": "d-3 removes the sc-command sc-observability-types =1.5.0 pin and the rmcp ~3.8, schemars =1.2.3 and utoipa =6.0.0 pins, and implements the probes 'per' the amended ADRs. d-5 owns the ADR-RUN-0017/0203 amendments. The two sprints are parallel roots with no edge. Both ADRs are Active today: ADR-RUN-0017 mandates the =1.5.0 exact pin, and ADR-RUN-0203 holds the Phase C frozen matrix. d-3 can therefore close against unamended binding ADRs, which arch-qa would flag. The owner approved the content (Option B and the 0203 caret amendment); only the sequencing is unplanned.",
+      "authority": {
+        "ref": "ADR-RUN-0017 (Active)",
+        "quote": "It temporarily pins its existing types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify with it."
+      },
+      "suggested_fix": "Choose one: move the two ADR amendments into d-3, or land them before dispatch, or have d-3 consume d-5's amendment. The last option adds an edge and changes the wave metrics, so it needs the owner's consent.",
+      "status": "open",
+      "fix_note": ""
     }
   ],
   "acceptable_choices": [
@@ -159,6 +224,42 @@
     {
       "location": "run-d-7/d-8/d-10 design; run-d-9 design",
       "note": "Repeated 'Version is approved coordinated0.3.0 ... scope B is selected by user' and ratification boilerplate were removed. The 0.3.0 version and ratification gating are still stated once, in d-5 and d-12 (CQA-F005)."
+    },
+    {
+      "location": "run-d-6 deliverable 4 (fallback)",
+      "note": "The fallback is the plain caret \"0.41\" (^0.41), as the owner ruled, with no literal <0.42. The plan also asks for an adjacent comment naming the demonstrated 0.42 break. The owner did not ask for that comment, and d-6's own /upper-bound-comments line says a caret needs none. It documents a real exclusion and loosens nothing."
+    },
+    {
+      "location": "run-d-5 deliverable 9; run-d-11 /manifest-handoff; run-d-12 deliverable 5",
+      "note": "The owner said removal comes 'when sc-lint ships the equivalent'. The plan says 'once sc-lint ships the equivalent lint and sc-runtime adopts it'. The adoption step prevents an enforcement gap and does not change the substance. d-5 records the four things a process artifact needs: consumer, gate, observed defect and deletion condition."
+    },
+    {
+      "location": "run-d-12 req:REQ-RUN-0002/package-caps",
+      "note": "The accepted comment justifications narrowed from 'API break, native links conflict, toolchain limit or deliberate negative-test bound' to 'demonstrated API, links or toolchain break', and exact pins now fail outright, per the owner pin rule. This is tighter than ANC-019's deterministic_check. The only negative fixture, crates/sc-runtime/tests/fixtures/utoipa5-router, moves to the caret ^0.2.0 with a comment (d-3) and is not a d-12 input, so nothing breaks."
+    },
+    {
+      "location": "run-d-9 boundary:sc-cron/ADR-RUN-0011",
+      "note": "This is added work. It traces to locked ADR-RUN-0011 (Active, amended exception). It forbids allow-comment exemptions in non-test sc-cron sources, which is stricter than ADR point 4. scripts/adr_run_0011_grep.py exists."
+    },
+    {
+      "location": "run-d-9 boundary:sc-cron/migration",
+      "note": "'compatible dependency ranges and adjacent known-break cap comments preserved' became 'dependency requirements follow schema-range below'. The current crates/sc-cron and crates/sc-cron-commands manifests have no caps: they hold exact pins, which d-9 and d-5 convert, and a floor comment on rusqlite. schema-range says all d-9 manifest edits are carets with no extra bound and that later bounds follow d-12 package-caps. Nothing real was dropped."
+    },
+    {
+      "location": "run-d-6 deliverable 4",
+      "note": "'removes SQLx SQLite/cache/config when replacement compiles' became an unconditional removal. That is tighter."
+    },
+    {
+      "location": "anchors.json ANC-003 exclude run-d-5; ANC-015 exclude run-d-11",
+      "note": "Both reasons are true of the item text and owned paths. d-5 owns no new_project.py, executable-selection or generation-instruction path (pre-exclusion relevant=no 0.58, owns=no 0.88). d-11 owns no skill path, and d-4 owns the skill scripts and is judged on ANC-015 (every d-11 run answered relevant=no at 0.70-1.0)."
+    },
+    {
+      "location": "anchors.json ADR-RUN-0011 exclude run-d-12",
+      "note": "The reason holds against the ADR statement, which covers production code under crates/ and template/. d-12 changes manifests, Python release wiring and the external beads-cache repository. The exclusion followed an 'underspecified' verdict (owns=no 0.94) after nine 'satisfied' runs. The beads-cache migration is the one place d-12 could bridge sync and async code, but that is outside this repository's ADR scope."
+    },
+    {
+      "location": "run-d-5 deliverable 5 / run-d-12 deliverable 4 / run-d-3 deliverable 4",
+      "note": "The new pin-line ownership is disjoint. d-3 owns command, runtime, daemon, phase-c contract and fixture lines. d-5 owns the template manifests and sc-cron Windows lines. d-9 owns sc-cron-commands. d-12 owns tests/integration/cron-consumer. Each line traces to the owner pin rule and the ADR-RUN-0017/0203 caret amendments. 'd-12 does not repeat them' avoids double edits."
     }
   ],
   "confirmations": [
@@ -189,6 +290,34 @@
     {
       "area": "Later user decisions reflected in final items",
       "note": "The final items reflect the later user decisions. There is one app DB, and cron is CronStore over Storage<CronRow> (d-9, d-11). There is no sqlx SQLite driver, and Postgres and MySQL use direct sqlx crates (d-6, d-7, d-8, d-11). Only the writer thread calls block_on, and readers use blocking_recv on non-async threads (d-11, ADR-RUN-0011). There is no optional cron Cargo feature; 'cron=true' is a generation option. Evidence uses cargo tree rather than Cargo.lock throughout, and the rusqlite 0.41 baseline is registered once at the root (d-5). d-6's rewrite to 'copied code, no dependency' for the atm-core-derived channel (r4) matches ANC-012."
+    },
+    {
+      "area": "Anchors 964095d..c8596c0 (check 1)",
+      "note": "A field-by-field comparison of all 25 anchors found changes only in `exclude` and `history`. History is append-only: each prefix is unchanged, and the many 06:40:50Z 'replaced: true' rows re-record identical reasons. No statement, quote, scope, deterministic_check, fixture, question_override, version or status changed. No anchor-tuning question file changed in the range, so the owner's 'no question tuning' rule holds. anchors.md mirrors the exclude changes."
+    },
+    {
+      "area": "Exclusions added, removed and reworded (check 1)",
+      "note": "Added: ANC-003 run-d-5, ANC-015 run-d-11 and ADR-RUN-0011 run-d-12 (acceptable; see acceptable_choices), and ANC-019 run-d-5 (M6). Removed (11), each now judged at c8596c0 with no failing cell: ANC-003 d-11; ANC-016 d-9; ANC-017 d-9 and d-10; ANC-019 d-6 and d-9; ANC-021 d-12; ANC-026 d-10; ANC-030 d-12; ANC-031 d-12; ANC-035 d-9. Reworded: ANC-021 d-5/d-6/d-7, which now name d-11 only (m3). The d-7/d-8 ANC-019 and ANC-020 d-3 exclusions are unchanged."
+    },
+    {
+      "area": "Gate evidence binds to final text",
+      "note": "The latest run per item has no failing cell. Each was run on text byte-identical to c8596c0: d-3 at 702a115, d-4 and d-8 at ddad9a5, d-5 at ee9b472, d-7 at 725dc2e, and d-6 and d-9..d-12 at c8596c0. d-4, d-7 and d-8 are unchanged across the range."
+    },
+    {
+      "area": "Owner decisions vs current text (check 3)",
+      "note": "No literal '<0.42' appears in the c8596c0 items, the bead snapshots, phase-d.jsonl, anchors, intent.md, architecture.md or any manifest. d-5 writes ^0.41 and only d-6 changes the root rusqlite line; d-12 says 'the root rusqlite line remains d-6-owned', and the root design states the d-5 -> d-6 -> d-12 handoff. The 0.42 qualification is required in d-6. d-11 owns the single callable check_dependency_manifests(paths) in its owned test file. d-12 reuses it without copying it, wires it into the archive rehearsal, both endpoints and the release gate, and owns only inputs and negative fixtures. The interim check is recorded under ADR-RUN-0005 (d-5 deliverable 9) with randlee/sc-lint#936 and a deletion condition. d-12 is not excluded from ANC-019 and satisfied it at 0.83. The pin rule appears in d-11, d-12 and d-3. ADR-RUN-0017 moves to ^1.5.0 with no exact-pin exception (Option B), and the probe decides shim or native mode. ADR-RUN-0203 carets rmcp ^3.9, utoipa ^6.0.0, utoipa-axum ^0.3.0 and schemars ^1.2.3 appear in d-3, d-5, d-9, d-11 and d-12. The single app database, async writer and 0.3.0 across 8 crates are unchanged."
+    },
+    {
+      "area": "Added work traces (check 2, class d)",
+      "note": "Each added passage traces to authority that is locked or owner-approved: d-3 deliverable 4, pin-probes and cron-schema-endpoints (ADR-RUN-0017/0203 existing probes plus the owner amendment, ANC-016/017/019); d-5 deliverables 8 and 9 and /adr-pins, /windows-ranges and /interim-lint (owner decisions, ADR-RUN-0005, ANC-016/019); d-5 /observability (M3 restoration, NFR-RUN-0002); d-6 /qualified-range and /upper-bound-comments (owner 0.42 decision, ANC-019); d-9 Storage<CronRow> functions (REQ-RUN-0328, ANC-035) and ADR-RUN-0011; d-10 /dependency-endpoints (ANC-016/017); d-11 deliverable 4, /manifest-handoff, /generator-compatibility (ANC-003/005) and /admitted-versions (ADR-RUN-0203); d-12 deliverables 4 and 5, /preserved-cron (ANC-021/030/031) and /admitted-requirements (ANC-016/017/019). triage-fe81543 binds R2-01..R2-08 to authorities whose predates_failure is true. No untraced scope was found."
+    },
+    {
+      "area": "Structural change and root metrics (check 4)",
+      "note": "The phase-d.jsonl d-12 depends_on changed from [d-4, d-6, d-9, d-10] to [d-11]. The removed direct edges are transitive through d-11, whose dependencies are d-4 and d-6..d-10. d-12's pr_target is sprint/d-11-generated-app-composition. The root metadata and table give critical_path 4, wave_count 4, width 6 and d-12 in wave 4. Waves are {d-3, d-4, d-5}, {d-6..d-10}, {d-11} and {d-12}, so the critical path is 4. Width 6 is the maximum antichain {d-4, d-6, d-7, d-8, d-9, d-10}; the largest wave has only 5. Width is unchanged by the edit. The root removed 'No fourth code wave' and 'd-12 preparation may run in parallel', as the owner's reuse ruling requires."
+    },
+    {
+      "area": "ADR statuses the plan relies on",
+      "note": "ADR-RUN-0005 is Active, and the interim check is owner-approved. ADR-RUN-0011 is Active with the amended sole Runtime::block_on writer-thread exception, matching the anchor. ADR-RUN-0017 and ADR-RUN-0203 are Active, and d-5 amends them under owner decisions (sequencing in m9). ADR-RUN-0020 and ADR-RUN-0021 are 'Proposed — draft for owner review. Not binding.' The plan keeps owner ratification as a d-5 closure gate and a publication gate. No passage in range claims they are accepted, though the gate-visible wording is weaker (m7)."
     }
   ]
 }
