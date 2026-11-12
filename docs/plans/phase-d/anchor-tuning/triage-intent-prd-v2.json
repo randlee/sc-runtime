@@ -1,0 +1,79 @@
+{
+  "consumer": "run-lead independent drift review and owner final HTML review",
+  "gate": "Phase D intent alignment acceptance",
+  "observed_defect": "Intent predates PRD v2.0 and owner release/scope decisions",
+  "retirement": "Archive with final Phase D review when implementation closes",
+  "before_revision": "89d4fc0",
+  "fix_rows": [
+    {
+      "finding_id": "M4",
+      "action": "replace",
+      "why": {
+        "source_revision": "89d4fc0",
+        "source": "independent drift review and ATM 01M77AETD1HSRMGPNHTCPS48F0",
+        "question_answer_confidence": "Not a Jev failed cell: stale intent rejected by PRD authority comparison; no score invented.",
+        "diagnosis": "Stale intent, not plan drift. Intent still says generated SQLx-SQLite graphs keep the cron-family 0.2.0 floors and do not get the SQLite fix. The later user decisions route all SQLite access through the async channel writer, with no sqlx SQLite driver and one app database. The plan follows the later decisions: d-6 and d-11 require that `cargo tree -i sqlx-sqlite` selects nothing.",
+        "weak_sentence": "Generated SQLx-SQLite graphs retain the link-compatible cron-family 0.2.0 floors; they do not receive the 0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1."
+      },
+      "authority": {
+        "revision": "89d4fc0",
+        "path": "docs/prd/sc-runtime-prd.md",
+        "ids": [
+          "PRD-STO-2",
+          "PRD-STO-3",
+          "PRD-CRON-3"
+        ],
+        "precedence": "Where one of them disagrees with this PRD, this PRD is right and the other document is fixed.",
+        "release_decision": "Owner 01M76S6D7T58E4CMKHJRCXFJ1J; live run-phase-d metadata release_version=0.3.0, public_crates=8"
+      },
+      "replacement": "Remove superseded vulnerable-generated-SQLite exception; refer directly to PRD-STO-2/3 and PRD-CRON-3 instead of copying their product requirements."
+    },
+    {
+      "finding_id": "M5",
+      "action": "replace",
+      "why": {
+        "source_revision": "89d4fc0",
+        "source": "independent drift review and ATM 01M77AETD1HSRMGPNHTCPS48F0",
+        "question_answer_confidence": "Not a Jev failed cell: stale intent rejected by PRD authority comparison; no score invented.",
+        "diagnosis": "Stale intent, not plan drift. Intent targets a published 0.2.1 and a maintenance-only scope in which new product features need separate justification. The later user decisions set 0.3.0 across 8 crates and add the Storage<T>/sc-storage contract with SQLite, Postgres and MySQL engines. The plan (d-5..d-12) follows the later decisions.",
+        "weak_sentence": "Success includes a registry consumer using released 0.2.1 crates, resolving the fixed dependencies, passing the relevant advisory checks, and building/running the affected integration."
+      },
+      "authority": {
+        "revision": "89d4fc0",
+        "path": "docs/prd/sc-runtime-prd.md",
+        "ids": [
+          "PRD-STO-1",
+          "PRD-STO-2",
+          "PRD-STO-5"
+        ],
+        "precedence": "Where one of them disagrees with this PRD, this PRD is right and the other document is fixed.",
+        "release_decision": "Owner 01M76S6D7T58E4CMKHJRCXFJ1J; live run-phase-d metadata release_version=0.3.0, public_crates=8"
+      },
+      "replacement": "Remove maintenance-only product scope and duplicate storage/command requirements; reference PRD directly. Keep only Phase D registry adoption and recorded coordinated 0.3.0 eight-crate release delta."
+    },
+    {
+      "finding_id": "m1",
+      "action": "replace",
+      "why": {
+        "source_revision": "89d4fc0",
+        "source": "independent drift review and ATM 01M77AETD1HSRMGPNHTCPS48F0",
+        "question_answer_confidence": "Not a Jev failed cell: stale intent rejected by PRD authority comparison; no score invented.",
+        "diagnosis": "Stale intent, not plan drift. Intent says eight locked anchors govern three sprints and that it governs phase-d-plan.md. Now 25 anchors are locked (24 ANC plus ADR-RUN-0011) over ten sprints (d-3..d-12), and phase-d-plan.md was replaced in this range by a pointer to the Beads plan.",
+        "weak_sentence": "Eight locked anchors now govern the three revised sprints."
+      },
+      "authority": {
+        "revision": "89d4fc0",
+        "path": "docs/prd/sc-runtime-prd.md",
+        "ids": [
+          "PRD Authority"
+        ],
+        "precedence": "Where one of them disagrees with this PRD, this PRD is right and the other document is fixed.",
+        "release_decision": "Owner 01M76S6D7T58E4CMKHJRCXFJ1J; live run-phase-d metadata release_version=0.3.0, public_crates=8"
+      },
+      "replacement": "Point to PRD as product intent and live run-phase-d / phase-d.jsonl as plan; identify old three-sprint/eight-anchor status as historical."
+    }
+  ],
+  "old_intent": "# Intent — Phase D: easy adoption and compatible upgrades\n\nUpdated 2026-11-11 following the user's planning handover. This governs [the revised phase plan](phase-d-plan.md) and its consumer\nacceptance criteria. Final approval of the HTML diff remains pending.\n\n## Purpose\n\nPhase D makes sc-runtime easy for consumers to adopt, build, and maintain.\nPublished libraries and generated applications should fit into a consumer's\ndependency graph and let that consumer take non-breaking fixes and upgrades on\ntheir own schedule. The framework should remove avoidable integration work and\ndependency restrictions throughout that lifecycle.\n\nThe immediate failure is concrete: **beads-cache is blocked by the rusqlite /\nSQLite security advisory** because published `sc-cron` 0.2.0 prevents resolution\nto a fixed SQLite dependency. [Issue #132](https://github.com/randlee/sc-runtime/issues/132)\nrecords RUSTSEC-2026-0459 and the native-library conflict. Phase D must deliver a\npublished **0.2.1** that unblocks that consumer, together with a dependency policy\nthat prevents the same avoidable restriction from recurring.\n\n## Consumer outcomes\n\n- A consumer can use the released crates and build a generated application\n  using the documented features and supported Rust toolchain.\n- A consumer can use `cargo update` to take compatible dependency fixes without\n  waiting for another sc-runtime release or adding local patches to its crates.\n- The released dependency graph clears the rusqlite advisory blocking\n  beads-cache and the rmcp advisory identified in\n  [#133](https://github.com/randlee/sc-runtime/issues/133).\n- Manifest floors describe versions that are actually tested. CI exercises the\n  supported minimum and latest allowed dependency sets, including the relevant\n  template features and separate consumer workspaces.\n- README examples, feature instructions, and package metadata describe the\n  published product. This includes the `test-util` / `instrument_router` helper\n  restored in [PR #131](https://github.com/randlee/sc-runtime/pull/131).\n- Maintainers and consumers can choose generation-tool versions independently.\n  CI can reproduce its chosen sc-compose release from immutable binaries;\n  compatible consumer overrides through `SC_COMPOSE` or PATH remain supported.\n  Distribution improvements are tracked in\n  [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041).\n\n## Dependency policy direction\n\nThe adopted default is a tested minimum with Cargo's normal SemVer-compatible\nupgrade range. Exact pins, narrower ranges, and toolchain restrictions need a\nspecific compatibility reason. Reproducibility belongs in application/CI\nlockfiles and immutable tool installs while published library requirements leave\nroom for compatible consumer upgrades.\n\nCargo's [dependency guidance](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html)\nexplains that a requirement such as `1.2.3` already permits compatible upgrades;\nan unbounded `>=1.2.3` also admits future breaking versions. Pre-1.0 minor\nversions cross Cargo compatibility boundaries. Public dependency types and\nnative-library `links` constraints also require attention when widening a range;\nsee [dependency resolution](https://doc.rust-lang.org/cargo/reference/resolver.html).\n\nThe earlier #133 prescription of blanket `>=` ranges is clarified by the\nuser-adopted ANC-016 and ANC-019: permit newer Cargo-compatible releases and\njustify extra upper bounds beside the requirement. The\n[sweep inventory](issue-133-dependency-sweep.md) and sprint acceptance criteria\nnow use that policy.\nSupport across a Cargo compatibility boundary, including rusqlite 0.41 / 0.42,\nrequires explicit validation of the affected APIs and dependency graph.\n\nThe rusqlite/sqlx native-library conflict needs an explicit supported\nconfiguration and consumer migration guidance. Generated SQLx-SQLite graphs\nretain the link-compatible cron-family 0.2.0 floors; they do not receive the\n0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1.\nThe release sprint must prove the actual beads-cache configuration uses the\nfixed released graph. Deleting the coexistence fixture alone cannot prove that\noutcome. This compatibility path is planned qualification work, not a completed\nconsumer test.\n\n## Proof and scope\n\nSuccess includes a registry consumer using released 0.2.1 crates, resolving the\nfixed dependencies, passing the relevant advisory checks, and building/running\nthe affected integration. Consumer proof must exclude local path/patch\nsubstitutes. Repository tests accompany this proof. Regression tests use\ncontrolled inputs and deterministic synchronization.\n\nThis maintenance phase covers dependency constraints, generated defaults,\nconsumer documentation, reproducible generation tooling, and the release needed\nto deliver those improvements. Breaking dependency migrations and new product\nfeatures require separate justification. A reported upstream incompatibility\nstays explicit until a supported consumer path is demonstrated.\n\n## User provenance and planning status\n\nThe user stated during the 2026-11-11 planning handover:\n\n> The intention of phase-d is to make sc-runtime easy for consumers to use.\n> today beads-cache is blocked because of the security warning on rusqlite.\n> we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.\n\nExisting [anchors](anchors.json) and [their rendered register](anchors.md) retain\ntheir prior records, including retired ANC-008. The user adopted ANC-016, ANC-017, ANC-019 and ANC-020 on November 11. Eight\nlocked anchors now govern the three revised sprints. Anchor gates and the scoped\nsprint-guidelines review are documented in the approval report; implementation,\nregistry proof, publication and normal plan QA remain separate requirements.\n",
+  "calibration_evidence": "Existing frozen authority packets, oracles, sealed questions and raw results are preserved unchanged; this rewrite does not retroactively replace their input.",
+  "review_refinement": "ATM 01M77AHA1B9Q3R6VCFBWV1R5RB: owner asks whether intent is already in PRD; keep a PRD reference and only Phase D adoption/dependency/release delta, avoiding duplicate product requirements."
+}

@@ -1,100 +1,49 @@
-# Intent — Phase D: easy adoption and compatible upgrades
+# Phase D intent
 
-Updated 2026-11-11 following the user's planning handover. This governs [the revised phase plan](phase-d-plan.md) and its consumer
-acceptance criteria. Final approval of the HTML diff remains pending.
+[PRD v2.0](../../prd/sc-runtime-prd.md) is the product intent and top authority.
+Its storage and writer requirements (PRD-STO-1–5), cron requirements
+(PRD-CRON-1–5), command pattern, engineering rules (including PRD-ENG-5/6)
+and deferred decisions apply directly. This document adds only the Phase D
+delta; it does not restate or override those requirements.
 
-## Purpose
+The executable plan is Beads epic `run-phase-d`, indexed by
+[phase-d.jsonl](../phase-d.jsonl). [Anchors](anchors.md) retain approved
+constraints and their verbatim provenance. The earlier Markdown plan and the
+three-sprint/eight-anchor status are historical.
 
-Phase D makes sc-runtime easy for consumers to adopt, build, and maintain.
-Published libraries and generated applications should fit into a consumer's
-dependency graph and let that consumer take non-breaking fixes and upgrades on
-their own schedule. The framework should remove avoidable integration work and
-dependency restrictions throughout that lifecycle.
+## Phase D delta
 
-The immediate failure is concrete: **beads-cache is blocked by the rusqlite /
-SQLite security advisory** because published `sc-cron` 0.2.0 prevents resolution
-to a fixed SQLite dependency. [Issue #132](https://github.com/randlee/sc-runtime/issues/132)
-records RUSTSEC-2026-0459 and the native-library conflict. Phase D must deliver a
-published **0.2.1** that unblocks that consumer, together with a dependency policy
-that prevents the same avoidable restriction from recurring.
+**Adoption.** Unblock beads-cache's SQLite security upgrade and make the fixed
+SDK usable from the registry. Acceptance includes the actual upstream migration
+PR open with CI green at a recorded revision against the published release,
+without local path, patch or Git SDK substitutes. Generated application
+acceptance follows the PRD and live sprint criteria; the superseded vulnerable
+SQLx-SQLite configuration is not an accepted Phase D outcome (PRD-STO-2/3;
+PRD-CRON-3).
 
-## Consumer outcomes
+**Compatible upgrades.** Published and generated dependency requirements allow
+newer Cargo-compatible releases from tested floors without another SDK release
+(ANC-016). Production and generated requirements do not use exact or tilde pins.
+Additional upper bounds need adjacent manifest comments identifying the known
+break requiring them (ANC-019). CI tests minimum and latest allowed selections,
+including generated and separate-consumer configurations (ANC-017). Application
+lockfiles and reproducible generation-tool installs do not restrict consumers'
+dependency choices.
 
-- A consumer can use the released crates and build a generated application
-  using the documented features and supported Rust toolchain.
-- A consumer can use `cargo update` to take compatible dependency fixes without
-  waiting for another sc-runtime release or adding local patches to its crates.
-- The released dependency graph clears the rusqlite advisory blocking
-  beads-cache and the rmcp advisory identified in
-  [#133](https://github.com/randlee/sc-runtime/issues/133).
-- Manifest floors describe versions that are actually tested. CI exercises the
-  supported minimum and latest allowed dependency sets, including the relevant
-  template features and separate consumer workspaces.
-- README examples, feature instructions, and package metadata describe the
-  published product. This includes the `test-util` / `instrument_router` helper
-  restored in [PR #131](https://github.com/randlee/sc-runtime/pull/131).
-- Maintainers and consumers can choose generation-tool versions independently.
-  CI can reproduce its chosen sc-compose release from immutable binaries;
-  compatible consumer overrides through `SC_COMPOSE` or PATH remain supported.
-  Distribution improvements are tracked in
-  [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041).
+**Release.** The recorded owner decision is coordinated **0.3.0** across eight
+crates: `sc-storage`, `sc-runtime-db-sqlite`, `sc-config`, `sc-transport`,
+`sc-command`, `sc-runtime`, `sc-cron` and `sc-cron-commands` (owner message
+01M76S6D7T58E4CMKHJRCXFJ1J; `run-phase-d` release metadata). This supersedes
+the earlier 0.2.1 target. The live plan owns package, advisory, integration and
+consumer proof; this document claims no implementation or publication pass.
 
-## Dependency policy direction
+## Planning handover provenance
 
-The adopted default is a tested minimum with Cargo's normal SemVer-compatible
-upgrade range. Exact pins, narrower ranges, and toolchain restrictions need a
-specific compatibility reason. Reproducibility belongs in application/CI
-lockfiles and immutable tool installs while published library requirements leave
-room for compatible consumer upgrades.
-
-Cargo's [dependency guidance](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html)
-explains that a requirement such as `1.2.3` already permits compatible upgrades;
-an unbounded `>=1.2.3` also admits future breaking versions. Pre-1.0 minor
-versions cross Cargo compatibility boundaries. Public dependency types and
-native-library `links` constraints also require attention when widening a range;
-see [dependency resolution](https://doc.rust-lang.org/cargo/reference/resolver.html).
-
-The earlier #133 prescription of blanket `>=` ranges is clarified by the
-user-adopted ANC-016 and ANC-019: permit newer Cargo-compatible releases and
-justify extra upper bounds beside the requirement. The
-[sweep inventory](issue-133-dependency-sweep.md) and sprint acceptance criteria
-now use that policy.
-Support across a Cargo compatibility boundary, including rusqlite 0.41 / 0.42,
-requires explicit validation of the affected APIs and dependency graph.
-
-The rusqlite/sqlx native-library conflict needs an explicit supported
-configuration and consumer migration guidance. Generated SQLx-SQLite graphs
-retain the link-compatible cron-family 0.2.0 floors; they do not receive the
-0.2.1 SQLite security fix. Other compatible generated graphs qualify 0.2.1.
-The release sprint must prove the actual beads-cache configuration uses the
-fixed released graph. Deleting the coexistence fixture alone cannot prove that
-outcome. This compatibility path is planned qualification work, not a completed
-consumer test.
-
-## Proof and scope
-
-Success includes a registry consumer using released 0.2.1 crates, resolving the
-fixed dependencies, passing the relevant advisory checks, and building/running
-the affected integration. Consumer proof must exclude local path/patch
-substitutes. Repository tests accompany this proof. Regression tests use
-controlled inputs and deterministic synchronization.
-
-This maintenance phase covers dependency constraints, generated defaults,
-consumer documentation, reproducible generation tooling, and the release needed
-to deliver those improvements. Breaking dependency migrations and new product
-features require separate justification. A reported upstream incompatibility
-stays explicit until a supported consumer path is demonstrated.
-
-## User provenance and planning status
-
-The user stated during the 2026-11-11 planning handover:
+The user stated on 2026-11-11:
 
 > The intention of phase-d is to make sc-runtime easy for consumers to use.
 > today beads-cache is blocked because of the security warning on rusqlite.
 > we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
 
-Existing [anchors](anchors.json) and [their rendered register](anchors.md) retain
-their prior records, including retired ANC-008. The user adopted ANC-016, ANC-017, ANC-019 and ANC-020 on November 11. Eight
-locked anchors now govern the three revised sprints. Anchor gates and the scoped
-sprint-guidelines review are documented in the approval report; implementation,
-registry proof, publication and normal plan QA remain separate requirements.
+Final owner approval uses the HTML diff after independent review. Historical
+calibration packets and run evidence retain their original inputs.
