@@ -1,0 +1,1098 @@
+{
+  "consumer": "run-lead independent gate/drift reviewer",
+  "feature": "complete owner-approved shared interpreter and command plan",
+  "observed_defect": "six failing sprint gates at a2c0e20 and range8 copy-test/manifest ownership findings",
+  "deletion_condition": "after final owner-approved plan, ordinary Git history suffices",
+  "base": "a2c0e20",
+  "authority_commit": "cf23ce0",
+  "cells": [
+    {
+      "item": "run-d-9",
+      "run": "plan-20261112T230523Z-run-d-9",
+      "anchor": "ANC-037",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.56
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-037",
+        "commit": "cf23ce0",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-9",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-9",
+      "run": "plan-20261112T230523Z-run-d-9",
+      "anchor": "ANC-041",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.91
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.7
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-041",
+        "commit": "cf23ce0",
+        "quote": "the duplication of monty logic was the biggest red flag.  I expect single monty implementation"
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-9",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-9",
+      "run": "plan-20261112T230523Z-run-d-9",
+      "anchor": "ANC-054",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.89
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.2
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.74
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-9",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-9",
+      "run": "plan-20261112T230523Z-run-d-9",
+      "anchor": "ANC-063",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.73
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.58
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.92
+        }
+      },
+      "why": "This sprint changes cron commands and persistence, not the template widget commands/service; widget reads through storage_read are owned by d-10/d-11, as for the existing ANC-059/060 exclusions.",
+      "authority": {
+        "ref": "ANC-063",
+        "commit": "cf23ce0",
+        "quote": "state which of the widget create/get/delete commands go through storage_read/storage_write. At least one write and one read must."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-063",
+        "item": "run-d-9",
+        "reason": "This sprint changes cron commands and persistence, not the template widget commands/service; widget reads through storage_read are owned by d-10/d-11, as for the existing ANC-059/060 exclusions."
+      }
+    },
+    {
+      "item": "run-d-5",
+      "run": "plan-20261112T230520Z-run-d-5",
+      "anchor": "ANC-053",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.73
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.16
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.82
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-053",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path"
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-5",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-5",
+      "run": "plan-20261112T230520Z-run-d-5",
+      "anchor": "ANC-054",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.42
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.89
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.89
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-5",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-054",
+      "verdict": "not_addressed",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.96
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.74
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.88
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-12",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-037",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 1.0
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.5
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-037",
+        "commit": "cf23ce0",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-12",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-043",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.38
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.83
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.92
+        }
+      },
+      "why": "Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.",
+      "authority": {
+        "ref": "ANC-043",
+        "commit": "cf23ce0",
+        "quote": "JSON conversion and serde_json stay in sc-cron. Hook behavior and tests are ported, not deleted or weakened; hooks keep receiving values, not JSON strings."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-043",
+        "item": "run-d-12",
+        "reason": "Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11."
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-045",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.37
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.94
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.97
+        }
+      },
+      "why": "Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.",
+      "authority": {
+        "ref": "ANC-045",
+        "commit": "cf23ce0",
+        "quote": "Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty's dump version."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-045",
+        "item": "run-d-12",
+        "reason": "Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior."
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-047",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.58
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.89
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.97
+        }
+      },
+      "why": "Release/migration does not change when or what sc-cron captures in compiled-session blobs; the pre-run snapshot implementation is owned by d-9.",
+      "authority": {
+        "ref": "ANC-047",
+        "commit": "cf23ce0",
+        "quote": "The blob is captured immediately after compile, before any run. No run state is persisted."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-047",
+        "item": "run-d-12",
+        "reason": "Release/migration does not change when or what sc-cron captures in compiled-session blobs; the pre-run snapshot implementation is owned by d-9."
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-056",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.46
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.66
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.94
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-056",
+        "commit": "cf23ce0",
+        "quote": "A command whose Tcli converts directly to Tsql needs no hand-written transform."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-12",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-12",
+      "run": "plan-20261112T230611Z-run-d-12",
+      "anchor": "ANC-059",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.26
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.5
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.77
+        }
+      },
+      "why": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths.",
+      "authority": {
+        "ref": "ANC-059",
+        "commit": "cf23ce0",
+        "quote": "state which of the widget create/get/delete commands go through storage_read/storage_write."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-059",
+        "item": "run-d-12",
+        "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths."
+      }
+    },
+    {
+      "item": "run-d-8",
+      "run": "plan-20261112T230728Z-run-d-8",
+      "anchor": "ANC-055",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.5
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.79
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.82
+        }
+      },
+      "why": "The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.",
+      "authority": {
+        "ref": "ANC-055",
+        "commit": "cf23ce0",
+        "quote": "an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-055",
+        "item": "run-d-8",
+        "reason": "The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11."
+      }
+    },
+    {
+      "item": "run-d-8",
+      "run": "plan-20261112T230728Z-run-d-8",
+      "anchor": "ANC-059",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "no",
+          "confidence": 0.56
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.97
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.96
+        }
+      },
+      "why": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths.",
+      "authority": {
+        "ref": "ANC-059",
+        "commit": "cf23ce0",
+        "quote": "state which of the widget create/get/delete commands go through storage_read/storage_write."
+      },
+      "action": "exclude",
+      "replacement_ref": {
+        "id": "ANC-059",
+        "item": "run-d-8",
+        "reason": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths."
+      }
+    },
+    {
+      "item": "run-d-11",
+      "run": "plan-20261112T230602Z-run-d-11",
+      "anchor": "ANC-054",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.94
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.4
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.72
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-11",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-11",
+      "run": "plan-20261112T230602Z-run-d-11",
+      "anchor": "ANC-055",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.97
+        },
+        "addressed": {
+          "choice": "yes",
+          "confidence": 0.62
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.37
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-055",
+        "commit": "cf23ce0",
+        "quote": "an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-11",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-10",
+      "run": "plan-20261112T230528Z-run-d-10",
+      "anchor": "ANC-053",
+      "verdict": "not_addressed",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.83
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.67
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.77
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-053",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path"
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-10",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-10",
+      "run": "plan-20261112T230528Z-run-d-10",
+      "anchor": "ANC-054",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.5
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.86
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.96
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-054",
+        "commit": "cf23ce0",
+        "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-10",
+        "record": "to_fix"
+      }
+    },
+    {
+      "item": "run-d-10",
+      "run": "plan-20261112T230528Z-run-d-10",
+      "anchor": "ANC-055",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "choice": "yes",
+          "confidence": 0.37
+        },
+        "addressed": {
+          "choice": "no",
+          "confidence": 0.83
+        },
+        "contradicted": {
+          "choice": "no",
+          "confidence": 0.74
+        }
+      },
+      "why": "The prior item leaves this obligation implicit or ambiguously assigns its implementation; the named replacement clause states the complete path and responsible step explicitly.",
+      "authority": {
+        "ref": "ANC-055",
+        "commit": "cf23ce0",
+        "quote": "an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform."
+      },
+      "action": "replace/add",
+      "replacement_ref": {
+        "item": "run-d-10",
+        "record": "to_fix"
+      }
+    }
+  ],
+  "to_fix": [
+    {
+      "item": "run-d-5",
+      "action": "replace/add",
+      "edits": [
+        {
+          "field": "description",
+          "before": [],
+          "after": [
+            "",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "boundary:copy-first-tests \u2014 Before extending the API, the exact copied scheduler-level Monty integration tests compile and run under the existing sc-cron integration-test target with its existing cron/Tokio dependencies; preserve the byte-identical copied code/test baseline. During extraction, generic interpreter tests compile in sc-monty; scheduler/JSON/capability integration assertions stay in sc-cron and exercise sc-monty after the d-9 adapter port. Those test-only consumers do not become sc-monty normal/build dependencies (ANC-039/042/062)."
+          ],
+          "after": [
+            "boundary:copy-first-tests \u2014 First copy the current Monty implementation AND its existing unit/integration test sources into the d-5-owned crates/sc-monty tree. Before any API extension, cargo test -p sc-monty --all-targets must compile and run those integration tests against that copied implementation. Private scheduler fixtures/adapters are copied into crates/sc-monty/tests support and use dev-only dependencies as necessary; there is no dependency on sc-cron, including dev dependencies. Normal/build dependencies remain only pydantic Monty crates. Running the old sc-cron test target is not this gate. Preserve the exact copied baseline and every assertion; extend the API only after its unit AND integration tests pass. d-9 separately ports the original cron integration assertions to the shared interpreter, without editing d-9-owned source/test files in this sprint (ANC-039/042/062)."
+          ]
+        }
+      ],
+      "authority": "Named ANC references in each replacement predate every cited gate run (cf23ce0). M27/m28 follow owner copy-first statement and locked ownership rule."
+    },
+    {
+      "item": "run-d-9",
+      "action": "replace/add",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "5. Compile Monty source when a schedule is submitted or updated, rejecting invalid source before any tick. Persist the just-compiled, never-run session blob through Storage<MontyBlobRow> in a sc-cron-owned table. Key it by SHA-256 of the exact source computed with permitted sc-sha, plus the Monty dump version. The schedule source remains authoritative; use a blob only for a matching key. Missing/stale/corrupt/unreadable-version blobs or missing cron_stop/cron_tick are cache misses: recompile from source and overwrite with the pre-run dump. Persist no run/session execution state. Migrate the new cron-owned table through generic row/schema APIs; no storage backend acquires cron SQL/types. \u2014 owner item 2.",
+            "Compile/dump or cache-miss reconstruction runs before the atomic storage body; interpreter work is not awaited inside that body. Persist the validated schedule/blob through the generic atomic operation while retaining admission/fencing checks (owner item 2; ANC-033)."
+          ],
+          "after": [
+            "5. Ask sc-monty to compile the source when a schedule is submitted or updated, rejecting invalid source before any tick. Persist the just-compiled, never-run session blob through Storage<MontyBlobRow> in a sc-cron-owned table. Key it by SHA-256 of the exact source computed with permitted sc-sha, plus the Monty dump version. The schedule source remains authoritative; use a blob only for a matching key. Missing/stale/corrupt/unreadable-version blobs or missing cron_stop/cron_tick are cache misses: recompile from source and overwrite with the pre-run dump. Persist no run/session execution state. Migrate the new cron-owned table through generic row/schema APIs; no storage backend acquires cron SQL/types. \u2014 owner item 2.",
+            "sc-monty compilation/dump or cache-miss reconstruction is requested before the atomic storage body; interpreter work is not awaited inside that body. Persist the validated schedule/blob through the generic atomic operation while retaining admission/fencing checks (owner item 2; ANC-033).",
+            "",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054).",
+            "",
+            "Every compile, session run, session dump/load and host-function dispatch requested by sc-cron is executed only by sc-monty. sc-cron only selects source/cache entries, converts JSON to Monty values and supplies cron-specific value adapters; it contains no interpreter compiler, session runner or host dispatcher of its own (ANC-041).",
+            "",
+            "Own sc-cron-commands/Cargo.toml dependency registration for the later library policy adapter, including sc-storage from the d-5 workspace registration at an open tested floor (>=0.2.0 development, >=0.3.0 release). Existing sc-command/sc-cron dependencies support d-11 source integration; d-11 adds no dependency or manifest edit. This manifest passes from d-9 directly to d-12 for final release-version lines on their existing dependency path."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [],
+          "after": [
+            "",
+            "boundary:cron-manifest-floors \u2014 At closure verify every registry requirement in the complete sc-cron and sc-cron-commands manifests, including normal/dev/optional/target-specific entries, is >= its tested floor with no upper bound. Verify inherited Windows win32job >=2.0.3 and waitpid-any >=0.3.0 declarations too; prior d-5 ownership does not exempt them from this check. Those two declarations remain unchanged (ANC-037)."
+          ]
+        }
+      ],
+      "authority": "Named ANC references in each replacement predate every cited gate run (cf23ce0). M27/m28 follow owner copy-first statement and locked ownership rule."
+    },
+    {
+      "item": "run-d-10",
+      "action": "replace/add",
+      "edits": [
+        {
+          "field": "description",
+          "before": [],
+          "after": [
+            "",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [],
+          "after": [
+            "",
+            "boundary:cron-start-transform \u2014 For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043)."
+          ]
+        }
+      ],
+      "authority": "Named ANC references in each replacement predate every cited gate run (cf23ce0). M27/m28 follow owner copy-first statement and locked ownership rule."
+    },
+    {
+      "item": "run-d-11",
+      "action": "replace/add",
+      "edits": [
+        {
+          "field": "description",
+          "before": [],
+          "after": [
+            "",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054).",
+            "",
+            "The sc-cron-commands handoff is source/tests/README only. Its dependency manifest remains d-9-owned until d-12 takes release-version lines; this sprint does not edit crates/sc-cron-commands/Cargo.toml and introduces no new dependency there."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [],
+          "after": [
+            "",
+            "boundary:cron-start-transform \u2014 For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043)."
+          ]
+        },
+        {
+          "field": "metadata",
+          "before": {
+            "adrs": [
+              "ADR-CRNC-0001",
+              "ADR-RT-0005",
+              "ADR-RUN-0002",
+              "ADR-RUN-0003",
+              "ADR-RUN-0005",
+              "ADR-RUN-0006",
+              "ADR-RUN-0007",
+              "ADR-RUN-0009",
+              "ADR-RUN-0011",
+              "ADR-RUN-0012",
+              "ADR-RUN-0013",
+              "ADR-RUN-0014",
+              "ADR-RUN-0016",
+              "ADR-RUN-0017",
+              "ADR-RUN-0018",
+              "ADR-RUN-0019",
+              "ADR-RUN-0020",
+              "ADR-RUN-0021",
+              "ADR-RUN-0201",
+              "ADR-RUN-0202",
+              "ADR-RUN-0203",
+              "ADR-RUN-0301",
+              "ADR-RUN-0303",
+              "ADR-RUN-0306",
+              "ADR-RUN-0401",
+              "ADR-RUN-0402"
+            ],
+            "branch": "sprint/d-11-generated-app-composition",
+            "closure_type": "integration",
+            "difficulty": "hard",
+            "layer": 9,
+            "model_class": "astra",
+            "owned_paths": [
+              "tests/integration/storage-v2/**",
+              "template/crates/daemon/src/**",
+              "template/crates/cli/src/**",
+              "template/config/**",
+              "template/hooks/**",
+              "wizard/**",
+              "tests/unit/wizard/**",
+              "docs/generation.md",
+              "docs/getting-started.md",
+              "tests/unit/generation/store_boundaries.py",
+              "tests/unit/generation/test_application_control_contract.py",
+              "tests/unit/generation/test_consumer_sc_lint_profile.py",
+              "tests/unit/generation/test_cron_environment.py",
+              "tests/unit/generation/test_cron_schema.py",
+              "tests/unit/generation/test_daemon_scratch_policy.py",
+              "tests/unit/generation/test_fixtures.py",
+              "tests/unit/generation/test_general_db_disable.py",
+              "tests/unit/generation/test_keys.py",
+              "tests/unit/generation/test_liquid.py",
+              "tests/unit/generation/test_monty_example.py",
+              "tests/unit/generation/test_prefix_packages.py",
+              "tests/unit/generation/test_schema.py",
+              "tests/unit/generation/test_store_boundaries.py",
+              "template/crates/cli/tests/**",
+              "template/crates/daemon/tests/**",
+              "template/crates/schema/tests/**",
+              "template/crates/api-types/src/**",
+              "template/crates/api-types/tests/**",
+              "template/crates/api-types/Cargo.toml",
+              "template/crates/store-adaptor/Cargo*.toml",
+              "template/crates/store-adaptor-sqlite-postgres/Cargo.toml",
+              "template/crates/store-adaptor-sqlite-mysql/Cargo.toml",
+              "template/crates/store-adaptor/src/**",
+              "template/crates/store-adaptor-sqlite-postgres/src/**",
+              "template/crates/store-adaptor-sqlite-mysql/src/**",
+              "crates/sc-cron-commands/tests/**",
+              "crates/sc-cron-commands/src/executor.rs",
+              "crates/sc-cron-commands/src/contract.rs",
+              "crates/sc-cron-commands/src/executor/errors.rs",
+              "crates/sc-cron-commands/src/executor/inputs.rs",
+              "crates/sc-cron-commands/src/lib.rs",
+              "crates/sc-cron-commands/Cargo.toml",
+              "crates/sc-cron-commands/README.md",
+              "template/crates/daemon/Cargo*.toml"
+            ],
+            "phase": "d",
+            "pr_target": "sprint/d-10-shared-service-transforms",
+            "relation": "must_follow",
+            "release_train": "",
+            "requirements": [
+              "NFR-CRNC-0001",
+              "NFR-RUN-0001",
+              "NFR-RUN-0005",
+              "NFR-RUN-0006",
+              "NFR-RUN-0007",
+              "REQ-CRNC-0001",
+              "REQ-CRNC-0002",
+              "REQ-CRON-0001",
+              "REQ-CRON-0003",
+              "REQ-CRON-0004",
+              "REQ-CRON-0005",
+              "REQ-CRON-0020",
+              "REQ-CRON-0021",
+              "REQ-RT-0005",
+              "REQ-RUN-0001",
+              "REQ-RUN-0002",
+              "REQ-RUN-0005",
+              "REQ-RUN-0201",
+              "REQ-RUN-0301",
+              "REQ-RUN-0302",
+              "REQ-RUN-0303",
+              "REQ-RUN-0304",
+              "REQ-RUN-0305",
+              "REQ-RUN-0308",
+              "REQ-RUN-0309",
+              "REQ-RUN-0310",
+              "REQ-RUN-0312",
+              "REQ-RUN-0321",
+              "REQ-RUN-0326",
+              "REQ-RUN-0328",
+              "REQ-RUN-0330",
+              "REQ-RUN-0331",
+              "REQ-RUN-0332",
+              "REQ-RUN-0401",
+              "REQ-RUN-0402",
+              "REQ-RUN-0403",
+              "REQ-RUN-0501",
+              "REQ-RUN-0502",
+              "REQ-RUN-0503",
+              "REQ-RUN-0601",
+              "REQ-RUN-0602",
+              "REQ-RUN-0603",
+              "REQ-RUN-0702"
+            ],
+            "sprint": "d-11",
+            "stack": "phase-d",
+            "subtasks": [
+              "run-d-11.sub-1",
+              "run-d-11.sub-2"
+            ],
+            "target_boundary": "runtime-ecosystem-generated-app-composition",
+            "worktree": "/Users/randlee/github/sc-runtime-worktrees/sprint/d-11-generated-app-composition"
+          },
+          "after": {
+            "adrs": [
+              "ADR-CRNC-0001",
+              "ADR-RT-0005",
+              "ADR-RUN-0002",
+              "ADR-RUN-0003",
+              "ADR-RUN-0005",
+              "ADR-RUN-0006",
+              "ADR-RUN-0007",
+              "ADR-RUN-0009",
+              "ADR-RUN-0011",
+              "ADR-RUN-0012",
+              "ADR-RUN-0013",
+              "ADR-RUN-0014",
+              "ADR-RUN-0016",
+              "ADR-RUN-0017",
+              "ADR-RUN-0018",
+              "ADR-RUN-0019",
+              "ADR-RUN-0020",
+              "ADR-RUN-0021",
+              "ADR-RUN-0201",
+              "ADR-RUN-0202",
+              "ADR-RUN-0203",
+              "ADR-RUN-0301",
+              "ADR-RUN-0303",
+              "ADR-RUN-0306",
+              "ADR-RUN-0401",
+              "ADR-RUN-0402"
+            ],
+            "branch": "sprint/d-11-generated-app-composition",
+            "closure_type": "integration",
+            "difficulty": "hard",
+            "layer": 9,
+            "model_class": "astra",
+            "owned_paths": [
+              "tests/integration/storage-v2/**",
+              "template/crates/daemon/src/**",
+              "template/crates/cli/src/**",
+              "template/config/**",
+              "template/hooks/**",
+              "wizard/**",
+              "tests/unit/wizard/**",
+              "docs/generation.md",
+              "docs/getting-started.md",
+              "tests/unit/generation/store_boundaries.py",
+              "tests/unit/generation/test_application_control_contract.py",
+              "tests/unit/generation/test_consumer_sc_lint_profile.py",
+              "tests/unit/generation/test_cron_environment.py",
+              "tests/unit/generation/test_cron_schema.py",
+              "tests/unit/generation/test_daemon_scratch_policy.py",
+              "tests/unit/generation/test_fixtures.py",
+              "tests/unit/generation/test_general_db_disable.py",
+              "tests/unit/generation/test_keys.py",
+              "tests/unit/generation/test_liquid.py",
+              "tests/unit/generation/test_monty_example.py",
+              "tests/unit/generation/test_prefix_packages.py",
+              "tests/unit/generation/test_schema.py",
+              "tests/unit/generation/test_store_boundaries.py",
+              "template/crates/cli/tests/**",
+              "template/crates/daemon/tests/**",
+              "template/crates/schema/tests/**",
+              "template/crates/api-types/src/**",
+              "template/crates/api-types/tests/**",
+              "template/crates/api-types/Cargo.toml",
+              "template/crates/store-adaptor/Cargo*.toml",
+              "template/crates/store-adaptor-sqlite-postgres/Cargo.toml",
+              "template/crates/store-adaptor-sqlite-mysql/Cargo.toml",
+              "template/crates/store-adaptor/src/**",
+              "template/crates/store-adaptor-sqlite-postgres/src/**",
+              "template/crates/store-adaptor-sqlite-mysql/src/**",
+              "crates/sc-cron-commands/tests/**",
+              "crates/sc-cron-commands/src/executor.rs",
+              "crates/sc-cron-commands/src/contract.rs",
+              "crates/sc-cron-commands/src/executor/errors.rs",
+              "crates/sc-cron-commands/src/executor/inputs.rs",
+              "crates/sc-cron-commands/src/lib.rs",
+              "crates/sc-cron-commands/README.md",
+              "template/crates/daemon/Cargo*.toml"
+            ],
+            "phase": "d",
+            "pr_target": "sprint/d-10-shared-service-transforms",
+            "relation": "must_follow",
+            "release_train": "",
+            "requirements": [
+              "NFR-CRNC-0001",
+              "NFR-RUN-0001",
+              "NFR-RUN-0005",
+              "NFR-RUN-0006",
+              "NFR-RUN-0007",
+              "REQ-CRNC-0001",
+              "REQ-CRNC-0002",
+              "REQ-CRON-0001",
+              "REQ-CRON-0003",
+              "REQ-CRON-0004",
+              "REQ-CRON-0005",
+              "REQ-CRON-0020",
+              "REQ-CRON-0021",
+              "REQ-RT-0005",
+              "REQ-RUN-0001",
+              "REQ-RUN-0002",
+              "REQ-RUN-0005",
+              "REQ-RUN-0201",
+              "REQ-RUN-0301",
+              "REQ-RUN-0302",
+              "REQ-RUN-0303",
+              "REQ-RUN-0304",
+              "REQ-RUN-0305",
+              "REQ-RUN-0308",
+              "REQ-RUN-0309",
+              "REQ-RUN-0310",
+              "REQ-RUN-0312",
+              "REQ-RUN-0321",
+              "REQ-RUN-0326",
+              "REQ-RUN-0328",
+              "REQ-RUN-0330",
+              "REQ-RUN-0331",
+              "REQ-RUN-0332",
+              "REQ-RUN-0401",
+              "REQ-RUN-0402",
+              "REQ-RUN-0403",
+              "REQ-RUN-0501",
+              "REQ-RUN-0502",
+              "REQ-RUN-0503",
+              "REQ-RUN-0601",
+              "REQ-RUN-0602",
+              "REQ-RUN-0603",
+              "REQ-RUN-0702"
+            ],
+            "sprint": "d-11",
+            "stack": "phase-d",
+            "subtasks": [
+              "run-d-11.sub-1",
+              "run-d-11.sub-2"
+            ],
+            "target_boundary": "runtime-ecosystem-generated-app-composition",
+            "worktree": "/Users/randlee/github/sc-runtime-worktrees/sprint/d-11-generated-app-composition"
+          }
+        }
+      ],
+      "authority": "Named ANC references in each replacement predate every cited gate run (cf23ce0). M27/m28 follow owner copy-first statement and locked ownership rule."
+    },
+    {
+      "item": "run-d-12",
+      "action": "replace/add",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "5. Reuse d-3's check_dependency_manifests(paths) on exact unpacked archives and generated-template defaults; wire it into archive rehearsal, registry consumer validation and upload. Own only input assembly and release fixtures. SDK registry requirements use >= floors with no upper bound; consumer pins are allowed (ANC-037). Remove the interim rule after equivalent sc-lint#936 release and adoption, as recorded by ADR-RUN-0005."
+          ],
+          "after": [
+            "5. Reuse d-3's check_dependency_manifests(paths) on exact unpacked archives and generated-template defaults; wire it into archive rehearsal, registry consumer validation and upload. Own only input assembly and release fixtures. Published SDK and template registry requirements use >= tested floors with no upper bound. Only consumers may choose pins in their own application manifests or lockfiles; that permission never applies to SDK or template dependency declarations (ANC-037). Remove the interim rule after equivalent sc-lint#936 release and adoption, as recorded by ADR-RUN-0005.",
+            "",
+            "The complete user command inventory is cron.start -> storage_write, cron.end -> storage_write, cron.list -> storage_read. All three use the shared path; there are zero off-path user cron commands and therefore no user-command exceptions. Internal scheduler methods are not additional user commands: tick dispatches due jobs, record_run records execution completion, set_next computes the next scheduled run, and cooperative stop ends a running worker; those runtime actions keep their existing domain transactions (ANC-053/054)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [],
+          "after": [
+            "",
+            "req:REQ-RUN-0002/default-conversion \u2014 The released shared command path retains its built-in plain Tcli-to-Tsql conversion: a directly convertible command needs no hand-written transform. An application overrides it only for its business rules, including cron JSON enrichment; no new mandatory custom action or transform is introduced by the consumer migration (ANC-056)."
+          ]
+        }
+      ],
+      "authority": "Named ANC references in each replacement predate every cited gate run (cf23ce0). M27/m28 follow owner copy-first statement and locked ownership rule."
+    }
+  ],
+  "exclusions": [
+    {
+      "id": "ANC-063",
+      "item": "run-d-9",
+      "reason": "This sprint changes cron commands and persistence, not the template widget commands/service; widget reads through storage_read are owned by d-10/d-11, as for the existing ANC-059/060 exclusions."
+    },
+    {
+      "id": "ANC-055",
+      "item": "run-d-8",
+      "reason": "The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11."
+    },
+    {
+      "id": "ANC-059",
+      "item": "run-d-8",
+      "reason": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths."
+    },
+    {
+      "id": "ANC-043",
+      "item": "run-d-12",
+      "reason": "Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11."
+    },
+    {
+      "id": "ANC-045",
+      "item": "run-d-12",
+      "reason": "Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior."
+    },
+    {
+      "id": "ANC-047",
+      "item": "run-d-12",
+      "reason": "Release/migration does not change when or what sc-cron captures in compiled-session blobs; the pre-run snapshot implementation is owned by d-9."
+    },
+    {
+      "id": "ANC-059",
+      "item": "run-d-12",
+      "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths."
+    }
+  ],
+  "drift_fixes": {
+    "M27": {
+      "why": "Prior gate ran legacy tests, not copied interpreter integration tests, before API extension.",
+      "authority": "ANC-062; owner exact-copy code AND tests including integration tests statement",
+      "action": "replace",
+      "replacement": "sc-monty --all-targets copied-code unit/integration gate; test-only copied adapters without sc-cron dependency; only d-5-owned new files."
+    },
+    "m28": {
+      "why": "d-11/d-12 manifest overlap had no ordering edge.",
+      "authority": "phase root file-ownership rule; existing d-9->d-12 prerequisite",
+      "action": "replace",
+      "replacement": "d-9 owns all dependency registration; d-11 source/tests/README only; d-12 version handoff after d-9."
+    }
+  }
+}

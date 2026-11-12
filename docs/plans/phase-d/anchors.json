@@ -4656,6 +4656,19 @@
             "plan_questions": "run-zerf.1",
             "dev_questions": "run-zerf.2"
           }
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "run-d-12",
+          "reason": "Release/migration consumes the delivered sc-cron hook conversion unchanged; it does not change how sc-cron passes values to Monty hooks, implemented in d-9 and wired in d-11."
         }
       ]
     },
@@ -4835,6 +4848,13 @@
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4845,6 +4865,10 @@
         {
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own."
+        },
+        {
+          "item": "run-d-12",
+          "reason": "Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior."
         }
       ]
     },
@@ -4991,6 +5015,13 @@
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Release/migration does not change when or what sc-cron captures in compiled-session blobs; the pre-run snapshot implementation is owned by d-9.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -5001,6 +5032,10 @@
         {
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own."
+        },
+        {
+          "item": "run-d-12",
+          "reason": "Release/migration does not change when or what sc-cron captures in compiled-session blobs; the pre-run snapshot implementation is owned by d-9."
         }
       ]
     },
@@ -5602,12 +5637,23 @@
           "item": "run-d-7",
           "reason": "Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.",
+          "replaced": false
         }
       ],
       "exclude": [
         {
           "item": "run-d-7",
           "reason": "Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them."
+        },
+        {
+          "item": "run-d-8",
+          "reason": "The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11."
         }
       ]
     },
@@ -6045,12 +6091,34 @@
           "item": "run-d-9",
           "reason": "This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-8",
+          "reason": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-12",
+          "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths.",
+          "replaced": false
         }
       ],
       "exclude": [
         {
           "item": "run-d-9",
           "reason": "This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own."
+        },
+        {
+          "item": "run-d-8",
+          "reason": "The generic MySQL backend contains no widget-specific code and does not change template widget commands/service; d-10/d-11 own those paths."
+        },
+        {
+          "item": "run-d-12",
+          "reason": "Release/migration changes package/version and recommendation metadata, not template widget commands/service; d-10/d-11 own those paths."
         }
       ]
     },
@@ -6387,6 +6455,13 @@
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-12T23:14:19+00:00",
+          "event": "excluded",
+          "item": "run-d-9",
+          "reason": "This sprint changes cron commands and persistence, not the template widget commands/service; widget reads through storage_read are owned by d-10/d-11, as for the existing ANC-059/060 exclusions.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -6405,6 +6480,10 @@
         {
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own."
+        },
+        {
+          "item": "run-d-9",
+          "reason": "This sprint changes cron commands and persistence, not the template widget commands/service; widget reads through storage_read are owned by d-10/d-11, as for the existing ANC-059/060 exclusions."
         }
       ]
     }
