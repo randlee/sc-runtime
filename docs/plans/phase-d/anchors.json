@@ -2020,7 +2020,7 @@
       "id": "ADR-RUN-0011",
       "source_type": "ADR",
       "source_ref": "ADR-RUN-0011",
-      "statement": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
+      "statement": "In production code under crates/ and template/, only the SQLite writer's dedicated OS thread may call block_on (Runtime::block_on, Handle::block_on or futures::executor::block_on).",
       "quote": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception.",
       "kind": "prohibition",
       "stated_by": "randlee",
@@ -2038,7 +2038,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2067,6 +2067,14 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-12T03:12:13+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Production code under crates/ and template/ MUST NOT call Runtime::block_on, Handle::block_on or futures::executor::block_on, except the runtime owned and driven on the SQLite writer's dedicated OS thread; SQLite reader threads receive with blocking_recv and need no exception."
         }
       ]
     }
