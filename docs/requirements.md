@@ -3435,12 +3435,12 @@ General database commands are the bootstrap. The consumer disables that public s
 **Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the shared cron command request types and implementation. Feature-off means the cron feature is disabled.
+Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the cron start, end and list request types and the shared handler of the `sc-cron-commands` crate ([REQ-CRNC-0001](sc-cron-commands/requirements.md)). Selected generation means generation with `cron_commands` set to true and cron selected ([REQ-CRNC-0002](sc-cron-commands/requirements.md)). A feature-off build is a build with the cron feature disabled, of a core crate or of a generated project.
 
 Phase C target, planned: generation defaults `cron_commands` to false. When
 explicitly selected with cron enabled, the generated application wires the
@@ -3459,7 +3459,7 @@ free of cron/server implementation under NFR-RUN-0001.
 - When `cron_commands` is explicitly selected with cron enabled, the generated CLI MUST use the standard start/end/list DTO and handler.
 - When `cron_commands` is explicitly selected with cron enabled, the generated HTTP interface MUST use the same standard start/end/list DTO and handler.
 - When `cron_commands` is explicitly selected with cron and MCP enabled, the generated MCP interface MUST use that same standard start/end/list DTO and handler.
-- Selected generation MUST wire the real shared handler into the selected interfaces; a docs-only example or DTO library does not satisfy this requirement.
+- Selected generation MUST wire the standard handler into every selected interface of the generated application.
 
 **MUST NOT statements:**
 
