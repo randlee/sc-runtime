@@ -364,16 +364,19 @@ and binary size matter.
 
 ### Consequences
 
-- A CLI pays nothing for configuration beyond `serde` and `serde_json`, which
-  it already links for its request and response types.
-- `load` can be called before an async runtime exists and from inside an
-  async `main` alike. A load is a few small file reads, so blocking briefly at
-  start-up is acceptable.
-- Logging configuration can be read before logging is initialised, because
-  this crate does not depend on `sc-observability`. The program passes the
-  loaded values to `sc-observability` itself.
-- Future reload work requires an API and dependency design; its placement remains open.
-- A program that wants live reload in Phase D must call `load` again itself.
+- Positive: a CLI pays nothing for configuration beyond `serde` and
+  `serde_json`, which it already links for its request and response types.
+- Positive: `load` can be called before an async runtime exists and from
+  inside an async `main` alike.
+- Positive: logging configuration can be read before logging is initialised,
+  because this crate does not depend on `sc-observability`. The program passes
+  the loaded values to `sc-observability` itself.
+- Negative: a Phase D program that wants live reload must call `load` again
+  itself.
+- Negative: `load` blocks the calling thread during its few small file reads;
+  this cost is accepted at start-up.
+- Negative: adding reload or async later requires a new API and dependency
+  design, including a choice of crate placement.
 
 ### Alternatives Considered
 
