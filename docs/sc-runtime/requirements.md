@@ -865,7 +865,7 @@ machine, never on a developer's host
 
 ---
 
-# Requirement: `sc-runtime` is assembly only, no registry, macro or wrapper
+# Requirement: `sc-runtime` is assembly only, with a closed Phase D facade
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -875,7 +875,7 @@ machine, never on a developer's host
 
 ---
 
-## NFR-RT-0001: `sc-runtime` is assembly only, no registry, macro or wrapper
+## NFR-RT-0001: `sc-runtime` is assembly only, with a closed Phase D facade
 
 **Status:** Active  
 
@@ -885,7 +885,7 @@ Scope: every rule in this record applies to the `sc-runtime` crate (`crates/sc-r
 
 The assembly-only scope of the `sc-runtime` crate does not require hand-written command paths and does not forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared `sc-command` path and default plain conversion and builds no generator; code generation for the command pattern is undecided (PRD §9). Supplying the shared command path from `sc-command` does not expand `sc-runtime` beyond assembly.
 
-`sc-runtime` is a bootstrap, not a framework layer.
+`sc-runtime` is a bootstrap, not a framework layer. The closed facade below describes the Phase D deliverable. Phase D builds no procedural or declarative macro in this crate, whether private or exported. Macro-based command generation remains an undecided consumer option under PRD §9; this scope creates no obligation to implement it and does not forbid it later.
 
 - The project passes in an ordinary `utoipa_axum::OpenApiRouter` and an ordinary rmcp service, and they are mounted as given.
 - The names are pinned. `Daemon::builder` takes `&sc_transport::AppName`. This crate does not define or re-export `sc_runtime::AppName`. The `testing` module, `DaemonFixture`, and `instrument_router` sit behind the non-default `test-util` feature. `#[doc(hidden)]` typestate markers `NeedStores`, `NeedRoutes`, and `Ready` appear in the builder signature and are not facade items.
@@ -910,15 +910,10 @@ it, so the closed public-surface table above remains complete.
 **MUST NOT statements:**
 
 - The crate MUST NOT contain a command or operation registry.
-- The crate MUST NOT define a procedural macro.
-- The crate MUST NOT define a declarative macro.
-- The crate MUST NOT export a procedural macro.
-- The crate MUST NOT export a declarative macro.
 - The crate MUST NOT define a public type that wraps an `axum`, `rmcp` or `sqlx` type.
 - The crate MUST NOT have any public item outside the closed public-surface table above.
 - The crate MUST NOT have a public trait.
 - The crate MUST NOT have a public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`.
-- The crate MUST NOT have a public macro.
 - The crate MUST NOT `pub use` an item from another crate.
 
 ### Rationale
@@ -926,14 +921,16 @@ it, so the closed public-surface table above remains complete.
 The repo-level decision [ADR-RUN-0001](../architecture.md) is that the
 framework instantiates parts and the project wires them: operations are
 ordinary async service functions, and REST, MCP and CLI are produced by the
-standard derives of axum, rmcp and clap. A registry, macro or wrapper type in
+standard derives of axum, rmcp and clap. A registry or wrapper type in
 this crate would put the framework back between the project and those
 libraries, and would be code every project has to learn.
 
 ### Success Criteria
 
-1. `crates/sc-runtime/Cargo.toml` has no `proc-macro = true` and the crate
-   source contains no `macro_rules!` exported with `#[macro_export]`.
+1. Phase D scope check: `crates/sc-runtime/Cargo.toml` has no
+   `proc-macro = true`; inspection of the crate source finds no procedural
+   or declarative macro defined or exported by `sc-runtime`. This checks the
+   Phase D deliverable and imposes no restriction on later consumer-side generation.
 2. The `[public] facade` list of `boundaries/sc-runtime/sc-runtime.toml` is
    `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, mcp_request_body, testing`. It does not
    list `AppName`. It contains exactly one entry type, one builder type, one
@@ -952,7 +949,7 @@ libraries, and would be code every project has to learn.
    its helper composes the existing timeout and tracking/logger middleware.
    The terminal run methods exist only in Ready; logger remains same-phase.
    Cleanup and bound receipt reuse the fixed runner; no additional public
-   setter, registry, macro, wrapper, typestate or callback mechanism is allowed.
+   setter, registry, wrapper, typestate or callback mechanism is part of the Phase D facade.
 4. The `arch-qa` architecture review confirms no public type has a field or
    newtype payload of an `axum`, `rmcp` or `sqlx` type, and no registry
    structure exists.
