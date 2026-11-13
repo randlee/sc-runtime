@@ -201,51 +201,53 @@ resolves the daemon's bind endpoint only through this resolver
 
 ### Requirement Statement
 
-The instance root is the one directory that holds a daemon's run-time files
-for one application and one operating-system user: the UDS socket file
-`daemon.sock` and the singleton lock file `daemon.lock`.
+Definitions:
 
-The function is `instance_root(&AppName) -> Result<PathBuf, TransportError>`. The crate-private function `instance_root_from_base(&AppName, Option<&Path>)` is the path builder that receives the per-user base. It is not a facade item.
+- UDS means Unix domain socket.
+- The instance root is the one directory that holds a daemon's run-time files for one application and one operating-system user: the UDS socket file `daemon.sock` and the singleton lock file `daemon.lock`.
+- An application name is an [`AppName`](architecture.md) value, such as `my-app`.
+- `instance_root` is the public function `instance_root(&AppName) -> Result<PathBuf, TransportError>` of the crate `sc-transport` (`crates/sc-transport`).
+- The per-user base is the directory that `instance_root` reads from the process environment at run time: on Unix non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`; on Windows non-empty `LOCALAPPDATA`.
+- The default instance root is the path `<base>/<app>`, where `<base>` is the per-user base and `<app>` is the application name.
+- The path builder is the crate-private function `instance_root_from_base(&AppName, Option<&Path>)`; `instance_root` reads the per-user base and passes the per-user base to the path builder. The path builder is not a facade item.
+- An explicit instance root is a directory path supplied by the caller, such as `TransportConfig.instance_root`.
+- An instance-root consumer is a public function of `sc-transport` whose result depends on an instance root, such as `resolve_endpoint`.
+- A fixed user-directory literal is a string literal that names a home-directory or temp-directory path; examples are paths starting with `/tmp`, `/home`, `/Users` or `C:\`.
 
-The public function obtains the base location from the operating system or environment and calls that function. This structure is decided in this document.
+Decided by sprint a-3:
 
-The default base is decided by sprint a-3:
-
-- Unix: non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`.
-- Windows: non-empty `LOCALAPPDATA`.
-- The instance root is `<base>/<app>`. `instance_root` does not create the
-  directory. The caller creates it.
-- An explicit `TransportConfig.instance_root` is used unchanged as the Unix
-  default's directory (`<explicit>/daemon.sock`), not as `<explicit>/<app>`.
+- `instance_root` does not create the instance root directory; the caller creates the directory.
+- An explicit instance root `R` is used unchanged as the Unix default endpoint's directory (`R/daemon.sock`), not as `R/<app>`.
 - Failure is `TransportError::InstanceRootUnavailable`
   (`TRANSPORT.INSTANCE_ROOT_UNAVAILABLE`).
 
 `AppName::new` accepts ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length
 1 through 64 bytes. Rejection is `TransportError::InvalidName`
 (`APP.INVALID_NAME`). `detail` says whether the name was empty, longer than
-64 bytes, or which character was outside that set. The type exposes `as_str`
-and `AsRef<str>`. It does not implement `Deref`. Tests load
+64 bytes, or which character was outside the accepted set. `AppName` exposes
+`as_str` and `AsRef<str>` and does not implement `Deref`. Tests load
 `tests/fixtures/app-name-vectors.json` and do not embed a second list.
-
-Receiving the base location as input allows testing the per-user property and failure case without changing the process environment.
 
 **MUST statements:**
 
-- The crate `sc-transport` MUST expose a public function that takes an application name (an [`AppName`](architecture.md), such as `"my-app"`) and returns the default instance root path for that application and the current user.
-- The default instance root MUST be a per-user location: two different operating-system users MUST get different paths for the same application name.
-- Two different application names MUST give different paths for the same user.
-- The same application name and user MUST give the same path on every call.
-- The function MUST compute the path at run time from the operating system or environment.
-- Every public function of the crate that uses an instance root (endpoint resolution in particular) MUST accept an explicitly supplied instance-root path.
-- When supplied, that function MUST use the explicit path unchanged in place of the default.
-- Failure to determine the default location MUST be returned as an `Err` of the crate's error enum `TransportError`.
-- The default path MUST be built by one function inside the crate.
-- That function MUST receive the per-user base location as an input (a path, or "absent").
+- The crate `sc-transport` MUST export the public function `instance_root`.
+- `instance_root` MUST return the default instance root for the given application name and the current operating-system user.
+- For one application name, `instance_root` MUST return different paths when called by two different operating-system users.
+- For one operating-system user, `instance_root` MUST return different paths for two different application names.
+- Two calls of `instance_root` with the same application name by the same operating-system user MUST return equal paths.
+- `instance_root` MUST obtain the per-user base by calling `std::env::var_os`.
+- Every instance-root consumer MUST have a parameter that carries an explicit instance root.
+- `resolve_endpoint` MUST receive an explicit instance root in the field `TransportConfig.instance_root`.
+- A public function of `sc-transport` that receives an explicit instance root `R` MUST use `R` unchanged in place of the default instance root.
+- When no per-user base is available, `instance_root` MUST return `Err(TransportError::InstanceRootUnavailable)`.
+- When the per-user base argument is `None`, the path builder MUST return `Err(TransportError::InstanceRootUnavailable)`.
+- The source of `sc-transport` MUST build the default instance root only in the path builder.
+- The path builder MUST receive the per-user base as an argument.
 
 **MUST NOT statements:**
 
-- The source MUST NOT contain a literal home-directory or temp-directory path such as `/tmp` or `/Users/...`.
-- The function MUST NOT panic.
+- Files under `crates/sc-transport/src` MUST NOT contain a fixed user-directory literal.
+- `instance_root` MUST NOT panic.
 
 ### Rationale
 
