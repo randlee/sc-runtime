@@ -2878,22 +2878,18 @@ The local copy gives faster or offline access. Owner, 2026-10-25 (ADR-RUN-0305):
 
 Definitions: A consumer repository is an application project using the framework.
 The store adaptor template is the crate `template/crates/store-adaptor`, which generation renders into a consumer repository.
-`aggregate_host` is the public function in `template/crates/store-adaptor/src/shared.rs` that moves one table's rows from a host database to an aggregate database.
-A row is one `RowRecord`, which holds a table name and the payload of one table row.
-A host database is the one SQLite database of the host that runs `aggregate_host`.
+A host database is the one SQLite database of a host whose rows the adaptor aggregates.
 A Postgres aggregate is one Postgres database that receives rows from the host databases of many hosts.
 A MySQL aggregate is one MySQL database that receives rows from the host databases of many hosts.
 The remote engine is the layout's one sqlx engine, Postgres or MySQL.
-The rollup is the consumer-owned `Rollup` implementation that `aggregate_host` calls to map host rows to aggregate rows.
 sqlx is the Rust SQL access crate used for the remote engines.
-`Ok` is the Rust `Result::Ok` variant that an `aggregate_host` call returns when it succeeds.
 SQL means Structured Query Language.
 
 This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Synchronization between databases is deferred.
 
 **MUST statements:**
 
-- The host-aggregate adaptor MUST pair one SQLite database for the host with one Postgres database that aggregates many hosts.
+- When Postgres is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one Postgres database that aggregates many hosts.
 - When MySQL is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one MySQL database that aggregates many hosts.
 
 ### Rationale
@@ -2901,7 +2897,7 @@ This Draft record is deferred and does not apply to Phase D. It creates no imple
 SC projects pair a local SQLite database with a remote Postgres or SQL database; the local database is a cache. Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
 ### Success Criteria
 
-1. A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
+1. A generated host-aggregate adaptor documents one SQLite database per host and one aggregate database using the layout's selected remote engine.
 
 ## REQ-RUN-0316: The consumer defines the host rollup
 
