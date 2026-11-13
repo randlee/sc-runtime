@@ -2877,17 +2877,15 @@ functions costs nothing and needs no mocking layer.
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. The remote store is the store of the layout's one sqlx engine, which is Postgres or MySQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. The adaptor crate is the crate that `just new` (`scripts/new_project.py`) generates into the consumer repository for the copy or host-aggregate adaptor. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
-The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
-
 **MUST statements:**
 
-- The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+- The Rust code that moves rows between the local SQLite store and the remote store MUST be in the adaptor crate.
 
 ### Rationale
 
