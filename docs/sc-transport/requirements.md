@@ -125,6 +125,8 @@ not decide that.
 
 **MUST NOT statements:**
 
+- After a successful UDS bind, `bind` MUST NOT have changed the mode of any path other than the socket file to `0o600`.
+
 - The convenience form MUST NOT use `std::env::var`.
 - The convenience form MUST NOT use `std::env::vars`.
 - The crate MUST NOT contain a literal TCP port number that it uses as a default; TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)).
@@ -392,6 +394,7 @@ The process owner is the operating-system user running the binding process.
 The endpoint path is the filesystem path selected for the UDS socket.
 Socket access is permission to use the UDS socket through the filesystem.
 A process check queries whether a process is alive.
+Listener liveness is whether another listener is serving the existing socket.
 Address in use is the operating-system error for a socket address already in use.
 `TRANSPORT.NOT_A_SOCKET` is the stable code for `TransportError::NotASocket` in the transport error inventory.
 Cleanup associated with a failed competing bind is cleanup of the failed bind attempt or result.
@@ -412,7 +415,7 @@ The endpoint lock is separate from `<instance-root>/daemon.lock`. The runtime in
 - After a successful UDS bind, the socket file's group and other permission bits MUST be zero (`mode & 0o077 == 0`).
 - Before inspecting an existing UDS socket file, `bind` MUST acquire the endpoint lock.
 - Before removing an existing UDS socket file, `bind` MUST acquire the endpoint lock.
-- The returned `Listener` MUST hold the endpoint lock until the `Listener` is dropped.
+- Until the returned `Listener` is dropped, a second nonblocking exclusive lock attempt on the endpoint-lock file MUST fail.
 - When a stale socket file exists at the endpoint path, `bind` MUST remove the stale socket file.
 - After removing a stale socket, `bind` MUST bind the replacement at the same endpoint path.
 - During stale-socket replacement, `bind` MUST retain the endpoint lock.
@@ -423,8 +426,6 @@ The endpoint lock is separate from `<instance-root>/daemon.lock`. The runtime in
 - If an existing endpoint path is not a socket, `bind` MUST leave the path in place.
 
 **MUST NOT statements:**
-
-- `bind` MUST NOT apply the socket mode `0o600` to a path other than the socket file.
 
 - After a successful UDS `bind`, the socket file MUST NOT allow access by an operating-system user other than the process owner.
 
