@@ -3206,7 +3206,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store. Cron is enabled when the `cron` generation answer is true (REQ-RUN-0332). A layout's document is a JSON document whose `db` value is that layout's `db` value in the table above. A statement about what a generated CLI, daemon or function returns is verified by a unit test; a statement about the contents of a file is verified by reading that file. A statement that a type implements a trait is verified by a compile-time check in a test.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store. Cron is enabled when the `cron` generation answer is true (REQ-RUN-0332). A layout's document is a JSON document whose `db` value is that layout's `db` value in the table above. A statement about what a generated CLI, daemon or function returns is verified by a unit test; a statement about the contents of a file is verified by reading that file. A statement that a type implements a trait is verified by a compile-time check in a test. A two-store project is a rendered project of a two-store layout. A row type of a store is an application-defined type whose values the store saves as table rows. An empty database is a database that has no tables.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3236,7 +3236,7 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - Generating a layout MUST create a `crates/<store>` directory for each store in its table row.
 - A rendered project of the `no database` layout MUST contain no `crates/store-sqlite`, `crates/store-postgres` or `crates/store-mysql` directory.
 - A generation request with cron enabled and the `no database` layout MUST be rejected before template rendering.
-- A rendered project of a two-store layout MUST contain a `crates/store-adaptor` directory.
+- A two-store project MUST contain a `crates/store-adaptor` directory.
 - A rendered project of a layout with fewer than two stores MUST contain no `crates/store-adaptor` directory.
 - `store-postgres` MUST use `sqlx` for PostgreSQL storage.
 - `store-mysql` MUST use `sqlx` for MySQL storage.
