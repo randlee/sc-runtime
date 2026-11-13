@@ -1854,7 +1854,7 @@ compilable as Rust.
 
 ### Requirement Statement
 
-Definitions: A Liquid control tag is a tag written `{% ... %}`. A conditional line is a line that contains a Liquid control tag, or a line that lies between an opening control tag and its closing tag. A value substitution is a tag written `{{ ... }}`. A generated variant is the project rendered from `template/` for one combination of option values. The three permitted locations are the locations listed in item 2.
+Definitions: A Liquid control tag is a tag written `{% ... %}`. A conditional line is a line that contains a Liquid control tag, or a line that lies between an opening control tag and its closing tag. A value substitution is a tag written `{{ ... }}`. A generated variant is the project rendered from `template/` for one combination of option values. The `template/` directory is the source tree that `cargo-generate` renders. A residual difference is a difference between two generated variants that is made neither by a value substitution nor by a conditional line in one of the three permitted locations. The three permitted locations are the locations listed in item 2.
 
 `cargo-generate` renders files under `template/` with the Liquid template
 language. Liquid control tags are written `{% ... %}` (for example
@@ -1877,7 +1877,7 @@ language. Liquid control tags are written `{% ... %}` (for example
 **MUST statements:**
 
 - Across all `.rs` files under `template/`, the number of conditional lines MUST be fewer than ten in total.
-- A difference between generated variants that is made neither by a value substitution nor by a conditional line in one of the three permitted locations MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml`.
+- Each residual difference between generated variants MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml`.
 
 **MUST NOT statements:**
 
