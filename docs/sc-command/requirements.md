@@ -505,7 +505,7 @@ Definitions:
 - In `crates/sc-command/src`, the trait `IntoMcp` MUST declare exactly one method.
 - The signature of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST be the required signature.
 - A file in `crates/sc-command/src` MUST define the required impl.
-- In this release, `Result<T, OpError>` MUST be the only type that implements `IntoMcp`.
+- `Result<T, OpError>` MUST be the only type that implements `IntoMcp`.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include `Sized`.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include a sealed supertrait.
 - The body of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST obtain the input envelope by calling `Envelope::<T>::from` on the input result.

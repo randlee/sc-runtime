@@ -216,7 +216,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: A crate's README is the `README.md` file in that crate's directory. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
+Definitions: A crate's README is the `README.md` file in that crate's directory. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example. The workspace crates that REQ-RUN-0005 lists as a crate's dependencies are the crates named in that crate's row of the "Workspace crates it depends on" column of the Crate graph table in REQ-RUN-0005.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -2889,8 +2889,8 @@ This Draft record is deferred and does not apply to Phase D. It creates no imple
 
 **MUST statements:**
 
-- When Postgres is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one Postgres database that aggregates many hosts.
-- When MySQL is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one MySQL database that aggregates many hosts.
+- When Postgres is the remote engine, the host-aggregate adaptor MUST pair the host database with one Postgres aggregate.
+- When MySQL is the remote engine, the host-aggregate adaptor MUST pair the host database with one MySQL aggregate.
 
 ### Rationale
 
@@ -3740,8 +3740,8 @@ The default variant is exercised by [REQ-RUN-0303](requirements.md) criterion 7,
 **MUST NOT statements:**
 
 - `wizard/answers.schema.json` MUST NOT reject any file in `wizard/fixtures/`.
-- In this release, the `db` enum of `wizard/answers.schema.json` MUST NOT list `"sqlserver"`.
-- In this release, the `properties` of `wizard/answers.schema.json` MUST NOT list `extra`.
+- The `db` enum of `wizard/answers.schema.json` MUST NOT list `"sqlserver"`.
+- The `properties` of `wizard/answers.schema.json` MUST NOT list `extra`.
 - Refused answers files MUST NOT be generation fixtures under wizard/fixtures/.
 
 ### Rationale
@@ -4922,7 +4922,7 @@ This requirement restricts `template/` only. The sc-runtime repository lints its
 - Files under `template/` MUST NOT contain a `just` module.
 - Files under `template/` MUST NOT contain a surface snapshot.
 - Files under `template/` MUST NOT contain a snapshot test.
-- The template delivered in this release MUST NOT contain surface-parity tooling.
+- Files under `template/` MUST NOT contain surface-parity tooling.
 
 ### Rationale
 
