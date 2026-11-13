@@ -2503,7 +2503,7 @@ is logged.
 
 ### Requirement Statement
 
-Definitions: The template is the `cli` and `daemon` crates of a project rendered from `template/`; `cli` and `daemon` name those crates and their binaries. Template code is the code of those two crates. The endpoint is where the daemon listens: a Unix domain socket path or a TCP address. The resolver is the `sc-transport` endpoint resolver (REQ-TRN-0001). A global option is an option accepted with every subcommand of that binary.
+Definitions: The template is the `cli` and `daemon` crates of a project rendered from `template/`; `cli` and `daemon` name those crates and their binaries. Template code is the code of those two crates. The endpoint is where the daemon listens: a Unix domain socket path or a TCP address. The resolver is the `sc-transport` endpoint resolver (REQ-TRN-0001). A global option is an option accepted with every subcommand of that binary. The instance root is the per-application, per-user directory resolved by sc-transport, or a directory path supplied explicitly ([REQ-TRN-0002](sc-transport/requirements.md)). An explicit instance root is an instance root path given to the binary instead of one sc-transport resolves. The project's configuration is the configuration the template loads at startup. A socket file name is the last component of a Unix domain socket path, such as `daemon.sock`. A crate's default features are the features listed under `default` in its `Cargo.toml`. A crate depends on another crate when `cargo tree` output for the first crate lists the second.
 
 This applies to the `cli` and `daemon` crates of a project rendered from
 `template/`. The "endpoint" is where the daemon listens: a Unix domain socket
@@ -2551,8 +2551,8 @@ The resolver applies the source order above.
 
 **MUST statements:**
 
-- The generated `cli` binary MUST accept a global command-line option `--endpoint <value>`.
-- The generated `daemon` binary MUST accept a global command-line option `--endpoint <value>`.
+- The generated `cli` argument parser MUST parse `<subcommand> --endpoint <value>` without error for every `cli` subcommand.
+- The generated `daemon` argument parser MUST parse `<subcommand> --endpoint <value>` without error for every `daemon` subcommand.
 - Each binary MUST obtain its endpoint only from the `sc-transport` resolver.
 - When `--endpoint` is given, the template MUST give its value to the resolver.
 - When `--endpoint` is not given, the template MUST give the resolver no flag value.
@@ -2560,18 +2560,18 @@ The resolver applies the source order above.
 - The template MUST give the resolver the endpoint from its loaded configuration.
 - The `daemon` binary MUST place the `--endpoint` value in the `endpoint_flag` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
 - The `daemon` binary MUST place the configured endpoint in the `transport` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
-- The `daemon` binary MUST place any explicit instance root in the `transport` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
+- When the `daemon` binary is given an explicit instance root, the `daemon` binary MUST place that path in the `transport` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
 - The endpoint in the project's configuration MUST be a field of its `sc_transport::TransportConfig` value.
 - The instance root in the project's configuration MUST be a field of its `sc_transport::TransportConfig` value.
-- `sc_transport::TransportConfig` MUST implement `Deserialize`.
-- `sc_transport::TransportConfig` MUST be exported by `sc-transport` with default features.
+- `crates/sc-transport/src/config.rs` MUST implement `serde::Deserialize` for `TransportConfig`.
+- `sc_transport::TransportConfig` MUST be public when `sc-transport` is built with only its default features.
 
 **MUST NOT statements:**
 
 - Template code MUST NOT join a socket file name onto a directory.
 - Template code MUST NOT choose a default port.
 - Template code MUST NOT apply its own precedence between endpoint sources.
-- `cli` MUST NOT depend on `sc-runtime`.
+- The template's `cli` crate MUST NOT depend on the `sc-runtime` crate.
 
 ### Rationale
 
