@@ -4333,107 +4333,57 @@ the template, the driver or CI.
 
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). API means application programming interface. ADR means architecture decision record. A fixture is one answers JSON file under wizard/fixtures/. Postgres is the PostgreSQL database engine. A service container is the workflow database service for the generated project. Wyvern is the optional interactive wizard host. The workflow is the GitHub Actions workflow under `.github/workflows/` that this requirement describes. The fixture sequence is commands 1 to 6 of the numbered list in this requirement, in that order, and command 7 once the selection question of NFR-RUN-0010 is decided. The checkout under test is the commit the workflow run checked out; a crate taken from crates.io or from another commit is not resolved from it. The release run is the run required by REQ-RUN-0702.
+Definitions: CI means continuous integration. JSON means JavaScript Object Notation. ADR means architecture decision record. The workflow is the one GitHub Actions workflow that this record requires, and the workflow file is the YAML file that defines it. A fixture is one answers JSON file matching `wizard/fixtures/*.json`. The fixture name is the fixture's file name without the `.json` suffix. A generated project is the directory tree at `<dest>` that command 1 of the numbered list below renders from `template/` for one fixture. The fixture sequence is commands 1 to 6 of the numbered list below, in that order, and command 7 once the selection question of NFR-RUN-0010 is decided. A matrix entry is one job instance that the `strategy.matrix` key of the workflow file produces. The matrix job is the job in the workflow file that carries that `strategy.matrix` key. The fixture list is the set of files that match `wizard/fixtures/*.json` in the checkout under test, listed when the workflow runs. A branch filter is a `branches` or `branches-ignore` key. A path filter is a `paths` or `paths-ignore` key. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The selected dependency graph of a generated project is the set of packages listed in its `Cargo.lock`. The checkout under test is the commit the workflow run checked out. A crate is resolved from the checkout under test when its `Cargo.lock` entry has no `source` line; a crate taken from crates.io or from another commit is not resolved from it. The release run is the run of the workflow that REQ-RUN-0702 requires for a release. A test run is any run of the workflow other than the release run. A tested crate of a generated project is a crate of the public package set that is in the project's selected dependency graph. Postgres is the PostgreSQL database engine. A Postgres service container is an entry under the `services:` key of the matrix job that starts a Postgres server for the generated project. The `db` value of a fixture is the value of the `db` key in its JSON object. Wyvern is the optional interactive wizard program, whose executable is named `wyvern`.
 
-1. `just new <dest> --var-file <fixture>` from the repository root, which
-   runs the generation driver `scripts/new_project.py` without the wizard.
-2. `just setup` inside the generated project at `<dest>`. It installs the
-   sc-lint 0.8.4 consumer and is not a source edit.
+1. `just new <dest> --var-file <fixture>` from the repository root, which runs the generation driver `scripts/new_project.py` without the wizard.
+2. `just setup` inside the generated project at `<dest>`. It installs the sc-lint 0.8.4 consumer and is not a source edit.
 3. `just lint` inside the generated project at `<dest>`.
-4. `just test` inside the generated project at `<dest>`. It includes the
-   observability grep: rendered `crates/daemon` requires `sc-observability`
-   with the registry requirement `>=1.5.0` and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
-   token does not match `sc-observability-types`.
-5. `just build-cli` inside the generated project at `<dest>`. It includes
-   `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
-6. `just build-daemon` inside the generated project at `<dest>`. It includes
-   `cargo tree -p <project>-daemon -e normal --prefix none` and the same
-   normal-dependency ancestry check required by REQ-RUN-0503 criterion 6.
-   It fails for any `tempdir`, any direct daemon `tempfile` edge, or any
-   `tempfile` ancestry outside the qualified `sc-cron` private Python scratch
-   path. Amended by the explicitly approved selected-cron clarification of
-   2026-11-06.
-7. Once the selection question of [NFR-RUN-0010](requirements.md) is
-   decided: the generated project's daemon-process tests (the tests that
-   start the generated `daemon` binary),
-   selected the way that decision says. The CI runner is the isolated machine
-   those tests need.
+4. `just test` inside the generated project at `<dest>`. It includes the observability grep: rendered `crates/daemon` requires `sc-observability` with the registry requirement `>=1.5.0` and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate token does not match `sc-observability-types`.
+5. `just build-cli` inside the generated project at `<dest>`. It includes `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
+6. `just build-daemon` inside the generated project at `<dest>`. It includes `cargo tree -p <project>-daemon -e normal --prefix none` and the same normal-dependency ancestry check required by REQ-RUN-0503 criterion 6. It fails for any `tempdir`, any direct daemon `tempfile` edge, or any `tempfile` ancestry outside the qualified `sc-cron` private Python scratch path. Amended by the explicitly approved selected-cron clarification of 2026-11-06.
+7. Once the selection question of [NFR-RUN-0010](requirements.md) is decided: the generated project's daemon-process tests (the tests that start the generated `daemon` binary), selected the way that decision says. The CI runner is the isolated machine those tests need.
 
-No step of the workflow may write to `<dest>` between those commands. This
-is the "green with no edits" sequence that
-[REQ-RUN-0503](requirements.md) defines for one fixture; this item owns
-running it for every fixture in CI.
-
-These four rules (one entry per fixture, the list derived from the directory, no workflow edit for a new fixture, every pull request) are decided in this document.
-
-This is what makes template CI test the template against the crates at the same commit, so that a pull request changing a crate API and the template together is tested as one change. The means follows from [REQ-RUN-0003](requirements.md), which permits two stand-ins for testing unreleased crate changes: a git tag, or a `[patch.crates-io]` entry. A git tag cannot name the commit of an open pull request, which leaves a `[patch.crates-io]` entry with a `path` to each crate directory of the checkout.
-
-This sentence places no obligation on v0.1: the only accepted `db` value in v0.1 is `sqlite`, so no v0.1 fixture needs the container.
-
-The driver is what is tested.
-
-`just new` renders each project with `cargo generate`. Conditional `ignore`,
-`exclude`, and a values file that runs with no prompt are recorded in Active
-[ADR-RUN-0402](architecture.md). Sprint a-1 proved them (rows V3a, V3b, V4a,
-and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
-`just` recipes above.
+No step of the workflow may write to `<dest>` between those commands. This is the "green with no edits" sequence that [REQ-RUN-0503](requirements.md) defines for one fixture; this record owns running it for every fixture in CI.
 
 **MUST statements:**
 
-- A GitHub Actions workflow under `.github/workflows/` in this repository MUST test the template by generating real projects.
-- For every file matching `wizard/fixtures/*.json`, the workflow MUST run the fixture sequence.
-- For every fixture, the workflow MUST fail when any listed command exits non-zero.
-- Each fixture MUST be a separate matrix entry.
-- A failing matrix entry MUST be reported by its fixture name.
-- The list of fixtures MUST be derived from the files present in `wizard/fixtures/`.
-- The workflow MUST run on every pull request.
-- In every run of the workflow except the release run, each generated project MUST resolve every crate of the public package set that is in its selected dependency graph from the checkout under test.
+- The workflow file MUST be located in the directory `.github/workflows/` of this repository.
+- The matrix job MUST contain a step that runs command 1 of the numbered list.
+- Each matrix entry MUST run the fixture sequence on its fixture.
+- A run of the workflow MUST fail when a command of the fixture sequence exits with a non-zero status for any fixture.
+- The workflow MUST run each fixture in its own matrix entry.
+- The job name of each matrix entry MUST contain its fixture name.
+- The workflow MUST take the values of its matrix from the fixture list.
+- The `on:` key of the workflow file MUST list the `pull_request` event.
+- In every test run, each tested crate of a generated project MUST be resolved from the checkout under test.
 - From the release that adds the `store-postgres` crate, the workflow MUST give a Postgres service container to every fixture whose `db` value is `postgres` or `sqlite-postgres`.
 
 **MUST NOT statements:**
 
-- Adding a fixture file MUST NOT require an edit to the workflow.
-- The workflow MUST NOT install Wyvern.
-- The workflow MUST NOT invoke Wyvern.
-- The workflow MUST NOT use the `cargo-generate-action` GitHub Action as its matrix mechanism.
+- The `pull_request` entry of the `on:` key MUST NOT contain a branch filter.
+- The `pull_request` entry of the `on:` key MUST NOT contain a path filter.
+- The workflow file MUST NOT contain the file name of any fixture.
+- The workflow file MUST NOT contain a step that installs Wyvern.
+- The workflow file MUST NOT contain a step that invokes Wyvern.
+- The matrix job MUST NOT contain a `uses:` line that names the `cargo-generate-action` GitHub Action.
 
 ### Rationale
 
-Every supported option combination is generated, linted and tested on every
-change. That is what catches a new `rmcp` release, a crate API change or a
-template edit breaking generated projects before a user meets it. Running the
-real driver with `--var-file` tests the same path agents and CI users take.
-Keeping the crates and the template in one repository is only useful if CI
-tests them together at one commit; after the first publish a generated
-project would otherwise resolve the published crates, and a pull request
-would be tested against the old crate code.
+Every supported option combination is generated, linted and tested on every change. That catches a new `rmcp` release, a crate change or a template edit breaking generated projects before a user meets it. Running the real driver with `--var-file` tests the same path that agents and CI users take; the driver is what is tested. Keeping the crates and the template in one repository is only useful if CI tests them together at one commit. After the first publish a generated project would otherwise resolve the published crates, and a pull request would be tested against the old crate code. The four matrix rules (one entry per fixture, the list derived from the directory, no workflow edit for a new fixture, every pull request) are decided in this record. The Postgres statement places no obligation on v0.1, because the only accepted `db` value in v0.1 is `sqlite`. Open: the workflow file name is not decided, and who writes the `[patch.crates-io]` entries into the generated project is owned by REQ-RUN-0003.
+
 ### Success Criteria
 
-1. A workflow file under `.github/workflows/` contains a job that runs
-   `just new` with `--var-file`, then `just setup`, then `just lint`, then
-   `just test`, then `just build-cli`, then `just build-daemon` in the
-   generated directory. `just build-cli` includes
-   `cargo tree -p <project>-cli -e normal --prefix none`. `just test` includes the
-   observability grep from the command list above. `just build-daemon`
-   includes `cargo tree -p <project>-daemon -e normal --prefix none` and the
-   normal-dependency ancestry check from REQ-RUN-0503 criterion 6. Those checks
-   run because the job runs the recipes; they are not a separate manual step.
-2. A run of that workflow shows one matrix entry per file in
-   `wizard/fixtures/*.json`, each labelled with its fixture name, all green.
-3. A pull request that adds a new valid fixture file and changes nothing else
-   produces a run with one more matrix entry.
-4. A pull request that breaks the template for `mcp = false` only turns that
-   variant's entry red and leaves `sqlite-mcp` green.
-5. `grep -ri "wyvern" .github/workflows/` prints nothing, and the matrix job
-   contains no `uses:` line naming `cargo-generate-action`.
-6. In a pull-request run, the `Cargo.lock` of each generated project lists
-   every public package selected by that fixture
-   with no `source` line (a package resolved from a path has none; one
-   resolved from crates.io has
-   `source = "registry+https://github.com/rust-lang/crates.io-index"`).
-7. A pull request that renames a public function in one of the public crates
-   and updates the template's call to it, with no other change, produces a
-   green matrix.
+1. Inspection: exactly one file under `.github/workflows/` contains a job with a `strategy.matrix` key whose steps run `just new` with `--var-file`; that file is the workflow file (statements 1 and 2).
+2. Inspection: the steps of the matrix job run `just new <dest> --var-file <fixture>`, `just setup`, `just lint`, `just test`, `just build-cli` and `just build-daemon` in that order, with no step between them that writes to `<dest>` (statement 3).
+3. Inspection: no step of the fixture sequence carries `continue-on-error: true`, and the matrix job does not carry it either (statement 4).
+4. Inspection: the matrix has one dimension whose values are the fixtures, and the `name:` of the matrix job interpolates the fixture name (statements 5 and 6).
+5. Inspection: a step or job of the workflow file lists `wizard/fixtures/*.json` at run time and passes the result to `strategy.matrix` (statement 7).
+6. Inspection: the `on:` key has a `pull_request` entry with no `branches`, `branches-ignore`, `paths` or `paths-ignore` key (statements 8, 11 and 12).
+7. Inspection of a pull-request run's artifacts: the `Cargo.lock` of each generated project lists every public package selected by that fixture with no `source` line (statement 9).
+8. Inspection, once `store-postgres` exists: the matrix job has a `services:` entry for Postgres that applies to every fixture whose `db` value is `postgres` or `sqlite-postgres` (statement 10).
+9. `ls wizard/fixtures/` piped to `grep -F -f - <workflow file>` prints nothing (statement 13).
+10. `grep -ri "wyvern" .github/workflows/` prints nothing (statements 14 and 15).
+11. `grep -n "cargo-generate-action" <workflow file>` prints nothing (statement 16).
 ### Implementation Notes
 
 **Key Considerations:**
