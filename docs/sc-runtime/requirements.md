@@ -165,7 +165,9 @@ with default features. `DaemonConfig` embeds that type.
 
 **MUST NOT statements:**
 
-- `run()` MUST NOT read a config file or an environment variable to load configuration.
+- `run()` MUST NOT read a config file to load configuration.
+
+- `run()` MUST NOT read an environment variable to load configuration.
 - `run()` MUST NOT call the stores closure before the lock is held.
 - `run()` MUST NOT bind a listener before steps 1 to 4 have succeeded.
 - The builder MUST NOT offer hooks, callbacks or configuration that insert work between steps or reorder them (decided in this document and recorded in [ADR-RT-0001](architecture.md); the design lists the five steps and says the crate is a bootstrap, not a framework layer).
@@ -912,7 +914,11 @@ it, so the closed public-surface table above remains complete.
 **MUST NOT statements:**
 
 - The crate MUST NOT contain a command or operation registry.
-- The crate MUST NOT define a public type that wraps an `axum`, `rmcp` or `sqlx` type.
+- The crate MUST NOT define a public type that wraps a `axum` type.
+
+- The crate MUST NOT define a public type that wraps a `rmcp` type.
+
+- The crate MUST NOT define a public type that wraps a `sqlx` type.
 - The crate MUST NOT have any public item outside the closed public-surface table above.
 - The crate MUST NOT have a public trait.
 - The crate MUST NOT have a public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`.
