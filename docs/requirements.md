@@ -802,7 +802,7 @@ them.
 
 ### Requirement Statement
 
-Definitions: The spike is the examples/spike proof project. Daemon::builder is the sc-runtime daemon assembly entry point; sc_transport::Client is the reusable client; Envelope<T> is the sc-command response envelope.
+Definitions: The spike is the examples/spike proof project. Daemon::builder is the sc-runtime daemon assembly entry point; sc_transport::Client is the reusable client connector of the sc-transport crate; Envelope<T> is the sc-command response envelope. `clap` is the Rust command-line argument parser crate; the spike `clap` client is the spike's command-line client program built with `clap`. A client connects through `sc_transport::Client` when it opens its UDS or TCP connection to the spike server by calling `sc_transport::Client` and not by building its own socket or HTTP connection.
 
 `examples/spike` in the `randlee/sc-runtime` repository is first written
 directly on `axum`, `utoipa-axum`, `rmcp`, `sqlx` and `reqwest`, before the
