@@ -3221,17 +3221,13 @@ A cache moves rows between the two stores. Store-to-store cache sync inside the 
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The sc-runtime crates are the framework library crates in this repository, distinct from the application-owned adaptor.
+Definitions: The sc-runtime crates are the framework library crates in the `crates/` directory of this repository. A store is one database: one SQLite database file, or one Postgres or MySQL database. Reading or writing a store means issuing SQL (Structured Query Language) to that database through a client library such as sqlx or the `sc-runtime-db-sqlite` writer. A row is one record of a database table. A function, method or closure moves rows between stores when it reads rows from one store and writes those rows, changed or unchanged, to another store. A consumer repository is an application project using the framework. The store adaptor is the `store-adaptor` crate in `template/crates/` that is generated into a consumer repository, outside the sc-runtime crates.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
+Deferral: Synchronization between databases is deferred. This record does not apply to Phase D and creates no implementation or validation obligation until reopened.
 
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
+**MUST NOT statements:**
 
-The sc-runtime crates do not move rows between stores.
-
-**MUST statements:**
-
-- The sc-runtime crates do not move rows between stores.
+- Files in the `crates/` directory MUST NOT contain a function, method or closure that moves rows between stores.
 
 ### Rationale
 
