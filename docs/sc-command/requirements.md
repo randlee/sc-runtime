@@ -470,7 +470,7 @@ crate means every SC daemon maps the same error kind to the same status.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. The crate rmcp supplies the protocol types named below. `IntoMcp` is the extension trait whose consuming method converts a `Result<T, OpError>` into the protocol result.
+Definitions: MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. The crate rmcp supplies the protocol types named below. `server` is the Cargo feature enabling the server-side conversions. `T` is the serializable success value type and `OpError` is the service error type. `IntoMcp` is the extension trait whose consuming method converts a `Result<T, OpError>` into the protocol result. `Envelope<T>` is the four-key response envelope defined by REQ-CMD-0001; `Envelope::from(result)` converts the input result into that envelope. `into_response()` is the axum conversion defined by REQ-CMD-0004.
 
 
 
@@ -516,21 +516,23 @@ so `is_error` is `Some(false)`. Failure uses
 
 **MUST statements:**
 
-- When the `server` Cargo feature is enabled, `sc-command` MUST export the public extension trait `sc_command::IntoMcp`.
-- When the `server` Cargo feature is enabled, `IntoMcp` MUST declare exactly one method: `fn into_mcp(self) -> Result<CallToolResult, McpError>`.
-- When the `server` Cargo feature is enabled, `sc-command` MUST implement `IntoMcp` for every `Result<T, OpError>` whose type `T` implements `serde::Serialize`.
-- `into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md)).
-- `into_mcp()` MUST place the JSON string of the envelope produced by `Envelope::<T>::from(result)` in one text content item of the returned `CallToolResult`.
+- When the `server` Cargo feature is enabled, the crate root of `sc-command` MUST expose the public extension trait `sc_command::IntoMcp`.
+- With the `server` Cargo feature enabled, `IntoMcp` MUST declare exactly one method.
+- That method MUST have the signature `fn into_mcp(self) -> Result<CallToolResult, McpError>`.
+- With the `server` Cargo feature enabled, every `Result<T, OpError>` with `T: serde::Serialize` MUST implement `sc_command::IntoMcp`.
+- `into_mcp()` MUST first form the envelope produced by `Envelope::<T>::from(result)`.
+- The `CallToolResult` returned by `into_mcp()` MUST contain one text content item.
+- That text content item MUST contain the JSON string of `Envelope::<T>::from(result)`.
 
 - `into_mcp()` MUST place the JSON value of the envelope produced by `Envelope::<T>::from(result)` in the returned `CallToolResult` as `structured_content`.
-- The envelope JSON delivered through MCP MUST equal, as a JSON value, the body the axum conversion produces for the same `Result<T, OpError>` ([REQ-CMD-0004](requirements.md)).
+- For the same `Result<T, OpError>` input, the JSON value in `CallToolResult.structured_content` MUST equal the parsed JSON body returned by `Envelope::from(result).into_response()`.
 
 **MUST NOT statements:**
 
 - An `OpError` from the service MUST NOT be turned into `Err(McpError)`.
-- The function MUST NOT panic ([NFR-CMD-0003](requirements.md)).
+- `IntoMcp::into_mcp` MUST NOT panic ([NFR-CMD-0003](requirements.md)).
 - When the `server` feature is disabled the trait MUST NOT exist.
-- When the `server` feature is disabled the crate MUST NOT reference rmcp.
+- With the `server` Cargo feature disabled, the compiled `sc-command` crate MUST NOT reference the `rmcp` crate.
 
 ### Rationale
 
