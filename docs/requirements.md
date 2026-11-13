@@ -214,7 +214,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: Correct package metadata identifies the public crate itself: its name, version, description, MIT license, repository and README. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates.
+Definitions: A crate's README is the `README.md` file in that crate's directory. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -222,19 +222,21 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 
 - When selected alone from a clean checkout, each public crate MUST build with its default features.
 - When selected alone from a clean checkout, each public crate MUST pass its own default-feature tests.
-- Each public crate MUST provide a README whose Rust usage example compiles as a doctest.
-- Each public crate MUST provide correct package metadata for its name.
-- Each public crate MUST provide correct package metadata for its version.
-- Each public crate MUST provide correct package metadata for its description.
-- Each public crate MUST provide correct package metadata for its license.
-- Each public crate MUST provide correct package metadata for its repository.
-- Each public crate MUST provide correct package metadata for its readme.
+- Each public crate MUST provide a README.
+- Each public crate's README MUST contain a Rust usage example.
+- Each public crate's README Rust usage example MUST compile as a doctest.
+- Each public crate's `name` in `cargo metadata --no-deps` output MUST equal that crate's name in the public package set.
+- Each public crate's `version` in `cargo metadata --no-deps` output MUST equal the version the public package set is released together at.
+- Each public crate's `description` in `cargo metadata --no-deps` output MUST state what that crate provides.
+- Each public crate's `license` in `cargo metadata --no-deps` output MUST be `MIT`.
+- Each public crate's `repository` in `cargo metadata --no-deps` output MUST be `https://github.com/randlee/sc-runtime`.
+- Each public crate's `readme` in `cargo metadata --no-deps` output MUST name that crate's README.
 - Each public crate MUST be independently publishable to crates.io.
 - Every published crate MUST declare the MIT license.
 - The repository LICENSE file MUST contain the MIT license text.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-config` MUST pass its own default-feature tests.
-- `sc-transport` MUST remain usable without the other SDK crates or generated template.
-- sc-command MUST remain usable without sc-runtime, sc-config, sc-transport or the generated template.
+- When selected alone from a clean checkout without the other SDK crates or generated template, `sc-transport` MUST build with its default features.
+- When selected alone from a clean checkout without the other SDK crates or generated template, `sc-transport` MUST pass its own default-feature tests.
 - sc-storage MUST use only the Rust standard library.
 - sc-monty production dependencies MUST be limited to pydantic Monty crates.
 - sc-cron MUST consume sc-storage for shared storage behavior.
@@ -246,6 +248,10 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 
 - Published registry dependencies MUST NOT declare an upper bound.
 - Template registry dependencies MUST NOT declare an upper bound.
+- `crates/sc-command/Cargo.toml` MUST NOT list `sc-runtime` in any dependency table.
+- `crates/sc-command/Cargo.toml` MUST NOT list `sc-config` in any dependency table.
+- `crates/sc-command/Cargo.toml` MUST NOT list `sc-transport` in any dependency table.
+- `crates/sc-command/Cargo.toml` MUST NOT list a path inside the generated template.
 - sc-monty MUST NOT have a production dependency on sc-*.
 - sc-monty MUST NOT have a production dependency on the `tokio` crate.
 - sc-monty MUST NOT have a production dependency on serde_json.
