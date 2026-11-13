@@ -3322,13 +3322,13 @@ Owner, PRD section 4: "I want sqlite/postgres/sql to be interchangeable behind t
 
 ### Requirement Statement
 
-Definitions: The project name is the application name chosen during generation. A role is the generated crate suffix identifying its purpose, such as types or schema. A package name is the name field of that crate's Cargo manifest.
+Definitions: The project name is the application name chosen during generation. A generated crate is a crate directory under `crates/` in a project generated from `template/`. A crate's role is its directory name under `crates/`, except that `api-types` has the role `types`. A package name is the `[package] name` field of that crate's `Cargo.toml`.
 
 A generated crate's package name is the project name, a hyphen, and its role. Every generated package that is published uses that prefix. `<project>-types` is the non-database types crate. `<project>-schema` is the schema crate.
 
 **MUST statements:**
 
-- A generated crate's package name MUST be the project name, a hyphen and its role.
+- In a generated project, each `crates/<directory>/Cargo.toml` `[package] name` MUST be the project name, a hyphen and that crate's role.
 - Every published generated package MUST use that project-name prefix.
 
 ### Rationale
