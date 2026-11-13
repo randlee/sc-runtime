@@ -646,7 +646,7 @@ envelope object or of the error object is rejected by
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions. Third-party dependencies are crates outside the public workspace package set in REQ-RUN-0002; workspace edges are governed by NFR-CMD-0002, including `sc-storage` for the shared command helpers. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
+Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions. Third-party dependencies are crates outside the public workspace package set in REQ-RUN-0002; workspace edges are governed by NFR-CMD-0002, including `sc-storage` for the shared command helpers. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit. `IntoResponse` is the axum trait that converts a value into an HTTP response. `IntoMcp` is the `sc-command` trait whose method `into_mcp` converts a value into an rmcp `CallToolResult` (REQ-CMD-0005).
 
 Phase D dependency requirements: every registry dependency of `sc-command`
 uses its tested floor with no upper bound (REQ-RUN-0002, ANC-037). The floors
@@ -692,28 +692,31 @@ use axum and rmcp.
 
 - In `crates/sc-command/Cargo.toml`, `axum` MUST be declared `optional = true`.
 - In `crates/sc-command/Cargo.toml`, `rmcp` MUST be declared `optional = true`.
-- They MUST be enabled only by a cargo feature named `server`.
-- With default features `sc-command` MUST compile.
-- With default features `sc-command` MUST provide `Envelope<T>`.
-- With default features `sc-command` MUST provide `OpError`.
-- With default features `sc-command` MUST provide `ErrorKind`.
-- With default features `sc-command` MUST provide `From<Result<T, OpError>> for Envelope<T>`.
-- With default features the crate's direct non-dev third-party dependencies MUST be exactly `serde`, `serde_json`, and `sc-observability-types`.
-- `sc-observability-types` MUST be declared with the registry requirement `">=1.5.0"`.
-- With `--features server` the direct non-dev third-party dependencies MUST be exactly the default-feature third-party dependencies plus `axum` and `rmcp`.
-- `axum` MUST be declared with the registry requirement `">=0.8.9"`.
-- `rmcp` MUST be declared with the registry requirement `">=3.9"`.
-- `axum` MUST be declared with `default-features = false`.
-- With `--features server`, sc-command MUST additionally provide `impl IntoResponse for Envelope<T>`.
-- With `--features server`, sc-command MUST additionally provide the `IntoMcp::into_mcp` conversion.
-- Every `use`, type or function that names axum or rmcp MUST be inside code gated by `#[cfg(feature = "server")]`.
+- In `crates/sc-command/Cargo.toml`, the set of `[features]` entries that list `dep:axum` MUST equal {`server`}.
+- In `crates/sc-command/Cargo.toml`, the set of `[features]` entries that list `dep:rmcp` MUST equal {`server`}.
+- The exit status of `cargo build -p sc-command` MUST be 0.
+- In `crates/sc-command/Cargo.toml`, the set of non-optional third-party `[dependencies]` entries MUST equal {`serde`, `serde_json`, `sc-observability-types`}.
+- In `crates/sc-command/Cargo.toml`, `sc-observability-types` MUST be declared with the registry requirement `">=1.5.0"`.
+- In `crates/sc-command/Cargo.toml`, the set of optional third-party `[dependencies]` entries that the `server` feature enables MUST equal {`axum`, `rmcp`}.
+- In `crates/sc-command/Cargo.toml`, `axum` MUST be declared with the registry requirement `">=0.8.9"`.
+- In `crates/sc-command/Cargo.toml`, `rmcp` MUST be declared with the registry requirement `">=3.9"`.
+- In `crates/sc-command/Cargo.toml`, `axum` MUST be declared with `default-features = false`.
+- The exit status of `cargo build -p sc-command --features server` MUST be 0.
+- In `crates/sc-command/src/`, the `impl IntoResponse for Envelope<T>` block MUST have an enclosing `#[cfg(feature = "server")]` attribute.
+- In `crates/sc-command/src/lib.rs`, the `pub use` line that exports `IntoMcp` MUST carry `#[cfg(feature = "server")]`.
 
 **MUST NOT statements:**
 
-- The `server` feature MUST NOT be in the `default` feature list.
-- The `sc-observability-types` requirement MUST NOT declare an upper bound.
-- The `axum` requirement MUST NOT declare an upper bound.
-- The `rmcp` requirement MUST NOT declare an upper bound.
+- In `crates/sc-command/src/lib.rs`, the `pub use` line that exports `Envelope` MUST NOT carry a `#[cfg(feature = ...)]` attribute.
+- In `crates/sc-command/src/lib.rs`, the `pub use` line that exports `OpError` MUST NOT carry a `#[cfg(feature = ...)]` attribute.
+- In `crates/sc-command/src/lib.rs`, the `pub use` line that exports `ErrorKind` MUST NOT carry a `#[cfg(feature = ...)]` attribute.
+- In `crates/sc-command/src/envelope.rs`, the `impl From<Result<T, OpError>> for Envelope<T>` block MUST NOT have an enclosing `#[cfg(feature = ...)]` attribute.
+- In `crates/sc-command/Cargo.toml`, the `default` feature list MUST NOT contain `server`.
+- In `crates/sc-command/src/`, code and comments outside `#[cfg(feature = "server")]` modules and items MUST NOT contain the text `axum`.
+- In `crates/sc-command/src/`, code and comments outside `#[cfg(feature = "server")]` modules and items MUST NOT contain the text `rmcp`.
+- In `crates/sc-command/Cargo.toml`, the `sc-observability-types` requirement MUST NOT declare an upper bound.
+- In `crates/sc-command/Cargo.toml`, the `axum` requirement MUST NOT declare an upper bound.
+- In `crates/sc-command/Cargo.toml`, the `rmcp` requirement MUST NOT declare an upper bound.
 
 ### Rationale
 
