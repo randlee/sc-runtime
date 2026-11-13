@@ -1396,17 +1396,18 @@ criterion for the request paths of `crates/sc-transport` and
 
 ### Context
 
-Command paths need not be hand-written; default direct conversion requires no custom transform. Consumer-side generation remains permitted follow-up work.
+The problem being decided is which requirements, crate boundaries and sprint
+deliverables may enter the requirements files, the architecture files and the
+sprint plans of `sc-runtime`.
 
-Requirements must reduce repeated application code. NFR-RUN-0003 requires the shared command path and typed storage and describes the current deliverable scope; later consumer-side generation remains permitted.
+Force for a shared framework: projects hand-assemble the same stack (Tokio,
+Axum, an MCP server, a clap CLI, sqlx stores) differently each time and repeat
+the same application code. Build, test, reporting and runtime are the same in
+every project; projects legitimately differ only at the application layer.
 
-The purpose of `sc-runtime` is to stop projects hand-assembling the same
-stack (Tokio, Axum, an MCP server, a clap CLI, sqlx stores) differently each
-time. A framework that grows its own requirements, adapters and tooling moves
-that work into the framework and makes every project learn it. Build, test,
-reporting and runtime are the same in every project; projects legitimately
-differ only at the application layer. This ADR governs what may enter the
-requirements files, the architecture files and the sprint plans.
+Force against framework growth: a framework that grows its own requirements,
+adapters and tooling moves that work into the framework and makes every
+project learn it.
 
 ### Decision
 
@@ -1433,7 +1434,8 @@ Shared standard components reduce repeated code across consuming projects.
 ### Consequences
 
 Benefits: projects reuse documented library APIs and maintain less repeated
-application code; the framework avoids owning duplicate surface-snapshot
+application code; command paths are not hand-written, because default direct
+conversion requires no custom transform; the framework avoids owning duplicate surface-snapshot
 tooling, a render engine or a logging facade. Registry, portable raw-SQL
 layer and extra wrapper omissions are Phase D scope under NFR-RUN-0003,
 not prohibitions on later consumer choices. The shared command path and
