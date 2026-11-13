@@ -1496,7 +1496,7 @@ consumer-option implementation, test or prohibition.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-20  
 
@@ -1510,111 +1510,71 @@ consumer-option implementation, test or prohibition.
 - [ADR-RT-0004](sc-runtime/architecture.md): the fixture is the real daemon
 ### Context
 
-Integration tests want to run the daemon. A developer's machine usually has
-the application's real daemon running, so a test that starts a daemon there
-either collides with it or must be made different from it. In another SC
-project this produced thousands of daemons left running by tests, and the
-daemon's singleton requirements and gates had to be strengthened to stop
-them. The obvious way out is a test daemon: a crate or executable that is
-mostly the daemon but safe to start in tests. It drifts from the production
-daemon and increases the code to maintain, and tests against it stop proving
-anything about the code that ships.
+Daemon integration tests can collide with a developer's running daemon. Another SC project accumulated thousands of leaked test daemons and had to strengthen singleton gates. A separate test daemon would drift from the shipped daemon and add maintenance.
+
 ### Decision
 
-The instance root is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](sc-transport/requirements.md)). colima is a Linux
-virtual-machine runtime for macOS.
+The instance root is the per-application, per-user directory resolved by `sc-transport` or supplied explicitly; its default is undecided ([REQ-TRN-0002](sc-transport/requirements.md)). Colima is a Linux virtual-machine runtime for macOS.
 
-1. The escape path for a test that is not safe on a developer's host is a
-   virtual machine (colima is the named example) or an ephemeral CI runner.
-   It is never a test variant of the daemon.
-2. There MUST NOT be a test daemon: no crate, binary, cargo feature or build
-   configuration that reproduces the daemon for tests, and no test-only
-   switch in production daemon code. `sc_runtime::testing::DaemonFixture`,
-   its crate-private shutdown trigger (which starts the same shutdown
-   sequence a signal starts, [ADR-RT-0004](sc-runtime/architecture.md)) and a
-   cargo feature that only gates the `testing` module are not a test daemon
-   and not a test-only switch: they change no behaviour of `run()` and select
-   no alternative code path. What is forbidden is code that makes the daemon
-   behave differently under test.
-3. A test that starts a daemon as a separate process, uses the default
-   instance root, or involves the service manager MUST run only on an
-   isolated machine and MUST NOT run on a developer's host. Any future
-   auto-start tests introduced with deferred ADR-RUN-0204 inherit this rule.
-4. A test that runs the daemon in-process through
-   `sc_runtime::testing::DaemonFixture` on a temporary instance root MAY run
-   on a developer's host, provided every resource the fixture daemon opens
-   (lock, endpoint, database files) is under that temporary instance root.
-   This is decided in this document as an interpretation of the owner's
-   decision, which the owner has not yet confirmed;
-   [ADR-RT-0004](sc-runtime/architecture.md) makes that fixture the real
-   builder path, not a separate implementation. Where the endpoint does not
-   derive from the instance root (the Windows TCP default, OPEN in
-   [ADR-RT-0004](sc-runtime/architecture.md)), fixture tests are
-   daemon-process tests under point 3 until that is decided.
-   A host-run test MUST NOT execute the CLI binary; every test that does is
-   a process test under point 3. In Phase A, CLI behavior is proven on the
-   host through an in-process path and by an isolated real-binary smoke. This
-   safety rule does not prescribe the deferred ADR-RUN-0304 helper shape.
-5. The `daemon.lock` singleton MUST NOT be weakened for tests.
-6. Building or provisioning a virtual machine is not part of v0.1. Phase A
-   records the rule in this repository; generated-project wording is deferred
-   with REQ-RUN-0311.
+1. Tests unsafe on a developer's host run on an isolated virtual machine, such as colima, or an ephemeral CI runner. A test daemon is not the escape path.
+2. No crate, binary, Cargo feature or build configuration may reproduce the daemon for tests. Production daemon code has no test-only switch that changes daemon behavior. `sc_runtime::testing::DaemonFixture`, its crate-private shutdown trigger that starts the same sequence as a signal ([ADR-RT-0004](sc-runtime/architecture.md)), and a Cargo feature gating only the `testing` module are allowed: they change no `run()` behavior and select no alternate path.
+3. A test that starts a daemon as a separate process, uses the default instance root, or involves the service manager runs only on an isolated machine, never a developer's host. Future auto-start tests under deferred ADR-RUN-0204 follow the same rule.
+4. An in-process `sc_runtime::testing::DaemonFixture` test may run on a developer's host with a temporary instance root only when every opened resource, including lock, endpoint and database files, is under that root. This is an interpretation of the owner's decision not yet confirmed by the owner; [ADR-RT-0004](sc-runtime/architecture.md) uses the real builder path. Until the Windows TCP default endpoint question in ADR-RT-0004 is decided, a fixture test whose endpoint does not derive from the root is a daemon-process test under point 3. A host-run test must not execute the CLI binary; every test executing it is a process test under point 3. Phase A proves CLI behavior on the host through an in-process path and with an isolated real-binary smoke. This rule does not prescribe the deferred ADR-RUN-0304 helper shape.
+5. Tests must not weaken the `daemon.lock` singleton.
+6. v0.1 does not build or provision a virtual machine. Phase A records this rule in this repository; generated-project wording is deferred with REQ-RUN-0311.
+
 ### Rationale
 
 decided by the owner on 2026-09-20, from experience in another SC project; not stated in the sc-runtime design
 ### Consequences
 
-Production daemon code has one shape, and tests exercise it. Nothing a developer runs on the host can start, collide with or leak a
-daemon process: host-run tests use the in-process fixture and the host-safe
-CLI path. The tests that need a real
-daemon process, the real singleton and the real service manager execute where
-a leaked or colliding daemon costs nothing, whichever command starts them;
-whether `just test` starts them inside a virtual machine is a question for
-the standard SC `just` system. Until a virtual machine is set up for a project, those tests run only in CI.
-Any future launchd comparison needs macOS, which a Linux virtual machine
-cannot give.
+**Positive:**
+
+- Tests exercise the single production daemon shape. Host-run tests use the in-process fixture and host-safe CLI path, avoiding daemon-process collisions and leaks on the developer's host.
+- Tests requiring a real daemon process, singleton or service manager run on an isolated machine.
+
+**Negative:**
+
+- Until a project has a virtual machine, those process tests run only in CI.
+- A future launchd comparison requires macOS; a Linux virtual machine cannot provide it.
 
 **Neutral:**
 
-- OPEN: beyond Phase B's fixed generated SIGINT/SIGTERM job, how other
-  daemon-process tests are selected and detect an isolated machine remains
-  undecided; [NFR-RUN-0010](requirements.md) owns the question. The Phase B job
-  requires its dedicated marker plus GitHub Actions' hosted-runner values and
-  fails closed before spawn. The launchd comparison belongs to deferred
-  ADR-RUN-0204.
+- Whether `just test` starts process tests inside a virtual machine is for the standard SC `just` system to decide.
+- Beyond Phase B's fixed generated SIGINT/SIGTERM job, process-test selection and isolated-machine detection remain open under [NFR-RUN-0010](requirements.md). The Phase B job requires its dedicated marker and GitHub Actions hosted-runner values and fails closed before spawn. The launchd comparison belongs to deferred ADR-RUN-0204.
+
 ### Alternatives Considered
 
-#### Alternative 1: A test daemon crate or executable, mostly like the daemon
+#### Alternative 1: Separate test daemon
 
 **Description:**
 
-A test daemon crate or executable, mostly like the daemon.
+Build a test daemon crate or executable mostly like production.
 
 **Why Rejected:**
 
-Rejected: it drifts from the production daemon, doubles the maintenance, and its tests do not prove production behaviour. This is the alternative the decision exists to rule out.
+The copy can drift, adds maintenance and does not establish production behavior.
 
-#### Alternative 2: Run daemon-process tests on the developer's host with a separate instance root for every test
+#### Alternative 2: Separate roots on a developer's host
 
 **Description:**
 
-Run daemon-process tests on the developer's host with a separate instance root for every test.
+Run daemon-process tests on the developer's host with an instance root per test.
 
 **Why Rejected:**
 
-Rejected as the general answer: it depends on every test, including future ones, getting the isolation right, and a test that gets it wrong collides with or leaks beside the developer's real daemon. It remains correct for the in-process fixture, which cannot leak a process.
+A mistake in any current or future test can collide with or leak beside the real daemon. Temporary roots remain suitable for the in-process fixture, which cannot leak a process.
 
-#### Alternative 3: Build and ship a virtual machine definition as part of v0.1
+#### Alternative 3: Ship a virtual machine definition in v0.1
 
 **Description:**
 
-Build and ship a virtual machine definition as part of v0.1.
+Build and ship a virtual machine definition with v0.1.
 
 **Why Rejected:**
 
-Rejected by the owner for the MVP; the rule is delivered as guidance.
+The owner rejected provisioning for the MVP; v0.1 delivers guidance.
+
 ### Implementation
 
 Enforced by: the success criteria of [NFR-RUN-0010](requirements.md)
