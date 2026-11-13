@@ -3592,7 +3592,7 @@ and sc-lint, so the schema is versioned like any other published contract.
 
 ### Requirement Statement
 
-Definitions: Schema keys are the keys of the top-level properties object in wizard/answers.schema.json. Placeholder keys are the names of the template-defined placeholders declared in template/cargo-generate.toml. The key-set test is the unit test in `tests/unit/` that compares the schema keys with the placeholder keys.
+Definitions: Schema keys are the keys of the top-level properties object in wizard/answers.schema.json. Placeholder keys are the names of the template-defined placeholders declared in template/cargo-generate.toml. The key-set test is the unit test in `tests/unit/` that compares the schema keys with the placeholder keys. `just test` is the `test` recipe of the root `Justfile`, defined in [REQ-RUN-0004](requirements.md).
 
 | Set | Where it is read from |
 |---|---|
