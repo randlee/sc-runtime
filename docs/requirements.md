@@ -599,7 +599,7 @@ built in parallel without touching each other.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when its request makes the server run that function and the client receives that function's result.
+Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when the result the client receives for its request is the result that function returned for that request. An MCP client is any program that sends MCP Streamable HTTP requests over the server's Unix socket. `tools/call` is the MCP request that runs one named tool.
 
 `examples/spike` in the `randlee/sc-runtime` repository is a throwaway proof,
 built before any of the four library crates exists, so it uses the third-party
@@ -621,9 +621,13 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - That server binary MUST run in a single process.
 - That server process MUST use a single `axum` 0.8 `Router`.
 - The spike server MUST register REST routes through `utoipa-axum` 0.2 `OpenApiRouter` with the `routes!` macro.
-- The spike server MUST mount an `rmcp` 3.x `StreamableHttpService` at `/mcp` using `Router::nest_service("/mcp", service)`.
+- The spike `Cargo.toml` MUST list `rmcp` 3.x.
+- The spike server MUST serve its `rmcp` `StreamableHttpService` at the path `/mcp`.
+- The spike server MUST mount that `StreamableHttpService` with `Router::nest_service`.
 - That `StreamableHttpService` MUST use stateless mode.
-- The spike server MUST open a SQLite database through `sqlx` 0.9 with the `sqlite` feature.
+- The spike `Cargo.toml` MUST list `sqlx` 0.9.
+- The spike `Cargo.toml` MUST enable the `sqlite` feature of `sqlx`.
+- The spike server MUST open its SQLite database through `sqlx`.
 - The spike server MUST pass a Unix domain socket listener (`tokio::net::UnixListener`) to `axum::serve`.
 - Every SQLite query in the spike MUST be run by the same single asynchronous service function.
 - The REST handler MUST call the one async service function that reads or writes the SQLite database.
@@ -633,7 +637,7 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - The spike `clap` client MUST call the REST route.
 - Against one running spike server process, `curl --unix-socket <path>` calling the REST route MUST reach the one async SQLite service function.
 - Against one running spike server process, the `clap` client MUST reach the one async SQLite service function.
-- Against one running spike server process, an MCP client issuing `tools/call` on `/mcp` MUST reach the one async SQLite service function.
+- Against one running spike server process, an MCP `tools/call` request sent by an MCP client to `/mcp` MUST reach the one async SQLite service function.
 
 **MUST NOT statements:**
 
