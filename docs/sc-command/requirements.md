@@ -460,6 +460,8 @@ crate means every SC daemon maps the same error kind to the same status.
 
 ### Requirement Statement
 
+Definitions: MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. The crate rmcp supplies the protocol types named below. `IntoMcp` is the extension trait whose consuming method converts a `Result<T, OpError>` into the protocol result.
+
 
 
 ```rust
@@ -504,7 +506,9 @@ so `is_error` is `Some(false)`. Failure uses
 
 **MUST statements:**
 
-- When the cargo feature `server` of `sc-command` is enabled, the crate MUST export a public extension trait `sc_command::IntoMcp` with one method, implemented for `Result<T, OpError>` where `T: serde::Serialize`:
+- When the `server` Cargo feature is enabled, `sc-command` MUST export the public extension trait `sc_command::IntoMcp`.
+- When the `server` Cargo feature is enabled, `IntoMcp` MUST declare exactly one method: `fn into_mcp(self) -> Result<CallToolResult, McpError>`.
+- When the `server` Cargo feature is enabled, `sc-command` MUST implement `IntoMcp` for every `Result<T, OpError>` whose type `T` implements `serde::Serialize`.
 - `into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md)).
 - `into_mcp()` MUST place the JSON string of the envelope produced by `Envelope::<T>::from(result)` in one text content item of the returned `CallToolResult`.
 
@@ -513,12 +517,14 @@ so `is_error` is `Some(false)`. Failure uses
 
 **MUST NOT statements:**
 
-- An `OpError` from the service MUST NOT be turned into `Err(McpError)`: an MCP protocol error would hide the envelope from the client.
+- An `OpError` from the service MUST NOT be turned into `Err(McpError)`.
 - The function MUST NOT panic ([NFR-CMD-0003](requirements.md)).
 - When the `server` feature is disabled the trait MUST NOT exist.
 - When the `server` feature is disabled the crate MUST NOT reference rmcp.
 
 ### Rationale
+
+Turning a service `OpError` into an MCP protocol error would hide the response envelope from the client.
 
 An rmcp tool body in a generated project is one line,
 `service::create_widget(&self.stores, input).await.into_mcp()`, mirroring the
