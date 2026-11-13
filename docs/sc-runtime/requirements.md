@@ -370,7 +370,7 @@ that in project code, and lets a project with no database use the crate.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. The daemon router is the one `axum::Router` that `run()` builds. The mount table is the table in this requirement headed Mounted item, Source, Condition. The routes closure is the application-supplied closure passed to `.routes(...)`. The MCP closure is the application-supplied closure passed to `.mcp(...)`. The rmcp service is the `StreamableHttpService` returned by the MCP closure. Session state is server-owned state tracking an MCP client session; a session store is persistence for that state. The daemon listener is the listener `run()` binds. The daemon process is the process in which `run()` runs.
+Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. The daemon router is the one `axum::Router` that `run()` builds. The mount table is the table in this requirement headed Mounted item, Source, Condition. The routes closure is the application-supplied closure passed to `.routes(...)`. The MCP closure is the application-supplied closure passed to `.mcp(...)`. The rmcp service is the `StreamableHttpService` returned by the MCP closure. Session state is server-owned state tracking an MCP client session; a session store is persistence for that state. The daemon listener is the listener `run()` binds. The daemon process is the process in which `run()` runs. The rmcp service is mounted unchanged when the value mounted is the value the MCP closure returned, with none of its configuration modified.
 
 It is one `axum::Router`, served unchanged on every listener `run()` binds.
 
@@ -406,10 +406,10 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 
 **MUST statements:**
 
-- `run()` in `crates/sc-runtime/src/builder.rs` MUST build exactly one daemon router.
+- `crates/sc-runtime/src/builder.rs` MUST show `run()` building exactly one daemon router.
 - `run()` MUST build the daemon router after the instance lock on `daemon.lock` ([REQ-RT-0002](requirements.md)) is held.
 - `run()` MUST build the daemon router after the stores closure has returned.
-- `run()` MUST build the daemon router before anything is bound.
+- `run()` MUST build the daemon router before it binds any listener.
 - The daemon router MUST contain every item of the mount table whose condition holds.
 - The routes closure MUST return a `utoipa_axum::OpenApiRouter`.
 - The OpenAPI document served MUST be the one generated from the project's route registrations.
@@ -425,9 +425,9 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 - `sc-runtime` MUST NOT add an MCP session store.
 - `sc-runtime` MUST NOT add any other session state of its own.
 - If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`.
-- `run()` MUST NOT bind a listener for MCP other than the daemon listener.
-- `run()` MUST NOT bind a port for MCP other than the port of the daemon listener.
-- `run()` MUST NOT start a process for MCP other than the daemon process.
+- `crates/sc-runtime/src` MUST NOT contain code that binds a listener for MCP other than the daemon listener.
+- `crates/sc-runtime/src` MUST NOT contain code that binds a TCP port for MCP other than the TCP port of the daemon listener.
+- `crates/sc-runtime/src` MUST NOT contain code that starts a process for MCP other than the daemon process.
 
 ### Rationale
 
