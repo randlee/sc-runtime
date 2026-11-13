@@ -4925,7 +4925,7 @@ rule changes from sc-lint and nothing in this repository changes.
 
 Definitions: rmcp is the Model Context Protocol server crate. A covered manifest is a published crate manifest under `crates/` or a manifest under `template/`. A registry requirement is a dependency entry in a Cargo.toml that resolves the crate from crates.io. A tested floor is a `>=` version requirement naming the lowest dependency version the project has tested. An upper bound is a version requirement part that excludes a later version. The selected `rmcp` version is the `rmcp` version recorded in the sc-runtime `Cargo.lock`. The normal test suite is `just test` run in the sc-runtime repository. The template CI fixture matrix generates a project per answers fixture and runs `just lint` and `just test` in it. The release-tested dependency combination is the set of locked dependency versions with which the normal test suite and the template CI fixture matrix passed for the delivered release. A generated project is a project rendered from `template/`.
 
-This requirement covers published crate manifests under `crates/` and manifests under `template/` rendered into generated projects. Phase A used a single minor-version pin; Phase D supersedes that policy. Consumers may pin versions in their own manifests and lockfiles.
+This requirement covers published crate manifests under `crates/` and manifests under `template/` rendered into generated projects. Phase A used a single minor-version pin; Phase D supersedes that policy. sc-runtime does not pin a generated project's dependency versions (PRD-ENG-9); consumers may pin versions in their own manifests and lockfiles.
 
 
 **MUST statements:**
@@ -4936,8 +4936,6 @@ This requirement covers published crate manifests under `crates/` and manifests 
 - The selected `rmcp` version MUST pass the normal test suite.
 
 - The selected `rmcp` version MUST pass the template CI fixture matrix.
-
-- The `Cargo.lock` of each generated project MUST list the release-tested dependency combination.
 
 - The `.sc-runtime/tested-dependencies.json` file of each generated project MUST list the release-tested dependency combination.
 
@@ -4959,7 +4957,7 @@ Open tested floors let consumers take compatible dependency updates without an S
 
 1. Inspect published crate and template manifests that name `rmcp`: each registry requirement declares a tested floor of at least 3.9 and no upper bound.
 2. The normal tests and template CI fixture matrix pass with the selected versions.
-3. The generated lockfile and tested-dependencies record identify the combination tested for the release.
+3. The tested-dependencies record of a generated project identifies the combination tested for the release.
 
 ---
 
