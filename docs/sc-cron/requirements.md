@@ -226,7 +226,7 @@ Application-supplied hooks and value adapters let the reusable scheduler execute
 
 ### Requirement Statement
 
-Definitions: CronRow is the schedule-row type owned by sc-cron. Storage<T> is the shared storage trait for row type T. hook_environment is the canonical schedule environment containing dotenv sources and variable operations. ScheduleLimits is the embedding application's schedule-limit configuration. sc-monty is the shared Monty interpreter implementation. Monty dump version identifies the compiled-session serialization version. SHA-256 is the source digest supplied by sc-sha. Cache rows are the sc-cron-owned MontyBlobRow rows; a consumer table is any application table other than the CronRow table and the MontyBlobRow table. sc-cron migrations are the schema migrations that sc-cron runs. CronStorage is sc-cron's policy-checked schedule-storage facade over Storage<CronRow> (ADR-RUN-0021). The schedule-row limit is the row limit in ScheduleLimits. A schedule writer is any process or sc-cron component that writes a CronRow through CronStorage. A compiled session is the result of sc-monty compiling a schedule row's source; its blob is that result serialized in a MontyBlobRow. A cache entry is one MontyBlobRow. Generic row schemas are the schemas of rows stored through Storage<T>. The configuration schema here is sc-cron's schedule configuration schema. The application's SQLite database is the SQLite database that holds the application's own rows. Hook run state is any value a hook stores while it runs, such as a value cron_tick stores for a later tick. A missing cache entry is the absence of a MontyBlobRow for the key. A stale cache entry is a MontyBlobRow whose key does not match the schedule-row source. A corrupt cache entry is a MontyBlobRow that sc-monty cannot load. An unreadable-version cache entry is a MontyBlobRow whose Monty dump version differs from the running sc-monty's dump version. A cache entry missing a hook is a MontyBlobRow whose loaded session lacks cron_stop or cron_tick.
+Definitions: CronRow is the schedule-row type owned by sc-cron. Storage<T> is the shared storage trait for row type T. hook_environment is the canonical schedule environment containing dotenv sources and variable operations. ScheduleLimits is the embedding application's schedule-limit configuration. sc-monty is the shared Monty interpreter implementation. Monty dump version identifies the compiled-session serialization version. SHA-256 is the source digest supplied by sc-sha. Cache rows are the sc-cron-owned MontyBlobRow rows; a consumer table is any application table other than the CronRow table and the MontyBlobRow table. sc-cron migrations are the schema migrations that sc-cron runs. A consumer table is unchanged when its schema and rows equal those it had before sc-cron migrations ran. CronStorage is sc-cron's policy-checked schedule-storage facade over Storage<CronRow> (ADR-RUN-0021). The schedule-row limit is the row limit in ScheduleLimits. A schedule writer is any process or sc-cron component that writes a CronRow through CronStorage. A compiled session is the result of sc-monty compiling a schedule row's source; its blob is that result serialized in a MontyBlobRow. A cache entry is one MontyBlobRow. Generic row schemas are the schemas of rows stored through Storage<T>. MontyBlobRow is the row type that stores compiled-session blobs. An sc-cron generic row type is a Storage<T> row type defined in the sc-cron crate. The configuration schema here is sc-cron's schedule configuration schema. The application's SQLite database is the SQLite database that holds the application's own rows. Hook run state is any value a hook stores while it runs, such as a value cron_tick stores for a later tick. A missing cache entry is the absence of a MontyBlobRow for the key. A stale cache entry is a MontyBlobRow whose key does not match the schedule-row source. A corrupt cache entry is a MontyBlobRow that sc-monty cannot load. An unreadable-version cache entry is a MontyBlobRow whose Monty dump version differs from the running sc-monty's dump version. A cache entry missing a hook is a MontyBlobRow whose loaded session lacks cron_stop or cron_tick.
 
 sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. Generic storage engines contain no cron-specific schema or SQL.
 
@@ -238,8 +238,8 @@ sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. 
 - CronRow MUST store the schedule's canonical hook_environment unchanged.
 - The default hook_environment MUST be the empty value {"dotenv":[],"variables":{}}.
 - The configured schedule-row limit MUST count enabled and disabled rows.
-- CronStorage MUST return CronError::InvalidSpec for a write that adds a new schedule name while the number of schedule rows equals the schedule-row limit.
-- Each schedule writer MUST pass the embedding application's ScheduleLimits to CronStorage.
+- When the number of schedule rows equals the schedule-row limit, CronStorage MUST return CronError::InvalidSpec for a write that adds a new schedule name.
+- For a CronRow write by any schedule writer, CronStorage MUST enforce the schedule-row limit of the embedding application's ScheduleLimits.
 - CronStorage MUST return an error for a schedule write whose Monty source sc-monty cannot compile.
 - Each `MontyBlobRow` MUST contain the compiled session exactly as sc-monty compiled it.
 - Compiled-session blobs MUST use sc-sha SHA-256 of the exact source plus Monty dump version as their key.
@@ -247,14 +247,14 @@ sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. 
 - A cache entry that is missing, stale, corrupt, of an unreadable version or missing a hook MUST trigger recompilation from the schedule-row source.
 - Recompilation MUST write a new `MontyBlobRow`.
 - After recompilation, the new `MontyBlobRow` MUST replace the cache entry for subsequent use.
-- Cache rows MUST use sc-cron-owned generic row schemas.
+- MontyBlobRow MUST be an sc-cron generic row type.
 - Cache rows MUST use sc-cron-owned migrations.
-- sc-cron migrations MUST leave every consumer table unchanged.
+- After sc-cron migrations run, every consumer table MUST be unchanged.
 
 **MUST NOT statements:**
 
 - sc-cron MUST NOT change the bytes of a stored `MontyBlobRow`.
-- sc-cron MUST NOT create a database file other than the database file that the application opened.
+- sc-cron MUST NOT open a SQLite connection to any database file other than the database file that the application opened.
 - After a hook runs, the stored `MontyBlobRow` MUST NOT contain hook run state.
 - The configuration schema MUST NOT add a separate environment table.
 - The configuration schema MUST NOT add a separate secret table.
