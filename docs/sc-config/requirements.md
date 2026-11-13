@@ -560,7 +560,7 @@ directory and an in-memory environment.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -598,7 +598,11 @@ environment, so it returns `Loader`. `AppName::new` can fail and returns
 
 - That rule is: code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing.
 - Code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing ([NFR-RUN-0009](../requirements.md)).
-- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert!`, `assert_eq!` or `assert_ne!`.
+- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert!`.
+
+- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert_eq!`.
+
+- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert_ne!`.
 - Stricter than the repository rule, decided in this document: non-test code MUST NOT call `std::env::vars()`, which panics on a variable that is not valid Unicode.
 ### Rationale
 

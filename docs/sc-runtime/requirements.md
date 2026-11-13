@@ -37,7 +37,7 @@ of the CLI.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -158,7 +158,9 @@ with default features. `DaemonConfig` embeds that type.
 
 - The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that assembles and runs a daemon.
 - It MUST implement `serde::Deserialize`.
-- `run()` MUST perform exactly the five numbered startup steps above in their listed order.
+- `run()` MUST perform exactly the five numbered startup steps above.
+
+- `run()` MUST perform the five numbered startup steps above in their listed order.
 - If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT execute any later step.
 
 **MUST NOT statements:**
