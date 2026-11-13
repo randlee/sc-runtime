@@ -984,10 +984,12 @@ libraries, and would be code every project has to learn.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+A crate is in the dependency tree of `sc-runtime` when `sc-runtime` depends on it directly or transitively.
 
 - It receives a `&DaemonConfig` that the project has already loaded.
 - Honouring the `SC_ENDPOINT` endpoint override by way of the `sc-transport`
@@ -1009,12 +1011,13 @@ The repo-level owner of the forbidden edges of all workspace library crates is
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT depend on `sqlx` or any `sqlx-*` crate, directly or transitively.
-- `sc-runtime` MUST NOT depend on `sc-observability`, directly or transitively.
-- `sc-runtime` MUST NOT depend on `sc-observability-otlp`, directly or transitively.
+- `sqlx` MUST NOT be in the dependency tree of `sc-runtime`.
+- The `sc-runtime` dependency tree MUST NOT contain a crate whose name begins `sqlx-`.
+- `sc-observability` MUST NOT be in the dependency tree of `sc-runtime`.
+- `sc-observability-otlp` MUST NOT be in the dependency tree of `sc-runtime`.
 - `sc-runtime` MUST NOT initialise logging.
 - `sc-runtime` MUST NOT re-export `sc-observability`.
-- `sc-runtime` MUST NOT re-export `sc-observability-otlp`.
+- The public API of `sc-runtime` MUST NOT re-export `sc-observability-otlp`.
 - `sc-runtime` MUST NOT load configuration.
 - `sc-runtime` MUST NOT read a config file.
 - `sc-runtime` MUST NOT call `sc_config::load`.
