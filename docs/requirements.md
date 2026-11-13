@@ -3901,7 +3901,7 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process, which the driver does with `subprocess.run`. A stub is an executable put in place of a program that records each time it is started, so a stub's record shows whether that program was started.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started, so a stub's record shows whether that program was started.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3921,6 +3921,7 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 - `just new <dest>` MUST accept the option `--var-file <answers file>`.
 - In `scripts/new_project.py`, the `subprocess.run` call that starts `cargo generate` MUST pass `stdin=subprocess.DEVNULL`.
 - Every generation call MUST pass `stdin=subprocess.DEVNULL`.
+- When `--var-file` is given, the standard input of every program that the driver starts MUST be `/dev/null`.
 - The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--template-values-file`.
 - The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--silent`.
 - When `SC_COMPOSE` is set, the sc-compose program that the driver starts MUST be the file named by `SC_COMPOSE`.
@@ -3963,7 +3964,12 @@ is not on `PATH` without the script guessing install prefixes.
    asserts a non-zero exit, that stderr contains `sc-compose`, `SC_COMPOSE`
    and `PATH`, and that `cargo generate` was not called.
 6. Inspection: `scripts/new_project.py` contains no absolute path to
-   `sc-compose` and no Wyvern invocation or discovery logic.
+   `sc-compose` and no Wyvern invocation or discovery logic, and every
+   generation call in it passes `stdin=subprocess.DEVNULL`.
+7. A driver test runs `--var-file` mode with `SC_COMPOSE` set to a stub and a
+   stub named `cargo` first on `PATH`, each stub recording the file its
+   standard input is connected to, and asserts that every recorded file is
+   `/dev/null`.
 
 ---
 
