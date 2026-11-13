@@ -84,7 +84,8 @@ each waits until a project asks for it.
 | `sc-config` reload, change notification, async interop | later, possibly `sc-config-tokio` |
 | stdio MCP clients | a stdio-to-HTTP shim is a later option |
 | A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the safety rule remains in [NFR-RUN-0010](requirements.md), while generated-project wording is deferred with [REQ-RUN-0311](requirements.md) |
-| Synchronization between databases (forwarding, replication, an outbox, a routing policy, a consumer adaptor) | deferred by the owner (PRD §9); no mechanism is bound, 2026-11-11 |
+| The synchronization adaptor crate of a two-store layout | required (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."); bound by REQ-RUN-0301 and REQ-RUN-0326 |
+| Synchronization algorithm (forwarding, replication, an outbox, a routing policy, schedule, direction, conflict policy) | consumer-specific (owner, 2026-11-12: "Synchronization algorithm will always be specific."); no record binds one |
 | A raw-SQL layer portable across database backends | never. `Storage<T>` is not one: it carries no SQL (PRD-STO-1, PRD-STO-2), 2026-11-11 |
 | Web-application features: HTML templating, sessions, user authentication | never; this is not a web-app framework |
 | Adopting an existing scaffold (loco-rs, rust-web-app, axum-postgres-template) | never; none has the daemon plus thin-client split, so they stay pattern references |
@@ -1501,7 +1502,7 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
-This layout is the interim application wiring form. Phase D uses `sc-runtime-db-sqlite` for SQLite storage and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. Synchronization between stores is deferred (PRD §9). Whether a consumer uses an adaptor, and how `service` reaches the stores of a two-store layout, are not bound here; no implementation or validation of a synchronization mechanism is required.
+This layout is the interim application wiring form. Phase D uses `sc-runtime-db-sqlite` for SQLite storage and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. A two-store layout renders an adaptor crate (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."). This record binds that crate and its dependency edges. It binds no synchronization algorithm, schedule, direction or conflict policy (owner, 2026-11-12: "Synchronization algorithm will always be specific.").
 
 Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `<project>-<role>` ([REQ-RUN-0329](requirements.md)). "v0.1" means the first release, in which the only database option was SQLite and the package names were the role names below. 
 
@@ -1514,6 +1515,7 @@ Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `
     store-sqlite/             # SQLite application wiring over sc-runtime-db-sqlite
     store-postgres/           # when the layout's engine is Postgres
     store-mysql/              # when the layout's engine is MySQL
+    store-adaptor/            # when the layout has two stores
     service/                  # always
     daemon/                   # always; src/main.rs, src/routes.rs, src/mcp.rs
     cli/                      # always
@@ -1526,9 +1528,7 @@ Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `
   .github/workflows/ci.yml
 ```
 
-A no-database layout renders no `schema` crate and no `store-*` crate.
-A one-store layout renders that store. A two-store layout renders SQLite
-and that layout's one sqlx engine; it does not imply a synchronization mechanism.
+A no-database layout renders no `schema` crate, no `store-*` crate, and no adaptor. A one-store layout renders that store and no adaptor. A two-store layout renders SQLite, that layout's one sqlx engine, and the adaptor.
 
 2. The store directories a layout renders are [REQ-RUN-0326](requirements.md).
    v0.1 rendered `crates/store-sqlite` only. 3. `config/local.json` is the developer's local override file.
@@ -1543,19 +1543,18 @@ and that layout's one sqlx engine; it does not imply a synchronization mechanism
    | `<project>-schema`, when the layout has a store | no SQL crate | row structs |
    | `<project>-store-sqlite`, when rendered | `sc-runtime-db-sqlite` | application wiring over the shared SQLite writer |
    | `<project>-store-postgres` or `<project>-store-mysql`, when rendered | `sqlx` with that engine's feature | remote-engine storage remains separate from the SQLite writer |
-   | `<project>-service` | `<project>-types`; `sc-command` with default features; the store on a one-store layout | the single code path to SQL, called by REST handlers and MCP tools |
+   | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and both store crates of the layout | the one crate where the consumer's synchronization code reaches both stores |
+   | `<project>-service` | `<project>-types`; `sc-command` with default features; the store on a one-store layout, or the adaptor on a two-store layout | the single code path to SQL, called by REST handlers and MCP tools |
    | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron`; optional `sc-monty` behind generated feature `monty` | owns the wiring and the full-observability composition root; optional cron is embedding policy |
    | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
 
-   A no-database layout has no schema row or store row, and `service`
-   depends on `<project>-types` and `sc-command` only. Two-store service
-   wiring and any synchronization adaptor are outside this table's obligations.
+   A one-store layout has no adaptor row. A no-database layout has no schema row, no store row, and no adaptor row, and `service` depends on `<project>-types` and `sc-command` only.
 
    The sc-runtime design's dependency table omits three of these edges. They
    follow from its own code: service functions return `OpError`, which is
    defined in `sc-command`; `daemon` handlers name `Envelope<T>`, call
    `into_mcp()`, and take `api-types` structs as input.
-6. Service functions take `&Stores`. On a one-store layout, `service` depends on that store. `daemon` and `cli` do not depend on a store crate.
+6. Service functions take `&Stores`. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on both stores, and `service` depends on the adaptor. `daemon` and `cli` do not depend on a store crate.
 
 The forbidden dependency edges are enumerated in the MUST NOT statements below.
 9. TCP ports come from project configuration. Port ranges are allocated per
@@ -1582,6 +1581,9 @@ configuration and does not depend on the daemon crate for that type.
 - When rendered, each remote-engine store MUST satisfy its engine-specific dependency row in the table.
 - `<project>-service` MUST depend on `<project>-types`.
 - On a one-store layout, `<project>-service` MUST depend on that store.
+- On a two-store layout, `<project>-store-adaptor` MUST depend on `<project>-schema`.
+- On a two-store layout, `<project>-store-adaptor` MUST depend on both store crates of that layout.
+- On a two-store layout, `<project>-service` MUST depend on `<project>-store-adaptor`.
 - `<project>-daemon` MUST satisfy its dependency row in the table.
 - `<project>-cli` MUST satisfy its dependency row in the table.
 - The project's `Stores` struct MUST be defined in the `service` crate.
@@ -1626,18 +1628,15 @@ REST and MCP have exactly one place to call.
 
 1. For each answers file in `wizard/fixtures/`, render the project with the
    driver (`just new <dest> --var-file <fixture>`) and assert
-   the paths that layout includes exist, and that the store
-   directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
+   the paths that layout includes exist, and that the store and adaptor directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
    present exactly when the fixture's `mcp` is `true`. 2. In each rendered project, `cargo metadata --format-version 1` shows the
    package names `<project>-<role>` for the roles that layout renders:
-   `types`, `schema`, each store, `service`, `daemon` and `cli`, and no other
-   package except a synchronization or adaptor package, about which this
-   criterion asserts nothing. 3. In each rendered project,
+   `types`, `schema`, each store, the adaptor when the layout has two stores, `service`, `daemon` and `cli`, and no others. 3. In each rendered project,
    `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
    `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
    `<project>-daemon ` (the name followed by a space). 4. In each rendered project, `sqlx` appears under `[dependencies]` only in
    remote-engine store `Cargo.toml` files; the SQLite wiring crate depends on
-   `sc-runtime-db-sqlite` instead. A one-store layout's `service` depends on that store. 5. The rendered `.gitignore` contains the line `config/local.json`.
+   `sc-runtime-db-sqlite` instead. A two-store layout's adaptor depends on both stores, and its `service` depends on the adaptor. A one-store layout's `service` depends on that store. 5. The rendered `.gitignore` contains the line `config/local.json`.
 6. The rendered project contains no file ending in `.j2` and no file from
    `wizard/` or `scripts/`.
 7. `grep -rn 'struct Stores' crates/` in a rendered project matches only
@@ -3191,7 +3190,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. Synchronization and adaptor generation remain deferred; supporting a layout does not require either. Existing adaptor code remains interim code, with no implementation or deletion obligation. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3206,9 +3205,9 @@ Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core wr
 | SQLite and Postgres | `store-sqlite` and `store-postgres` |
 | SQLite and MySQL | `store-sqlite` and `store-mysql` |
 
-A layout renders the stores in its row. Synchronization and adaptor generation are deferred (PRD §9); a two-store layout does not require an adaptor. Existing adaptor code remains as interim code, not a new implementation or deletion obligation. A layout with no database renders no store crate.
+A layout renders the stores in its row. A layout with two stores also renders the adaptor (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
 
-Phase b's existing pairing/adaptor code is historical implementation, retained as interim code. The target supports all six database layouts without requiring synchronization or a new adaptor.
+Phase b's adaptor crate is the adaptor a two-store layout renders. The row-moving functions in it are template code that the consumer owns and replaces; no record requires a particular algorithm, schedule, direction or conflict policy (owner, 2026-11-12: "Synchronization algorithm will always be specific.").
 
 **MUST statements:**
 
@@ -3220,6 +3219,8 @@ Phase b's existing pairing/adaptor code is historical implementation, retained a
 - The generation options MUST accept the `SQLite and MySQL` layout from the table above.
 - Generating a layout MUST render the stores in its table row.
 - A no-database layout MUST render no store crate.
+- Generating a two-store layout MUST render the adaptor crate.
+- Generating a layout with fewer than two stores MUST render no adaptor crate.
 - Postgres stores MUST use sqlx.
 - MySQL stores MUST use sqlx.
 - SQLite stores MUST use the atm-core writer.
@@ -3231,7 +3232,7 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 ### Success Criteria
 
 1. `wizard/answers.schema.json` accepts each layout in the table.
-2. Generating each layout renders the stores in that row. Adaptor generation is not a success criterion while synchronization is deferred; existing interim adaptor code is not deleted by this requirement.
+2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
 4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
 
@@ -3284,7 +3285,7 @@ Every store in an application implements the same storage trait, `Storage<T>` (P
 
 ### Rationale
 
-Owner, PRD section 4: "I want sqlite/postgres/sql to be interchangeable behind traits" (PRD-STO-2). Each engine keeps its own SQL behind that trait; `Storage<T>` carries no SQL (PRD-STO-1). The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
+Owner, PRD section 4: "I want sqlite/postgres/sql to be interchangeable behind traits" (PRD-STO-2). Each engine keeps its own SQL behind that trait; `Storage<T>` carries no SQL (PRD-STO-1).
 ### Success Criteria
 
 1. In each generated layout that renders a store, every rendered store implements `Storage<T>`, and no rendered store is reached through a different storage trait.
@@ -3310,7 +3311,7 @@ A generated crate's package name is the project name, a hyphen, and its role. Ev
 
 ### Rationale
 
-The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
+Owner, 2026-10-25 (ADR-RUN-0305 point 12): a generated package name is the project name, a hyphen, and its role.
 ### Success Criteria
 
 1. Two projects generated with different project names produce no package name in common.
@@ -3325,24 +3326,26 @@ The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is n
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. The schema crate is the generated <project>-schema package holding database row structs. The types crate holds non-database API types.
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The schema crate is the generated <project>-schema package holding database row structs. The types crate holds non-database API types.
 
 Row type structs are in the schema crate. The types crate is for non-database types.
 
-Each store crate still holds that engine's SQL, generated from the schema crate. Whether an adaptor exists is deferred with synchronization (PRD section 9) and is not bound here.
+The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
 
 **MUST statements:**
 
 - Database row type structs MUST reside in the schema crate.
 - The types crate MUST contain no database row struct.
+- The adaptor MUST depend on `<project>-schema`.
 
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305 point 13): row type structs are in `<project>-schema`; `<project>-types` is for non-database types.
+Owner, 2026-10-25 (ADR-RUN-0305 point 13): row type structs are in `<project>-schema`; `<project>-types` is for non-database types; the adaptor depends on `<project>-schema`. Owner, 2026-11-12: "The synchronization adapter will be necessary in early products."
 ### Success Criteria
 
 1. The schema crate contains the row structs.
 2. The types crate contains no database row struct.
+3. On a two-store layout, the adaptor crate depends on the schema crate.
 
 ## REQ-RUN-0331: General database commands are a disableable bootstrap
 
