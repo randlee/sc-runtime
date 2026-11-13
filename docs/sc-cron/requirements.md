@@ -664,7 +664,7 @@ Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owne
 - Every public item of `sc_cron::observability` MUST be a `pub use` of an item from `sc_command::observability`.
 - When called on a custom store that does not meet every cooperative provider obligation, `operation_support()` MUST return `StoreOperationSupport::Legacy`.
 - Each persistence call a cooperative custom store makes under a cancelled live operation scope MUST fail with `StoreErrorKind::Cancelled`.
-- A cooperative custom store MUST return `CronError::Fenced` without changing the row when an end request names a generation other than the stored generation.
+- When an end request names a generation other than the stored generation, a cooperative custom store MUST return `CronError::Fenced`.
 - A cooperative custom store's `query` MUST return no more than `ScheduleQuery::limit` rows.
 - A cooperative custom store's `query` MUST return rows in ascending id order.
 - When `ScheduleQuery::after_id` is set, a cooperative custom store's `query` MUST return only rows whose id is greater than `after_id`.
@@ -708,7 +708,8 @@ Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owne
 - A cooperative operation blocked acquiring a lock MUST NOT stay blocked after the live operation scope ends.
 - Dropping the waiter future of owned work MUST NOT let `WorkerHandle::join_owned` return before the owned work physically completes.
 - While a bundled-store COMMIT runs, the commit fence MUST NOT hold the controller mutex.
-- The bundled store MUST NOT hand a connection in uncertain connection state to another operation.
+- When a bundled-store connection is in uncertain connection state, the bundled store MUST NOT hand that connection to another operation.
+- When an end request names a generation other than the stored generation, a cooperative custom store MUST NOT change the row.
 - When a mutation's `PersistenceOutcome` is `Indeterminate`, sc-cron MUST NOT re-issue the mutation.
 - When the live operation scope has ended, sc-cron MUST NOT start a readback under the live operation scope.
 - Once `WorkerHandle::join_owned` has returned, owned work MUST NOT start a store write.
