@@ -5254,13 +5254,13 @@ and optional adapters are documented in [the generated example](sc-cron/monty-ge
 
 ### Requirement Statement
 
-Definitions: Repository skills are the checked-in .claude, .codex and .cursor skill instructions and scripts. The declared minimum is the sc-compose version required by the invoking skill.
+Definitions: Repository skills are the checked-in .claude, .codex and .cursor skill instructions and scripts. The declared minimum is the sc-compose version required by the invoking skill. A skill version check is the function in a repository skill script that compares a given sc-compose version with the declared minimum; it accepts a version when it returns success for that version. A malformed version is a version string that is not two or three dot-separated decimal numbers.
 
 **MUST statements:**
 
-- A repository skill checking the sc-compose version MUST accept versions equal to or newer than its declared minimum.
-- A repository skill that checks the sc-compose version MUST reject a version older than the declared minimum.
-- A repository skill that checks the sc-compose version MUST reject a malformed version.
+- A skill version check MUST accept a version at or above the declared minimum.
+- A skill version check MUST reject a version older than the declared minimum.
+- A skill version check MUST reject a malformed version.
 ### Rationale
 
 The owner requires skills to tolerate sc-compose >= a floor threshold (ANC-015); reproducible CI binary selection remains independent.
