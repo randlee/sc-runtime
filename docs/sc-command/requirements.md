@@ -329,7 +329,7 @@ Definitions: `sc-command` is the crate in `crates/sc-command`. `Envelope<T>` is 
 
 **MUST statements:**
 
-- `sc-command` built with default features MUST compile `impl<T> From<Result<T, OpError>> for Envelope<T>`.
+- When built with default features, `sc-command` MUST compile `impl<T> From<Result<T, OpError>> for Envelope<T>`.
 - For input `Ok(value)`, the serialised envelope MUST have `ok` equal to `true`.
 - For input `Ok(value)`, the serialised envelope MUST have `data` equal to the serialised `value`.
 - For input `Ok(value)`, the serialised envelope MUST have `error` equal to JSON `null`.
