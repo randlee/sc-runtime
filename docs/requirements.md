@@ -2709,12 +2709,12 @@ the owner decided that building a virtual machine is not part of v0.1.
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)).
 
 Direction given by the owner on 2026-09-20: one purpose of sc-runtime is to
 reduce the complexity of testing a CLI that posts and gets over HTTP, and
@@ -2766,12 +2766,17 @@ The split into two functions is the whole testability mechanism.
 
 **MUST statements:**
 
-- Each CLI command MUST be written as two pure functions with the HTTP call between them:
-- The template MUST ship unit tests for each example command that need no daemon, no socket, no network and no child process:
+- Each CLI command MUST be written as two pure functions, request construction and result rendering, with the HTTP call between them.
+- The template MUST ship unit tests for each example command.
+- Those unit tests MUST need no daemon.
+- Those unit tests MUST need no socket.
+- Those unit tests MUST need no network.
+- Those unit tests MUST need no child process.
+- Those unit tests MUST cover every one of the unit-test cases.
 
 **MUST NOT statements:**
 
-- A test that may run on a developer's host MUST NOT run the CLI binary at all (decided in this document).
+- A host-run test MUST NOT execute the CLI binary.
 - The template MUST NOT add a mock transport.
 - The template MUST NOT add a transport trait.
 - The template MUST NOT add any other abstraction whose only purpose is to make the CLI testable ([NFR-RUN-0004](requirements.md)).
