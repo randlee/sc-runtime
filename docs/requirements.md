@@ -5185,6 +5185,8 @@ Definitions:
 - The isolation check passes when all three isolation variables are set to those values, and fails otherwise.
 - A process-spawning call is a call that starts an operating-system process.
 - An isolation guard is a statement that returns from the test when the isolation check fails.
+- A daemon-starting call is a process-spawning call that starts a daemon, or a call that starts a `DaemonFixture` daemon.
+- A host check is a statement that returns from the test when the test is not running on an isolated machine; an isolation guard is a host check.
 - A test runner is a GitHub Actions workflow job or a `just` recipe.
 - Production daemon code is the source compiled into the daemon binary, including `crates/sc-runtime/src`.
 - A test variant of the daemon is a crate, binary target, cargo feature, `cfg` flag or build configuration whose purpose is the daemon for tests: a daemon-like executable, a stub daemon or a daemon with parts switched off.
@@ -5214,6 +5216,8 @@ Scope:
 
 - The workspace MUST NOT contain a test variant of the daemon.
 - Production daemon code MUST NOT contain a test-only switch.
+- A daemon-process test that runs on a developer host MUST NOT start a daemon.
+- The source of a daemon-process test MUST NOT contain a daemon-starting call that is not preceded by a host check.
 - The source of a daemon-process test MUST NOT contain a process-spawning call that is not preceded by its isolation guard.
 - The `just test` recipe MUST NOT contain a command that runs a daemon-process test on the host.
 - Production daemon code MUST NOT weaken the `daemon.lock` singleton.
