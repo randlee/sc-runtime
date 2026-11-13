@@ -2116,11 +2116,11 @@ Acceptance: made Active, or amended, by sprint a-1
 - [REQ-RUN-0310](requirements.md): `--endpoint` and `SC_ENDPOINT` in the generated binaries
 - [REQ-RT-0002](sc-runtime/requirements.md): the `daemon.lock` singleton
 - [NFR-RUN-0005](requirements.md): tests never use the developer's real instance root
-- [ADR-RUN-0201](architecture.md): amended by this ADR
+- [ADR-RUN-0201](architecture.md): its point 6 is amended by this ADR only once auto-start is adopted; it is not amended now
 
 **Architecture Decisions:**
 
-- ADR-RUN-0201 — amended by this ADR: point 6 (the CLI never starts the daemon)
+- ADR-RUN-0201 — point 6 (the CLI never starts the daemon) is amended by this ADR only once auto-start is adopted; it is not amended now
 ### Context
 
 Every CLI command needs a running daemon
@@ -2163,8 +2163,11 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    the started daemon does not become reachable. The CLI still has no
    direct-database mode.
 
-Points 1 and 3 to 6 are binding now, and so is the startup-directory rule of
-point 2 on every platform; only which directory it is remains OPEN. That
+This decision is deferred (the disposition under Implementation): report-only
+under [ADR-RUN-0201](architecture.md) point 6 stays the behaviour, and none of
+points 1 to 6 binds current work. Once auto-start is adopted, points 1 and 3
+to 6 bind, and so does the startup-directory rule of point 2 on every
+platform; only which directory it is remains OPEN. That
 choice also decides which configuration the daemon reads, because
 `sc_config::load` reads `config` relative to the working directory. The
 equality clause of point 2 is
@@ -2172,8 +2175,8 @@ conditional on the service-definition and launch-mechanism OPENs of
 [REQ-RUN-0206](requirements.md), and binds on macOS once they are decided.
 The sprint that implements auto-start MUST decide them first and amend this
 ADR and [REQ-RUN-0301](requirements.md) (the rendered layout) in the same
-change. Until then the binding floor on every platform is point 3 together
-with: the daemon inherits no working directory, terminal, standard streams or
+change. Once auto-start is adopted and until those OPENs are decided, the
+binding floor on every platform is point 3 together with: the daemon inherits no working directory, terminal, standard streams or
 session from the CLI.
 
 [REQ-RUN-0206](requirements.md) owns the behaviour and these questions.
@@ -2210,8 +2213,9 @@ coordination code.
   `cli` crate conflicts with nothing but cannot be upgraded after generation;
   `sc-transport` requires narrowing its crate-wide ban on process spawning
   ([REQ-TRN-0006](sc-transport/requirements.md)); a new library crate requires
-  amending the four-crate rule ([REQ-RUN-0001](requirements.md),
-  [ADR-RUN-0002](architecture.md), [ADR-RUN-0003](architecture.md)).
+  amending the workspace member set of [REQ-RUN-0001](requirements.md) (also
+  [ADR-RUN-0002](architecture.md),
+  [ADR-RUN-0003](architecture.md)).
 ### Alternatives Considered
 
 #### Alternative 1: Report-only, the design's recorded default: the CLI prints `DAEMON.NOT_RUNNING` and the user starts the daemon
