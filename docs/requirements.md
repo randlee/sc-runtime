@@ -2666,46 +2666,33 @@ tested in `sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. Plain language is the human-readable guidance about the five numbered topics below, rather than a VM definition, configuration or provisioning script.
+Definitions: CLI means command-line interface. An agent document is the `AGENTS.md` or `CLAUDE.md` file of a project generated from `template/`, rendered from `template/AGENTS.md.j2` or `template/CLAUDE.md.j2` ([REQ-RUN-0305](requirements.md)). The daemon-testing section is the section of an agent document on testing the daemon. A daemon-process test is an integration test that runs the daemon as a separate process, uses the default instance root, or involves the service manager or the CLI's auto-start. An isolated machine is a virtual machine, for example one run by colima, or an ephemeral CI runner. The instance root is the per-application, per-user directory resolved by sc-transport, or a directory the caller supplies explicitly ([REQ-RT-0002](sc-runtime/requirements.md)). A temporary instance root is a temporary directory a test supplies as the instance root. The daemon singleton is the operating-system exclusive lock on the file `daemon.lock` in the instance root, which lets only one daemon run per instance root ([REQ-RT-0002](sc-runtime/requirements.md)). A daemon collides with another daemon when both daemons use the same `daemon.lock`, endpoint or database files. A test is safe on the host when the test cannot collide with a daemon the developer is running and cannot leave a daemon running after the test ends. Request construction and result rendering are the CLI command functions defined in [REQ-RUN-0312](requirements.md). The CLI binary is the `cli` executable of a generated project. A host-run test is a test that may run on a developer's host ([REQ-RUN-0312](requirements.md)). A test daemon is a crate, binary or cargo feature that is mostly the daemon but built for tests. colima is the virtual machine tool named as the example in [NFR-RUN-0010](requirements.md). A virtual machine definition is a file that defines a virtual machine, such as a `Vagrantfile` or a `*.lima.yaml` file. A colima configuration is a file that configures colima. A provisioning script is a script that creates a virtual machine or installs software on one. v0.1 is release version 0.1 of sc-runtime.
 
-Decided by the owner on 2026-09-20. This applies to the `AGENTS.md` and
-`CLAUDE.md` files of a project generated from `template/`, which are rendered
-from `template/AGENTS.md.j2` and `template/CLAUDE.md.j2`
-([REQ-RUN-0305](requirements.md)). These are the documents an AI agent or a
-developer reads before working in the generated project.
-
-1. Integration tests that run the daemon as a separate process, that use the
-   default instance root, or that involve the service manager or the CLI's
-   auto-start, run on an isolated machine: a virtual machine (colima is named
-   as the example) or an ephemeral CI runner. They do not run on a
-   developer's host, where the project's own daemon may be running.
-2. The reason: on a development machine a test daemon collides with the
-   daemon in use, and daemons started by tests can be left running.
-3. The virtual machine is the escape path. When a test cannot be made safe
-   on the host, run it in a virtual machine. Do not create a test daemon (a
-   crate, binary or feature that is mostly the daemon but built for tests),
-   do not weaken the daemon singleton, and do not add test-only switches to
-   daemon code.
-4. Tests that run the daemon in-process through
-   `sc_runtime::testing::DaemonFixture` on a temporary instance root are safe
-   on the host and are the default way to test an operation, provided the
-   test keeps its database under that temporary instance root.
-5. Tests on the host never run the project's CLI binary, because the CLI
-   starts a real daemon by default when it cannot reach one. A CLI command is
-   proven by unit tests of its request-construction and rendering functions,
-   which need no daemon ([REQ-RUN-0312](requirements.md)).
-
-The rule itself is stated in full by NFR-RUN-0010; this item requires that it reaches generated projects as guidance.
+Decided by the owner on 2026-09-20. [NFR-RUN-0010](requirements.md) states the daemon-testing rule in full; this record requires the rule to reach generated projects as plain-language guidance, not as tooling.
 
 **MUST statements:**
 
-- Both rendered documents MUST state all the guidance listed above in plain language.
+- The daemon-testing section of every agent document MUST state that a daemon-process test runs only on an isolated machine.
+- The daemon-testing section of every agent document MUST state that a daemon-process test does not run on a developer's host.
+- The daemon-testing section of every agent document MUST state that the project's own daemon may be running on a developer's host.
+- The daemon-testing section of every agent document MUST state that a daemon which a test starts on a developer's host can collide with a daemon the developer is running.
+- The daemon-testing section of every agent document MUST state that a daemon which a test starts can keep running after the test ends.
+- The daemon-testing section of every agent document MUST state that a test which cannot be made safe on the host runs in a virtual machine.
+- The daemon-testing section of every agent document MUST state that the project does not create a test daemon.
+- The daemon-testing section of every agent document MUST state that the project does not weaken the daemon singleton.
+- The daemon-testing section of every agent document MUST state that the project does not add test-only switches to daemon code.
+- The daemon-testing section of every agent document MUST state that a test running the daemon in-process through `sc_runtime::testing::DaemonFixture` on a temporary instance root is safe on the host when the test keeps the test's database under the temporary instance root.
+- The daemon-testing section of every agent document MUST state that running the daemon in-process through `sc_runtime::testing::DaemonFixture` is the default way to test an operation.
+- The daemon-testing section of every agent document MUST state that a host-run test never executes the CLI binary.
+- The daemon-testing section of every agent document MUST state that the CLI starts a real daemon by default when the CLI cannot reach a daemon.
+- The daemon-testing section of every agent document MUST state that the behaviour of a CLI command is verified by unit tests of the command's request construction and result rendering ([REQ-RUN-0312](requirements.md)).
+- The daemon-testing section of every agent document MUST state that unit tests of request construction and result rendering run without a daemon.
 
 **MUST NOT statements:**
 
-- The template MUST NOT ship a virtual machine definition in v0.1.
-- The template MUST NOT ship a colima configuration in v0.1.
-- The template MUST NOT ship provisioning scripts in v0.1.
+- In v0.1, the `template/` directory MUST NOT contain a virtual machine definition.
+- In v0.1, the `template/` directory MUST NOT contain a colima configuration.
+- In v0.1, the `template/` directory MUST NOT contain a provisioning script.
 
 ### Rationale
 
@@ -2718,8 +2705,8 @@ the owner decided that building a virtual machine is not part of v0.1.
 ### Success Criteria
 
 1. In a project generated from each fixture, `AGENTS.md` and `CLAUDE.md` each
-   contain a section on testing the daemon that states points 1 to 5; an
-   inspection checks each point against the rendered text.
+   contain a daemon-testing section that states the content of every MUST
+   statement; an inspection checks each statement against the rendered text.
 2. `grep -il "colima" AGENTS.md CLAUDE.md` in the generated project lists both
    files, and `grep -il "test daemon" AGENTS.md CLAUDE.md` lists both files.
 3. `find . -iname '*colima*' -o -iname 'Vagrantfile' -o -iname '*.lima.yaml'`
