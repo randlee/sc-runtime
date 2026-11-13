@@ -1723,7 +1723,7 @@ REST and MCP have exactly one place to call.
 
 ### Requirement Statement
 
-Definitions: The worked example is the widget example below. Its three surfaces are a REST handler, an MCP tool and a CLI command. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer.
+Definitions: The worked example is the pair of operations `widget.create` and `widget.get`, with the pieces listed in the worked-example table. The worked-example table is the table in this requirement headed Piece, Where in the generated project, What it MUST contain. Its three surfaces are a REST handler, an MCP tool and a CLI command. A handler is a REST handler of the worked example. A tool is an MCP tool of the worked example. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -1759,15 +1759,15 @@ REQ-RUN-0201 states the rule in full: one service function is the only path to S
 
 - The project rendered from `template/` MUST contain exactly one worked example.
 - The worked example MUST consist of the two operations `widget.create` and `widget.get`.
-- `widget.create` MUST be wired through the REST surface in the table above.
-- `widget.create` MUST be wired through the MCP surface in the table above.
-- `widget.create` MUST be wired through the CLI surface in the table above.
-- `widget.get` MUST be wired through the REST surface in the table above.
-- `widget.get` MUST be wired through the MCP surface in the table above.
-- `widget.get` MUST be wired through the CLI surface in the table above.
-- Every handler MUST call the service function.
+- The generated project MUST contain the REST route `POST /ops/widget.create`, built as the REST row of the worked-example table states.
+- When option `mcp` is `true`, the generated project MUST contain the MCP tool `widget_create`, built as the MCP row of the worked-example table states.
+- The generated project MUST contain a CLI command for `widget.create`, built as the CLI row of the worked-example table states.
+- The generated project MUST contain the REST route `POST /ops/widget.get`, built as the REST row of the worked-example table states.
+- When option `mcp` is `true`, the generated project MUST contain the MCP tool `widget_get`, built as the MCP row of the worked-example table states.
+- The generated project MUST contain a CLI command for `widget.get`, built as the CLI row of the worked-example table states.
+- Every handler MUST call the service function of its operation.
 - Every handler MUST contain no SQL.
-- Every tool MUST call the service function.
+- Every tool MUST call the service function of its operation.
 - Every tool MUST contain no SQL.
 - Every command MUST call the service function.
 - Every command MUST contain no SQL.
