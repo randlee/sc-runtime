@@ -4162,7 +4162,7 @@ has to be deleted from a generated project after rendering.
 
 ### Requirement Statement
 
-Definitions: An answers object is a JSON object of generation-option values. The driver is the generation driver `scripts/new_project.py`, run as `just new <dest>`. The three modes are interactive, prefill and non-interactive; the mode table in this requirement gives each mode's command line and behaviour. Wyvern is the program that runs the wizard. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test. The destination is the new project output directory `<dest>` passed to `just new <dest>`.
+Definitions: An answers object is a JSON object of generation-option values. The driver is the generation driver `scripts/new_project.py`, run as `just new <dest>`. The three modes are interactive, prefill and non-interactive; the mode table in this requirement gives each mode's command line and behaviour. Wyvern is the program that runs the wizard. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test. The destination is the new project output directory `<dest>` passed to `just new <dest>`. A driver run is one run of `just new <dest>` with given arguments and environment. Wyvern is missing when no runnable Wyvern executable is available through `WYVERN_BIN` or as `wyvern` on `PATH`. A statement about a driver run, or about which modes the driver supports, is verified by a unit test that runs the driver with a stand-in Wyvern executable, or none, and a temporary `PATH` and `WYVERN_BIN`.
 
 | Mode | Command line | Behaviour |
 |---|---|---|
@@ -4204,18 +4204,18 @@ as [ADR-RUN-0401](architecture.md).
 - In non-interactive mode, the driver MUST behave as the Behaviour column of the mode table states for the non-interactive row.
 - In all three answer-acquisition modes, the answers object MUST be validated against `wizard/answers.schema.json`.
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
-- When `WYVERN_BIN` is set, wizard code MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
-- When `WYVERN_BIN` is unset or does not supply Wyvern, wizard code MUST look for Wyvern as `wyvern` on `PATH`.
-- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit with a non-zero status.
-- If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
-- If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
-- If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
-- If neither location supplies Wyvern, wizard code MUST leave no destination.
+- When `WYVERN_BIN` is set, a driver run MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
+- When `WYVERN_BIN` is unset or does not supply Wyvern, a driver run MUST look for Wyvern as `wyvern` on `PATH`.
+- When Wyvern is missing, a driver run in interactive or prefill mode MUST exit with a non-zero status.
+- When Wyvern is missing, the stderr of a driver run in interactive or prefill mode MUST contain `wyvern`.
+- When Wyvern is missing, the stderr of a driver run in interactive or prefill mode MUST contain `WYVERN_BIN`.
+- When Wyvern is missing, the stderr of a driver run in interactive or prefill mode MUST contain `PATH`.
+- When Wyvern is missing, a driver run in interactive or prefill mode MUST leave no destination.
 
 **MUST NOT statements:**
 
-- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST NOT run `cargo generate`.
-- The driver MUST NOT support any mode of obtaining the answers object other than interactive, prefill and non-interactive.
+- When Wyvern is missing, a driver run in interactive or prefill mode MUST NOT run `cargo generate`.
+- The driver MUST NOT support a mode of obtaining the answers object that is not one of the three modes.
 - When the wizard ends without the person finishing it, the driver MUST NOT run `cargo generate`.
 
 ### Rationale
