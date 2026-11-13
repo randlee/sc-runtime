@@ -3203,22 +3203,20 @@ Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: The consumer adaptor is the application-owned adaptor crate.
+The local store is the application's SQLite database.
+The remote store is the application's remote database.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-The consumer adaptor moves rows between the local store and the remote store.
+This Draft is deferred and creates no implementation or validation obligation until reopened. Database synchronization is deferred.
 
 **MUST statements:**
 
-- The consumer adaptor moves rows between the local store and the remote store.
+- The consumer adaptor crate MUST contain code that copies rows from one store to the other store.
 
 ### Rationale
 
