@@ -1341,7 +1341,7 @@ it prefers, without this project choosing one.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A CLI command finds that the daemon is not running when the `sc-transport` client returns `TransportError::DaemonNotRunning` ([REQ-TRN-0006](sc-transport/requirements.md)). A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A CLI command finds that the daemon is not running when the `sc-transport` client returns `TransportError::DaemonNotRunning` ([REQ-TRN-0006](sc-transport/requirements.md)). A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value. A permitted daemon argument is an argument of the service definition or an explicit invocation value. A value is passed to the daemon visibly when the value appears in the started daemon's arguments or configuration. An isolated machine is a virtual machine or an ephemeral CI runner ([NFR-RUN-0010](requirements.md)).
 
 Decided by the owner on 2026-09-20. The sc-runtime design document records
 report-only as the default and leaves auto-start undecided; this item
@@ -1379,17 +1379,19 @@ Auto-start starts a real daemon process.
 - The started daemon process MUST use the standard output a launchd launch gives it rather than the CLI process's standard output.
 - The started daemon process MUST use the standard error a launchd launch gives it rather than the CLI process's standard error.
 - The started daemon process MUST use the session a launchd launch gives it rather than the CLI process's session.
-- The CLI-started daemon's arguments MUST be the service definition's arguments plus only the explicit values the daemon needs from the CLI invocation (ADR-RUN-0202 point 4).
+- The CLI-started daemon's arguments MUST include every argument of the service definition (ADR-RUN-0202 point 4).
+- Every argument of the CLI-started daemon MUST be a permitted daemon argument (ADR-RUN-0202 point 4).
 - The daemon's startup directory (its working directory when it starts) MUST always be the same directory, whoever starts it and from wherever, including launchd starts, CLI starts and every CLI invocation directory.
-- Every value the daemon needs from the CLI's invocation MUST be passed explicitly and visibly, never through inherited environment.
+- Every value the daemon needs from the CLI's invocation MUST be passed to the daemon explicitly.
+- Every value the daemon needs from the CLI's invocation MUST be passed to the daemon visibly.
 - In particular, an endpoint or instance root that the CLI resolved from `--endpoint` or from `SC_ENDPOINT` in its own environment ([REQ-RUN-0310](requirements.md)) MUST reach the daemon as an explicit argument or configuration value; otherwise the daemon, which does not see the CLI's `SC_ENDPOINT`, would bind somewhere else and the CLI would never reach it.
 - The daemon MUST outlive the CLI command that started it.
 - Two CLI commands that auto-start at the same time MUST end with exactly one daemon.
-- When auto-start is disabled, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as REQ-RUN-0202 states.
-- When the daemon the CLI started does not become reachable, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as REQ-RUN-0202 states.
+- When auto-start is disabled, the CLI MUST report the `DAEMON.NOT_RUNNING` result that REQ-RUN-0202 defines.
+- When the daemon the CLI started does not become reachable, the CLI MUST report the `DAEMON.NOT_RUNNING` result that REQ-RUN-0202 defines.
 - The CLI MUST still have no direct-database mode (REQ-RUN-0202).
 - Starting the daemon MUST remain the only action the CLI takes about a missing daemon.
-- Tests of this item MUST run only on an isolated machine, a virtual machine or an ephemeral CI runner (NFR-RUN-0010).
+- Tests of this item MUST run only on an isolated machine (NFR-RUN-0010).
 - The CLI whose daemon lost MUST connect to the daemon that won.
 - In either case, readiness retries MUST enforce a finite retry bound.
 
@@ -1400,6 +1402,7 @@ Auto-start starts a real daemon process.
 - The daemon MUST NOT be stopped by its terminal closing.
 - The daemon's startup directory MUST NOT be the CLI's current directory.
 - The daemon MUST NOT inherit the environment of the CLI process.
+- The CLI MUST NOT pass a value the daemon needs from the CLI's invocation through inherited environment.
 - The CLI whose daemon lost the `daemon.lock` singleton race MUST NOT treat losing as a failure.
 
 ### Rationale
