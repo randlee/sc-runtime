@@ -4109,12 +4109,12 @@ has to be deleted from a generated project after rendering.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-21  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: An answers object is a JSON object of generation-option values. The three modes are interactive wizard, prefilled wizard and non-interactive var-file. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test. The destination is the new project output directory `<dest>` passed to `just new <dest>`.
+Definitions: An answers object is a JSON object of generation-option values. The driver is the generation driver `scripts/new_project.py`, run as `just new <dest>`. The three modes are interactive, prefill and non-interactive; the mode table in this requirement gives each mode's command line and behaviour. Wyvern is the program that runs the wizard. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test. The destination is the new project output directory `<dest>` passed to `just new <dest>`.
 
 | Mode | Command line | Behaviour |
 |---|---|---|
@@ -4148,7 +4148,8 @@ as [ADR-RUN-0401](architecture.md).
 
 **MUST statements:**
 
-- The generation driver `scripts/new_project.py` (run as `just new <dest>`) MUST support exactly three ways of obtaining the answers JSON object: (see table above)
+- The driver MUST support exactly three modes of obtaining the answers object: interactive, prefill and non-interactive.
+- In each mode the driver MUST behave as the Behaviour column of the mode table states for that mode.
 - In all three answer-acquisition modes, the answers object MUST be validated against `wizard/answers.schema.json`.
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
 - Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`.
