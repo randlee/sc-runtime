@@ -4183,19 +4183,19 @@ was given and prints a canned finished-wizard result.
 
 Definitions: Wyvern is the program that shows a wizard's HTML pages and prints the collected answers as JSON on stdout when the person finishes. The wizard is the Wyvern wizard described by `wizard/wizard.json`. The driver is the generation driver `scripts/new_project.py`, run as `just new <dest>`. A fixture is one answers JSON file under `wizard/fixtures/`. The wizard output file is the saved file holding the JSON object that Wyvern prints on stdout when a person finishes the wizard. The matching fixture is the fixture whose values are the choices the person made in the wizard. Two JSON objects are equal when, after parsing, they have the same keys and each key has the same value with the same JSON type; key order and whitespace do not matter. The wizard tree is the project directory that the driver generates from the wizard output file. The fixture tree is the project directory that the driver generates from the matching fixture with `--var-file`. The checkout patch is the `[patch.crates-io]` section of the generated root `Cargo.toml`, which maps SDK crate names to local checkout paths. The excluded paths are `target/`, `.sc-lint/venv/` (the local sc-lint install embeds the destination path) and `.sc-compose/logs/` (the generator log contains timestamps).
 
-The tree comparison is an automated test that stubs Wyvern, so CI does not need the real binary. The test runs the driver once with the stub printing `wizard/fixtures/sqlite-mcp.json` and once with `--var-file` on the same fixture. Success criteria 1 to 3 check, on a machine with Wyvern, that the wizard prints the matching fixture.
+In CI, a stub that prints `wizard/fixtures/sqlite-mcp.json` replaces Wyvern, so CI does not need the real binary; the driver runs once with the stub and once with `--var-file` on the same fixture. Success criteria 1 to 3 check, on a machine with Wyvern, that the wizard prints the matching fixture.
 
 **MUST statements:**
 
 - Validation of the wizard output file against `wizard/answers.schema.json` MUST report no error.
-- A comparison of the parsed wizard output file with the parsed matching fixture MUST report them equal.
-- A comparison of the wizard tree with the fixture tree MUST report no file path outside the excluded paths that exists in only one tree.
-- A comparison of the wizard tree with the fixture tree, with the checkout patch removed, MUST report no file outside the excluded paths whose bytes differ between the trees.
+- A JSON equality check of the wizard output file against the matching fixture MUST report no difference.
+- A recursive diff of the wizard tree against the fixture tree, ignoring the excluded paths, MUST report no file path present in only one tree.
+- A recursive diff of the wizard tree against the fixture tree, ignoring the excluded paths and the checkout patch, MUST report no file whose bytes differ.
 
 **MUST NOT statements:**
 
-- The parsed wizard output file MUST NOT contain a key that `wizard/answers.schema.json` does not define.
-- The parsed wizard output file MUST NOT lack a key that `wizard/answers.schema.json` lists as required.
+- Validation of the wizard output file against `wizard/answers.schema.json` MUST NOT report a key that the schema does not define.
+- Validation of the wizard output file against `wizard/answers.schema.json` MUST NOT report a missing required key.
 
 ### Rationale
 
