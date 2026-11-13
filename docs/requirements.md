@@ -2565,7 +2565,7 @@ The resolver applies the source order above.
 **MUST statements:**
 
 - The generated `cli` argument parser MUST parse `<subcommand> --endpoint <value>` without error for every `cli` subcommand.
-- The generated `daemon` argument parser MUST parse `<subcommand> --endpoint <value>` without error for every `daemon` subcommand.
+- When given the argument sequence `<subcommand> --endpoint <value>` for any `daemon` subcommand, the generated `daemon` argument parser MUST return a successful parse result.
 - Each binary MUST obtain its endpoint only from the `sc-transport` resolver.
 - When `--endpoint` is given, the template MUST give its value to the resolver.
 - When `--endpoint` is not given, the template MUST give the resolver no flag value.
