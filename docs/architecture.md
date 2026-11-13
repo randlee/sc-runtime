@@ -1441,11 +1441,12 @@ requirements files, the architecture files and the sprint plans.
    to use that tool.
 3. `sc-runtime` standardises build, test, reporting and runtime. It MUST NOT
    add requirements at the application layer.
-4. Every building block of the four library crates and of the template MUST
-   be a standard, widely used crate, used the way its own documentation
-   shows. The list of chosen crates and the list of prohibited constructs
-   (registry, macro system, code generator, portable query layer, wrapper
-   type) are owned by [NFR-RUN-0003](requirements.md).
+4. For each job in the NFR-RUN-0003 Job/Crate table, the public crates of
+   REQ-RUN-0002 and the template MUST reuse the chosen crate through its
+   documented API, except where a governing requirement specifies otherwise.
+   [NFR-RUN-0003](requirements.md) owns the current prohibitions and Phase D
+   scope: the shared command path and typed storage remain permitted; later
+   consumer-side command generation is not built and not forbidden.
 5. Points 1 to 3 apply to these documents themselves: every new or changed
    requirement, ADR and sprint deliverable is tested against them.
 
@@ -1455,11 +1456,17 @@ Shared standard components reduce repeated code across consuming projects.
 
 ### Consequences
 
-Several things a framework might be expected to have are deliberately absent:
-a command registry, surface-snapshot tooling, a render engine, a logging
-facade. The SQLite write actor is `sc-runtime-db-sqlite`, added by
-[ADR-RUN-0012](architecture.md). A reviewer may reject an
-addition solely because it fails point 1.
+Benefits: projects reuse documented library APIs and maintain less repeated
+application code; the framework avoids owning duplicate surface-snapshot
+tooling, a render engine or a logging facade. The shared command path is not
+the application operation registry prohibited by NFR-RUN-0003. The SQLite
+write actor is `sc-runtime-db-sqlite`, added by [ADR-RUN-0012](architecture.md).
+
+Costs: an otherwise useful addition can be rejected solely because it does
+not save consuming projects code under point 1. Projects use the chosen
+libraries directly and must learn their APIs rather than a framework wrapper.
+These admission constraints leave consumer-side generation open without
+creating work to implement it in Phase D.
 
 ### Alternatives Considered
 
