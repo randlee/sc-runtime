@@ -481,7 +481,7 @@ instance roots may resolve to the same overridden socket path.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. SC_ENDPOINT is the environment variable carrying endpoint text. An instance root is the per-application, per-user directory for daemon run-time files. Configuration means application settings from configuration files or environment variables; the caller resolves the endpoint before passing it to `Client::new`. `Client` is the public HTTP client type of `sc-transport`. The client's endpoint is the endpoint given to `Client::new`. A request to `path` is a request sent to the client's endpoint with `path` as its request path. The default build is a build with no cargo features.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. SC_ENDPOINT is the environment variable carrying endpoint text. An instance root is the per-application, per-user directory for daemon run-time files. Configuration means application settings from configuration files or environment variables; the caller resolves the endpoint before passing it to `Client::new`. `Client` is the public HTTP client type of `sc-transport`. The client's endpoint is the endpoint given to `Client::new`. A request to `path` is a request sent to the client's endpoint with `path` as its request path. The default build is a build with no cargo features. `Endpoint` is the endpoint type of [REQ-TRN-0001](requirements.md), either a UDS path or a TCP address. The client source is `crates/sc-transport/src`.
 
 In the design sketch it is used as:
 
@@ -513,25 +513,28 @@ The caller chooses `T`.
 **MUST statements:**
 
 - The crate `sc-transport` MUST expose `Client`.
-- `Client` MUST be available in the default build.
-- `Client::new(endpoint)` MUST take only the endpoint argument (a UDS path or a TCP address).
+- In the client source, the parameter list of `Client::new` MUST be exactly `(endpoint: Endpoint)`.
 - `Client::new` MUST build a `reqwest::Client` (reqwest 0.13).
 - For a UDS endpoint `Client::new` MUST configure the `reqwest::Client` with `reqwest::ClientBuilder::unix_socket(path)`.
 - For a TCP endpoint, each request that `Client` sends MUST go to the URL `http://<ip>:<port>` followed by the request path, where `<ip>:<port>` is the endpoint's TCP address.
-- `get(path)` MUST send an HTTP `GET` to `path` on the client's endpoint.
+- `get(path)` MUST send its request to `path`.
+- The request that `get(path)` sends MUST use the HTTP method `GET`.
 - `post(path, &body)` MUST send its request to `path`.
 - The request that `post(path, &body)` sends MUST use the HTTP method `POST`.
 - That POST request MUST carry `body` serialised as JSON.
-- `post(path, &body)` MUST accept any `B: serde::Serialize` as the body type.
+- In the client source, the signature of `post` MUST accept every `B: serde::Serialize` as the body type.
 - `get(path)` MUST be `async`.
-- `get(path)` MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`.
-- `get(path)` MUST return `Result<T, TransportError>`.
+- In the client source, the signature of `get` MUST accept every `T: serde::de::DeserializeOwned` as the response type.
+- `get(path)` MUST deserialise the JSON response body into `T`.
+- In the client source, the return type of `get` MUST be `Result<T, TransportError>`.
 - `post(path, &body)` MUST be `async`.
-- `post(path, &body)` MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`.
-- `post(path, &body)` MUST return `Result<T, TransportError>`.
+- In the client source, the signature of `post` MUST accept every `T: serde::de::DeserializeOwned` as the response type.
+- `post(path, &body)` MUST deserialise the JSON response body into `T`.
+- In the client source, the return type of `post` MUST be `Result<T, TransportError>`.
 
 **MUST NOT statements:**
 
+- In the client source, `Client` MUST NOT be behind any `#[cfg(feature = ...)]` attribute.
 - `Client::new` MUST NOT perform any endpoint resolution of its own.
 - `Client::new` MUST NOT read `SC_ENDPOINT`.
 - `Client::new` MUST NOT read configuration.
