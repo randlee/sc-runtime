@@ -341,59 +341,43 @@ process environment variables.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API allocates a distinct test directory rather than using a literal path. The convenience form supplies the app name, current-directory-relative `config` path and process environment to the loader. `merge(base, overlay)` recursively merges object keys and replaces other values with the overlay, including arrays and null, as specified in REQ-CFG-0001. Environment-override rules in REQ-CFG-0002 select matching app-prefixed variables, decode their key paths and values, and apply them to the merged document.
+Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API is a function that creates a new, uniquely named directory on each call, such as `TempDir::new` in `crates/sc-config/tests/support`. `merge(base, overlay)` recursively merges object keys and replaces other values with the overlay, including arrays and null, as specified in [REQ-CFG-0001](requirements.md). The merged document is the result of `merge` applied to `default.json` and `local.json` read from the config directory, as specified in [REQ-CFG-0001](requirements.md). The environment-override rules are the rules of [REQ-CFG-0002](requirements.md) that select matching app-prefixed variables, decode their key paths and values, and apply them to the merged document. `ConfigError` is the error type of `sc-config`, specified in [REQ-CFG-0004](requirements.md). The default inputs of `load` are the path `config` resolved against the current working directory, passed as `config_dir`, and the pairs returned by `std::env::vars_os`, passed as `environment`. A fixed host path is a literal string that begins with `/tmp/`, `/home/` or `/Users/`. Code under `crates/sc-config` includes `src/` and test code.
 
-This item covers the `Loader` type of the `sc-config` crate
-(`crates/sc-config`).
-
-The caller may construct the environment argument entirely in memory as a vector of variable-name/value pairs.
-10. No code in the crate may call `std::env::set_var`,
-    `std::env::remove_var` or `std::env::set_current_dir`, in `src/` or in
-    tests. Setting the environment or the working directory of a child
-    process with `std::process::Command::env` and
-    `std::process::Command::current_dir` is allowed, because it does not
-    change the state of the test process.
-11. No file under `crates/sc-config`, code or tests, may contain a literal temporary-directory path or a literal home-directory path (`/tmp/`, `/home/`, `/Users/`). The repository-wide rule is [NFR-RUN-0005](../requirements.md): non-test code contains no such literal, and every test that writes files uses its own temporary directory. Extending the literal-path ban to this crate's test code is decided in this document.
-
-Using `./config` and the process environment as the defaults of `load` is
-decided in this document; the design fixes only the file names
-`config/default.json` and `config/local.json`. The call takes
-`AppName::new("my-app")`.
-
-Decided: `Loader::new(app: AppName, config_dir: PathBuf, environment: Vec<(OsString, OsString)>) -> Loader`.
-The constructor stores those arguments and does not return `Result`.
-`Loader::load` and `load` return `Result<T, ConfigError>`. Environment pairs
-are `OsString` so a non-Unicode value is reported instead of panicking.
+This item covers the `Loader` type and the free function `load` of the `sc-config` crate (`crates/sc-config`).
 
 **MUST statements:**
 
 - The crate MUST export a public type `Loader`.
+- The return type of `Loader::new` MUST be `Loader`.
 - A `Loader` MUST be given the app name explicitly by the caller.
 - A `Loader` MUST be given the config directory (a filesystem path) explicitly by the caller.
 - `Loader::new` MUST require the caller to provide the `environment` argument.
 - The `environment` argument MUST have type `Vec<(OsString, OsString)>`.
 - The entries of `environment` MUST be iterated as `(variable name, value)` pairs.
-- `Loader` MUST expose the public generic method `Loader::load::<T>()`.
-- For every `T: serde::de::DeserializeOwned`, `Loader::load::<T>()` MUST be callable.
-- The return type of `Loader::load::<T>()` MUST be `Result<T, ConfigError>`.
+- `Loader::load` MUST be a public method.
+- `Loader::load` MUST be generic over a type parameter `T`.
+- The declaration of `Loader::load` MUST bound `T` by `serde::de::DeserializeOwned` alone.
+- The return type of `Loader::load` MUST be `Result<T, ConfigError>`.
 - `Loader::load` MUST read `default.json` only from the given config directory.
 - `Loader::load` MUST read `local.json` only from the given config directory.
 - `Loader::load` MUST take overrides only from the given environment source.
 - `Loader::load` MUST merge the values from its supplied configuration directory using the `merge(base, overlay)` rules in [REQ-CFG-0001](requirements.md).
-- `Loader::load` MUST apply its supplied environment pairs to the merged document using the override rules in [REQ-CFG-0002](requirements.md).
-- The free function `load::<T>(app)` MUST provide the `Loader::load` operation with default inputs.
-- The behavior of `load::<T>(app)` MUST equal the behavior of a `Loader` supplied with `app`, the path `config` resolved relative to the current working directory, and the process-environment pairs.
+- `Loader::load` MUST apply the environment-override rules to the merged document with the pairs of its `environment` argument.
+- `load::<T>(app)` MUST return the same result as `Loader::new(app, config_dir, environment).load::<T>()` called with the default inputs.
 - When reading the process environment, `load` MUST use `std::env::vars_os`.
-- Each `sc-config` test MUST obtain its test directories from a temporary-directory API that allocates a distinct directory for that test.
+- Every directory path in `sc-config` test code MUST derive from a temporary-directory API call in the same test.
 
 **MUST NOT statements:**
 
-- `Loader` MUST NOT access the process environment.
+- `Loader` methods MUST NOT call any `std::env` function that reads environment variables.
 - The free function `load` MUST NOT use `std::env::vars`.
+- Code under `crates/sc-config` MUST NOT call any `std::env` function that changes the process environment.
+- Code under `crates/sc-config` MUST NOT call `std::env::set_current_dir`.
+- Files under `crates/sc-config` MUST NOT contain a fixed host path.
 
 ### Rationale
 
-`std::env::vars` can panic when an environment variable is not valid Unicode. The convenience free function uses `std::env::vars_os` so environment pairs retain their `OsString` representation and non-Unicode input is reported instead of causing that panic.
+`std::env::vars` can panic when an environment variable is not valid Unicode. The free function `load` uses `std::env::vars_os`, and environment pairs are `OsString`, so non-Unicode input is reported instead of causing that panic.
 
 The process environment and the current working directory are global to the
 process. A test that sets a variable or changes directory races with every
@@ -402,7 +386,15 @@ by default. The repository requires every test that touches the filesystem to
 use its own temporary directory and to pass when run in parallel
 ([NFR-RUN-0005](../requirements.md)). Passing the directory and the
 environment in explicitly makes that possible for this crate's own tests and
-for the tests of any program that uses it.
+for the tests of any program that uses it. `std::process::Command::env` and
+`std::process::Command::current_dir` change only a child process and remain
+allowed.
+
+[NFR-RUN-0005](../requirements.md) bans literal temporary-directory and
+home-directory paths in non-test code; this document extends the ban to this
+crate's test code. This document also decides the `config` directory and the
+process environment as the default inputs of `load`; the design fixes only the
+file names `config/default.json` and `config/local.json`.
 ### Success Criteria
 
 1. Inspection: `crates/sc-config/src/lib.rs` exports `AppName`, `Loader`,
@@ -415,7 +407,7 @@ for the tests of any program that uses it.
    process variable, and asserts the result is `{"a":1}`.
 4. A unit test passes an empty in-memory environment and asserts the result
    equals the file value.
-5. An integration test covers the free function `load` (entries 8 and 9). It
+5. An integration test covers the free function `load`. It
    writes `config/default.json` with content `{"a":0}` under a temporary
    directory `D`. It starts a helper executable with `std::process::Command`,
    with `.current_dir(D)`, `.env_clear()` and `.env("MY_APP__A", "1")`. The helper calls
@@ -423,7 +415,7 @@ for the tests of any program that uses it.
    JSON on standard output. The test asserts the printed value is `{"a":1}`.
    How the helper executable is built (for example a test-only binary target
    of the crate) is left to the implementation.
-6. An integration test covers entry 6. It starts a helper executable with a cleared child environment and
+6. An integration test covers the MUST NOT on `Loader` reading environment variables. It starts a helper executable with a cleared child environment and
    `.env("MY_APP__A", "1")` set on that child. The helper builds a
    `Loader` for app `my-app` over a directory whose `default.json` is
    `{"a":0}`, with an empty in-memory environment, and prints the result. The
@@ -435,7 +427,7 @@ for the tests of any program that uses it.
    no match.
 9. `grep -rn "env::vars()" crates/sc-config/src` returns no match.
 10. `grep -rnE "/tmp/|/home/|/Users/" crates/sc-config` returns no match: no
-    fixed temporary or home path in code or tests (entry 11).
+    fixed temporary or home path in code or tests.
 
 ---
 
