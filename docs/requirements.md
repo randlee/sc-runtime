@@ -2263,7 +2263,7 @@ The two-pool arrangement is the whole mechanism.
 
 **MUST statements:**
 
-- It MUST have these properties: (see table above)
+- The crate MUST meet every row of the Aspect and Requirement table in this record.
 
 **MUST NOT statements:**
 
