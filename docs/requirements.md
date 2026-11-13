@@ -805,7 +805,7 @@ them.
 
 ### Requirement Statement
 
-Definitions: The spike is the examples/spike proof project. Daemon::builder is the sc-runtime daemon assembly entry point; sc_transport::Client is the reusable client connector of the sc-transport crate; Envelope<T> is the sc-command response envelope. `clap` is the Rust command-line argument parser crate; the spike `clap` client is the spike's command-line client program built with `clap`. A client connects through `sc_transport::Client` when it opens its UDS or TCP connection to the spike server by calling `sc_transport::Client` and not by building its own socket or HTTP connection.
+Definitions: The spike is the examples/spike proof project. Daemon::builder is the sc-runtime daemon assembly entry point; sc_transport::Client is the reusable client connector of the sc-transport crate; Envelope<T> is the sc-command response envelope. `clap` is the Rust command-line argument parser crate; the spike `clap` client is the spike's command-line client program built with `clap`, whose source is under `examples/spike/cli`. The client parses responses as `sc_command::Envelope<T>` when its source deserializes each server response body into the type `sc_command::Envelope<T>` and not into a type of its own. The rewritten spike is `examples/spike` after the rewrite onto the four library crates required below; its server main file is `examples/spike/server/src/main.rs`, and its line count is the number `wc -l` prints for that file, as [REQ-RUN-0204](requirements.md) also measures it. A client connects through `sc_transport::Client` when it opens its UDS or TCP connection to the spike server by calling `sc_transport::Client` and not by building its own socket or HTTP connection.
 
 `examples/spike` in the `randlee/sc-runtime` repository is first written
 directly on `axum`, `utoipa-axum`, `rmcp`, `sqlx` and `reqwest`, before the
@@ -824,12 +824,12 @@ four library crates exist.
 - Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike server MUST be rewritten to load its configuration through `sc-config`.
 - Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike `clap` client MUST be rewritten to connect through `sc_transport::Client`.
 - Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike `clap` client MUST be rewritten to parse responses as `sc_command::Envelope<T>`.
-- The rewritten spike's server `main.rs` MUST be under 30 lines; that measurement is [REQ-RUN-0204](requirements.md).
-- The directory `examples/spike` MUST be deleted before the `v0.1.0` tag is created.
+- After the rewrite, `wc -l examples/spike/server/src/main.rs` MUST print a number below 30.
+- The commit that deletes `examples/spike` MUST be an ancestor of the commit that the `v0.1.0` tag points at.
 
 **MUST NOT statements:**
 
-- The Git tree referenced by `v0.1.0` MUST NOT contain the `examples/spike` directory.
+- The output of `git ls-tree -r --name-only v0.1.0` MUST NOT contain any path that starts with `examples/spike/`.
 
 ### Rationale
 
