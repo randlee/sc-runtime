@@ -3206,7 +3206,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store. Cron is enabled when the `cron` generation answer is true (REQ-RUN-0332). A layout's document is a JSON document whose `db` value is that layout's `db` value in the table above.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3227,22 +3227,22 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 
 **MUST statements:**
 
-- The generation options MUST accept the `no database` layout from the table above.
-- The generation options MUST accept the `SQLite only` layout from the table above.
-- The generation options MUST accept the `Postgres only` layout from the table above.
+- Validating the `no database` layout's document against `wizard/answers.schema.json` MUST exit with status 0.
+- Validating the `SQLite only` layout's document against `wizard/answers.schema.json` MUST exit with status 0.
+- Validating the `Postgres only` layout's document against `wizard/answers.schema.json` MUST exit with status 0.
 - The `db` enum in `wizard/answers.schema.json` MUST contain `mysql`.
-- The generation options MUST accept the `SQLite and Postgres` layout from the table above.
-- The generation options MUST accept the `SQLite and MySQL` layout from the table above.
-- Generating a layout MUST render the stores in its table row.
-- Generating the `no database` layout MUST render no store crate.
-- A generation request selecting cron with the `no database` layout MUST be rejected before template rendering.
-- Generating a two-store layout MUST render the adaptor crate.
-- Generating a layout with fewer than two stores MUST render no adaptor crate.
+- Validating the `SQLite and Postgres` layout's document against `wizard/answers.schema.json` MUST exit with status 0.
+- Validating the `SQLite and MySQL` layout's document against `wizard/answers.schema.json` MUST exit with status 0.
+- Generating a layout MUST create a `crates/<store>` directory for each store in its table row.
+- A rendered project of the `no database` layout MUST contain no `crates/store-sqlite`, `crates/store-postgres` or `crates/store-mysql` directory.
+- A generation request with cron enabled and the `no database` layout MUST be rejected before template rendering.
+- Generating a two-store layout MUST create a `crates/store-adaptor` directory.
+- A rendered project of a layout with fewer than two stores MUST contain no `crates/store-adaptor` directory.
 - `store-postgres` MUST use `sqlx` for PostgreSQL storage.
 - `store-mysql` MUST use `sqlx` for MySQL storage.
 - `store-sqlite` MUST use the SQLite writer of `sc-runtime-db-sqlite`.
-- Every store MUST implement `Storage<T>` for each row type it stores.
-- When the generated `store-sqlite` store is opened on an empty database, every table that the SQL files in `crates/store-sqlite/migrations/` create MUST exist before the first read or write.
+- Every store of a rendered project MUST implement `Storage<T>` for each row type T it stores.
+- When the `store-sqlite` store of a rendered project is opened on an empty database, every table that the SQL files in `crates/store-sqlite/migrations/` create MUST exist before the first read or write.
 
 ### Rationale
 
