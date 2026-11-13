@@ -3623,7 +3623,7 @@ and sc-lint, so the schema is versioned like any other published contract.
 
 ### Requirement Statement
 
-Definitions: Schema keys are the keys of the top-level properties object in wizard/answers.schema.json. Placeholder keys are the names of the template-defined placeholders declared in template/cargo-generate.toml.
+Definitions: Schema keys are the keys of the top-level properties object in wizard/answers.schema.json. Placeholder keys are the names of the template-defined placeholders declared in template/cargo-generate.toml. The key-set test is the unit test in `tests/unit/` that compares the schema keys with the placeholder keys.
 
 | Set | Where it is read from |
 |---|---|
@@ -3643,10 +3643,12 @@ two key sets in both directions and reads both files from the working tree.
 
 **MUST statements:**
 
-- `tests/unit/` MUST contain a unit test that compares two sets of names: (see table above)
-- The test MUST fail when the two sets differ in either direction: a schema key with no placeholder, or a placeholder with no schema key.
-- The test MUST read both files from the working tree at test time.
-- The test MUST run as part of `just test` at the repository root.
+- `tests/unit/` MUST contain a unit test that compares the schema keys with the placeholder keys.
+- The key-set test MUST fail when a schema key has no placeholder key of the same name.
+- The key-set test MUST fail when a placeholder key has no schema key of the same name.
+- The key-set test MUST read `wizard/answers.schema.json` from the working tree at test time.
+- The key-set test MUST read `template/cargo-generate.toml` from the working tree at test time.
+- `just test` at the repository root MUST run the key-set test.
 
 **SHOULD statements:**
 
@@ -3654,7 +3656,7 @@ two key sets in both directions and reads both files from the working tree.
 
 **MUST NOT statements:**
 
-- It MUST NOT compare against a hard-coded list of names.
+- The key-set test MUST NOT compare against a hard-coded list of names.
 
 ### Rationale
 
