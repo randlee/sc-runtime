@@ -656,40 +656,28 @@ code.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-For the Phase D deliverable, this item binds `crates/sc-config/Cargo.toml` and owns its third-party dependency list. A later async or reload option is not forbidden and creates no work in Phase D (PRD-ENG-5/6). The edges between the crates of
-this workspace, the forbidden edges, and the boundary manifest under
-`boundaries/sc-config/` that encodes them are owned by
-[REQ-RUN-0005](../requirements.md), which refers to this item for the
-third-party list.
+Definitions: The sc-config manifest is the file `crates/sc-config/Cargo.toml`. A dependency entry is one key of a dependency table in the sc-config manifest. The sc-config dependency tree is the output of `cargo tree -p sc-config -e normal --prefix none`. A hand-written impl block is an `impl` block whose full source text appears in the file, rather than one that a derive or other macro generates.
 
-4. For Phase D, the forbidden edges of `sc-config` are `sc-observability`,
-   `sc-observability-otlp` (the OTel export crate of `sc-observability`),
-   `tokio`, `sc-transport`, `sc-command` and `sc-runtime`. The obligation,
-   and the `forbidden_edges` entries of the boundary manifest that
-   `sc-lint-boundary` checks, are stated in
-   [REQ-RUN-0005](../requirements.md). This item adds only the `cargo tree`
-   check in criterion 3.
-
-For Phase D, `[dev-dependencies]` is empty. Tests create a private directory
-under `std::env::temp_dir` and remove it when the test ends. No third test
-crate is added in Phase D.
+This record binds the sc-config manifest of the Phase D deliverable and owns its third-party dependency list. A later async or reload option is not forbidden and creates no work in Phase D (PRD-ENG-5/6). [REQ-RUN-0005](../requirements.md) owns the edges between the crates of this workspace, the forbidden edges and the boundary manifest under `boundaries/sc-config/`, and refers to this record for the third-party list. For Phase D, the forbidden edges of `sc-config` are `sc-observability`, `sc-observability-otlp` (the OTel export crate of `sc-observability`), `tokio`, `sc-transport`, `sc-command` and `sc-runtime`; [REQ-RUN-0005](../requirements.md) states the obligation and the `forbidden_edges` entries that `sc-lint-boundary` checks, and this record adds only the `cargo tree` check in criterion 3. Tests create a private directory under `std::env::temp_dir` and remove the directory when the test ends.
 
 **MUST statements:**
 
-- For Phase D, the `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain exactly two entries: `serde` and `serde_json`.
-- The `ConfigError` type MUST be written by hand.
+- The set of keys in the `[dependencies]` table of the sc-config manifest MUST equal the set {`serde`, `serde_json`}.
+- The file `crates/sc-config/src/error.rs` MUST contain a hand-written `impl std::fmt::Display for ConfigError` block.
+- The file `crates/sc-config/src/error.rs` MUST contain a hand-written `impl std::error::Error for ConfigError` block.
 
 **MUST NOT statements:**
 
-- For Phase D, `[dependencies]` MUST NOT contain optional dependencies.
-- For Phase D, `[dependencies]` MUST NOT contain target-specific dependency tables that add a third crate.
-- `thiserror` MUST NOT be added.
-- `anyhow` MUST NOT be added.
+- The sc-config manifest MUST NOT contain a `[dev-dependencies]` table with any key.
+- The sc-config manifest MUST NOT contain a dependency entry with `optional = true`.
+- The sc-config manifest MUST NOT contain a `[target.*.dependencies]` table.
+- The sc-config dependency tree MUST NOT contain a line that starts with `thiserror `.
+- The sc-config dependency tree MUST NOT contain a line that starts with `anyhow `.
 
 ### Rationale
 
@@ -704,7 +692,8 @@ circular: logging is configured from the values this crate loads.
 ### Success Criteria
 
 1. For Phase D, inspection of `crates/sc-config/Cargo.toml`: the `[dependencies]` table has
-   the keys `serde` and `serde_json` and no others, and the file has no
+   the keys `serde` and `serde_json` and no others, no entry has
+   `optional = true`, `[dev-dependencies]` has no key, and the file has no
    `[target.*.dependencies]` table.
 2. For Phase D, `cargo tree -p sc-config -e normal --depth 1` lists `serde` and
    `serde_json` as the only direct dependencies.
