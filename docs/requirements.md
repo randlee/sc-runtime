@@ -5326,7 +5326,8 @@ Definitions: Repository skills are the checked-in .claude, .codex and .cursor sk
 **MUST statements:**
 
 - A repository skill checking the sc-compose version MUST accept versions equal to or newer than its declared minimum.
-- A repository skill checking the sc-compose version MUST reject older or malformed versions.
+- A repository skill that checks the sc-compose version MUST reject a version older than the declared minimum.
+- A repository skill that checks the sc-compose version MUST reject a malformed version.
 ### Rationale
 
 The owner requires skills to tolerate sc-compose >= a floor threshold (ANC-015); reproducible CI binary selection remains independent.
