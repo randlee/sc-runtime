@@ -743,13 +743,15 @@ stops a consumer or a later version from adding them, including an async
 API next to the synchronous one
 ([PRD-ENG-5, section 9](../prd/sc-runtime-prd.md)).
 
-This item binds `load` and `Loader::load` in `crates/sc-config/src` for the Phase D deliverable. A load call reads the files, applies the overrides and deserialises the result.
+This item binds `load` and `Loader::load` in `crates/sc-config/src` for the Phase D deliverable.
+
+Definitions: A load call is one call to `load` or `Loader::load` in `crates/sc-config/src`. Load work is the file reads, override application and deserialisation that a load call performs. The calling thread is the thread that makes a load call. An async runtime is an executor, such as Tokio, that polls futures. A configuration file is `default.json` or `local.json` in the configuration directory passed to the load call. A configuration source is a configuration file or an environment variable that a load call reads.
 
 **MUST statements:**
 
-- A load call MUST be callable without an async runtime.
-- A load call MUST do all of its work on the calling thread before it returns.
-- A value returned by a load call MUST stay unchanged after the call returns.
+- A load call made on a thread with no async runtime running MUST return `Ok` for a configuration directory holding a valid `default.json`.
+- The load work of a load call in `crates/sc-config/src` MUST run on the calling thread.
+- When a configuration source changes after a load call returns, the value returned by the load call MUST keep the contents it had at return.
 
 **MUST NOT statements:**
 
