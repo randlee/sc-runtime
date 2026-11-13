@@ -928,7 +928,7 @@ machine, never on a developer's host
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -939,16 +939,27 @@ machine, never on a developer's host
 
 ### Requirement Statement
 
-Scope: every rule in this record describes the Phase D deliverable of the `sc-runtime` crate (`crates/sc-runtime`) only. It does not prohibit later consumer options or public API additions and creates no work to implement or test them. The rules do not restrict `sc-command`, which supplies the shared command path of PRD §3 (one shared write path and one shared read path, to which a project supplies `Tcli`, `Tsql` and the transform), or `sc-storage`, whose `Storage<T>` trait PRD-STO-1 and PRD-STO-2 require. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is outside this crate and is not restricted by this record.
+Definitions:
+`axum`, `rmcp` and `sqlx` are third-party Rust library crates: `axum` serves HTTP routes, `rmcp` serves Model Context Protocol (MCP) requests and `sqlx` runs SQL queries.
+A public item is a module, struct, enum, trait or free function that `cargo doc -p sc-runtime --no-deps --features test-util` documents, or a public method of `Daemon` or `DaemonBuilder` that `cargo doc -p sc-runtime --no-deps --features test-util` documents.
+The public-surface table is the table in this record that gives the kind, count and name of each public item of the Phase D deliverable.
+A free function is a function declared outside any `impl` block.
+The allowed free-function list is `mcp_request_body` and `testing::instrument_router`.
+A public data type is a struct or enum declared `pub` in `crates/sc-runtime/src`.
+A field typed from a named crate is a struct or enum field whose declared type is a type declared in the named crate.
+`test-util` is the non-default Cargo feature of `sc-runtime` that enables the `testing` module.
+The shared command path is the one shared write path and one shared read path of PRD §3, supplied by `sc-command`, to which a project supplies `Tcli`, `Tsql` and the transform.
+A command or operation registry is any structure in which a project registers operations for the framework to dispatch.
 
-The assembly-only scope of the `sc-runtime` crate does not require hand-written command paths and does not forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared `sc-command` path and default plain conversion and builds no generator; code generation for the command pattern is undecided (PRD §9). Supplying the shared command path from `sc-command` does not expand `sc-runtime` beyond assembly.
+Scope: every rule in this record describes the Phase D deliverable of the `sc-runtime` crate (`crates/sc-runtime`) only. The rules create no work for, and do not prohibit, later consumer options or public API additions. The rules do not restrict `sc-command`, the shared command path, or `sc-storage`, whose `Storage<T>` trait PRD-STO-1 and PRD-STO-2 require.
 
-Phase D adds no command or operation registry to `sc-runtime`. That omission is release scope, not a prohibition on a later consumer option.
+`sc-runtime` is a bootstrap, not a framework layer. Phase D adds no command or operation registry to `sc-runtime` and builds no procedural or declarative macro in `sc-runtime`, private or exported. Phase D supplies the shared command path and default plain conversion from `sc-command` and builds no generator. Code generation for the command pattern, including macro-based command generation and a later consumer-side generator, is undecided (PRD §9): not built in Phase D and not forbidden later. Supplying the shared command path from `sc-command` does not expand `sc-runtime` beyond assembly.
 
-`sc-runtime` is a bootstrap, not a framework layer. The closed facade below describes the Phase D deliverable. Phase D builds no procedural or declarative macro in this crate, whether private or exported. Macro-based command generation remains an undecided consumer option under PRD §9; this scope creates no obligation to implement it and does not forbid it later.
-
-- The project passes in an ordinary `utoipa_axum::OpenApiRouter` and an ordinary rmcp service, and they are mounted as given.
-- The names are pinned. `Daemon::builder` takes `&sc_transport::AppName`. This crate does not define or re-export `sc_runtime::AppName`. The `testing` module, `DaemonFixture`, and `instrument_router` sit behind the non-default `test-util` feature. `#[doc(hidden)]` typestate markers `NeedStores`, `NeedRoutes`, and `Ready` appear in the builder signature and are not facade items.
+- The project passes in an ordinary `utoipa_axum::OpenApiRouter` and an ordinary rmcp service, and `sc-runtime` mounts both as given.
+- `Daemon::builder` takes `&sc_transport::AppName`. `sc-runtime` does not define or re-export `sc_runtime::AppName`.
+- The `testing` module, `DaemonFixture` and `instrument_router` are compiled only with `test-util`.
+- The `#[doc(hidden)]` typestate markers `NeedStores`, `NeedRoutes` and `Ready` appear in the builder signature and are not public items.
+- The generated `daemon` and `service` crates take `sc-command` directly, as fixed by [REQ-RUN-0301](../requirements.md); `sc-runtime` does not re-export `sc-command`.
 
 | Kind of public item | How many | Name |
 |---|---|---|
@@ -956,27 +967,21 @@ Phase D adds no command or operation registry to `sc-runtime`. That omission is 
 | Builder type with exactly seven public methods: three project closure setters, one optional all-phase logger setter, and three alternative ready-state terminal run methods | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`, `run_with_cleanup_and_bound`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
-| Public module for tests, containing the fixture and router instrumentation helper, behind `test-util` | one | `testing` (`testing::DaemonFixture`, `testing::instrument_router`) |
+| Public module for tests, containing the fixture and router instrumentation helper, compiled only with `test-util` | one | `testing` (`testing::DaemonFixture`, `testing::instrument_router`) |
 | Read-only original MCP request body accessor | one | `mcp_request_body(&axum::http::request::Parts) -> Option<&[u8]>` |
-
-The generated `daemon` and `service` crates take `sc-command` directly as
-fixed by [REQ-RUN-0301](../requirements.md). `sc-runtime` does not re-export
-it, so the closed public-surface table above remains complete.
 
 **MUST statements:**
 
-- In Phase D, the public surface MUST match exactly the public-surface table above.
+- `cargo doc -p sc-runtime --no-deps --features test-util` MUST document every item that the public-surface table names.
 
 **MUST NOT statements:**
 
-- The crate MUST NOT define a public type that wraps a `axum` type.
-
-- The crate MUST NOT define a public type that wraps a `rmcp` type.
-
-- The crate MUST NOT define a public type that wraps a `sqlx` type.
-- The crate MUST NOT have any public item outside the closed public-surface table above.
-- The crate MUST NOT have a public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`.
-- The crate MUST NOT `pub use` an item from another crate.
+- `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `axum` crate.
+- `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `rmcp` crate.
+- `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `sqlx` crate.
+- `cargo doc -p sc-runtime --no-deps --features test-util` MUST NOT document a public item that the public-surface table does not name.
+- `cargo doc -p sc-runtime --no-deps --features test-util` MUST NOT document a public free function whose name is absent from the allowed free-function list.
+- `crates/sc-runtime/src` MUST NOT contain a `pub use` declaration that re-exports an item defined in another crate.
 
 ### Rationale
 
