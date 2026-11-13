@@ -1231,21 +1231,24 @@ would reject one.
 Definitions:
 
 - The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` ([REQ-RUN-0002](../requirements.md)).
-- A fallible public operation is a `pub` function or `pub` method of a crate that has a failure outcome, such as invalid caller input, a held lock, a missing directory, a port in use or a stores failure.
-- A typed error enum is the error enum that one crate defines for its own fallible public operations.
-- The own result type of an operation is `Result<T, E>`, or an alias of it, in which `T` is any success type and `E` is the typed error enum of the crate containing the operation.
+- A failure outcome of a `pub` function or `pub` method is an error that code of its own crate detects, for example invalid caller input, a held lock, a missing directory, a port in use or a stores failure.
+- A typed error enum is the error enum that one crate returns from its `pub` functions and `pub` methods that have a failure outcome.
+- The own result type of a crate is `Result<T, E>`, or an alias of it, in which `T` is any success type and `E` is the typed error enum of that crate.
 - `RuntimeError` is the typed error enum of `sc-runtime` ([REQ-RT-0007](requirements.md)).
-- Covered code is non-test code under `crates/<crate>/src` of a crate in the public package set that a `pub` function of a crate in the public package set reaches through a chain of zero or more calls; test code is code under `#[cfg(test)]` or in `tests/`.
+- Test code is code under `#[cfg(test)]` or in `tests/`.
+- Covered code is every function body, other than test code, under `crates/<crate>/src` of a crate in the public package set that is a `pub` function of that set or that such a function calls directly or indirectly.
+- A recorded exception is a signature or construct that [NFR-RUN-0009](../requirements.md) names as an exception to its error rule or panic rule.
+- Calling `unwrap` or `expect` is any method call with that name, whatever the receiver type.
 - A panicking index expression is a `[]` index on a slice, array, `Vec` or map that panics when the index or key is absent.
 
-An explanatory comment creates no exception. The explicitly named exceptions in NFR-RUN-0009 and ADR-RUN-0017 remain applicable; this record adds no broader exception. NFR-RUN-0009 owns the repo-level rule; `sc-runtime` adds no strictness beyond it.
+Each statement below excludes a recorded exception, and nothing else; an explanatory comment is not a recorded exception. NFR-RUN-0009 owns the repo-level rule; `sc-runtime` adds no strictness beyond it.
 
 Applied to `sc-runtime`: no public function or method of `sc-runtime` panics on caller input or on environment state (lock held, missing directory, port in use, stores failure, signal delivery). A panic raised inside a project closure belongs to the project; `sc-runtime` need not catch it.
 
 **MUST statements:**
 
-- Every fallible public operation of `sc-runtime` MUST declare `Result<T, RuntimeError>` as the return type.
-- Every fallible public operation of a crate in the public package set MUST declare the own result type of the operation as the return type.
+- If a `pub` function or `pub` method of `sc-runtime` has a failure outcome, its declared return type MUST be `Result<T, RuntimeError>`.
+- If a `pub` function or `pub` method of a crate in the public package set has a failure outcome, its declared return type MUST be the own result type of that crate.
 
 **MUST NOT statements:**
 
