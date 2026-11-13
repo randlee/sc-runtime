@@ -793,22 +793,29 @@ that command. The measurement is the sprint a-1 evidence record.
 sc-runtime design, 2026-09-19: independent crates stated by the owner; the `server` feature is stated in the design's repository layout. That the feature is off by default, the forbidden-edge lists, the testing rule in point 7 and the build-selection scope in point 8 are decided in this document
 ### Consequences
 
-A CLI built with `cargo build -p cli` depends on the default builds of
-`sc-transport` and `sc-command` and links none of axum, rmcp or sqlx. A
-workspace-wide build is exempt. The client/server crate split is rejected
-for v0.1.
+**Positive:**
 
-A shared concept cannot be shared by adding an edge between two standalone
-crates. `TransportError::DaemonNotRunning` is owned by
-[ADR-TRN-0003](sc-transport/architecture.md). The `OpError` wire form is
-owned by [ADR-CMD-0001](sc-command/architecture.md). The Phase A decision
-for the daemon-not-running code is point 5 of
-[ADR-RUN-0004](architecture.md). This ADR does not restate those field
-types.
+- A CLI built with `cargo build -p cli` depends on the default builds of
+  `sc-transport` and `sc-command` and links none of axum, rmcp or sqlx.
 
-`sc-lint-boundary` cannot express "axum only with `server`": its manifest
-format has no cargo-feature key. Feature-conditional dependencies are checked
-with `cargo tree`, and Phase D facade scope by `arch-qa` review.
+**Negative:**
+
+- A shared concept cannot be shared by adding an edge between two standalone
+  crates.
+- `sc-lint-boundary` cannot express "axum only with `server`": its manifest
+  format has no cargo-feature key. Feature-conditional dependencies are checked
+  with `cargo tree`, and Phase D facade scope by `arch-qa` review.
+
+**Neutral:**
+
+- A workspace-wide build is exempt. The client/server crate split is rejected
+  for v0.1.
+- `TransportError::DaemonNotRunning` is owned by
+  [ADR-TRN-0003](sc-transport/architecture.md). The `OpError` wire form is
+  owned by [ADR-CMD-0001](sc-command/architecture.md). The Phase A decision
+  for the daemon-not-running code is point 5 of
+  [ADR-RUN-0004](architecture.md). This ADR does not restate those field
+  types.
 ### Alternatives Considered
 
 #### Alternative 1: Splitting each of the two crates into a `-client` and a `-server` crate
