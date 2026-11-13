@@ -451,7 +451,7 @@ crate means every SC daemon maps the same error kind to the same status.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -464,7 +464,7 @@ pub trait IntoMcp {
 }
 ```
 
-`CallToolResult` is `rmcp::model::CallToolResult` from rmcp **3.8.0**, the frozen Phase C identity (ADR-RUN-0203). `McpError`
+`CallToolResult` is `rmcp::model::CallToolResult` from rmcp. Phase C froze rmcp 3.8.0 (ADR-RUN-0203); Phase D requires rmcp >=3.9 with no upper bound ([NFR-CMD-0001](requirements.md)). `McpError`
 is `rmcp::ErrorData`, which tool handlers import under that name and which
 `sc-command` re-exports as `sc_command::McpError`. The error flag is
 `is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
@@ -502,7 +502,9 @@ so `is_error` is `Some(false)`. Failure uses
 
 - When the cargo feature `server` of `sc-command` is enabled, the crate MUST export a public extension trait `sc_command::IntoMcp` with one method, implemented for `Result<T, OpError>` where `T: serde::Serialize`:
 - `into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md)).
-- `into_mcp()` MUST place that envelope, as JSON, in the content of the returned `CallToolResult`.
+- `into_mcp()` MUST place the JSON string of the envelope produced by `Envelope::<T>::from(result)` in one text content item of the returned `CallToolResult`.
+
+- `into_mcp()` MUST place the JSON value of the envelope produced by `Envelope::<T>::from(result)` in the returned `CallToolResult` as `structured_content`.
 - The envelope JSON delivered through MCP MUST equal, as a JSON value, the body the axum conversion produces for the same `Result<T, OpError>` ([REQ-CMD-0004](requirements.md)).
 
 **MUST NOT statements:**
