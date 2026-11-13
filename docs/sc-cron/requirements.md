@@ -20,57 +20,43 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 
 ### Requirement Statement
 
-Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement "1.5.0", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.
+Definitions: sc-monty is the shared Monty interpreter implementation. sc-storage is the shared `Storage<T>` crate. The Phase D public package set is the nine crates named in REQ-RUN-0002, released together at version 0.3.0. A Monty value is an interpreter value passed to a hook function through sc-monty's value-level invocation, as opposed to a JSON-encoded string. The port preserves the existing test assertions while moving the interpreter implementation into sc-monty. Weakening an assertion means removing a checked condition, widening an expected value, range or tolerance, or replacing an exact comparison with a looser one. The local facade is the former unpublished observability-types shim. A workspace library crate is a library crate that is a member of this Cargo workspace. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. Registry types are the canonical event types imported from the published sc-observability-types crate. The command contract edge is the normal dependency on sc-command with `default-features = false` and no features, permitted by ADR-RUN-0017. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the command contract edge after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.
 
-Phase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.
+`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`, and is one of the Phase D public package set. Phase D sc-cron consumes the single sc-monty implementation for interpreter behavior and sc-storage for shared storage behavior; it no longer directly depends on monty or monty-types. It retains cron policy and JSON-to/from-value adaptation; Monty hooks receive Monty values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.
 
-`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`. The historical `0.1.1` initial release has five independently versioned public release artifacts: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. For that initial release, ADR-RUN-0017 permits only a temporary normal `sc-command` 0.2.0 Phase C dependency with `default-features = false` and no features for the canonical port. Canonical event values remain direct registry `sc-observability-types` imports.
+The command contract edge supplies the retained observability port. Canonical event values remain direct registry `sc-observability-types` imports. Registry types use the open floor `>=1.5.0` with no upper bound, as every published registry dependency does under REQ-RUN-0002. The historical `0.1.1` release used an exact `=1.5.0` command pin; that pin does not govern Phase D.
 
-`sc-runtime` does not name it. The generated daemon may name it only as the
+`sc-runtime` does not name sc-cron. The generated daemon may name it only as the optional `cron` dependency selected by the embedding application; default generated builds do not link it. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
 
-optional `cron` dependency selected by the embedding application; default
-
-generated builds do not link it. Here "name" means a Cargo or other manifest
-
-dependency. Documented wiring may reference the crate in comments and schema
-
-descriptions.
-
-The injection API is packaged at workspace version `0.1.1`. In the historical `0.1.1` release, the five public library artifacts are `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. Registry types use compatible `1.5.0`, unified to exact 1.5.0 by command's temporary pin. Normal cron enables neither command/server
-
-nor command/test-util; test doubles use dev-dependencies only. The current
-
-local facade is removed during implementation before initial publication.
-
-Capability-proven upstream cleanup removes cron -> command and restores the
-
-original no-sibling boundary.
+sc-cron's command contract edge enables neither the sc-command `server` feature nor the sc-command `test-util` feature; test doubles use dev-dependencies only. The local facade is gone and does not return. Capability-proven upstream cleanup removes the command contract edge, after which sc-storage and sc-monty are the only workspace library crates sc-cron depends on.
 
 **MUST statements:**
 
-- `crates/sc-cron` MUST be a workspace member ported from beads-cache.
+- `crates/sc-cron` MUST be a member of this Cargo workspace.
+- `crates/sc-cron` MUST be ported from beads-cache.
+- sc-cron MUST be a member of the Phase D public package set.
 - Phase D sc-cron MUST consume the single sc-monty implementation.
+- Phase D sc-cron MUST consume sc-storage for shared storage behavior.
 - sc-cron MUST retain cron policy.
 - sc-cron MUST retain JSON-to/from-value adaptation.
-- Hooks MUST receive values rather than JSON strings.
+- sc-cron MUST pass hook data to its Monty hooks as Monty values rather than as JSON strings.
 - Existing unit assertions MUST be ported.
 - Existing integration assertions MUST be ported.
 - After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.
-- For the historical `0.1.1` initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017.
-- That temporary command dependency MUST set `default-features = false`.
-- That temporary command dependency MUST enable no features.
+- sc-cron's only normal dependency on sc-command MUST be the command contract edge.
+- The command contract edge MUST set `default-features = false`.
+- The command contract edge MUST enable no features.
 - Canonical event values MUST remain direct registry sc-observability-types imports.
-- The injection API MUST be packaged at workspace version 0.1.1.
-- The historical `0.1.1` initial release MUST have the five public library artifacts `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`.
-- Registry types MUST use the Cargo registry version requirement `"1.5.0"`.
-- Command's temporary pin MUST unify those registry types to exact 1.5.0.
+- sc-cron's sc-observability-types requirement MUST be the registry floor `>=1.5.0`.
 - Test doubles MUST use dev-dependencies only.
-- The current local facade MUST be removed during implementation before initial publication.
-- Capability-proven upstream cleanup MUST remove cron -> command.
+- Capability-proven upstream cleanup MUST remove the command contract edge.
 
 **MUST NOT statements:**
 
-- After capability-proven upstream cleanup, sc-cron MUST NOT depend on another workspace library crate.
+- sc-cron MUST NOT depend on any workspace library crate other than sc-command, sc-storage and sc-monty.
+- After capability-proven upstream cleanup, sc-cron MUST NOT depend on any workspace library crate other than sc-storage and sc-monty.
+- sc-cron's sc-observability-types requirement MUST NOT declare an upper bound.
+- sc-cron MUST NOT depend on the local facade.
 - Existing integration assertions MUST NOT be deleted.
 - Existing integration assertions MUST NOT be weakened.
 - Existing unit assertions MUST NOT be deleted.
@@ -82,8 +68,8 @@ original no-sibling boundary.
 - sc-runtime MUST NOT name sc-cron as a Cargo or other manifest dependency.
 - The generated daemon MUST NOT name sc-cron except as the optional cron dependency selected by the embedding application.
 - Default generated builds MUST NOT link sc-cron.
-- Normal cron MUST NOT enable command/server.
-- Normal cron MUST NOT enable command/test-util.
+- The command contract edge MUST NOT enable the sc-command `server` feature.
+- The command contract edge MUST NOT enable the sc-command `test-util` feature.
 
 ### Rationale
 
@@ -485,36 +471,34 @@ Owner (ANC-034): "python/monty having consistent settings would be least confusi
 
 **Version:** 1.0.0  
 **Created:** 2026-10-27  
-**Last Updated:** 2026-10-27  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Status:** Active  
 
 ### Requirement Statement
 
-Definitions: ATM means agent-team-mail and its tool crates. The command contract edge is the temporary dependency on defaults-off sc-command in ADR-RUN-0017. sc-lint-boundary accepts workspace names only, so monty/monty-types are enforced by cargo-tree gates rather than entries in that list. Test and benchmark references are permitted; CLI process invocation creates no crate dependency.
+Definitions: ATM means agent-team-mail and its tool crates. sc-compose crates are sc-compose, sc-composer and sc-composer-beads; sc-sha is published from the sc-compose repository but is not an sc-compose crate (ANC-061). The command contract edge is the dependency on sc-command with `default-features = false` and no features, permitted by ADR-RUN-0017. sc-storage is the shared `Storage<T>` crate and sc-monty is the shared Monty interpreter crate; both are workspace crates that REQ-RUN-0002 requires sc-cron to consume. The interpreter crates are sc-monty, monty, monty-types, monty-pool, monty-fs and monty-runtime. The default tree is the output of `cargo tree -p sc-cron -e normal`; the monty-feature tree is the same command with `--features monty`. sc-lint-boundary accepts workspace names only, so monty/monty-types are enforced by cargo-tree gates rather than entries in that list. Test and benchmark references are permitted; CLI process invocation creates no crate dependency.
 
-`rusqlite` leaves this list when the schedule store moves to `Storage<CronRow>`; until that code change lands the list below describes the code as it is.
+`rusqlite` leaves this list when the schedule store moves to `Storage<CronRow>`.
 
-This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. Only the temporary defaults-off command contract edge in ADR-RUN-0017
-
-is allowed; no other workspace crate is allowed.
+This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal third-party dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `sc-sha`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-sha` supplies the SHA-256 compiled-session cache key. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and adds the interpreter only through sc-monty. It is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no interpreter crate, and the only interpreter crates in the monty-feature tree are `sc-monty`, `monty` and `monty-types`, with `monty` and `monty-types` reached through `sc-monty`. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. The workspace crates sc-cron may depend on are the command contract edge, sc-storage and sc-monty; no other workspace crate is allowed.
 
 The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 
 **MUST statements:**
 
-- Until the schedule store moves to Storage<CronRow>, the normal allowed_dependencies list MUST be async-trait, chrono, cron, getrandom, process-wrap, rusqlite (bundled), sc-observability-types, serde, serde_json, tempfile, tokio and tracing.
+- Until the schedule store moves to Storage<CronRow>, the normal allowed_dependencies list MUST be async-trait, chrono, cron, getrandom, process-wrap, rusqlite (bundled), sc-observability-types, sc-sha, serde, serde_json, tempfile, tokio and tracing.
 - When the schedule store moves to Storage<CronRow>, rusqlite MUST leave that list.
 - Feature monty MUST remain optional.
-- The default cargo tree MUST have no monty edge.
-- The --features monty tree MUST link monty and monty-types only.
+- The default tree MUST contain no interpreter crate.
+- The monty-feature tree MUST contain no interpreter crate other than sc-monty, monty and monty-types.
+- In the monty-feature tree, monty and monty-types MUST be reached only through sc-monty.
 - sc-cron-tree-default in sc-lint.toml MUST enforce the default tree.
 - sc-cron-tree-monty in sc-lint.toml MUST enforce the monty-feature tree.
-- Only the temporary defaults-off command contract edge in ADR-RUN-0017 MUST be allowed among workspace crates.
 
 **MUST NOT statements:**
 
-- Every other workspace crate dependency MUST NOT be allowed.
+- sc-cron MUST NOT depend on any workspace crate other than sc-command through the command contract edge, sc-storage and sc-monty.
 - sc-cron MUST NOT depend on monty-pool.
 - sc-cron MUST NOT depend on monty-fs.
 - sc-cron MUST NOT depend on monty-runtime.
@@ -530,7 +514,7 @@ Owner (ANC-031): "sc-compose and atm crates should be blocked from any productio
 
 **Acceptance Criteria:**
 
-- [ ] The `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml` enforce that feature `monty` stays optional: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only.
+- [ ] The `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml` enforce that feature `monty` stays optional: the default tree has no interpreter crate, and the only interpreter crates in the `--features monty` tree are `sc-monty`, `monty` and `monty-types`, with `monty` and `monty-types` reached through `sc-monty`.
 ### Related Documents
 
 **Requirements:**
