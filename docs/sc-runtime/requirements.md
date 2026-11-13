@@ -840,7 +840,7 @@ payload lets the caller print the failure detail.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. A value reaches `run()` inside `DaemonConfig` when `run()` reads it from the `DaemonConfig` passed to `Daemon::builder` and from no other source. A build of `sc-transport` with default features is one with no `--features`, `--all-features` or `--no-default-features` flag. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that
@@ -884,15 +884,16 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 **MUST statements:**
 
 - `run()` MUST obtain the instance root only by calling the `sc-transport` instance-root function.
-- That call MUST pass the `app` name given to the builder.
-- That call MUST pass the explicit instance root when one was supplied.
+- `run()`'s call to the `sc-transport` instance-root function MUST pass the `app` name given to the builder.
+- `run()`'s call to the `sc-transport` instance-root function MUST pass the explicit instance root when one is set.
 - `run()` MUST obtain the bind endpoint only by calling the `sc-transport` endpoint resolver.
-- The endpoint-resolver call MUST receive the same instance root that `run()` locks.
+- `run()`'s call to the `sc-transport` endpoint resolver MUST pass the instance root returned by `run()`'s call to the `sc-transport` instance-root function.
 - The `--endpoint` flag value MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
 - The configured endpoint MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
 - The explicit instance root MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-- The daemon MUST honour `SC_ENDPOINT`, because a CLI started with the same variable resolves to that endpoint and the two would otherwise never meet.
-- The endpoint and instance-root portion of configuration MUST be a `serde::Deserialize` type exported by `sc-transport` with default features.
+- When `SC_ENDPOINT` is set and the `DaemonConfig` carries no `--endpoint` flag value, the daemon MUST bind the endpoint that `SC_ENDPOINT` names.
+- `DaemonConfig.transport` MUST have the type `sc_transport::TransportConfig`.
+- In a build of `sc-transport` with default features, `sc_transport::TransportConfig` MUST implement `serde::Deserialize`.
 
 **MUST NOT statements:**
 
@@ -914,7 +915,9 @@ The lock lives in the instance root and, by default, so does the socket. If
 `sc-runtime` computed either on its own, the lock directory and the socket
 directory could diverge, and a daemon could listen where no CLI looks. One
 resolver in one crate, called by both binaries with the same inputs, is what
-makes the CLI find the daemon. The builder keeps a fixed assembly order, so the
+makes the CLI find the daemon. The daemon honours `SC_ENDPOINT` because a CLI
+started with the same variable resolves to that endpoint, and the two would
+otherwise never meet. The builder keeps a fixed assembly order, so the
 endpoint inputs use a named carrier, and `DaemonConfig` is the only value the project
 hands to `run()`. The decision that one resolver is shared by daemon and CLI
 is [ADR-TRN-0002](../sc-transport/architecture.md); the template-side
