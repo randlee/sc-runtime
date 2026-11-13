@@ -3030,23 +3030,22 @@ Leaving the pairing for each consumer to invent was rejected: a common pattern h
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions:
+- The `sc-runtime` library crate is the Rust library crate whose files are under `crates/sc-runtime`.
+- A consumer repository is an application project generated from the framework.
+- A store holds one database engine's rows and SQL (Structured Query Language) schema.
+- A store adaptor is a crate under `template/crates/store-adaptor*` that moves rows between a local SQLite store and one remote SQL engine.
+- A store-adaptor generator is source code that writes the source files of a store adaptor.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
+Deferral: this record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened. Synchronization between databases is deferred. Command-path code may be written directly as the interim form; no command path is required to be hand-written. A command whose Tcli converts directly to Tsql uses the default conversion without a custom transform. Consumer-side generators are follow-up work running in a consumer repository against delivered sc-runtime; this record does not forbid them. No generator is built in Phase D.
 
-Command-path code may be written directly as the interim form; no command path is required to be hand-written. A command whose Tcli converts directly to Tsql uses the default conversion without a custom transform. Consumer-side generators are follow-up work running in a consuming project against delivered sc-runtime; this requirement does not forbid them. No generator is built in Phase D.
+**MUST NOT statements:**
 
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-The library crate named `sc-runtime` does not generate adaptor code.
-
-**MUST statements:**
-
-- The library crate named `sc-runtime` does not generate adaptor code.
+- The files under `crates/sc-runtime` MUST NOT contain a store-adaptor generator.
 
 ### Rationale
 
-The framework instantiates; each project wires. Published crates own daemon lifecycle, transport, envelopes, and assembly. Generated projects own operations, routes, MCP tools, CLI commands, stores, and schemas (framework charter). the storage plan is a generated adaptor in the consumer repository.
+The framework instantiates; each project wires. Published crates own daemon lifecycle, transport, envelopes, and assembly. Generated projects own operations, routes, MCP tools, CLI commands, stores, and schemas (framework charter). The storage plan is a generated store adaptor in the consumer repository.
 
 ### Success Criteria
 
