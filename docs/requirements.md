@@ -640,7 +640,7 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - The MCP tool MUST call the one async service function that reads or writes the SQLite database.
 - The spike MUST contain a `clap` command-line client.
 - The spike `clap` client MUST connect to the server socket using `reqwest` 0.13 `ClientBuilder::unix_socket(path)`.
-- The spike `clap` client MUST call the REST route.
+- The spike `clap` client MUST issue an HTTP request to the REST route.
 - Against one running spike server process, `curl --unix-socket <path>` calling the REST route MUST reach the one async SQLite service function.
 - Against one running spike server process, the `clap` client MUST reach the one async SQLite service function.
 - Against one running spike server process, an MCP `tools/call` request sent by an MCP client to `/mcp` MUST reach the one async SQLite service function.
