@@ -1026,38 +1026,34 @@ libraries, and would be code every project has to learn.
 
 ### Requirement Statement
 
-A crate is in the dependency tree of `sc-runtime` when `sc-runtime` depends on it directly or transitively.
+Definitions:
 
-- It receives a `&DaemonConfig` that the project has already loaded.
-- Honouring the `SC_ENDPOINT` endpoint override by way of the `sc-transport`
-  endpoint resolver is not loading configuration and is required
-  ([REQ-RT-0008](requirements.md)). No other environment variable may be
-  read.
+- The dependency tree of `sc-runtime` is every package that `cargo tree -p sc-runtime -e normal --prefix none` prints.
+- `sc-observability` is the logging runtime crate; `sc-observability-otlp` is its OpenTelemetry export crate; `sc-observability-types` is the types-only crate of the same family.
+- Runtime source is the Rust code under `crates/sc-runtime/src`, excluding `#[cfg(test)]` code.
+- Initialising logging means constructing, flushing or shutting down a logger or a log sink.
+- Loading configuration means building a configuration value by reading a config file, by reading an environment variable or by calling `sc_config::load`.
+- A config file is a file whose contents supply configuration values to the daemon.
 
-The only observability-related crate permitted in its dependency tree is
-`sc-observability-types`. It is a direct dependency used only for the
-injected canonical logger contract; the full runtime and OTel exporter remain
-forbidden. The direct-depth cargo tree must contain the types crate and no
-full-runtime line.
+Context: `sc-runtime` receives a `&DaemonConfig` that the project's `main.rs` has already loaded. `run` calls `sc_transport::resolve_endpoint_from_env`, which reads the `SC_ENDPOINT` endpoint override in `sc-transport`; [REQ-RT-0008](requirements.md) requires this call, and it is not loading configuration by runtime source. `sc-observability-types` is a direct dependency used only for the injected canonical logger contract. `sqlx`, `sc-observability` and `sc-observability-otlp` are not workspace members, and sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so `forbidden_edges` does not name them and `cargo tree` checks them. The repo-level owner of the forbidden edges of all workspace library crates is [REQ-RUN-0005](../requirements.md).
 
-`sqlx`, `sc-observability`, and `sc-observability-otlp` are not workspace
-members. sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so
-those names are not `forbidden_edges` entries. `cargo tree` enforces them.
-The repo-level owner of the forbidden edges of all workspace library crates is
-[REQ-RUN-0005](../requirements.md).
+**MUST statements:**
+
+- The output of `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` MUST contain a line beginning `sc-observability-types `.
 
 **MUST NOT statements:**
 
-- `sqlx` MUST NOT be in the dependency tree of `sc-runtime`.
-- The `sc-runtime` dependency tree MUST NOT contain a crate whose name begins `sqlx-`.
-- `sc-observability` MUST NOT be in the dependency tree of `sc-runtime`.
-- `sc-observability-otlp` MUST NOT be in the dependency tree of `sc-runtime`.
-- `sc-runtime` MUST NOT initialise logging.
-- `sc-runtime` MUST NOT re-export `sc-observability`.
-- The public API of `sc-runtime` MUST NOT re-export `sc-observability-otlp`.
-- `sc-runtime` MUST NOT load configuration.
-- `sc-runtime` MUST NOT read a config file.
-- `sc-runtime` MUST NOT call `sc_config::load`.
+- The dependency tree of `sc-runtime` MUST NOT contain `sqlx`.
+- The dependency tree of `sc-runtime` MUST NOT contain a crate whose name begins `sqlx-`.
+- The dependency tree of `sc-runtime` MUST NOT contain `sc-observability`.
+- The dependency tree of `sc-runtime` MUST NOT contain `sc-observability-otlp`.
+- Runtime source MUST NOT initialise logging.
+- Runtime source MUST NOT contain a `pub use` item whose path has the first segment `sc_observability`.
+- Runtime source MUST NOT contain a `pub use` item whose path has the first segment `sc_observability_otlp`.
+- Runtime source MUST NOT load configuration.
+- Runtime source MUST NOT read a config file.
+- Runtime source MUST NOT call `sc_config::load`.
+- Runtime source MUST NOT read an environment variable.
 
 ### Rationale
 
