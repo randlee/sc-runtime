@@ -43,7 +43,7 @@ pair, not only sc-runtime ones.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint. A daemon binary is an application server executable. The endpoint resolver determines the Unix domain socket path or TCP socket address at which that daemon listens. The explicit-input form is `resolve_endpoint`; the convenience form is `resolve_endpoint_from_env`. The source table is headed Order, Source, How the value reaches the resolver. The platform table is headed Platform, Default endpoint. An endpoint is an `Endpoint::Uds(PathBuf)` or `Endpoint::Tcp(SocketAddr)` value.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint. A daemon binary is an application server executable. The endpoint resolver determines the Unix domain socket path or TCP socket address at which that daemon listens. The explicit-input form is `resolve_endpoint`; the convenience form is `resolve_endpoint_from_env`. The source table is headed Order, Source, How the value reaches the resolver. The platform table is headed Platform, Default endpoint. An endpoint is an `Endpoint::Uds(PathBuf)` or `Endpoint::Tcp(SocketAddr)` value. A source supplies a value when the caller passes a value for it rather than "absent"; the platform default always supplies a value. The first supplying source is the lowest-numbered source in the source table that supplies a value.
 
 In the crate's public-surface sketch these are `Endpoint::Uds(PathBuf)` and `Endpoint::Tcp(SocketAddr)`, produced by `resolve_endpoint(...)`.
 
@@ -112,7 +112,7 @@ not decide that.
 - A daemon binary MUST call that resolver to learn where the daemon listens.
 - A CLI binary MUST call that resolver to learn where the daemon listens.
 - The resolver's result MUST be one of exactly two cases: a Unix domain socket (UDS) path, or a TCP socket address.
-- The resolver MUST use the first source, in the order of the source table, that supplies a value.
+- The resolver MUST use the value of the first supplying source.
 - The resolver MUST accept the `SC_ENDPOINT` value as an explicit input, so that a caller or a test can supply it without changing the process environment.
 - The convenience form MUST read the variable with `std::env::var_os("SC_ENDPOINT")`.
 - The convenience form MUST then call the explicit-input form.
