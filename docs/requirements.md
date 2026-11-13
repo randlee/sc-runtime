@@ -3861,7 +3861,7 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process, which the driver does with `subprocess.run`.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3883,8 +3883,8 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 - Every generation call MUST pass `stdin=subprocess.DEVNULL`.
 - The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--template-values-file`.
 - The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--silent`.
-- When `SC_COMPOSE` is set, `scripts/new_project.py` MUST start the file named by `SC_COMPOSE` as sc-compose.
-- When `SC_COMPOSE` is unset, `scripts/new_project.py` MUST start the `sc-compose` found on `PATH` as sc-compose.
+- When `SC_COMPOSE` is set, the sc-compose program that the driver starts MUST be the file named by `SC_COMPOSE`.
+- When `SC_COMPOSE` is unset, the sc-compose program that the driver starts MUST be the first executable named `sc-compose` on `PATH`.
 - When sc-compose is missing, `just new <dest>` MUST exit with a non-zero status.
 - When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `sc-compose`.
 - When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `SC_COMPOSE`.
@@ -3895,7 +3895,7 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 - When sc-compose is missing, `just new <dest>` MUST NOT start `cargo generate`.
 - `scripts/new_project.py` MUST NOT contain code that reads standard input.
 - When `--var-file` is given, `just new <dest>` MUST NOT write a prompt.
-- `just new <dest> --var-file <answers file>` MUST NOT start the wizard.
+- When `--var-file` is given, `just new <dest>` MUST NOT start the wizard.
 - `scripts/new_project.py` MUST NOT contain code that searches for the `wyvern` executable.
 - On a machine with no `wyvern` executable, `just new <dest> --var-file <answers file>` MUST NOT exit with a non-zero status because `wyvern` is absent.
 - `scripts/new_project.py` MUST NOT contain an absolute path to `sc-compose`.
