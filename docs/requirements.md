@@ -3267,7 +3267,7 @@ One SQL string executed on both engines was rejected: each engine has its own SQ
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -3282,7 +3282,7 @@ Every store in an application implements the same storage trait, `Storage<T>` (P
 
 ### Rationale
 
-One SQL string executed on both engines was rejected: each engine has its own SQL, and a shared trait, or a different trait per engine, is allowed (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+One SQL string executed on both engines was rejected: each engine has its own SQL, and a shared trait, or a different trait per engine, is allowed (ADR-RUN-0305). The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
 ### Success Criteria
 
 1. A generated pair names one trait that both stores implement.
@@ -3292,7 +3292,7 @@ One SQL string executed on both engines was rejected: each engine has its own SQ
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -3308,7 +3308,7 @@ A generated crate's package name is the project name, a hyphen, and its role. Ev
 
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
 ### Success Criteria
 
 1. Two projects generated with different project names produce no package name in common.
@@ -3318,31 +3318,29 @@ Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The schema crate is the generated <project>-schema package holding database row structs. The types crate holds non-database API types.
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. The schema crate is the generated <project>-schema package holding database row structs. The types crate holds non-database API types.
 
 Row type structs are in the schema crate. The types crate is for non-database types.
 
-The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+Each store crate still holds that engine's SQL, generated from the schema crate. Whether an adaptor exists is deferred with synchronization (PRD section 9) and is not bound here.
 
 **MUST statements:**
 
 - Database row type structs MUST reside in the schema crate.
 - The types crate MUST contain no database row struct.
-- The adaptor MUST depend on `<project>-schema`.
 
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Owner, 2026-10-25 (ADR-RUN-0305 point 13): row type structs are in `<project>-schema`; `<project>-types` is for non-database types.
 ### Success Criteria
 
 1. The schema crate contains the row structs.
 2. The types crate contains no database row struct.
-3. The adaptor crate depends on the schema crate.
 
 ## REQ-RUN-0331: General database commands are a disableable bootstrap
 
