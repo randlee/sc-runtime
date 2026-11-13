@@ -220,29 +220,35 @@ Application-supplied hooks and value adapters let the reusable scheduler execute
 
 ### Requirement Statement
 
-Definitions: CronRow is the schedule-row type owned by sc-cron. Storage<T> is the shared storage trait for row type T. hook_environment is the canonical schedule environment containing dotenv sources and variable operations. ScheduleLimits is the embedding application's schedule-limit configuration. sc-monty is the shared Monty interpreter implementation. Monty dump version identifies the compiled-session serialization version. SHA-256 is the source digest supplied by sc-sha. Cache rows are the sc-cron-owned MontyBlobRow rows; a consumer table is any application table outside these sc-cron schemas.
+Definitions: CronRow is the schedule-row type owned by sc-cron. Storage<T> is the shared storage trait for row type T. hook_environment is the canonical schedule environment containing dotenv sources and variable operations. ScheduleLimits is the embedding application's schedule-limit configuration. sc-monty is the shared Monty interpreter implementation. Monty dump version identifies the compiled-session serialization version. SHA-256 is the source digest supplied by sc-sha. Cache rows are the sc-cron-owned MontyBlobRow rows; a consumer table is any application table outside these sc-cron schemas. CronStorage is sc-cron's policy-checked schedule-storage facade over Storage<CronRow> (ADR-RUN-0021). The schedule-row limit is the row limit in ScheduleLimits. A schedule writer is any sc-cron component that writes a CronRow. A compiled session is the result of sc-monty compiling a schedule row's source; its blob is that result serialized in a MontyBlobRow. A cache entry is one MontyBlobRow. Generic row schemas are the schemas of rows stored through Storage<T>. The configuration schema here is sc-cron's schedule configuration schema.
 
 sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. Generic storage engines contain no cron-specific schema or SQL.
 
 **MUST statements:**
 
-- CronRow MUST be stored through Storage<CronRow> in the application database, using the application SQLite file by default.
-- The schedule row MUST preserve canonical hook_environment data with empty default {"dotenv":[],"variables":{}}.
+- CronRow MUST be stored through Storage<CronRow>.
+- The CronRow table MUST live in one of the application's databases.
+- By default the CronRow table MUST live in the application's SQLite database.
+- CronRow MUST store the schedule's canonical hook_environment unchanged.
+- The default hook_environment MUST be the empty value {"dotenv":[],"variables":{}}.
 - The configured schedule-row limit MUST count enabled and disabled rows.
-- CronStorage MUST reject a new schedule row at the configured limit with CronError::InvalidSpec.
-- Each writer MUST use the embedding application's ScheduleLimits.
-- Schedule writes MUST reject source that sc-monty cannot compile before its first tick.
-- Compiled sessions MUST be captured immediately after compilation, before any hook runs.
+- When the number of schedule rows has reached the schedule-row limit, CronStorage MUST reject a new schedule row with CronError::InvalidSpec.
+- Every schedule writer MUST apply the embedding application's ScheduleLimits.
+- A schedule write whose source sc-monty cannot compile MUST be rejected at the write, before that schedule's first tick.
+- A compiled session's blob MUST be captured immediately after compilation, before any hook of that session runs.
 - Compiled-session blobs MUST use sc-sha SHA-256 of the exact source plus Monty dump version as their key.
 - The schedule-row source MUST remain authoritative for matching a cached blob.
-- Missing, stale, corrupt, unreadable-version or missing-hook cache entries MUST trigger recompilation from source and replacement of the pre-run blob.
-- Cache rows MUST use sc-cron-owned generic row schemas and migrations.
+- A cache entry that is missing, stale, corrupt, of an unreadable version or missing a hook MUST trigger recompilation from the schedule-row source.
+- After that recompilation, the new pre-run blob MUST replace the cache entry.
+- Cache rows MUST use sc-cron-owned generic row schemas.
+- Cache rows MUST use sc-cron-owned migrations.
 
 **MUST NOT statements:**
 
-- sc-cron MUST NOT create a separate cron database by default.
+- sc-cron MUST NOT create a separate cron database.
 - sc-cron MUST NOT persist hook run state in compiled-session blobs.
-- The configuration schema MUST NOT add a separate environment or secret table.
+- The configuration schema MUST NOT add a separate environment table.
+- The configuration schema MUST NOT add a separate secret table.
 - sc-cron MUST NOT migrate unrelated consumer tables.
 
 ### Rationale
