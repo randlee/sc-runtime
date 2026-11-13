@@ -1842,10 +1842,12 @@ example keeps the template thin and leaves little to delete.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: Whole-file selection means determining whether an entire file is present in a generated project for the selected option values. A conditional line is a line containing a Liquid control tag, or a line between an opening control tag and its closing tag. Liquid value substitutions are not conditional lines ([REQ-RUN-0304](requirements.md)).
 
 "v0.1" is the first release of the template. The generation options are
 defined in `wizard/answers.schema.json` and mirrored as placeholders in
@@ -1890,8 +1892,8 @@ removed by sprint `b-8`. Amended 2026-10-25.
 
 **MUST statements:**
 
-- An option MUST include or exclude whole files through a conditional `ignore` list in `template/cargo-generate.toml`.
-- Differences inside a file MUST stay within the limit set by [REQ-RUN-0304](requirements.md): fewer than ten conditional lines across all template `.rs` files.
+- Whole-file selection by generation options MUST use conditional `ignore` lists in `template/cargo-generate.toml`.
+- The total number of conditional lines across all `.rs` files under `template/` MUST be fewer than ten, counted as specified in [REQ-RUN-0304](requirements.md).
 ### Rationale
 
 Phase b generates every layout in [REQ-RUN-0326](requirements.md), including
