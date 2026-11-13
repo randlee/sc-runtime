@@ -2823,7 +2823,7 @@ on the developer's machine ([ADR-RUN-0009](architecture.md)).
 5. One end-to-end run of the real binaries exists and runs only on an
    isolated machine.
 6. This binds the template's commands. A project may write later commands
-   differently, and nothing in the four library crates enforces the shape.
+   differently, and no sc-runtime library crate enforces the shape.
 7. Auto-start ([ADR-RUN-0204](architecture.md)) runs in the command's entry
    point, between the two functions, never inside either of them. The
    rendering function sees `DaemonNotRunning` only when auto-start is
