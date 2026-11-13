@@ -3460,9 +3460,9 @@ Definitions:
 
 **MUST NOT statements:**
 
-- Using the request types in a core build with cron disabled MUST NOT add a scheduler dependency.
-- Using the request types in a generated build with cron disabled MUST NOT add a scheduler dependency.
-- Using the sc-cron-commands request types in a feature-off build MUST NOT add a server dependency.
+- When a core build with cron disabled uses the sc-cron-commands request types, that use MUST NOT add a scheduler dependency to the build.
+- When a generated build with cron disabled uses the sc-cron-commands request types, that use MUST NOT add a scheduler dependency to the build.
+- When a feature-off build uses the sc-cron-commands request types, that use MUST NOT add a server dependency to the build.
 
 
 ### Rationale
