@@ -679,27 +679,31 @@ circular: logging is configured from the values this crate loads.
 
 ### Requirement Statement
 
-`sc-config` provides synchronous start-up configuration. The Phase D deliverable is built
-with no file watcher, no reload and no change notification. Async
+`sc-config` provides synchronous start-up configuration. The Phase D
+deliverable is synchronous and is built with no file watcher, no reload and
+no change notification. These bind the Phase D deliverable only. Async
 configuration and reload are deferred, not forbidden: nothing in this record
 stops a consumer or a later version from adding them, including an async
 API next to the synchronous one
 ([PRD-ENG-5, section 9](../prd/sc-runtime-prd.md)).
 
-This item binds `load` and `Loader::load` in `crates/sc-config/src` for the Phase D deliverable.
+This item binds all code under `crates/sc-config/src` for the Phase D deliverable.
 
-Definitions: A load call is one call to `load` or `Loader::load` in `crates/sc-config/src`. Load work is the file reads, override application and deserialisation that a load call performs. The calling thread is the thread that makes a load call. An async runtime is an executor, such as Tokio, that polls futures. A configuration file is `default.json` or `local.json` in the configuration directory passed to the load call. A configuration source is a configuration file or an environment variable that a load call reads.
+Definitions: The Phase D deliverable is the code under `crates/sc-config/src` as delivered by Phase D of the plan in `docs/plans/phase-d/phase-d-plan.md`. A public function or method is a function or method declared `pub` that a caller outside the `sc-config` crate can call. A load call is one call to `load` or `Loader::load` in `crates/sc-config/src`. Load work is the file reads, override application and deserialisation that a load call performs. The calling thread is the thread that makes a load call. A configuration file is `default.json` or `local.json` in the configuration directory passed to the load call. A configuration source is a configuration file or an environment variable that a load call reads. A synchronous function is a function that is not an `async fn` and whose return type is not a `Future`. Change notification is any callback, channel or subscription through which `sc-config` tells a caller that a configuration source has changed. A reload is a read of a configuration source, after a load call has returned, that is made without a new load call.
 
 **MUST statements:**
 
-- A load call made on a thread with no async runtime running MUST return `Ok` for a configuration directory holding a valid `default.json`.
-- The load work of a load call in `crates/sc-config/src` MUST run on the calling thread.
+- Every public function and method in `crates/sc-config/src` in the Phase D deliverable MUST be a synchronous function.
+- The load work of a load call MUST run on the calling thread.
 - When a configuration source changes after a load call returns, the value returned by the load call MUST keep the contents it had at return.
 
 **MUST NOT statements:**
 
-- A load call MUST NOT spawn a thread.
-- A load call MUST NOT spawn an async task.
+- Code in `crates/sc-config/src` in the Phase D deliverable MUST NOT watch a configuration file for changes.
+- Code in `crates/sc-config/src` in the Phase D deliverable MUST NOT perform a reload.
+- Code in `crates/sc-config/src` in the Phase D deliverable MUST NOT offer change notification.
+- Code in `crates/sc-config/src` in the Phase D deliverable MUST NOT spawn a thread.
+- Code in `crates/sc-config/src` in the Phase D deliverable MUST NOT spawn an async task.
 
 ### Rationale
 
@@ -713,14 +717,16 @@ neither forbids them nor binds a mechanism for them.
 
 ### Success Criteria
 
-1. Inspection of the signatures of `load` and `Loader::load` in
-   `crates/sc-config/src` finds that neither is an `async fn` and that each
-   returns `Result<T, ConfigError>`, not a `Future`.
-2. Inspection of `load`, `Loader::load` and every function they call in
-   `crates/sc-config/src` finds no `thread::spawn`, `thread::Builder`,
-   `tokio::spawn` or other task spawn.
-3. A test calls `Loader::load` from a plain `#[test]` function with no async
-   runtime and asserts it returns `Ok`.
+1. Inspection of every public function and method in `crates/sc-config/src`
+   finds that none is an `async fn` and none returns a `Future`; `load` and
+   `Loader::load` each return `Result<T, ConfigError>`.
+2. Inspection of all code in `crates/sc-config/src` finds no
+   `thread::spawn`, `thread::Builder`, `tokio::spawn` or other thread or
+   task spawn.
+3. Inspection of `crates/sc-config/src` and `crates/sc-config/Cargo.toml`
+   finds no file-watcher dependency such as `notify`, no code that watches a
+   configuration file, no code that reloads configuration after a load call
+   has returned, and no public callback, channel or subscription API.
 4. A test loads, then rewrites `default.json` with a different value, and
    asserts the value returned by the first load is unchanged and that a second
    explicit load returns the new value.
