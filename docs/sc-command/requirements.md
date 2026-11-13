@@ -406,13 +406,16 @@ HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. T
 
 The crate references axum when its build depends on the `axum` crate or when its source names `axum` outside an item or module gated by `#[cfg(feature = "server")]`. In `crates/sc-command/Cargo.toml`, `axum` is an optional dependency enabled only by the `server` feature.
 
+Definitions: `envelope` is the `Envelope<T>` value on which `into_response` is called. A serialisation failure is an error returned by the `Serialize` implementation of `T` while `into_response` serialises `envelope`. The serialisation failure envelope is a failure envelope ([REQ-CMD-0001](requirements.md)) whose `error.code` is `ENVELOPE.SERIALIZATION`.
+
 **MUST statements:**
 
-- The response body MUST be the envelope serialised as JSON, identical as a JSON value to `serde_json::to_value(&envelope)`.
+- When no serialisation failure occurs, the response body, parsed as JSON, MUST equal `serde_json::to_value(&envelope)`.
 - The response MUST carry the header `Content-Type: application/json`.
 - The HTTP status MUST be the one that the Envelope to HTTP status table in this record gives for the envelope.
-- The status MUST be a pure function of `kind`: two errors with the same `kind` get the same status whatever their `code`.
-- When serialising `T` fails, `into_response` MUST return HTTP 500 with a JSON envelope whose `error.code` is `ENVELOPE.SERIALIZATION`.
+- Two failure envelopes whose `error.kind` values are equal MUST get the same HTTP status, whatever their `error.code` values.
+- When a serialisation failure occurs, the HTTP status of the response from `into_response` MUST be 500.
+- When a serialisation failure occurs, the response body, parsed as JSON, MUST be the serialisation failure envelope.
 
 **MUST NOT statements:**
 
