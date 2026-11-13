@@ -552,41 +552,19 @@ Owner (ANC-031): "sc-compose and atm crates should be blocked from any productio
 
 ### Requirement Statement
 
-Definitions: Allowlisted daemon values are process variables whose names are permitted by HookEnvironmentHost.allow_process. A non-Unicode value cannot be decoded as Unicode text. Diagnostic surfaces are configuration Debug, scheduled errors, recovery text, RunOutcome, tracing, canonical events and persisted stop reasons; trusted direct HookOutput fields remain the named exception. Stable metadata is fixed non-provider metadata and error/recovery text, rather than values copied from environment sources. A store connection is a database connection held for a storage operation.
+Definitions: Allowlisted daemon values are process variables whose names are permitted by HookEnvironmentHost.allow_process. A non-Unicode value cannot be decoded as Unicode text. Diagnostic surfaces are configuration Debug, scheduled errors, recovery text, RunOutcome, tracing, canonical events and persisted stop reasons; trusted direct HookOutput fields remain the named exception. Stable metadata is fixed non-provider metadata and error/recovery text, rather than values copied from environment sources. A store connection is a database connection held for a storage operation. Monty is the embedded interpreter that runs sc-cron Monty hooks. ATM is the external `atm` executable. The atm_run adapter is the opt-in Monty host function that runs the ATM executable as a child process. A resolved environment snapshot is the immutable name-to-value map built once per occurrence from daemon values, ordered dotenv files and Set/Reference/Clear entries. An authorized dotenv path is a path whose symlink-resolved canonical form equals an administrator exact-file allowlist entry or lies under an administrator root allowlist entry. A failed reference-provider result is a missing, denied, unavailable or invalid result from EnvironmentReferenceResolver. A synchronous lock is a blocking lock guard such as a `std::sync::Mutex` guard. Resolution is the asynchronous construction of a resolved environment snapshot in `crates/sc-cron/src/environment/resolve.rs`. An await-spanning guard is a store connection or synchronous lock guard that is still in scope at an `.await` expression. A hook executable is the Python, sc-compose or ATM executable that a hook or host adapter starts. An environment value is a Set value, resolved value, dotenv file content or reference string.
 
-Environment names use `[A-Za-z_][A-Za-z0-9_]*`. Construction, persistence,
-row decode, and execution enforce 256 bytes per name, 16 `.env` sources, 128 entries, 16 KiB per stored/resolved
-value, 4 KiB per reference locator/path, a 32,000-byte encoded final block, a
-256 KiB canonical document, and a 1 MiB dotenv file. Names,
-paths, values, and references are UTF-8 and NUL-free; ASCII case-fold name
-collisions are rejected on every platform. An allowlisted non-Unicode daemon
-value fails as `ENV_PROCESS_INVALID`. `.env` files are bounded UTF-8 data
-files: no interpolation, command substitution, duplicate names, or NUL.
-Canonical path authorization follows symlinks before checking an exact
-file/root policy; authorization precedes missing classification. Lookup and
-enumeration preserve spelling on Unix; Windows runtime keys are uppercased for
-both Python and Monty and lookup is case-insensitive, while stored config keeps
-the original spelling. Python, sc-compose, and ATM executables are resolved before
-child `PATH` is cleared: basenames use daemon launch `PATH`/Windows `PATHEXT`,
-absolute paths are retained, and relative paths with components use the
-daemon current directory captured when hook/host configuration is built.
-
-Set values, resolved values, file contents, and reference strings are never
-copied from those sources into configuration `Debug`, scheduled errors,
-recovery text, `RunOutcome`, tracing, canonical events, or persisted stop
-reasons. Stable metadata that happens to equal a short value is not rewritten.
-`ChildEnv`, `ChildSpec`, and `PythonHook` use value-free custom `Debug` just
-like the environment model. Direct `HookOutput` field access is the sole
-trusted raw-output exception. Resolution performs
-file I/O off the async hot path, holds no store connection or synchronous lock
-across await, and calls no `std::env::set_var` or `std::env::remove_var`.
+Construction, persistence, row decode, and execution enforce 256 bytes per
+name, 16 `.env` sources, 128 entries, 16 KiB per stored/resolved value, 4 KiB
+per reference locator/path, a 32,000-byte encoded final block, a 256 KiB
+canonical document, and a 1 MiB dotenv file.
 
 The implemented registry builder uses `register(name, handler)`,
 `with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
 returning `Result<MontyHostRegistry, CronError>`. The generated development
 example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
-The b-16 child environment is explicitly empty; the resolved-snapshot text
-above is the b-17 successor contract.
+The b-16 child environment is explicitly empty; the resolved environment
+snapshot contract in this record is the b-17 successor contract.
 
 Shared hook environment implementation (B17):
 
@@ -641,32 +619,41 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 - Environment references MUST be NUL-free.
 - ASCII case-fold name collisions MUST be rejected on every platform.
 - An allowlisted non-Unicode daemon value MUST fail as `ENV_PROCESS_INVALID`.
-- Dotenv files MUST be bounded UTF-8 data.
-- Canonical file authorization MUST follow symlinks before checking exact-file or root policy.
-- Authorization MUST precede missing-file classification.
-- Unix lookup and enumeration MUST preserve variable spelling.
-- Windows runtime keys MUST be uppercased for Python.
-- Windows runtime keys MUST be uppercased for Monty.
-- Stored configuration MUST preserve variable spelling.
+- A dotenv file larger than 1 MiB MUST fail as `ENV_FILE_INVALID`.
+- A dotenv file that is not valid UTF-8 MUST fail as `ENV_FILE_INVALID`.
+- A dotenv source whose path is not an authorized dotenv path MUST fail as `ENV_FILE_DENIED`.
+- A missing dotenv file whose path is not an authorized dotenv path MUST fail as `ENV_FILE_DENIED`.
+- On Unix, resolved environment snapshot names MUST keep the letter case of the configured variable name.
+- On Windows, resolved environment snapshot names passed to Python hooks MUST be uppercase.
+- On Windows, resolved environment snapshot names passed to Monty hooks MUST be uppercase.
+- Stored configuration MUST keep the letter case of each configured variable name.
 - Windows lookup MUST be case-insensitive.
-- Child executable paths MUST be resolved before the child PATH is cleared, using the resolution rules above.
-- ChildEnv MUST use value-free Debug formatting.
-- ChildSpec MUST use value-free Debug formatting.
-- PythonHook MUST use value-free Debug formatting.
-- Resolution MUST perform file I/O off the async hot path.
-- Missing, denied, unavailable and invalid reference-provider results MUST use value-free `ENV_REFERENCE` diagnostics.
+- A hook executable given as a basename MUST resolve to an absolute path through the daemon launch `PATH`.
+- On Windows, a hook executable given as a basename MUST resolve with the extensions in the daemon launch `PATHEXT`.
+- A hook executable given as an absolute path MUST be used unchanged.
+- A hook executable given as a relative path with directory components MUST resolve against the daemon current directory captured when hook or host configuration is built.
+- The `Debug` output of a `ChildEnv` MUST contain no environment value.
+- The `Debug` output of a `ChildSpec` MUST contain no environment value.
+- The `Debug` output of a `PythonHook` MUST contain no environment value.
+- Resolution MUST perform dotenv file reads inside `tokio::task::spawn_blocking`.
+- Every failed reference-provider result MUST be reported with error code `ENV_REFERENCE`.
+- `ENV_REFERENCE` diagnostic text MUST contain no environment value.
 - Stop MUST use the same resolved environment snapshot.
 - Tick MUST use the same resolved environment snapshot.
 - Monty initialization MUST use the same resolved environment snapshot.
 - The sc_compose_run adapter MUST use the same resolved environment snapshot.
-- The atm_run adapter MUST use the same resolved environment snapshot.
-- The first-release schema version 1 MUST use canonical hook_environment default {"dotenv":[],"variables":{}}.
-- Incompatible unreleased development tables MUST be rejected without migration or overwrite.
+- The atm_run adapter MUST receive the resolved environment snapshot of its occurrence.
+- In SQLite schema version 1, a schedule row inserted without a `hook_environment` value MUST read back `hook_environment` as `{"dotenv":[],"variables":{}}`.
+- Opening an existing sc-cron SQLite table that fails the schema version 1 semantic check MUST fail with `StoreErrorKind::SchemaMismatch`.
+- The dotenv parser MUST reject a value that contains a backtick with `ENV_FILE_INVALID`.
+- The dotenv parser MUST reject a value that contains `$(` with `ENV_FILE_INVALID`.
+- The dotenv parser MUST reject a value that contains `$` followed by a letter, `_` or `{` with `ENV_FILE_INVALID`.
 
 **MUST NOT statements:**
 
-- Dotenv files MUST NOT contain interpolation.
-- Dotenv files MUST NOT contain command substitution.
+- The `PATH` variable in the resolved environment snapshot MUST NOT change the resolved hook executable path.
+- Opening an existing sc-cron SQLite table that fails the schema version 1 semantic check MUST NOT change the schema of the failing table.
+- Opening an existing sc-cron SQLite table that fails the schema version 1 semantic check MUST NOT change the rows of the failing table.
 - Dotenv files MUST NOT contain duplicate names.
 - Dotenv files MUST NOT contain NUL.
 - Set values MUST NOT be copied into the diagnostic surfaces listed above, subject to the named trusted HookOutput exception.
@@ -674,8 +661,8 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 - File contents MUST NOT be copied into the diagnostic surfaces listed above, subject to the named trusted HookOutput exception.
 - Reference strings MUST NOT be copied into the diagnostic surfaces listed above, subject to the named trusted HookOutput exception.
 - Stable metadata MUST NOT be rewritten by resolved-value redaction, including when it coincides with a resolved value.
-- Resolution MUST NOT hold a store connection across await.
-- Resolution MUST NOT hold a synchronous lock across await.
+- Resolution MUST NOT create an await-spanning store connection.
+- Resolution MUST NOT create an await-spanning synchronous lock guard.
 - Resolution MUST NOT call std::env::set_var.
 - Resolution MUST NOT call std::env::remove_var.
 
