@@ -622,7 +622,7 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - That `StreamableHttpService` MUST use stateless mode.
 - The spike server MUST open a SQLite database through `sqlx` 0.9 with the `sqlite` feature.
 - The spike server MUST pass a Unix domain socket listener (`tokio::net::UnixListener`) to `axum::serve`.
-- The spike MUST contain exactly one asynchronous service function that accesses SQLite.
+- Every SQLite query in the spike MUST be run by the same single asynchronous service function.
 - The REST handler MUST call the one async service function that reads or writes the SQLite database.
 - The MCP tool MUST call the one async service function that reads or writes the SQLite database.
 - The spike MUST contain a `clap` command-line client.
