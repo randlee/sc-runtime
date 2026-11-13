@@ -159,7 +159,7 @@ equality, so key order is irrelevant.
 
 ### Requirement Statement
 
-Definitions: Silent restructuring means changing the document shape implicitly during the override key-path walk instead of applying the stated replacement or error rule. The prefix is the app name with ASCII lower-case letters upper-cased and `-` replaced by `_`, followed by `__`. A segment is one piece of the variable name after that prefix, split by `str::split("__")`. The key path `k1, k2, ..., kn` is the sequence of segments converted to ASCII lower case. The key-path walk starts at the document root and moves through keys `k1` to `k(n-1)` in order. The override value is the parsed JSON value, or the unchanged value as a JSON string when parsing fails.
+Definitions: The document is the `serde_json::Value` that overrides are applied to. Silent restructuring means changing the document shape implicitly during the override key-path walk instead of applying the stated replacement or error rule. A variable's encoded name is the byte sequence that `OsStr::as_encoded_bytes` returns for the variable's name. The upper-snake form of an app name is the name with every ASCII lower-case letter upper-cased and every `-` replaced by `_`. The prefix is the upper-snake form of the app name followed by `__`. A segment is one piece of the variable name after that prefix, split by `str::split("__")`. The key path `k1, k2, ..., kn` is the sequence of segments converted to ASCII lower case. The key-path walk starts at the document root and moves through keys `k1` to `k(n-1)` in order. The current value is the value the walk is at: the document root at the start, then the value at each key the walk moves through. The target object is the current value after the walk has moved through `k(n-1)`, or the document root when `n` is 1. The override value is the parsed JSON value, or the unchanged value as a JSON string when parsing fails.
 
 This item covers the environment layer of the `sc-config` crate
 (`crates/sc-config`). The design fixes only that JSON config files have
@@ -265,18 +265,18 @@ cannot be descended into.
 
 **MUST statements:**
 
-- The prefix MUST be the app name with every ASCII lower-case letter upper-cased and every `-` replaced by `_`, followed by `__` (two underscores).
-- A variable MUST be treated as an override if and only if its encoded name starts with that prefix.
+- The prefix MUST be the upper-snake form of the app name followed by `__` (two underscores).
+- A variable whose encoded name starts with the prefix MUST be treated as an override.
 - Every variable whose name does not start with the prefix MUST be ignored, whatever its value.
 - The part of the variable name after the prefix MUST be split into segments exactly as Rust `str::split("__")` splits it.
 - Each resulting segment MUST be converted to ASCII lower case.
-- The variable's value MUST be parsed with `serde_json::from_str::<serde_json::Value>`.
+- `crates/sc-config/src/load.rs` MUST parse the variable's value with `serde_json::from_str::<serde_json::Value>`.
 - If parsing succeeds, the parsed JSON value MUST be used.
 - If parsing fails, the value MUST be used unchanged as a JSON string.
-- Starting at the document root, for each of `k1` to `k(n-1)`: if the current value is an object that lacks the key, an empty object MUST be created at that key.
-- If the current value at any step of that walk, including the root, is not an object (it is a string, number, boolean, array or `null`), the load MUST fail with the `ConfigError` variant for an override that cannot be applied ([REQ-CFG-0004](requirements.md)).
-- At the last object in the key-path walk, key `kn` MUST be set to the override value.
-- Overrides MUST take precedence over `config/default.json` and `config/local.json`.
+- When the current value is an object that lacks the next key of the key-path walk, an empty object MUST be inserted at that key.
+- When the current value of the key-path walk is not an object, the load MUST return `Err(ConfigError::Override { variable })` ([REQ-CFG-0004](requirements.md)).
+- In the target object, key `kn` MUST be set to the override value.
+- For a key path that both an override and the merged value of `config/default.json` and `config/local.json` set, the loaded value MUST be the override value.
 
 **MUST NOT statements:**
 
