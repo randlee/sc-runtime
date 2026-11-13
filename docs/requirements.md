@@ -669,7 +669,7 @@ four crates and a template are built on the assumption.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. ADR means architecture decision record. MCP means Model Context Protocol. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository.
+Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository.
 
 The sc-runtime design relies on four facts it has not verified.
 
@@ -717,25 +717,32 @@ not used.
 
 **MUST statements:**
 
-- For evidence row V1, the spike sprint a-1 MUST record whether the row is true.
-- If row V1 is false, sprint a-1 MUST record what was found instead.
-- For evidence row V2, the spike sprint a-1 MUST record whether the row is true.
-- If row V2 is false, sprint a-1 MUST record what was found instead.
-- For evidence row V3a, the spike sprint a-1 MUST record whether the row is true.
-- If row V3a is false, sprint a-1 MUST record what was found instead.
-- For evidence row V3b, the spike sprint a-1 MUST record whether the row is true.
-- If row V3b is false, sprint a-1 MUST record what was found instead.
-- For evidence row V4a, the spike sprint a-1 MUST record whether the row is true.
-- If row V4a is false, sprint a-1 MUST record what was found instead.
-- For evidence row V4b, the spike sprint a-1 MUST record whether the row is true.
-- If row V4b is false, sprint a-1 MUST record what was found instead.
-- The former fifth verification fact, how to dump MCP `tools/list` for surface snapshots, MUST be recorded as closed.
-- The spike sprint MUST also record the exact version used for each of `axum`, `utoipa`, `utoipa-axum`, `rmcp`, `sqlx`, `reqwest` and `cargo-generate`.
-- All evidence and version pins MUST be written into `docs/architecture.md`.
+- Sprint a-1 MUST record whether evidence row V1 is true.
+- If evidence row V1 is false, sprint a-1 MUST record what was found instead.
+- Sprint a-1 MUST record whether evidence row V2 is true.
+- If evidence row V2 is false, sprint a-1 MUST record what was found instead.
+- Sprint a-1 MUST record whether evidence row V3a is true.
+- If evidence row V3a is false, sprint a-1 MUST record what was found instead.
+- Sprint a-1 MUST record whether evidence row V3b is true.
+- If evidence row V3b is false, sprint a-1 MUST record what was found instead.
+- Sprint a-1 MUST record whether evidence row V4a is true.
+- If evidence row V4a is false, sprint a-1 MUST record what was found instead.
+- Sprint a-1 MUST record whether evidence row V4b is true.
+- If evidence row V4b is false, sprint a-1 MUST record what was found instead.
+- The surface snapshot fact MUST be recorded as closed.
+- Sprint a-1 MUST record the exact version used for `axum`.
+- Sprint a-1 MUST record the exact version used for `utoipa`.
+- Sprint a-1 MUST record the exact version used for `utoipa-axum`.
+- Sprint a-1 MUST record the exact version used for `rmcp`.
+- Sprint a-1 MUST record the exact version used for `sqlx`.
+- Sprint a-1 MUST record the exact version used for `reqwest`.
+- Sprint a-1 MUST record the exact version used for `cargo-generate`.
+- All evidence MUST be written into `docs/architecture.md`.
+- All version pins MUST be written into `docs/architecture.md`.
 
 **MUST NOT statements:**
 
-- That former fifth fact MUST NOT be investigated.
+- The surface snapshot fact MUST NOT be investigated.
 
 ### Rationale
 
