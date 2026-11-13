@@ -4632,7 +4632,7 @@ The shared command path is the one shared write path and one shared read path of
 
 Code generation for the command pattern, including an sc-compose or syn-based generator, a procedural or declarative macro, and a generated Rust HTTP client, is undecided (PRD §9): not built and not forbidden. Phase D builds no crate with `proc-macro = true` and no operation-defining declarative macro; this is Phase D scope, checked by success criteria 1 and 4, and forbids neither.
 
-Phase D adds no command or operation registry, portable raw-SQL query layer or extra library-hiding wrapper in `crates/` or `template/`. The shared command path, `Storage<T>` and its SQLite, Postgres and MySQL implementations remain required. This describes what is built in Phase D; it does not forbid a later consumer option and creates no work to implement or test one.
+Phase D adds no command or operation registry, portable query layer or extra library-hiding wrapper in `crates/` or `template/`. The shared command path, `Storage<T>` and its SQLite, Postgres and MySQL implementations remain required. This describes what is built in Phase D; it does not forbid a later consumer option and creates no work to implement or test one.
 
 The Job/Crate table lists the chosen crates:
 
@@ -4667,7 +4667,7 @@ is recorded in [ADR-RUN-0008](architecture.md).
 2. Phase D scope check: the `arch-qa` architecture review checks the public API of each library
    crate in `crates/` against [ADR-RUN-0001](architecture.md), which states
    that the framework builds the parts and the project wires them in ordinary
-   Rust. It reports no extra registry, portable raw-SQL layer, library-hiding facade
+   Rust. It reports no extra registry, portable query layer, library-hiding facade
    or code generator built in Phase D. The shared command path and required
    typed storage engines are not rejected by this check. It imposes no
    implementation, testing or prohibition on later consumer options.
