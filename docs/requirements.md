@@ -3397,7 +3397,7 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 - In a default build of a store layout, the CLI command `widget delete <id>` MUST perform its delete by calling the backend delete operation with table `widgets`.
 - In a default build of a store layout, the MCP tool `widget_delete` MUST perform its delete by calling the backend delete operation with table `widgets`.
 - In a default build of a store layout, the HTTP route `POST /ops/widget.delete` MUST perform its delete by calling the backend delete operation with table `widgets`.
-- In a default build of a no-database layout, the generated CLI MUST reject each general database command as unknown.
+- In a default build of a no-database layout, when the generated CLI is run with a general database command, the CLI MUST reject that command as unknown.
 
 **MUST NOT statements:**
 
