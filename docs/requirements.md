@@ -688,7 +688,7 @@ four crates and a template are built on the assumption.
 
 ---
 
-## REQ-RUN-0102: Spike answers the four unverified facts and pins versions
+## REQ-RUN-0102: Spike answers the four unverified facts and records tested versions
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -698,7 +698,7 @@ four crates and a template are built on the assumption.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository. To record the exact version used for a crate means to write the `major.minor.patch` version the spike built with into `docs/architecture.md`. The spike evidence for an evidence row is everything sprint a-1 records about that row. A version pin is the exact version recorded for one of the crates named in the MUST statements.
+Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository. To record the exact version used for a crate means to write the `major.minor.patch` version the spike built with into `docs/architecture.md`. The spike evidence for an evidence row is the answer sprint a-1 recorded for that row (true, or false with the finding) together with the evidence named in that row's Evidence required column. The finding for an evidence row is what sprint a-1 observed in place of that row's fact. A tested version is the exact version recorded for one of the crates named in the MUST statements: the version sprint a-1 built and tested with. For `axum`, `utoipa`, `utoipa-axum`, `rmcp`, `sqlx` and `reqwest`, a tested version is the minimum version tested with; it does not pin or cap the version a consumer uses (PRD-ENG-9). For `cargo-generate`, the tested version is the version of the generation tool that sprint a-1 ran.
 
 The sc-runtime design relies on four facts it has not verified.
 
@@ -721,7 +721,7 @@ nothing but unverified facts. Sprint a-1 made both `Active`:
 
 | ADR | Holds | Rests on rows |
 |---|---|---|
-| [ADR-RUN-0203](architecture.md) | that the pinned `rmcp`, `utoipa-axum` and `axum` versions coexist, and that one struct is both the `Parameters<T>` input and a `ToSchema` type; the version pins | V1, V2 |
+| [ADR-RUN-0203](architecture.md) | that the tested `rmcp`, `utoipa-axum` and `axum` versions coexist, and that one struct is both the `Parameters<T>` input and a `ToSchema` type; the tested versions of the libraries | V1, V2 |
 | [ADR-RUN-0402](architecture.md) | the `cargo-generate` mechanics: conditional `ignore`, `exclude`, the non-interactive values file, the `cargo-generate.toml` syntax and the `cargo-generate` version pin | V3a, V3b, V4a, V4b |
 
 Sprint a-1 moved both from `Proposed` to `Active`. Every row was true, so the
@@ -733,7 +733,7 @@ The shape decisions do not wait for the spike and are already `Active`:
 [ADR-RUN-0202](architecture.md) (REST, OpenAPI and MCP on one `axum` router
 and one listener) and [ADR-RUN-0401](architecture.md) (the generation
 pipeline and the `answers.schema.json` contract). If V1 or V2 is false, the
-pinned versions change, not the one-router shape.
+tested versions change, not the one-router shape.
 
 Decided in this document: the sc-runtime design's Phase 0 exit gate "ADR
 amendments written and accepted" is met by
@@ -747,17 +747,17 @@ not used.
 **MUST statements:**
 
 - Sprint a-1 MUST record whether evidence row V1 is true.
-- If evidence row V1 is false, sprint a-1 MUST record what was found instead.
+- If evidence row V1 is false, sprint a-1 MUST record the finding for evidence row V1.
 - Sprint a-1 MUST record whether evidence row V2 is true.
-- If evidence row V2 is false, sprint a-1 MUST record what was found instead.
+- If evidence row V2 is false, sprint a-1 MUST record the finding for evidence row V2.
 - Sprint a-1 MUST record whether evidence row V3a is true.
-- If evidence row V3a is false, sprint a-1 MUST record what was found instead.
+- If evidence row V3a is false, sprint a-1 MUST record the finding for evidence row V3a.
 - Sprint a-1 MUST record whether evidence row V3b is true.
-- If evidence row V3b is false, sprint a-1 MUST record what was found instead.
+- If evidence row V3b is false, sprint a-1 MUST record the finding for evidence row V3b.
 - Sprint a-1 MUST record whether evidence row V4a is true.
-- If evidence row V4a is false, sprint a-1 MUST record what was found instead.
+- If evidence row V4a is false, sprint a-1 MUST record the finding for evidence row V4a.
 - Sprint a-1 MUST record whether evidence row V4b is true.
-- If evidence row V4b is false, sprint a-1 MUST record what was found instead.
+- If evidence row V4b is false, sprint a-1 MUST record the finding for evidence row V4b.
 - The surface snapshot fact MUST be recorded as closed.
 - Sprint a-1 MUST record the exact version used for `axum`.
 - Sprint a-1 MUST record the exact version used for `utoipa`.
@@ -767,7 +767,7 @@ not used.
 - Sprint a-1 MUST record the exact version used for `reqwest`.
 - Sprint a-1 MUST record the exact version used for `cargo-generate`.
 - `docs/architecture.md` MUST contain the spike evidence for every evidence row.
-- `docs/architecture.md` MUST contain every version pin.
+- `docs/architecture.md` MUST contain every tested version.
 
 **MUST NOT statements:**
 
@@ -775,8 +775,8 @@ not used.
 
 ### Rationale
 
-These facts fix the dependency versions every crate uses and the template
-syntax every template file uses. Planning later sprints around a guess would
+These facts fix the minimum dependency versions the crates and the template
+are tested with (PRD-ENG-9) and the template syntax every template file uses. Planning later sprints around a guess would
 turn each wrong guess into rework across four crates and the template, so
 nothing may be planned around them as facts until the spike has answered
 them.
