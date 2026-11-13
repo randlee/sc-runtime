@@ -4740,7 +4740,7 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. Job code is Rust code in `crates/` or `template/` that serves HTTP routes, serves MCP tools, generates OpenAPI, runs SQL, parses CLI arguments, sends HTTP requests or renders the project template. A documented API is a public item shown in the listed crate's rustdoc documentation. A crate override is a REQ, NFR or ADR record in `docs/`, or a sentence added to this record, that names a crate or code other than the listed crate for one job in the Job/Crate table; a crate override takes precedence over the table's crate choice for that one job only.
 
 No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. Phase D builds no generator.
 
@@ -4764,7 +4764,7 @@ The Job/Crate table lists the chosen crates:
 
 **MUST statements:**
 
-- For each job in the Job/Crate table, `crates/` and `template/` MUST reuse the listed crate's capability through its documented API, except where a governing requirement or explicit amendment specifies another implementation.
+- For each job in the Job/Crate table, job code for the job MUST call the listed crate's documented API, unless a crate override names a different crate or code for the job.
 
 ### Rationale
 
