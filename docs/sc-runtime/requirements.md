@@ -902,7 +902,7 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - `sc-runtime` MUST NOT choose a default address.
 - `sc-runtime` MUST NOT choose a default port.
 - `sc-runtime` MUST NOT parse an endpoint string.
-- `sc-runtime` MUST NOT apply a precedence between sources.
+- `sc-runtime` MUST NOT apply a precedence between endpoint sources.
 - The builder MUST NOT have a method for instance-root resolution.
 - The builder MUST NOT have a method for endpoint resolution.
 - `sc-runtime` MUST NOT parse the command line.
