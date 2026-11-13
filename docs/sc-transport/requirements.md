@@ -496,7 +496,9 @@ The caller chooses `T`.
 - For a UDS endpoint it MUST configure it with `reqwest::ClientBuilder::unix_socket(path)`.
 - For a TCP endpoint it MUST use the base URL `http://<ip>:<port>`.
 - `get(path)` MUST send an HTTP `GET` to `path` on that endpoint.
-- `post(path, &body)` MUST send an HTTP `POST` to `path` with `body` serialised as JSON, for any `B: serde::Serialize`.
+- `post(path, &body)` MUST send an HTTP `POST` to `path` on that endpoint.
+- That POST request MUST carry `body` serialised as JSON.
+- `post(path, &body)` MUST accept any `B: serde::Serialize` as the body type.
 - `get(path)` MUST be `async`.
 - `get(path)` MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`.
 - `get(path)` MUST return `Result<T, TransportError>`.

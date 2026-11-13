@@ -81,10 +81,10 @@ original no-sibling boundary.
 - Test doubles MUST use dev-dependencies only.
 - The current local facade MUST be removed during implementation before initial publication.
 - Capability-proven upstream cleanup MUST remove cron -> command.
-- Capability-proven upstream cleanup MUST restore the original no-sibling boundary.
 
 **MUST NOT statements:**
 
+- After capability-proven upstream cleanup, sc-cron MUST NOT depend on another workspace library crate.
 - Existing integration assertions MUST NOT be deleted.
 - Existing integration assertions MUST NOT be weakened.
 - Existing unit assertions MUST NOT be deleted.
@@ -808,12 +808,17 @@ Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 - Existing constructors and legacy store implementations MUST remain source compatible.
 - Custom cooperative providers MUST truthfully declare support.
 - Custom cooperative providers MUST forward the live operation scope.
-- Custom cooperative providers MUST honor the fencing/query/outcome/physical-ownership contract.
+- Custom cooperative providers MUST honor the fencing contract.
+- Custom cooperative providers MUST honor the query contract.
+- Custom cooperative providers MUST honor the outcome contract.
+- Custom cooperative providers MUST honor the physical-ownership contract.
 - The opt-in cooperative mode MUST reject unsupported stores before starting work.
 - Cooperative work MUST install one shared operation context before initial load, queue submission, lock acquisition, reload, decode and every persistence/retry/end path.
 - Blocked context checks MUST observe directly mutable deadlines.
 - Provider interruption MUST observe directly mutable deadlines.
-- Independent stop control MUST close admission, record only earlier deadlines and wake or interrupt operations while the owning join runs.
+- Independent stop control MUST close admission.
+- Independent stop control MUST record only earlier deadlines.
+- Independent stop control MUST wake or interrupt operations while the owning join runs.
 - Grace G MUST be an absolute std::time::Instant deadline in the real stop domain.
 - Cleanup K MUST be an absolute std::time::Instant deadline in the real stop domain.
 - The real stop domain MUST be distinct from the schedule Clock.

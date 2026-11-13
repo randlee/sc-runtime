@@ -284,7 +284,7 @@ stale-PID file to clean up and no race between checking and claiming.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol.
+Definitions: MCP means Model Context Protocol. A migration is database schema initialization or upgrade owned by the project's store code, rather than daemon assembly.
 
 `Stores` being opaque to this crate is the current design. The shared command path needs `Storage<T>`; whether it lives in this crate or beside it is undecided.
 
@@ -307,7 +307,7 @@ Definitions: MCP means Model Context Protocol.
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT do anything else with that value.
+- `sc-runtime` MUST NOT use the `Stores` value beyond passing it to the project's routes closure and its optional MCP closure.
 - `sc-runtime` MUST NOT read a field of `Stores`.
 - `sc-runtime` MUST NOT call a method on `Stores`.
 - `sc-runtime` MUST NOT require a trait describing the contents of `Stores`.

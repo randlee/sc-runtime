@@ -2138,11 +2138,13 @@ retired.
 **MUST statements:**
 
 - It MUST survive a later `sc-lint init`.
-- Rendered `.github/workflows/ci.yml` MUST run lint and tests only through `just lint` and `just test`.
+- Rendered `.github/workflows/ci.yml` MUST run lint only through `just lint`.
+- Rendered `.github/workflows/ci.yml` MUST run tests only through `just test`.
 
 **MUST NOT statements:**
 
 - The recipe names `lint` and `test` are the standard SC base command names and MUST NOT be changed.
+
 ### Rationale
 
 sc-lint owns the `just` and lint install, so a generated project picks up
@@ -3234,7 +3236,7 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates similar schemas, including tables or columns that exist on only one side; these examples do not restrict all possible schema differences.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, similar schemas permit tables or columns that exist on only one side, as specified by this record's success criterion.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -3467,7 +3469,10 @@ The generator is used for projects that are not MIT licensed and not open source
 - For every generation option the schema MUST state its default where it has one.
 - For every generation option the schema MUST state its allowed values where it is an enum.
 - For every generation option the schema MUST state any conditional requirement between options.
-- In v0.1 the schema MUST define the four options in the table above.
+- In v0.1 the schema MUST define the project name option described by its row in the Option table.
+- In v0.1 the schema MUST define the `db` option described by its row in the Option table.
+- In v0.1 the schema MUST define the `mcp` option described by its row in the Option table.
+- In v0.1 the schema MUST define the licence option described by its row in the Option table.
 - The licence of a generated project MUST be an input.
 - The schema MUST carry a schema version, because it is a published contract: the sc-lint project reads the same answers object and the same schema to install lint and `just` infrastructure into a generated project.
 - The driver MUST read option names from the schema.
