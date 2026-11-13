@@ -3094,22 +3094,26 @@ Leaving the pairing for each consumer to invent was rejected: a common pattern h
 
 ### Requirement Statement
 
-Definitions: A store crate is the engine-specific package holding that engine's SQL. Database engines are SQLite, Postgres and MySQL.
+Definitions: Database engines are SQLite, Postgres and MySQL. An engine's SQL is the SQL statement text that an engine implementation sends to that database engine. `sc-runtime-db-sqlite` is the published crate in `crates/sc-runtime-db-sqlite` that implements `Storage<T>` for SQLite. Phase D is the project phase that publishes `sc-storage` and `sc-runtime-db-sqlite` at version 0.3.0 (ADR-RUN-0020 point 36). An engine implementation is the code that implements `Storage<T>` for one database engine. A generated engine implementation is an engine implementation that the project template generates into the consumer repository. Consumer row types are the row structs that a consumer repository defines for its own tables.
 
-Each database engine's SQL is in that engine's store crate.
+Each database engine's SQL is in that engine's implementation. How `T` maps to a table and who owns migrations are not decided by this requirement; they remain open under ADR-RUN-0020 point 4 (PRD section 9).
 
 **MUST statements:**
 
-- SQL for SQLite MUST reside in the store crate `store-sqlite`.
-- SQL for Postgres MUST reside in the store crate `store-postgres`.
-- SQL for MySQL MUST reside in the store crate `store-mysql`.
+- SQLite's SQL MUST reside in the crate `sc-runtime-db-sqlite`.
+- In Phase D, Postgres's SQL MUST reside in the generated Postgres engine implementation.
+- In Phase D, MySQL's SQL MUST reside in the generated MySQL engine implementation.
+- Consumer row types MUST remain outside the SQLite engine implementation.
+- Consumer row types MUST remain outside the Postgres engine implementation.
+- Consumer row types MUST remain outside the MySQL engine implementation.
 
 ### Rationale
 
-A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL string executed on both SQLite and Postgres was rejected: each engine has its own SQL (ADR-RUN-0305). The framework has no portable query layer (framework charter).
+A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL string executed on both SQLite and Postgres was rejected: each engine has its own SQL (ADR-RUN-0305). The framework has no portable query layer (framework charter). The SQLite implementation behind `Storage<T>` is the atm-core writer (PRD-STO-3), published as `sc-runtime-db-sqlite`; Postgres and MySQL use sqlx (PRD-STO-2) and stay generated in the template in Phase D (ADR-RUN-0020 point 37). Consumer row types stay outside generic engines (ADR-RUN-0020 point 5).
 ### Success Criteria
 
-1. `store-sqlite` contains no Postgres SQL, and `store-postgres` contains no SQLite SQL.
+1. `crates/sc-runtime-db-sqlite` contains no Postgres or MySQL SQL, and the generated Postgres and MySQL engine implementations contain no SQLite SQL.
+2. No SQLite, Postgres or MySQL engine implementation names a consumer row type.
 
 ## REQ-RUN-0322: An advanced adaptor is consumer code
 
