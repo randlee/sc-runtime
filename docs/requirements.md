@@ -3262,7 +3262,7 @@ One SQL string executed on both engines was rejected: each engine has its own SQ
 
 1. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
 
-## REQ-RUN-0328: Paired stores share a trait or use a trait per store
+## REQ-RUN-0328: Every store implements `Storage<T>`
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -3282,10 +3282,10 @@ Every store in an application implements the same storage trait, `Storage<T>` (P
 
 ### Rationale
 
-One SQL string executed on both engines was rejected: each engine has its own SQL, and a shared trait, or a different trait per engine, is allowed (ADR-RUN-0305). The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
+Owner, PRD section 4: "I want sqlite/postgres/sql to be interchangeable behind traits" (PRD-STO-2). Each engine keeps its own SQL behind that trait; `Storage<T>` carries no SQL (PRD-STO-1). The 2026-10-25 adaptor plan (ADR-RUN-0305) is deferred by PRD section 9 and is not a reason for this record.
 ### Success Criteria
 
-1. A generated pair names one trait that both stores implement.
+1. In each generated layout that renders a store, every rendered store implements `Storage<T>`, and no rendered store is reached through a different storage trait.
 
 ## REQ-RUN-0329: A generated package name carries the project name
 
