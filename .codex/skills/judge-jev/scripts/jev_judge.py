@@ -99,6 +99,7 @@ from result import Err, Ok, Result, utf8_stdio  # noqa: E402
 from jev_errors import BEARER_RE, JudgeError, redact_sensitive, _redact_text  # noqa: E402,F401  (standard library only)
 import jev_definitions  # noqa: E402  (standard library only)
 import jev_runs  # noqa: E402  (standard library at import)
+import judge_jev_paths  # noqa: E402  (standard library only)
 
 try:
     from pydantic import (AfterValidator, BaseModel, ConfigDict, Discriminator, Field, PrivateAttr, RootModel, Tag,
@@ -1738,7 +1739,23 @@ def add_stream_options(parser) -> None:
 # --------------------------------------------------------------------------- #
 QUALITY_TABLES = {"req": "requirements", "nfr": "requirements", "adr": "decisions"}  # Raptor import index tables
 QUALITY_PREFIX = "quality"
-QUALITY_LOG_DIR = ".sc/judge-jev"  # the logger writes <log root>/logs/judge-jev.log.jsonl
+QUALITY_LOG_DIR = ".sc/judge-jev"  # the fallback log root when the home directory is unknown
+RUN_DIR_HELP = ("log root of the sc-observability run log (<run-dir>/logs/judge-jev.log.jsonl, appended to); default "
+                "~/.judge-jev/<repository name>/<UTC date>, shared by every worktree of the repository "
+                f"({QUALITY_LOG_DIR} when the home directory is unknown)")
+
+
+def quality_log_root(args) -> str:
+    """The log root of a ``quality`` or ``compare-definition`` run: ``--run-dir`` when given, else the central per-user
+    folder ``~/.judge-jev/<repository name>/<UTC date>`` (resolved once per command), else ``QUALITY_LOG_DIR`` when the
+    home directory cannot be determined."""
+    if not getattr(args, "_log_root", ""):
+        chosen = args.run_dir
+        if not chosen:
+            central = judge_jev_paths.central_log_root(pathlib.Path(getattr(args, "repository_root", "") or "."))
+            chosen = str(central) if central is not None else QUALITY_LOG_DIR
+        args._log_root = chosen
+    return args._log_root
 
 
 class QualityTree(NamedTuple):
@@ -1849,6 +1866,30 @@ def wave_reason(node: Wave, answers: dict) -> list:
         choice, confidence = answer_choice(answers[qid])
         out.append({"id": qid, "text": question.instructions, "choice": choice,
                     "criterion": question.criteria.get(choice, ""), "confidence": confidence})
+    return out
+
+
+def reveal(node: Wave, answers: dict, reason: list) -> list:
+    """``reason`` as the command's result reports it: each entry plus what Jev's answer holds and the logged reason
+    leaves out, the probability of every option (``probabilities``) and the strongest option Jev did not choose
+    (``runner_up``: its name, its probability and its criterion, which carries its fix hint; None when no other option has
+    any probability). A low confidence is Jev torn between its choice and the runner-up. An answer without option
+    probabilities (a noul answer) is reported as it is. The logged events are unchanged: the answer event already holds
+    the probabilities."""
+    out = []
+    for entry in reason:
+        answer = answers.get(entry["id"])
+        probabilities = answer.get("probabilities") if isinstance(answer, dict) else None
+        if not isinstance(probabilities, dict):
+            out.append(dict(entry))
+            continue
+        others = sorted(((p, option) for option, p in probabilities.items() if option != entry["choice"]),
+                        key=lambda pair: (-pair[0], pair[1]))
+        runner_up = None
+        if others and others[0][0] > 0:
+            runner_up = {"choice": others[0][1], "probability": others[0][0],
+                         "criterion": node.questions[entry["id"]].criteria.get(others[0][1], "")}
+        out.append({**entry, "probabilities": dict(probabilities), "runner_up": runner_up})
     return out
 
 
@@ -2155,7 +2196,7 @@ def cmd_quality(args) -> Result[Any, JudgeError]:
         if isinstance(cleared, Err):
             return _with_refs(cleared, run_refs)
         api_key = cleared.value
-    log = open_run_log(args.run_dir, run_name)
+    log = open_run_log(quality_log_root(args), run_name)
     if isinstance(log, Err):
         return _with_refs(log, run_refs)
     results, failed = [], None
@@ -2174,7 +2215,13 @@ def cmd_quality(args) -> Result[Any, JudgeError]:
     if isinstance(closed, Err):  # the answers were paid for: report them with the log error
         return _with_refs(closed, {**run_refs, "results": results})
     return Ok({"success": True, "error": None, "data": {
-        "dry_run": False, "results": results, "log": {"run": run_name, "log_root": args.run_dir}}})
+        "dry_run": False, "results": results, "log": {"run": run_name, "log_root": quality_log_root(args)}}})
+
+
+def answering_models(results: list) -> list:
+    """The Jev model versions that answered a wave's requests (``jev-latest`` resolves to one), sorted; empty for answers
+    read from an answers file."""
+    return sorted({r.get("model_answered") for r in results if r.get("model_answered")})
 
 
 def wave_log_events(fields: dict, node_id: str, node: Wave, statements: list, results: list, per_choices: list,
@@ -2186,22 +2233,24 @@ def wave_log_events(fields: dict, node_id: str, node: Wave, statements: list, re
     if node.per == "statement":
         reason, events = [], []
         for s, r, c in zip(statements, results, per_choices):
-            reason.append({"statement": s, "answers": wave_reason(node, r["answers"])})
+            plain = wave_reason(node, r["answers"])
+            reason.append({"statement": s, "answers": reveal(node, r["answers"], plain)})
             events.append(("statement", {**fields, "node": node_id, "statement": s, "request_id": r["request_id"],
-                                         "answers": r["answers"], "choices": c, "reason": reason[-1]["answers"]}, r["run_id"]))
+                                         "answers": r["answers"], "choices": c, "reason": plain}, r["run_id"]))
         matched_statements = [statements[i]["index"] for i in matched]
         request_ids = [r["request_id"] for r in results]
         events.append(("wave", {**fields, "node": node_id, "per": "statement", "request_ids": request_ids,
                                 "matched_statements": matched_statements, "next": nxt, "verdict": verdict, **rank_field}, None))
         wave = {"node": node_id, "per": "statement", "request_ids": request_ids, "reason": reason,
-                "matched_statements": matched_statements, "next": nxt, "verdict": verdict}
+                "matched_statements": matched_statements, "next": nxt, "verdict": verdict, "models": answering_models(results)}
         return events, wave
     result, choices = results[0], per_choices[0]
     reason = wave_reason(node, result["answers"])
     events = [("wave", {**fields, "node": node_id, "request_id": result["request_id"], "request": result["request"],
                         "answers": result["answers"], "choices": choices, "reason": reason, "next": nxt,
                         "verdict": verdict, **rank_field}, result["run_id"])]
-    return events, {"node": node_id, "request_id": result["request_id"], "reason": reason, "next": nxt, "verdict": verdict}
+    return events, {"node": node_id, "request_id": result["request_id"], "reason": reveal(node, result["answers"], reason),
+                    "next": nxt, "verdict": verdict, "models": answering_models([result])}
 
 
 def _position(rules: list, rule) -> int:
@@ -2465,7 +2514,7 @@ def cmd_compare_definition(args) -> Result[Any, JudgeError]:
     walks = {}
     for arm in COMPARE_ARMS:
         tree, record, _refs, _jobs, arm_carried = prepared[arm]
-        log = open_run_log(args.run_dir, runs[arm])
+        log = open_run_log(quality_log_root(args), runs[arm])
         if isinstance(log, Err):
             return _with_refs(log, head)
         walked = walk_tree(tree, record, settings, api_key, arm_fixture(fixture, arm), log.value,
@@ -2477,7 +2526,7 @@ def cmd_compare_definition(args) -> Result[Any, JudgeError]:
             return _with_refs(closed, {**head, "arm": arm})
         walks[arm] = walked.value
     answers = compare_answers(answer_table(walks["without"][2]), answer_table(walks["with"][2]), threshold)
-    log = open_run_log(args.run_dir, run_name)
+    log = open_run_log(quality_log_root(args), run_name)
     if isinstance(log, Err):
         return _with_refs(log, head)
     logged = log.value.event("compare", {"tree_id": prepared["with"][0].id,
@@ -2491,7 +2540,7 @@ def cmd_compare_definition(args) -> Result[Any, JudgeError]:
         "answers_compared": len(answers), "answers_material": sum(1 for a in answers if a["material"]), "answers": answers,
         "arms": {arm: {"verdict": walks[arm][0], "path": walks[arm][1], "run": runs[arm],
                        "definitions": jev_definitions.log_entries(prepared[arm][4])} for arm in COMPARE_ARMS},
-        "log": {"run": run_name, "log_root": args.run_dir}}})
+        "log": {"run": run_name, "log_root": quality_log_root(args)}}})
 
 
 # --------------------------------------------------------------------------- #
@@ -2760,7 +2809,7 @@ def build_parser() -> argparse.ArgumentParser:
     q.add_argument("--questions", default="", help="a decision-tree file (.json or .ttl) overriding the shipped assets/questions/quality-<kind>.json")
     q.add_argument("--dry-run", action="store_true", help="report each record's tree and composed wave-1 request (one per statement for a per-statement wave); call nothing")
     q.add_argument("--answers-file", default="", help="fixture answers keyed '<record>/<node>/r1', '<record>/<node>', '<node>' or '*'; no network")
-    q.add_argument("--run-dir", default=QUALITY_LOG_DIR, help=f"log root of the sc-observability run log (<run-dir>/logs/judge-jev.log.jsonl); default {QUALITY_LOG_DIR}")
+    q.add_argument("--run-dir", default="", help=RUN_DIR_HELP)
     q.add_argument("--run-name", default="", help="run name carried by every log event; default a UTC timestamp")
     q.add_argument("--repository-root", default=".", help=REPO_ROOT_HELP)
     q.add_argument("--definitions", metavar="FILE", action="append", default=[], help=DEFINITIONS_HELP)
@@ -2786,7 +2835,7 @@ def build_parser() -> argparse.ArgumentParser:
     cd.add_argument("--questions", default="", help="a decision-tree file overriding the shipped assets/questions/quality-<kind>.json")
     cd.add_argument("--dry-run", action="store_true", help="report the start-wave request of each arm, without and with the definitions; call nothing")
     cd.add_argument("--answers-file", default="", help="fixture answers keyed " + COMPARE_FIXTURE_KEYS + "; no network")
-    cd.add_argument("--run-dir", default=QUALITY_LOG_DIR, help=f"log root of the sc-observability run log; default {QUALITY_LOG_DIR}")
+    cd.add_argument("--run-dir", default="", help=RUN_DIR_HELP)
     cd.add_argument("--run-name", default="", help="run name of the compare event; the arms log as <run name>.without and <run name>.with; default a UTC timestamp")
     cd.add_argument("--repository-root", default=".", help=REPO_ROOT_HELP)
     cd.set_defaults(func=cmd_compare_definition)

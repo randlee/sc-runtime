@@ -1,122 +1,111 @@
 ---
 name: fix-strategy
-version: 0.1.0
-description: How to turn Jev's answers on a failing REQ, NFR or ADR into edits that pass Jev and keep the author's intent - routing each failure, edit tactics ranked by measured yield, noise rules, measuring and combining candidates, the drift review, known Jev misreads, stop rules and the report.
+version: 0.2.0
+description: How to fix a REQ, NFR or ADR record that fails Jev or passes below the confidence gate - ask Jev why with the diagnostic tree, pick strategies from the table, run one proposer per strategy in parallel, measure, accept and freeze. Rules, stop conditions, commit and report format.
 ---
 
 # Fix strategy
 
-An accepted edit does two things: the record passes Jev in repeated runs, and it still requires exactly what the author's text required. Jev scores clarity; it cannot see a lost obligation. You are the author: proposers suggest, Jev measures, you decide and review. This is a loop you run to the end, not a proposal for the user to approve.
+Jev's answers say what is wrong. Ask Jev why before any edit; never reason about why. A low-confidence answer is unclear wording, not noise.
 
-## 0. Set up
+- **Gate.** Judge the record three times on identical text and take the middle (median) confidence of each gate answer. A record passes when its verdict is `yes` in at least two runs and every gate answer's median is at or above `T`. `T` is 0.6 unless the repository states another value. One run is not a pass: a score near `T` moves a few points between identical runs.
+- **Unit of work.** One record. Jev judges each statement with the whole record as context, so an edit to one statement changes the input for all the others. Never give two agents the same record. Records are independent: run as many in parallel as you like.
+- **State.** `$W/state.jsonl` is your memory. Read its last line before every step and append one line after it. Do not track rounds, candidates or results in your head.
+
+## 0. Set up, once per record
 
 ```bash
-ID=REQ-ABC-0001; KIND=req          # KIND is req, nfr or adr
+ID=REQ-ABC-0001; KIND=req; T=0.6   # KIND is req, nfr or adr
 F=docs/requirements/abc.md         # the file that holds the record
 W=.sc/judge-jev/fix/$ID; mkdir -p "$W"
-cp "$F" "$W/original.md"           # the author's text: every drift check compares against it
-cp "$F" "$W/current.md"            # the best accepted text so far
-printf 'J=%s\nRAPTOR=%s\nID=%s\nKIND=%s\nF=%s\nW=%s\n' "$J" "$RAPTOR" "$ID" "$KIND" "$F" "$W" > "$W/env"
+cp "$F" "$W/original.md"
+D="<this skill's directory>/assets/questions/diag-$KIND.json"
+G="<this skill's directory>/scripts/jev_gate.py"
+printf 'J=%s\nRAPTOR=%s\nID=%s\nKIND=%s\nF=%s\nW=%s\nT=%s\nD=%s\nG=%s\n' "$J" "$RAPTOR" "$ID" "$KIND" "$F" "$W" "$T" "$D" "$G" > "$W/env"
 ```
 
-Shell variables do not survive between tool calls: start every later command with `. .sc/judge-jev/fix/<ID>/env`. Work on one record per file at a time.
+Start every later command with `. .sc/judge-jev/fix/<ID>/env`.
 
-Three commands do all the measuring.
+Two commands do all the measuring. Each is one step: paste it whole.
 
-Snapshot the file as it is now, as variant `<v>` (`base`, `c1`, `comb`, `final`):
+`verify <v>`: snapshot the file as variant `<v>`, judge it three times with the shipped tree, print the gate.
 
 ```bash
+cp "$F" "$W/<v>.md"
 "$RAPTOR/.venv/bin/python" "$RAPTOR/scripts/extract.py" --project-root . --output "$W/index-<v>.json" | jq '.issues'   # must print 0
+for r in 1 2 3; do uv run -q --script "$J" quality --$KIND "$ID" --index "$W/index-<v>.json" --run-name "$ID-<v>-r$r" > "$W/<v>-r$r.json" & done; wait
+python3 "$G" --threshold "$T" "$W"/<v>-r1.json "$W"/<v>-r2.json "$W"/<v>-r3.json | jq -r 'if .success | not then "ERROR \(.error.code): \(.error.message)" else .data.records[] | "\(.id) pass=\(.pass) verdicts=\(.verdicts | join(",")) lowest=\(.lowest.median // "n/a")", (.low[] | "  s\(.statement // "-") \(.question)=\(.choice) median \(.median) \(.confidences)" + (if .runner_up then "\n      nearly: \(.runner_up.choice) (\(.runner_up.probability)) \(.runner_up.criterion)" else "" end)) end'
 ```
 
-Judge variants interleaved, the same number of runs each:
+It prints one line for the record and, for each gate answer whose median is below `T`, the answer and the option Jev nearly chose instead (`nearly:`), with that option's probability and its criterion. Read `nearly:` first: a low confidence is Jev torn between its choice and that option, so it says what the statement is being read as, and its criterion often names the fix (`obligations=1` nearly `2`: the statement reads as two obligations; `check=inspection or grep` nearly `CLI run`: it does not say whether a file or a run decides it). `pass=true` is the only pass. `ERROR` is a tool error, not a verdict: rerun once, then report the code and message verbatim.
+
+`diagnose <v>`: ask Jev why, once, for the variant `verify` just snapshotted.
 
 ```bash
-for r in 1 2 3; do for v in base c1 c2; do
-  uv run -q --script "$J" quality --$KIND "$ID" --index "$W/index-$v.json" --run-name "$ID-$v-r$r" > "$W/$v-r$r.json"
-done; done
+uv run -q --script "$J" quality --$KIND "$ID" --index "$W/index-<v>.json" --questions "$D" --run-name "$ID-<v>-diag" > "$W/<v>-diag.json"
+jq -r 'if .success | not then "ERROR \(.error.code): \(.error.message)" else .data.results[] | .waves[] | .reason[] | if has("statement") then "s\(.statement.index): \(.statement.text)", (.answers[] | "    \(.id)=\(.choice) @\(.confidence)") else "  \(.id)=\(.choice) @\(.confidence)" end end' "$W/<v>-diag.json"
 ```
 
-Score every run:
+`diag-<kind>.json` is the shipped gate tree with `d_*` diagnostic questions appended. Its gate questions and verdict rules are the shipped ones. Run it when `nearly:` does not settle the cause, and read the `d_*` answers of the statements `verify` listed. Every answer in a `quality` result also carries `probabilities` (every option) and `runner_up`. The gate itself is always `verify`, never this run.
 
-```bash
-for f in "$W"/*-r*.json; do jq -r --arg run "$(basename "$f" .json)" 'if .success | not then "\($run) ERROR \(.error.code): \(.error.message)" else .data.results[] | "\($run) \(.verdict) failing=\([.waves[] | select(.verdict == "no") | .matched_statements // ["record"]] | flatten)" end' "$f"; done | sort
-```
+## 1. Verify, then diagnose
 
-Read one run's answers with the step 2 command of `references/quality-workflow.md`.
+`verify base`. If it prints `pass=true`, go to step 5. Otherwise read each `nearly:` line, `diagnose base` where the cause is still open, and append `{"round": n, "step": "diagnose", "low": [...]}` to `$W/state.jsonl`.
 
-## 1. Baseline
+If a cause is still unclear, copy `$D`, add up to 10 choice questions of your own under `.nodes["wave-1"].questions` (same shape as the `d_*` ones), and run the `diagnose` command with `--questions <copy>`. Ask them all in one call. A question costs a fraction of a cent; a minute of your reasoning costs more than a thousand of them. Never edit a gate question, a criterion or a verdict rule.
 
-Snapshot `base` and judge it 3 times. For every failing statement (ADR: every failing answer) note, per run, the answer that fired the rule and its confidence.
+## 2. Pick strategies
 
-## 2. Route each failure before editing
+For each weak statement, take every row whose trigger matches, three at most.
 
-| What the answers show | Cause | Action |
+| Strategy | Trigger: gate answer weak or failing, with these `d_*` answers | The one edit |
 | --- | --- | --- |
-| It fails in 1 of 3 runs, deciding answer below 0.35 | noise | Judge 6 more runs. Act only if it recurs. |
-| `term` = `project term defined nowhere` or `undefined acronym` | a term the record does not define | Tactic 1 |
-| `term` = `vague qualifier`, or `check` = `needs a measure` or `none` | text not specific | Tactic 2 |
-| `obligations` 2+ with `and-list`, `alternatives` or `obligation+rationale` | compound statement | Tactics 3 to 5 |
-| ADR `context`, `alternatives` or `consequences` fails | missing ADR content | ADR tactics |
-| The record already states what the answer says is missing, and it persists after one fix | question misfit or Jev misread | Known misreads; do not reword |
+| `name-referent` | `term`; `d_term_where` or `d_ambiguous` = `reference`, or `d_term_fix` = `replace reference` | Replace the back-reference ("that type", "as follows", "it", "the same") with the full noun phrase or the named table. |
+| `define-term` | `term` = `project term defined nowhere` or `undefined acronym`; `d_term_fix` = `define in record` | One sentence in the record's `Definitions:` paragraph (first paragraph under `### Requirement Statement`; create it if absent), built from facts already in the record or the repository. Only the term Jev blames. Jev sees only this record. |
+| `plain-words` | `term`; `d_term_fix` = `plain words`, or `d_term_where` = `qualifier` | Replace the jargon or qualifier with plain words that say the same thing. A vague qualifier takes the number the code or tests use; no number in the repository means unresolved. |
+| `observable` | `check`; `d_check_kind` = `runtime` or `unclear`; `d_check_why` = `observable` or `trigger` | State what can be observed in place of an internal property: "use the base URL" becomes "each request goes to the URL ...". |
+| `inspect-target` | `check`; `d_check_kind` = `static`; `d_check_why` = `location` or `test kind` | Name the file or command to inspect and what it shows. Do not recast the statement as behaviour: that adds a condition and reads as two obligations. Never write "checked by ...". |
+| `split` | `obligations` 2+ with `and-list`; `d_obligations_why` = `list` | One statement per item, same subject and modal, every item and gloss kept. |
+| `collapse-to-term` | Same as `split`, when the items are the parts of one named thing (a call chain, a field set) | Define the thing once, listing every part, and require the thing. |
+| `one-choice` | `joined_by` = `alternatives` | Define the set and require exactly one member. |
+| `move-rationale` | `joined_by` = `obligation+rationale`; `d_obligations_why` = `purpose` | Move the reason to `### Rationale`. |
+| `lift-condition` | `d_obligations_why` = `condition`, `ordering` or `default` | Lead with the condition ("When ...,"), or state the default and its exception as two statements. |
+| `siblings` | Two or more near-identical statements in the record are weak on the same answer | One candidate that edits all of them the same way. Fixing one alone makes the others fail. |
+| `adr-context` | ADR `context`; `d_ctx_gap` | One sentence starting "The problem is ...", from the record's own Decision and Rationale. |
+| `adr-alternatives` | ADR `alternatives`; `d_alt_gap` | `#### Alternative <n>: <name>` with `**Description:**` and `**Why Rejected:**`, taken from the record or other records, citing the id that rules it out. |
+| `adr-consequences` | ADR `consequences`; `d_cons_gap`, `d_cons_weak` | The cost the record or the code already shows. |
 
-Route by the answer that fired a fail rule, and only that answer. `joined_by` = `condition+obligation` never fails; a statement whose wave passed needs no edit.
+Fix `term` answers first and re-diagnose before the others: structure answers often settle once the terms are clear.
 
-Fix `term` failures first, with definitions alone, and re-measure before anything else: structure answers below 0.5 (`obligations`, `joined_by`) often settle once the terms are defined.
+Do not edit for these known misreads; list them: a lowercase or hyphenated product name read as `undefined acronym` once it is defined; `undefined acronym` on a statement with no acronym; `project term defined nowhere` near 0.3 for a term this record defines.
 
-Confidence: an answer at 0.5 or above did not flip between identical runs; below 0.5 it can, below 0.35 often. A confident failing answer (0.75 or above) is a real defect in the text. Jev sees only this record: a term defined in another record or file is undefined to Jev.
+## 3. Propose, in parallel
 
-## 3. Tactics, ranked by measured yield
-
-1. **Define the term in the record.** Add one sentence to the record's `Definitions:` paragraph (the first paragraph under `### Requirement Statement`, starting `Definitions:`; create it if absent). Leave the statement unchanged. Take the meaning from the repository; if another record already defines the term, reuse its wording (`grep -rn "<term> is" docs/`). Expand acronyms; define product names once ("sc-agent is ..."). Undefined terms caused about nine failures in ten, and definitions alone took most records from failing to passing. The `Fix:` line says "define it or link the record": linking never worked. Define it here.
-2. **Replace a vague qualifier with the measure the code uses.** Find the number in the code or tests and cite the file and line in your report. If the repository states no number, do not invent one: the statement is unresolved and needs the user's decision.
-3. **Split a list-joined statement** into one statement per item, each with the original subject and modal, every item and gloss kept. Never move the items into a definition and leave the statement naming only the set.
-4. **State one choice over a named set** for alternatives ("exactly one of `--a` (x) or `--b` (y)" fails; define the set and require one of it). "Do X without Y" reads as two obligations; "do X with no Y" reads as one.
-5. **Move rationale** (because, so that, to ...) out of the statement into `### Rationale`.
-
-One tactic per candidate, so each result is attributable. Write a definition from how the record and the repository use the term: it must cover every use (a "question set" that may be a shipped id or an override path is not "the shipped set"), and each sentence needs a source file and line, cited in your report. The record cites only record ids: no file paths or line numbers. Keep the source's qualifiers: a number stated as a default or bounded by a flag stays a default ("24000 bytes by default", not "the largest size"). Reword a statement only when it still fails after its terms are defined.
-
-Low yield, do not lead with them: citing or linking a record; rewording, splitting or hardening statements that pass (splits aimed at passing statements almost never helped); any edit not aimed at a failing answer. Never delete words from a MUST or MUST NOT statement to raise a score: every such deletion that passed was drift.
-
-**ADR tactics.**
-
-- `context` = `background only` or `missing`: add one sentence starting "The problem is ...", built from the record's own Decision and Rationale.
-- `alternatives` = `none` or `named only`: add `### Alternatives Considered` with one `#### Alternative <n>: <name>` per option, each with `**Description:**` and `**Why Rejected:**`. Take the options from the Decision's "never" or "instead" clauses, the Rationale, or other records, and cite the REQ or ADR id that rules each out. Each alternative is a different design; two that are rejected for the same reason are one. Never invent one.
-- `consequences` = `positive only` or `missing`: add the cost the record or code already shows.
-
-Fix every Raptor import diagnostic before judging.
-
-## 4. Propose candidates
-
-Always launch proposers, even when the fixes look obvious: your own candidates are one model's view. Launch at least two `jev-fix-proposer` agents in parallel, with no shared context. The agent runs on the frontier model (Claude Code: `opus`; Codex: `sol`; Cursor: `grok`, high effort); do not override it. When another harness is available, add one proposer there. Each gets one fenced JSON object:
+Launch one `jev-fix-proposer` per statement and strategy, all in one message, with no shared context. Each gets one fenced JSON object:
 
 ```json
 {
   "record_id": "REQ-ABC-0001",
   "kind": "req",
   "file": "docs/requirements/abc.md",
+  "strategy": "name-referent",
   "record_text": "<the record as it is now>",
-  "original_text": "<the record as the author wrote it>",
-  "failing": [
-    {"statement": 3, "text": "<statement text>", "runs": ["obligations=1 @0.93; joined_by=none @0.79; term=project term defined nowhere @0.44; check=CLI run @0.94"]}
-  ],
-  "blocked": ["<a span or edit rejected in an earlier round, with the reason>"],
+  "original_text": "<the record as its author wrote it>",
+  "statement": {"index": 3, "text": "<statement text>"},
+  "answers": "term=none median 0.41, nearly project term defined nowhere (0.38); check=CLI run @0.94; d_term_where=reference @0.83; d_term_fix=replace reference @0.80",
+  "blocked": ["<an edit rejected in an earlier round, with the reason>"],
   "sources": ["docs/", "src/"]
 }
 ```
 
-`failing` holds every failing statement (ADR: `"statement": null` and the three answers) with each run's answers. Add your own candidates from the tactics, then drop duplicates.
+Each returns one candidate. If no agent can be launched, write the candidates yourself, one per strategy. Append each candidate to `$W/state.jsonl` as `{"round", "step": "candidate", "id", "statement", "strategy", "old", "new"}`.
 
-## 5. Screen
+## 4. Measure
 
-Wait until every proposer has returned or failed, then screen. Reject a candidate, before spending runs on it, when:
-
-- its `old` text does not occur exactly once in the file;
-- it targets no answer that failed in your runs;
-- the token guard reports a loss:
+Reject before measuring: a candidate whose `old` does not occur exactly once in `$F`, or whose edited text fails this guard against the original.
 
 ```bash
-python3 - "$W/original.md" "$W/c1.md" <<'EOF'
+python3 - "$W/original.md" "<edited file>" <<'PY'
 import re, sys
 from collections import Counter
 pats = {"code span": r"`[^`\n]+`", "number": r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])",
@@ -125,57 +114,61 @@ a, b = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
 lost = {k: sorted((Counter(re.findall(p, a)) - Counter(re.findall(p, b))).elements()) for k, p in pats.items()}
 lost = {k: v for k, v in lost.items() if v}
 print(f"REJECT, lost: {lost}" if lost else "guard ok")
-EOF
+PY
 ```
 
-- reading it shows drift (section 8).
+For each remaining candidate `c<n>`: apply it to `$F`, `verify c<n>`, then `cp "$W/base.md" "$F"`.
 
-Append one line per candidate to `$W/tried.jsonl`: `{"id", "proposer", "statement", "answer", "type", "old", "new", "result", "why"}`. Rejected spans go into the next round's `blocked`.
+For each statement keep the candidate that lifts its lowest median highest without pushing any other answer in the record below `T`. Apply the kept candidates together and `verify comb`. If `comb` is worse than its parts, drop the weakest candidate and verify again. Append `{"round", "step": "measure", "kept": [...], "lowest": x}`. If the record improved, `cp "$W/comb.md" "$W/base.md"`: the next round starts from it.
 
-## 6. Measure each candidate alone
+## 5. Accept and freeze
 
-For candidate `<n>`: apply its edit to `$F`, `cp "$F" "$W/c<n>.md"`, snapshot `c<n>`, then `cp "$W/current.md" "$F"`. Judge `base` and every candidate interleaved, 3 runs each. Keep a candidate when the statement it targets passes in all 3 runs where `base` failed it in at least 2, and no other statement fails more often than in `base`. Anything less clear: 3 more runs of both. One rejudge is never evidence.
+A record is accepted when `verify` prints `pass=true`. Otherwise start the next round at step 1 on the current text, with the rejected edits in `blocked`.
 
-## 7. Combine
+When a record is accepted, run the guard on `$W/original.md` against `$F` and read `diff -u "$W/original.md" "$F"` against rule 1. Then append `{"id", "sha256": "<of the record text>", "runs": [...], "lowest": x}` to `.sc/judge-jev/accepted.jsonl`. An accepted record is frozen: do not judge it again unless its text changes. Re-judging unchanged text only finds chance failures.
 
-Apply all kept candidates to `$F` together. Where two target the same statement, take the one with fewer failing runs, then fewer words. Snapshot `comb` and judge it 6 times, interleaved with `base`. Candidates that pass alone often fail together: if `comb` fails, drop one candidate at a time, the weakest first, and re-measure. When it holds, `cp "$F" "$W/current.md"`.
+Three rounds at most. A statement still below `T` after round 3 is unresolved: keep the best text reached and list it.
 
-## 8. Drift review
+## Rules
 
-Run the token guard on `$W/original.md` against `$F`, then read `diff -u "$W/original.md" "$F"` line by line. Revert any change that:
+1. **Obligations do not change.** No obligation is added, dropped, narrowed, widened or made stricter, and no rationale becomes a MUST. A fix that needs any of these is not applied: list it for the owner with both texts.
+2. **Nothing is invented.** Every number, definition and alternative comes from the record or the repository. Cite the file and line in your report, never in the record.
+3. **A statement never names how it is checked.**
+4. **The gate is not edited.** Diagnostic questions are appended; gate questions, criteria, verdict rules and `T` stay as shipped.
+5. **No record is deleted, and no statement is removed, to make a record pass.**
 
-- deletes or weakens an obligation, qualifier, scope phrase, enumeration or parenthetical gloss ("(agent text or code)", "for the same file", "in its state next to the record");
-- abstracts a concrete item away (`--profile` becoming "the profile form");
-- turns rationale or description into a MUST, or adds a condition the original lacked ("When a command completes ...");
-- widens or narrows the scope ("every tree, question set and definitions file" becoming "every file in the scope");
-- changes one of two parallel statements but not the other (two statements that described the same entry the same way must still match);
-- defines a term more narrowly or widely than the record uses it (a location that excludes code when the record allows `code` mode);
-- leaves a definition false, circular ("Recorded answers are an answers file"), cut short ("The digest is the SHA-256.") or starting with a pronoun that has no antecedent;
-- defines a term differently from another record in the repository;
-- states a fact the repository does not support, or changes a user's quoted words;
-- speaks to the judge instead of the reader (stating that the record complies, mentioning a topic to "cover" it).
+Do not ask the owner how to word something; ask Jev. Ask the owner only for a fact the repository does not hold.
 
-Keep changes that make the record more specific, testable or accurate. After any revert, re-measure.
+## Many records
 
-## 9. Confirm
+One agent per record, each in its own git worktree, each running this page for that record only. Give each the record id, the worktree path and this page; nothing else. An agent commits in its worktree and returns the commit id; it does not push. The lead cherry-picks the returned commits and pushes once. Give one lead 10 to 15 records at a time, then start a fresh lead.
 
-Run the token guard on `$W/original.md` against `$F`; it must print `guard ok`, or every loss is a deliberate, reviewed move. Snapshot `final` and judge it 6 times. The record passes when all 6 verdicts are `yes`. Otherwise start a new round at step 2 with the statements that failed.
+## Which model does what
 
-## Stop
+Split the work by whether it rewrites text.
 
-- A record is done when it passes 6 of 6.
-- A statement still failing after 3 rounds, or whose only passing candidates drift, is unresolved: keep its `current.md` text and move on to the next record.
-- Known Jev misreads; report them, do not reword:
-  - a lowercase or hyphenated product name (`sc-agent`, `judge-jev`) read as `undefined acronym` at low confidence, even once defined;
-  - `undefined acronym` on a statement with no acronym, at low confidence;
-  - `project term defined nowhere` near 0.3 for a term this record defines.
-- Never rerun until a pass appears, ask the user to approve wording mid-loop, or build scripts and harnesses beyond these commands. Jev answers in about 100 ms; a record takes minutes.
+| Work | Model |
+| --- | --- |
+| Mechanical, no rewriting: running `verify` and `diagnose`, building proposer inputs, applying a candidate, measuring, the guard, committing, the report table | The fast model (Claude Code: `haiku`; Codex: `luna`). |
+| Writing a candidate edit (`jev-fix-proposer`) | The model the agent definition names. |
+| The lead, and any review of meaning against a PRD | The frontier model. |
 
-## Report to the user
+An agent on the fast model runs the loop for a record and launches proposers for every edit; it does not write candidates itself. Keep each agent's context small: give it the record, Jev's answers and this page, and nothing else. A long-running lead re-reads its whole history on every turn; start a fresh one for each batch.
 
-Only measured results:
+## Commit message
 
-- each passing record: runs passed before and after (for example 0/3 to 6/6), the token guard's output, the proposer models used, `diff -u "$W/original.md" "$F"`, and one line per change naming the answer it fixed;
-- each unresolved statement: its text, Jev's answers per run verbatim (`question=choice @confidence`), what was tried and its measured result, your diagnosis, and the decision you need from the user (for example a number the repository does not state).
+```text
+<ID>: <strategy> on s<index>
 
-Leave `$W` and `.sc/judge-jev/logs/` in place.
+Jev failure: <question>=<choice> @<confidence>
+Cause: <the d_* answer or your own question, with Jev's answer>
+Strategy: <name>
+Tried and failed: <strategy> (<lowest answer it reached>), ...
+Result: lowest <before> to <after>
+```
+
+## Report
+
+One table, only measured results: record, accepted or unresolved, lowest gate answer before and after, strategies that worked, statements added or removed. Then, for each unresolved statement: its text, Jev's gate and `d_*` answers verbatim, what was tried with its measured result, and the one fact needed from the owner. Then every change that rule 1 sent to the owner, with both texts.
+
+Leave `$W` and `.sc/judge-jev/accepted.jsonl` in place. Every Jev request and answer is logged under `~/.judge-jev/<repository name>/<UTC date>/logs/`, outside the repository; never delete it.

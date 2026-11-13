@@ -1,6 +1,6 @@
 ---
 name: quality-workflow
-version: 0.1.0
+version: 0.2.0
 description: Judge whether REQ, NFR and ADR records are well written - the quality command, reading its verdict and answers, definitions files with compare-definition, and the offline checks validate, doctor and --dry-run.
 ---
 
@@ -14,7 +14,7 @@ description: Judge whether REQ, NFR and ADR records are well written - the quali
 uv run -q --script "$J" quality --req REQ-ABC-0001 --nfr NFR-ABC-0001 --adr ADR-ABC-0001 --index index.json --run-name <name> > <name>.json
 ```
 
-`--req`, `--nfr` and `--adr` repeat and mix. Every request and answer is also logged to `.sc/judge-jev/logs/judge-jev.log.jsonl`.
+`--req`, `--nfr` and `--adr` repeat and mix. Every request and answer is also logged to `~/.judge-jev/<repository name>/<UTC date>/logs/judge-jev.log.jsonl`: one folder per repository and day, outside the repository and shared by all its worktrees (`--run-dir <folder>` logs elsewhere). Each answer in the result carries `probabilities`, the probability of every option, and `runner_up`, the option Jev nearly chose with its probability and criterion; each wave carries `models`, the Jev versions that answered.
 
 ## 2. Read the result
 
@@ -33,6 +33,8 @@ What fails a statement (REQ, NFR):
 What fails an ADR: `context` is `background only` or `missing`; `alternatives` is `named only` or `none`; `consequences` is `positive only` or `missing`.
 
 `success: false` is a tool error, not a verdict: rerun once; if it fails again, report the code and message verbatim.
+
+A verdict of `yes` can still hold an unclear statement: an answer whose top choice is below the confidence gate (0.6 unless the repository states another value) means Jev found the wording unclear. `references/fix-strategy.md` lists those answers and asks Jev why, with `--questions <this skill's directory>/assets/questions/diag-<kind>.json`: the shipped tree with diagnostic `d_*` questions appended and the same verdict rules.
 
 ## 3. Fix a failing record
 
