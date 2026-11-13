@@ -32,13 +32,19 @@ uses it to parse the answer and to print it for `--json`.
 
 ---
 
-## REQ-CMD-0001: Response envelope type `Envelope<T>` and its JSON shape
+# Requirement: Response envelope type `Envelope<T>` and its JSON shape
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
+
+---
+
+## REQ-CMD-0001: Response envelope type `Envelope<T>` and its JSON shape
+
+**Status:** Active  
 
 ### Requirement Statement
 
@@ -90,7 +96,8 @@ It drops `version`.
 **MUST statements:**
 
 - The crate `sc-command` (directory `crates/sc-command`) MUST export a public generic type `sc_command::Envelope<T>` from its crate root, available with default features.
-- `Envelope<T>` MUST implement `serde::Serialize` for any `T: Serialize` and `serde::Deserialize` for any `T: DeserializeOwned`.
+- `Envelope<T>` MUST implement `serde::Serialize` for any `T: Serialize`.
+- `Envelope<T>` MUST implement `serde::Deserialize` for any `T: DeserializeOwned`.
 - `Envelope<T>` MUST serialise to a JSON object with exactly these four keys and no others: (see table above)
 - In the success case the `error` key MUST be present with the value `null`.
 - In the failure case the `data` key MUST be present with the value `null`.
@@ -99,7 +106,9 @@ It drops `version`.
 - With `ok: true` the `data` value, including a JSON `null`, MUST be deserialised as `T`, and the result is the success case.
 - With `ok: false` the `error` value MUST be deserialised as `OpError`, and the result is the failure case.
 - For any `T: Serialize + DeserializeOwned + PartialEq`, serialising an `Envelope<T>` to JSON and deserialising it back MUST yield a value equal to the original, in both the success case and the failure case.
-- `Envelope<T>` MUST implement `Debug` where `T: Debug`, `Clone` where `T: Clone`, and `PartialEq` where `T: PartialEq`.
+- `Envelope<T>` MUST implement `Debug` where `T: Debug`.
+- `Envelope<T>` MUST implement `Clone` where `T: Clone`.
+- `Envelope<T>` MUST implement `PartialEq` where `T: PartialEq`.
 
 ### Rationale
 
@@ -142,21 +151,25 @@ sides agree on the shape at compile time.
 9. A unit test calls `into_result` on a success envelope and on a failure
    envelope and asserts `Ok(T)` and `Err(OpError)`.
 
+# Requirement: Typed error `OpError` and its five fields
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-CMD-0002: Typed error `OpError` and its five fields
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
-**Owner:** randlee  
 
 ### Requirement Statement
 
-2026-10-31 amendment: ADR-RUN-0017 temporarily replaces the caret-only
-types requirement below with exact registry `=1.5.0`. OpError wire fields and
-serialization remain unchanged; upstream cleanup removes the pin.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields. ErrorKind is its error classification enum.
+
+ADR-RUN-0017 retains the observability bridge with a registry minimum of >=1.5.0 and no upper bound. OpError wire fields and serialization remain unchanged.
 
 `OpError` is the error half of the response envelope `Envelope<T>` ([REQ-CMD-0001](requirements.md)) and the error type service functions return in `Result<T, OpError>`. A generated project's `service` crate therefore uses `sc-command` with default features; the generated workspace's crate graph, including how `service` and `daemon` obtain `sc-command`, is owned by [REQ-RUN-0301](../requirements.md).
 
@@ -198,8 +211,7 @@ Deserialising `null` or `""` builds `None`. Multi-step lists and
 `Remediation` object is not the wire form. `OpError` does not convert to or
 from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
 `sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
-or `suggested_action`. The bridge dependency requirement is temporary exact `=1.5.0`
-under ADR-RUN-0017.
+or `suggested_action`. The bridge dependency requirement is >=1.5.0 with no upper bound under ADR-RUN-0017.
 
 `OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
 `cause`, and `suggested_action` into this type without a dependency on
@@ -216,19 +228,31 @@ application name. `endpoint` and `cause` are stored in `details`.
 - The crate `sc-command` MUST export a public type `sc_command::OpError` from its crate root, available with default features.
 - `OpError` MUST carry exactly these five wire keys. (see table above)
 - It MUST serialise to a JSON object whose keys are drawn from exactly these five names and no others. (see table above)
-- `OpError` and `ErrorKind` MUST implement `serde::Serialize` and `serde::Deserialize`, because the CLI parses errors it receives from the daemon.
-- `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone`, `PartialEq`, and `Display`.
+- `OpError` MUST implement `serde::Serialize`.
+- `OpError` MUST implement `serde::Deserialize`.
+- `ErrorKind` MUST implement `serde::Serialize`.
+- `ErrorKind` MUST implement `serde::Deserialize`.
+- `OpError` MUST implement `Debug`.
+- `OpError` MUST implement `Clone`.
+- `OpError` MUST implement `PartialEq`.
+- `OpError` MUST implement `Display`.
+- `ErrorKind` MUST implement `Debug`.
+- `ErrorKind` MUST implement `Clone`.
+- `ErrorKind` MUST implement `PartialEq`.
+- `ErrorKind` MUST implement `Display`.
 - `OpError` MUST implement `std::error::Error`.
-- `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types` at temporary exact `=1.5.0` under ADR-RUN-0017 (the original tested minimum was caret 1.5.0).
+- `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`.
+- The `sc-observability-types` registry dependency requirement MUST be `>=1.5.0`.
 - When a suggestion is supplied, `suggested_action` MUST serialise as a JSON string equal to the text supplied: an `OpError` built with the suggestion `run my-app daemon start` serialises with `"suggested_action": "run my-app daemon start"`.
 - If `OpError` carries, or is built from, structured remediation, that structure MUST be `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
-- Whatever type is chosen for `details` MUST be able to hold arbitrary JSON and return it unchanged when re-serialised ([REQ-CMD-0006](requirements.md) depends on this).
+- The type chosen for `details` MUST be able to hold any valid JSON value (null, Boolean, number, string, array or object).
+- Re-serialising `details` MUST return its JSON unchanged ([REQ-CMD-0006](requirements.md) depends on this).
 
 **MUST NOT statements:**
 
 - `sc-command` MUST NOT define its own error-code type.
 - It MUST NOT serialise as a JSON object.
-- `sc-command` MUST NOT define a parallel remediation type.
+- `sc-command` MUST NOT define its own replacement for `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
 
 ### Rationale
 
@@ -242,6 +266,10 @@ line about the same failure, with one definition to maintain.
 the CLI's `DAEMON.NOT_RUNNING` error is specified in
 ([REQ-RUN-0202](../requirements.md)) and the simplest form for an agent to
 act on.
+
+The CLI parses errors received from the daemon.
+
+ADR-RUN-0017 and ANC-037 replace the former exact pin with this minimum and no upper bound.
 
 ### Success Criteria
 
@@ -278,17 +306,23 @@ act on.
 
 - ADR-RUN-0017 — 2026-10-31 amendment
 
+# Requirement: `From<Result<T, OpError>>` for `Envelope<T>`
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-CMD-0003: `From<Result<T, OpError>>` for `Envelope<T>`
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The envelope contract version is the single version value supplied by sc-command for the response object with version, ok, data and error fields. It is not supplied by the caller; the remaining type/value decision is recorded in REQ-CMD-0001.
 
 The crate `sc-command` MUST provide, with default features, the
 implementation
@@ -340,15 +374,19 @@ project writes its own success-or-failure wrapping code.
 5. `cargo test -p sc-command` (default features, without `server`) runs
    these tests and exits 0.
 
+# Requirement: axum `IntoResponse` for `Envelope<T>` (`server` feature)
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-CMD-0004: axum `IntoResponse` for `Envelope<T>` (`server` feature)
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
-**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -387,7 +425,8 @@ This rule is decided in this document; the design specifies that the conversion 
 **MUST NOT statements:**
 
 - It MUST NOT panic ([NFR-CMD-0003](requirements.md)).
-- When the `server` feature is disabled this implementation MUST NOT exist and the crate MUST NOT reference axum.
+- When the `server` feature is disabled this implementation MUST NOT exist.
+- When the `server` feature is disabled the crate MUST NOT reference axum.
 
 ### Rationale
 
@@ -415,17 +454,23 @@ crate means every SC daemon maps the same error kind to the same status.
    `grep -rn "axum" crates/sc-command/src` shows every occurrence is inside
    an item or module gated by `#[cfg(feature = "server")]`.
 
+# Requirement: `into_mcp()` to rmcp `CallToolResult` (`server` feature)
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-CMD-0005: `into_mcp()` to rmcp `CallToolResult` (`server` feature)
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+
 
 ```rust
 pub trait IntoMcp {
@@ -433,7 +478,7 @@ pub trait IntoMcp {
 }
 ```
 
-`CallToolResult` is `rmcp::model::CallToolResult` from rmcp **3.8.0**, the frozen Phase C identity (ADR-RUN-0203). `McpError`
+`CallToolResult` is `rmcp::model::CallToolResult` from the rmcp version selected under NFR-CMD-0001. Version 3.8.0 was the Phase C baseline; Phase D permits newer versions under ANC-037. `McpError`
 is `rmcp::ErrorData`, which tool handlers import under that name and which
 `sc-command` re-exports as `sc_command::McpError`. The error flag is
 `is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
@@ -470,14 +515,16 @@ so `is_error` is `Some(false)`. Failure uses
 **MUST statements:**
 
 - When the cargo feature `server` of `sc-command` is enabled, the crate MUST export a public extension trait `sc_command::IntoMcp` with one method, implemented for `Result<T, OpError>` where `T: serde::Serialize`:
-- `into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md)) and MUST place that envelope, as JSON, in the content of the returned `CallToolResult`.
+- `into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md)).
+- `into_mcp()` MUST place that envelope, as JSON, in the content of the returned `CallToolResult`.
 - The envelope JSON delivered through MCP MUST equal, as a JSON value, the body the axum conversion produces for the same `Result<T, OpError>` ([REQ-CMD-0004](requirements.md)).
 
 **MUST NOT statements:**
 
 - An `OpError` from the service MUST NOT be turned into `Err(McpError)`: an MCP protocol error would hide the envelope from the client.
 - The function MUST NOT panic ([NFR-CMD-0003](requirements.md)).
-- When the `server` feature is disabled the trait MUST NOT exist and the crate MUST NOT reference rmcp.
+- When the `server` feature is disabled the trait MUST NOT exist.
+- When the `server` feature is disabled the crate MUST NOT reference rmcp.
 
 ### Rationale
 
@@ -513,17 +560,23 @@ the same JSON as a string.
    `grep -rn "rmcp" crates/sc-command/src` shows every occurrence is inside
    an item or module gated by `#[cfg(feature = "server")]`.
 
+# Requirement: `Envelope` JSON round-trip is lossless for CLI `--json`
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-CMD-0006: `Envelope` JSON round-trip is lossless for CLI `--json`
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: JSON means JavaScript Object Notation. T is the generic data type of Envelope<T>. error.details is the arbitrary JSON structured-context field of OpError.
 
 Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
 
@@ -538,7 +591,7 @@ into `Envelope<serde_json::Value>`.
 - This MUST hold for `T = serde_json::Value` with arbitrary JSON inside `data`, including fields the CLI has no struct for.
 - This MUST hold for arbitrary JSON inside `error.details`, whatever `T` is.
 - `details` is the structured-context field of `OpError` ([REQ-CMD-0002](requirements.md)); its type MUST therefore preserve arbitrary JSON.
-- A key whose value is `null` in the input (`error` in the success case, `data` in the failure case) MUST be present with the value `null` in the output; it MUST NOT be dropped.
+- For a key whose value is `null` in the input (`error` in the success case, `data` in the failure case), the output MUST contain that key with the value `null`.
 - The `version` value in the output MUST be the value read from the input, not the version constant of the `sc-command` build doing the printing.
 
 ### Rationale
@@ -573,22 +626,25 @@ envelope object or of the error object is rejected by
    version value and asserts the output `version` equals the input
    `version`.
 
+# Requirement: `sc-command` links axum and rmcp only behind `server`
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
-**Owner:** randlee  
 
 ### Requirement Statement
 
-Phase C frozen amendment: use only the `~3.8` RMCP
-minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
-alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
-matrix. All optional/server/defaults-off gating and remaining dependency,
+Definitions: MCP means Model Context Protocol, implemented by the rmcp crate. A server feature is the Cargo feature enabling the server-side axum and rmcp conversions. Default features are the features enabled without selecting server or schema.
+
+The Phase C dependency identities below are historical. Phase D uses tested minimum registry requirements with no upper bound (ANC-037), including >=3.9 for rmcp and >=1.5.0 for observability-types; the nominal conversion signatures remain. All optional/server/defaults-off gating and remaining dependency,
 conversion and error restrictions remain binding; this does not permit
 server dependencies in a CLI's isolated normal graph.
 
@@ -607,7 +663,7 @@ impls or duplicate error models. REQ-CMD-0001/0002 wire behavior is unchanged.
 
 2026-10-31 amendment: ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
-only std. Neither activates server/axum/rmcp. The exact types pin is temporary;
+only std. Neither activates server/axum/rmcp. The types requirement is >=1.5.0 with no upper bound;
 no third-party dependency is added.
 
 `serde_json` is required because `details` holds arbitrary JSON.
@@ -623,13 +679,19 @@ use axum and rmcp.
 
 **MUST statements:**
 
-- In `crates/sc-command/Cargo.toml` the dependencies `axum` and `rmcp` MUST be declared `optional = true`.
+- In `crates/sc-command/Cargo.toml`, dependency `axum` MUST be declared `optional = true`.
+- In `crates/sc-command/Cargo.toml`, dependency `rmcp` MUST be declared `optional = true`.
 - They MUST be enabled only by a cargo feature named `server`.
-- With default features the crate MUST compile and MUST provide `Envelope<T>`, `OpError`, `ErrorKind` and `From<Result<T, OpError>> for Envelope<T>`.
-- With default features the crate's direct non-dev dependencies MUST be `serde`, `serde_json`, and `sc-observability-types` at temporary exact `=1.5.0` (ADR-RUN-0017).
-- With `--features server` the direct non-dev dependencies MUST be those plus `axum` 0.8.9 and `rmcp` `~3.8` (frozen resolved identity 3.8.0), and nothing else.
+- With default features `sc-command` MUST compile.
+- With default features `sc-command` MUST provide `Envelope<T>`.
+- With default features `sc-command` MUST provide `OpError`.
+- With default features `sc-command` MUST provide `ErrorKind`.
+- With default features `sc-command` MUST provide `From<Result<T, OpError>> for Envelope<T>`.
+- With default features the crate's direct non-dev dependencies MUST be `serde`, `serde_json`, and `sc-observability-types` with requirement `>=1.5.0` and no upper bound (ADR-RUN-0017).
+- With `--features server` the direct non-dev dependencies MUST be those plus `axum` with tested minimum 0.8.9 and `rmcp` with tested minimum 3.9, both without upper bounds, and nothing else.
 - `axum` MUST be declared with `default-features = false`.
-- With `--features server` the crate MUST additionally provide `impl IntoResponse for Envelope<T>` and the `IntoMcp::into_mcp` conversion.
+- With `--features server`, sc-command MUST additionally provide `impl IntoResponse for Envelope<T>`.
+- With `--features server`, sc-command MUST additionally provide the `IntoMcp::into_mcp` conversion.
 - Every `use`, type or function that names axum or rmcp MUST be inside code gated by `#[cfg(feature = "server")]`.
 
 **MUST NOT statements:**
@@ -663,7 +725,7 @@ daemon and the CLI share one crate.
    features) prints, below the `sc-command` root line, exactly one line
    beginning with `serde `, one beginning with `serde_json `, and one
    beginning with `sc-observability-types `, and no other line. The
-   `sc-observability-types ` line is version 1.5.0.
+   `sc-observability-types ` line reports the selected tested version, at least 1.5.0.
 8. The same command with `--features server` prints the lines of criterion
    7 plus exactly one line beginning with `axum ` and one beginning with
    `rmcp `, and no other line.
@@ -680,15 +742,19 @@ daemon and the CLI share one crate.
 - ADR-RUN-0203 — Phase C frozen amendment
 - ADR-RUN-0017 — 2026-10-31 amendment
 
+# Requirement: `sc-command` dependency boundary
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## NFR-CMD-0002: `sc-command` dependency boundary
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
 
@@ -718,12 +784,13 @@ dependencies on axum and rmcp are checked with `cargo tree`.
 
 **MUST statements:**
 
-- `sc-command` MUST depend on the published crate `sc-observability-types` at exact `=1.5.0` during the ADR-RUN-0017 bridge; remove this temporary pin when the actual upstream capability is consumed.
+- `sc-command` MUST declare its published `sc-observability-types` dependency with registry requirement `>=1.5.0`.
 
 **MUST NOT statements:**
 
 - `sc-command` MUST NOT depend on any other crate of this workspace: `sc-config`, `sc-transport` or `sc-runtime`.
-- `sc-command` MUST NOT depend, directly or transitively, on the crate `sc-observability` (the logging runtime) or on its OTel export crate `sc-observability-otlp`.
+- `sc-command` MUST NOT depend, directly or transitively, on `sc-observability`, the logging runtime.
+- `sc-command` MUST NOT depend, directly or transitively, on `sc-observability-otlp`, the OpenTelemetry export crate.
 
 ### Rationale
 
@@ -737,6 +804,8 @@ by each project and is not wrapped by these crates; the single permitted
 observability dependency is the types-only crate, because the envelope's
 error code and remediation types are defined there
 ([ADR-RUN-0004](../architecture.md)).
+
+ADR-RUN-0017 and ANC-037 set the tested minimum without an upper bound.
 
 ### Success Criteria
 
@@ -757,20 +826,26 @@ error code and remediation types are defined there
    `boundaries/sc-command/sc-command.toml`. Root `just lint` across all four
    manifests stays with sprint a-5.
 
+# Requirement: `sc-command` never panics; `into_mcp` error exception
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## NFR-CMD-0003: `sc-command` never panics; `into_mcp` error exception
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
 
+Definitions: A conversion is into_response or into_mcp, converting an Envelope<T> to the HTTP response or MCP result. T is the envelope data type. Serialize is serde::Serialize. ENVELOPE.SERIALIZATION is the fixed error code for a failed envelope serialization; HTTP 500 is the internal-server-error response status.
+
 2026-10-31 explicit exception: ADR-RUN-0017 allows only the fixed
-`ServiceName::new("noop")` invariant under exact inspected types 1.5.0,
+`ServiceName::new("noop")` invariant validated by normal tests with the selected types under ADR-RUN-0017,
 never caller/environment data. `CanonicalLog::emit` returns canonical foreign
 EventError. The rest of this panic/error rule remains in force; moving an
 existing expect into command without this amendment would violate it.
@@ -800,7 +875,9 @@ originates an error other than through serde or rmcp.
 
 **MUST statements:**
 
-- A failure inside a conversion, in particular a `T` whose `Serialize` implementation returns an error, MUST surface as a returned value: HTTP 500 with code `ENVELOPE.SERIALIZATION` from `into_response`, and `Err(McpError)` from `into_mcp`.
+- For any failure inside the `into_response` conversion, including a `T` whose `Serialize` implementation returns an error, `into_response` MUST return HTTP 500.
+- For any failure inside the `into_response` conversion, including a `T` whose `Serialize` implementation returns an error, the response envelope MUST carry error code `ENVELOPE.SERIALIZATION`.
+- For any failure inside the `into_mcp` conversion, including a `T` whose `Serialize` implementation returns an error, `into_mcp` MUST return `Err(McpError)`.
 
 **MUST NOT statements:**
 

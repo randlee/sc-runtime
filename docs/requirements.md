@@ -2756,57 +2756,91 @@ The split into two functions is the whole testability mechanism.
   unit tests, are not decided; they are pinned with the rest of the template's
   example code.
 
-## REQ-RUN-0313: The store relationship lives in a consumer adaptor
+# Requirement: The store relationship lives in a consumer adaptor
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0313: The store relationship lives in a consumer adaptor
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+
+**MUST statements:**
+
+- The relationship between the local SQLite store and the remote Postgres or SQL store MUST be defined in an adaptor crate in the consumer repository.
+
 ### Rationale
 
-SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. A generated repository that selects the copy pattern or the host-aggregate pattern contains an adaptor crate that names both stores.
 
-## REQ-RUN-0314: The copy adaptor matches the remote schema
+# Requirement: The copy adaptor matches the remote schema
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0314: The copy adaptor matches the remote schema
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The copy pattern copies the remote schema tables into local SQLite for faster or offline access.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+
+**MUST statements:**
+
+- A generated copy adaptor MUST create the remote schema tables in its local SQLite database.
+
 ### Rationale
 
-The local copy gives faster or offline access. Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+The local copy gives faster or offline access. the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. A generated copy adaptor creates the shared remote tables in SQLite.
 
-## REQ-RUN-0315: The host-aggregate adaptor collects many hosts
+# Requirement: The host-aggregate adaptor collects many hosts
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
+
+---
+
+## REQ-RUN-0315: The host-aggregate adaptor collects many hosts
+
+**Status:** Draft  
 
 ### Requirement Statement
 
@@ -2815,53 +2849,89 @@ This record is deferred and does not apply to Phase D; it creates no implementat
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. Amended 2026-10-25.
+
+**MUST statements:**
+
+- A generated host-aggregate adaptor MUST use one SQLite database per host.
+- A generated host-aggregate adaptor MUST use one remote database that aggregates rows from those hosts, using the selected Postgres or MySQL engine.
+
 ### Rationale
 
-SC projects pair a local SQLite database with a remote Postgres or SQL database; the local database is a cache. Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+SC projects pair a local SQLite database with a remote Postgres or SQL database; the local database is a cache. the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
 
-## REQ-RUN-0316: The consumer defines the host rollup
+# Requirement: The consumer defines the host rollup
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0316: The consumer defines the host rollup
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. Host rows are rows from a host-local SQLite database. The aggregate is the remote Postgres or MySQL database collecting those rows; the consumer function defines that mapping.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The consumer repository defines the rollup from host rows into the Postgres aggregate. The same function shape maps host rows into the MySQL aggregate when MySQL is that engine. Amended 2026-10-25.
+
+**MUST statements:**
+
+- The consumer repository MUST provide the function mapping host rows into the selected Postgres or MySQL aggregate.
+
 ### Rationale
 
-Generated projects own operations, routes, MCP tools, CLI commands, stores, and schemas (framework charter). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Generated projects own operations, routes, MCP tools, CLI commands, stores, and schemas (framework charter). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.
 
-## REQ-RUN-0317: `just new` generates the adaptor
+# Requirement: `just new` generates the adaptor
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0317: `just new` generates the adaptor
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. Adaptor models are the generated row types used by its Rust code.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 Adaptor Rust code and models in a new repository are generated by the command `just new` (`scripts/new_project.py`).
+
+**MUST statements:**
+
+- `just new` (`scripts/new_project.py`) MUST generate the adaptor Rust code in the new consumer repository.
+- `just new` (`scripts/new_project.py`) MUST generate the adaptor models in the new consumer repository.
+
 ### Rationale
 
-Leaving the pairing for each consumer to invent was rejected: a common pattern has one generated implementation (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Leaving the pairing for each consumer to invent was rejected: a common pattern has one generated implementation (ADR-RUN-0305). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. `just new` writes the adaptor crate and its models into the new repository.
@@ -2882,6 +2952,8 @@ Leaving the pairing for each consumer to invent was rejected: a common pattern h
 
 ### Requirement Statement
 
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store.
+
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Command-path code may be written directly as the interim form; no command path is required to be hand-written. A command whose Tcli converts directly to Tsql uses the default conversion without a custom transform. Consumer-side generators are follow-up work running in a consuming project against delivered sc-runtime; this requirement does not forbid them. No generator is built in Phase D.
@@ -2889,6 +2961,10 @@ Command-path code may be written directly as the interim form; no command path i
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The library crate named `sc-runtime` does not generate adaptor code.
+
+**MUST NOT statements:**
+
+- The library crate named `sc-runtime` MUST NOT generate adaptor code.
 
 ### Rationale
 
@@ -2898,165 +2974,278 @@ The framework instantiates; each project wires. Published crates own daemon life
 
 1. `crates/sc-runtime` contains no generator.
 
-## REQ-RUN-0319: Generation flags name one-sided tables and columns
+# Requirement: Generation flags name one-sided tables and columns
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0319: Generation flags name one-sided tables and columns
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. Generation input consists of the flags naming tables and columns. SQL-server store means the remote Postgres or MySQL store paired with local SQLite. A shared table is a table present in both stores.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.
+
+**MUST statements:**
+
+- Generation input MUST be able to name a table that exists only in SQLite.
+- Generation input MUST be able to name a table that exists only in the SQL-server store.
+- Generation input MUST be able to name a column that exists on only one side of a shared table.
+
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side of a shared table.
 
-## REQ-RUN-0320: One generated implementation per common pattern
+# Requirement: One generated implementation per common pattern
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0320: One generated implementation per common pattern
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The copy pattern keeps the remote schema in SQLite. The host-aggregate pattern pairs one SQLite database per host with a remote database aggregating many hosts.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
+
+**MUST statements:**
+
+- Every consumer repository selecting the copy pattern MUST use the same generated copy-adaptor implementation.
+- Every consumer repository selecting the host-aggregate pattern MUST use the same generated host-aggregate-adaptor implementation.
+
 ### Rationale
 
-Leaving the pairing for each consumer to invent was rejected: a common pattern has one generated implementation (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Leaving the pairing for each consumer to invent was rejected: a common pattern has one generated implementation (ADR-RUN-0305). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. Two generated repositories that select the same pattern contain the same adaptor implementation.
 
-## REQ-RUN-0321: Each database engine has its own generated code
+# Requirement: Each database engine has its own generated code
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
+
+---
+
+## REQ-RUN-0321: Each database engine has its own generated code
+
+**Status:** Active  
 
 ### Requirement Statement
 
+Definitions: A store crate is the engine-specific package holding that engine's SQL. Database engines are SQLite, Postgres and MySQL.
+
 Each database engine's SQL is in that engine's store crate.
+
+**MUST statements:**
+
+- Each database engine's SQL MUST reside in that engine's store crate.
+
 ### Rationale
 
 A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL string executed on both SQLite and Postgres was rejected: each engine has its own SQL (ADR-RUN-0305). The framework has no portable query layer (framework charter).
+
 ### Success Criteria
 
 1. `store-sqlite` contains no Postgres SQL, and `store-postgres` contains no SQLite SQL.
 
-## REQ-RUN-0322: An advanced adaptor is consumer code
+# Requirement: An advanced adaptor is consumer code
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0322: An advanced adaptor is consumer code
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The copy pattern keeps the remote schema in SQLite; the host-aggregate pattern collects host-local rows in a remote aggregate. Store building blocks are the database-specific storage implementations used by the adaptor.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+
+**MUST statements:**
+
+- The consumer MUST write an adaptor that is neither the copy pattern nor the host-aggregate pattern from the store building blocks.
+
 ### Rationale
 
-The framework instantiates; each project wires (framework charter). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+The framework instantiates; each project wires (framework charter). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. A third adaptor is a file the consumer wrote.
 
-## REQ-RUN-0323: The application schedules store synchronization
+# Requirement: The application schedules store synchronization
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0323: The application schedules store synchronization
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. Store synchronization means moving rows between the local and remote stores. Scheduling means the application initiates that transfer at the chosen time.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+
+**MUST statements:**
+
+- The consuming application MUST schedule store synchronization.
+
+**MUST NOT statements:**
+
+- The adaptor MUST NOT start a timer.
+
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. The adaptor crate starts no timer. A schedule is registered by application code.
 
-## REQ-RUN-0324: The consumer adaptor moves rows between stores
+# Requirement: The consumer adaptor moves rows between stores
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0324: The consumer adaptor moves rows between stores
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The consumer adaptor moves rows between the local store and the remote store.
+
+**MUST statements:**
+
+- The consumer adaptor MUST move rows between the local store and the remote store.
+
 ### Rationale
 
-A cache moves rows between the two stores. Store-to-store cache sync inside the sc-runtime crates is out of scope; that forwarding lives in the consumer adaptor (phase-b intent). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+A cache moves rows between the two stores. Store-to-store cache sync inside the sc-runtime crates is out of scope; that forwarding lives in the consumer adaptor (phase-b intent). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. The adaptor crate contains the copy from one store to the other.
 
-## REQ-RUN-0325: The sc-runtime crates do not move rows between stores
+# Requirement: The sc-runtime crates do not move rows between stores
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0325: The sc-runtime crates do not move rows between stores
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: The sc-runtime crates are the SDK library packages under crates/. Moving rows between stores means copying rows from one database store to another, including store-to-store synchronization; that policy belongs to the consumer adaptor.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 The sc-runtime crates do not move rows between stores.
+
+**MUST NOT statements:**
+
+- The sc-runtime crates MUST NOT move rows between stores.
+
 ### Rationale
 
-Store-to-store cache sync inside the sc-runtime crates is out of scope; that forwarding lives in the consumer adaptor (phase-b intent). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Store-to-store cache sync inside the sc-runtime crates is out of scope; that forwarding lives in the consumer adaptor (phase-b intent). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. `crates/` contains no store-to-store copy, outbox, or routing policy.
 
-## REQ-RUN-0326: Database layouts of a new application
+# Requirement: Database layouts of a new application
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0326: Database layouts of a new application
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: A layout is a supported database-store combination in the table below. Generation options are the choices in wizard/answers.schema.json. Cron is the optional sc-cron scheduler. The no-database layout selects no store.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3074,9 +3263,19 @@ Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core wr
 A layout renders the stores in its row. Synchronization and adaptor generation are deferred (PRD §9); a two-store layout does not require an adaptor. Existing adaptor code remains as interim code, not a new implementation or deletion obligation. A layout with no database renders no store crate.
 
 Phase b's existing pairing/adaptor code is historical implementation, retained as interim code. The target supports all six database layouts without requiring synchronization or a new adaptor.
+
+**MUST statements:**
+
+- The generation options MUST accept each of the six layouts in the table below.
+- Generating a layout MUST render the stores in its table row.
+- A no-database layout MUST render no store crate.
+- When a layout names a store crate that does not exist yet, `scripts/new_project.py` MUST fail before running `cargo generate`.
+- Selecting cron with the no-database layout MUST be rejected before generation.
+
 ### Rationale
 
 sc-runtime is a set of crates and a template for deploying a new application that can use its database immediately (phase-b intent).
+
 ### Success Criteria
 
 1. `wizard/answers.schema.json` accepts each layout in the table.
@@ -3084,117 +3283,208 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
 4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
 
-## REQ-RUN-0327: Paired stores use the same schema or a similar schema
+# Requirement: Paired stores use the same schema or a similar schema
 
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0327: Paired stores use the same schema or a similar schema
+
+**Status:** Draft  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The copy pattern mirrors the remote schema in SQLite. The host-aggregate pattern collects host-local rows into a remote aggregate. A schema is the set of tables and columns in a store.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
 Two stores in one application use the same schema or a similar schema.
+
+**MUST statements:**
+
+- The copy pattern MUST generate the same schema on both stores.
+- The host-aggregate pattern MUST generate schemas with tables or columns that exist on only one side.
+
 ### Rationale
 
-One SQL string executed on both engines was rejected: each engine has its own SQL, and the schemas are the same or similar (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+One SQL string executed on both engines was rejected: each engine has its own SQL, and the schemas are the same or similar (ADR-RUN-0305). the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
 
-## REQ-RUN-0328: Paired stores share a trait or use a trait per store
+# Requirement: All application stores implement Storage<T>
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
+
+---
+
+## REQ-RUN-0328: All application stores implement Storage<T>
+
+**Status:** Active  
 
 ### Requirement Statement
 
+Definitions: Storage<T> is the shared asynchronous storage trait for application-defined row type T. A store is the SQLite, Postgres or MySQL implementation in the application layout.
+
 Every store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.
+
+**MUST statements:**
+
+- Every store in an application MUST implement the same storage trait, `Storage<T>`.
+
 ### Rationale
 
-One SQL string executed on both engines was rejected: each engine has its own SQL, and a shared trait, or a different trait per engine, is allowed (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+Each engine retains its own SQL implementation while application code uses the shared typed storage contract. The previous alternative of a different trait per store is withdrawn by PRD-STO-2.
+
 ### Success Criteria
 
 1. A generated pair names one trait that both stores implement.
 
-## REQ-RUN-0329: A generated package name carries the project name
+# Requirement: A generated package name carries the project name
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
+
+---
+
+## REQ-RUN-0329: A generated package name carries the project name
+
+**Status:** Active  
 
 ### Requirement Statement
 
+Definitions: The project name is the application name chosen during generation. A role is the generated crate suffix identifying its purpose, such as types or schema. A package name is the name field of that crate's Cargo manifest.
+
 A generated crate's package name is the project name, a hyphen, and its role. Every generated package that is published uses that prefix. `<project>-types` is the non-database types crate. `<project>-schema` is the schema crate.
+
+**MUST statements:**
+
+- A generated crate's package name MUST be the project name, a hyphen and its role.
+- Every published generated package MUST use that project-name prefix.
+
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. Two projects generated with different project names produce no package name in common.
 
-## REQ-RUN-0330: Row structs live in the schema crate
+# Requirement: Row structs live in the schema crate
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0330: Row structs live in the schema crate
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: A consumer repository is an application project generated from the template. A store is the implementation for one database engine. A consumer adaptor is code in that application repository that moves rows between its local SQLite store and a remote Postgres or MySQL store. The schema crate is the generated <project>-schema package holding database row structs. The types crate holds non-database API types.
 
 Row type structs are in the schema crate. The types crate is for non-database types.
 
 The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+
+**MUST statements:**
+
+- Database row type structs MUST reside in the schema crate.
+- The types crate MUST contain no database row struct.
+- The adaptor MUST depend on `<project>-schema`.
+
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
+the storage plan is a generated adaptor in the consumer repository.
+
 ### Success Criteria
 
 1. The schema crate contains the row structs.
 2. The types crate contains no database row struct.
 3. The adaptor crate depends on the schema crate.
 
-## REQ-RUN-0331: General database commands are a disableable bootstrap
+# Requirement: General database commands are a disableable bootstrap
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0331: General database commands are a disableable bootstrap
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: A database layout is the selected combination of SQLite, Postgres and MySQL stores; the no-database layout selects none. General database commands are the disableable bootstrap command surface, including delete row <table> <id>.
+
+Definitions: CLI is the command-line interface. MCP is Model Context Protocol. HTTP is the daemon request interface. The backend operation is the shared storage operation called by each application command projection.
 
 The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
 
 A layout with no database renders none of these commands.
+
+**MUST statements:**
+
+- A generated project with a store MUST register `delete row <table> <id>` on the CLI.
+- A generated project with a store MUST register `delete row <table> <id>` on MCP.
+- A generated project with a store MUST register `delete row <table> <id>` over HTTP.
+- The consumer MUST be able to disable that general-database command surface.
+- A no-database layout MUST render none of the general database commands.
+- An application command MUST call the same backend operation through its own CLI command.
+- An application command MUST call the same backend operation through its own MCP tool.
+- An application command MUST call the same backend operation through its own HTTP route.
+
 ### Rationale
 
 General database commands are the bootstrap. The consumer disables that public surface and adds application commands that call the same backend operations (phase-b intent).
+
 ### Success Criteria
 
 1. A generated project with a store registers `delete row <table> <id>` on the CLI, on MCP, and over HTTP.
 2. A flag removes those three commands.
 3. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route.
 
-## REQ-RUN-0332: Optional shared cron command projections
+# Requirement: Optional shared cron command projections
 
 **Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0332: Optional shared cron command projections
+
+**Status:** Approved  
+
 ### Requirement Statement
+
+Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the shared cron command request types and implementation. Feature-off means the cron feature is disabled.
 
 Phase C target, planned: generation defaults `cron_commands` to false. When
 explicitly selected with cron enabled, the generated application wires the
@@ -3206,23 +3496,50 @@ cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-onl
 example or DTO library does not satisfy selected generation. REQ-RUN-0702's
 shared public release includes the optional new adapter. CLI clients remain
 free of cron/server implementation under NFR-RUN-0001.
+
+**MUST statements:**
+
+- Generation MUST default `cron_commands` to false.
+- When `cron_commands` is explicitly selected with cron enabled, the generated CLI MUST use the standard start/end/list DTO and handler.
+- When `cron_commands` is explicitly selected with cron enabled, the generated HTTP interface MUST use the same standard start/end/list DTO and handler.
+- When `cron_commands` is explicitly selected with cron and MCP enabled, the generated MCP interface MUST use that same standard start/end/list DTO and handler.
+- Selected generation MUST wire the real shared handler into the selected interfaces; a docs-only example or DTO library does not satisfy this requirement.
+
+**MUST NOT statements:**
+
+- DTO use MUST NOT add a scheduler dependency to feature-off core or generated builds.
+- DTO use MUST NOT add a server dependency to feature-off core or generated builds.
+
 ### Rationale
 
-Owner (ANC-014): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." Phase C objective 4: default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.
+Optional standard cron commands give each selected interface the same JSON contract. Default-off generation leaves core usable alone; explicit selection wires the real shared handler into the existing interfaces.
+
 ### Success Criteria
 
 1. Default-off generation has no standard commands/adapter worker, DTO-only CLI graphs remain server/cron/SQLite/Monty free, and disabled MCP stays disabled.
 2. Actual CLI, HTTP and selected MCP use the same canonical JSON start/end/list command contract across Rust, Python and explicit Monty targets; the same request yields equivalent normalized data/error across actual UI projections.
 
-## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
+# Requirement: Options contract `wizard/answers.schema.json`
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: v0.1 is the initial release whose closed option set is the project name, db, mcp and licence listed in the table. Generation options are the property keys and values in the answers object.
+
+Definitions: A schema version identifies the published generation-options contract described by wizard/answers.schema.json.
+
+Definitions: The licence input is the selected license for the generated project; MIT is its default rather than a template restriction.
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
@@ -3254,22 +3571,38 @@ recorded in Active [ADR-RUN-0402](architecture.md). Sprint a-1 proved it
 **MUST statements:**
 
 - The repository MUST contain the file `wizard/answers.schema.json`.
-- It MUST be a valid JSON Schema document whose top level describes one JSON object, called here the answers object.
+- `wizard/answers.schema.json` MUST be a valid JSON Schema document.
+- The top level of `wizard/answers.schema.json` MUST describe one JSON object, called the answers object.
 - The schema MUST be the only definition of the generation options.
-- For every option it MUST state the option's name (the property key), its JSON type, its default where it has one, its allowed values where it is an enum, and any conditional requirement between options.
-- In v0.1 the schema MUST define these four options and MUST NOT define any other. (see table above)
-- The generator is used for projects that are not MIT licensed and not open source, so the licence of a generated project MUST be an input and MUST NOT be fixed by the template.
-- The schema MUST carry a schema version, because it is a published contract: the sc-lint project reads the same answers object and the same schema to install lint and `just` infrastructure into a generated project.
+- For every generation option the schema MUST state its name (the property key).
+- For every generation option the schema MUST state its JSON type.
+- For every generation option the schema MUST state its default where it has one.
+- For every generation option the schema MUST state its allowed values where it is an enum.
+- For every generation option the schema MUST state any conditional requirement between options.
+- In v0.1 the schema MUST define the four options in the table above.
+- The licence of a generated project MUST be an input.
+- The schema MUST carry a schema version.
+- The driver MUST read option names from the schema.
+- The driver MUST read option defaults from the schema.
 
 **MUST NOT statements:**
 
-- The driver MUST NOT hold a list of option names or option defaults of its own; it MUST read both from the schema.
+- In v0.1 the schema MUST NOT define any other option.
+- The template MUST NOT fix the licence of a generated project.
+- The driver MUST NOT hold its own list of option names.
+- The driver MUST NOT hold its own list of option defaults.
+
 ### Rationale
 
 The wizard, the driver, `template/cargo-generate.toml` and sc-lint all need
 the option set. One definition is the only way they cannot disagree. The
 answers object and this schema are the entire interface between this project
 and sc-lint, so the schema is versioned like any other published contract.
+
+The generator is used for projects that are not MIT licensed and not open source.
+
+The schema is a published contract: sc-lint reads it and the answers object to install lint and just infrastructure into a generated project.
+
 ### Success Criteria
 
 1. A unit test under `tests/unit/` loads `wizard/answers.schema.json` and
@@ -3291,6 +3624,7 @@ and sc-lint, so the schema is versioned like any other published contract.
    option defaults of its own; it reads both from the schema. Sprint `b-8`
    removes the v0.1 reserved-database check. The driver holds no extra `db`
    rejection list. Amended 2026-10-25.
+
 ### Implementation Notes
 
 **Key Considerations:**
@@ -3313,8 +3647,6 @@ and sc-lint, so the schema is versioned like any other published contract.
   A `db` value outside the six strings, including `both`, fails schema
   validation. Sprint `b-8` removes the v0.1 reserved-database driver check.
   Amended 2026-10-25.
-
----
 
 ## REQ-RUN-0402: Key-set test: schema versus template placeholders
 
@@ -3392,15 +3724,25 @@ mechanically.
 
 ---
 
-## REQ-RUN-0403: Answers fixtures and fail-closed validation tests
+# Requirement: Answers fixtures and fail-closed validation tests
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0403: Answers fixtures and fail-closed validation tests
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: MCP means Model Context Protocol; the mcp generation option selects its interface. db selects the database layout. sqlite-mcp.json selects SQLite with MCP enabled.
+
+Definitions: An answers file is a JSON object of generation option values. Schema-invalid answers fail wizard/answers.schema.json validation. Refused answers files are test inputs of that schema-invalid class; accepted Postgres/MySQL layouts are not refused. A fixture variant is a supported combination of option values.
 
 A variant is one combination of option values that the template supports.
 
@@ -3431,12 +3773,16 @@ held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
 **MUST statements:**
 
 - The directory `wizard/fixtures/` MUST hold one answers JSON file per tested variant of the template.
-- Every file matching `wizard/fixtures/*.json` MUST be a complete answers object that validates against `wizard/answers.schema.json`, because template CI generates a project from every file matching that glob.
+- Every file matching `wizard/fixtures/*.json` MUST be a complete answers object.
+- Every file matching `wizard/fixtures/*.json` MUST validate against `wizard/answers.schema.json`.
 - `wizard/fixtures/` MUST contain `sqlite-mcp.json`, the variant with `db = sqlite` and `mcp = true`.
-- It MUST also contain a variant with `db = sqlite` and `mcp = false`, and a variant whose licence is not `MIT`, because projects that are not MIT licensed are the reason the licence is an option.
+- `wizard/fixtures/` MUST contain a variant with `db = sqlite` and `mcp = false`.
+- `wizard/fixtures/` MUST contain a variant whose licence is not `MIT`.
 - Every fixture MUST state the licence explicitly, including the ones that use `MIT`, so that a fixture and the wizard's output for the same choices are equal JSON ([REQ-RUN-0603](requirements.md)).
-- The repository MUST also hold answers files that must be refused, used only by unit tests.
+- The repository MUST hold schema-invalid answers files for refusal tests.
+- The schema-invalid refusal-test answers files MUST be used only by unit tests.
 - `tests/unit/` MUST contain tests that assert:
+
 ### Rationale
 
 The fixtures are the template's test matrix: each one becomes a generated
@@ -3445,6 +3791,9 @@ to the sc-lint team as the reference for its install packages, the other two
 being the schema and the prototype repositories generated from the fixtures.
 Failing closed matters because a project rendered from bad answers looks
 finished and is wrong.
+
+Projects that are not MIT licensed are the reason the licence is an option.
+
 ### Success Criteria
 
 1. A unit test validates every file matching `wizard/fixtures/*.json` against
@@ -3464,6 +3813,7 @@ finished and is wrong.
 6. Outside `wizard/fixtures/`, the repository holds one schema-invalid
    answers file with `db` equal to `"both"`. A fixture with `db` equal to
    `"postgres"` validates against the schema. Amended 2026-10-25.
+
 ### Implementation Notes
 
 **Key Considerations:**
@@ -3476,17 +3826,23 @@ finished and is wrong.
 - OPEN: the language and test runner of `tests/unit/` are not decided (the
   driver is Python).
 
+# Requirement: Generation driver `scripts/new_project.py` pipeline
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-RUN-0501: Generation driver `scripts/new_project.py` pipeline
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The base driver is scripts/new_project.py as delivered at the template milestone, before optional wizard answer acquisition. An answers object is the complete generation-options JSON object validated by wizard/answers.schema.json. The six-step pipeline is validate, values file, cargo generate, sc-compose, just lint and just test in that order.
 
 The driver and `scripts/run_wizard.py` live under `scripts/`, outside `template/`, so they are never copied into a generated project; the repository layout that guarantees this is owned by [REQ-RUN-0001](requirements.md).
 
@@ -3515,16 +3871,21 @@ the rule that the driver stops at the first failure are unchanged.
 
 - The repository MUST contain a Python script `scripts/new_project.py`, called here the driver.
 - The root `justfile` MUST expose it as `just new <dest>`, where `<dest>` is where the new project is created.
-- The base driver delivered with the template milestone MUST obtain one complete answers JSON object from the file given with `--var-file` and then MUST run these steps in this order: (see table above)
+- The base generation driver MUST obtain one complete answers JSON object from the file given with `--var-file`.
+- After obtaining that object, the base driver MUST run the six table steps in their listed order.
 - The driver MUST stop at the first step that fails.
-- It MUST then exit with a non-zero status and MUST write a message to stderr that identifies which of the six steps failed.
+- At the first failed step the driver MUST exit with a non-zero status.
+- At the first failed step the driver MUST write a message to stderr identifying which of the six steps failed.
 - When every step succeeds the driver MUST exit with status 0.
-- It MUST feed the resulting complete JSON object through this same validation and six-step pipeline; it does not create a second driver or a second owner for these steps.
+- The driver MUST feed the resulting complete JSON object through the same validation and six-step pipeline.
 
 **MUST NOT statements:**
 
+- Wizard answer acquisition MUST NOT create a second generation driver.
+- Wizard answer acquisition MUST NOT create a second owner for the six generation steps.
 - It MUST NOT run any later step.
 - The driver MUST NOT render any template file itself; rendering is done only by `cargo generate` and `sc-compose`.
+
 ### Rationale
 
 The pipeline follows the one already proven in the `p3-nuget-template`
@@ -3533,6 +3894,7 @@ renders the project. Here `cargo-generate` takes the place of that
 repository's custom render engine, so no render engine is written. Running
 lint and test last means a generated project is known good at birth, and
 naming the failed step tells a person or an agent where to look.
+
 ### Success Criteria
 
 1. `just --list` at the repository root shows a `new` recipe, and the recipe
@@ -3556,6 +3918,7 @@ naming the failed step tells a person or an agent where to look.
    real project from `wizard/fixtures/sqlite-mcp.json`, exits 0. That the
    project then holds `AGENTS.md` and `CLAUDE.md` and no `.j2` file is
    checked by the criteria of [REQ-RUN-0305](requirements.md).
+
 ### Implementation Notes
 
 **Key Considerations:**
@@ -3571,17 +3934,23 @@ naming the failed step tells a person or an agent where to look.
   ([REQ-RUN-0402](requirements.md) owns the question of whether the
   project-name key is a placeholder).
 
+# Requirement: Fully non-interactive mode and tool discovery
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-RUN-0502: Fully non-interactive mode and tool discovery
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The base driver is scripts/new_project.py without wizard answer acquisition. A required tool is an executable needed for the generation pipeline. sc-compose is the external agent-document renderer. The two lookup places are the executable named by SC_COMPOSE and sc-compose on PATH. Wyvern is the optional wizard host, which var-file mode does not use.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3603,20 +3972,29 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 - Every tool it starts (`cargo generate` in particular) MUST be started so that it cannot prompt.
 - The base driver MUST locate `sc-compose` in this order: (see table above)
 - When a required tool is found in neither place the driver MUST exit with a non-zero status.
-- It MUST do so before running `cargo generate`, so that no half-generated project is left behind (the timing is decided in this document).
-- Its stderr message MUST name the missing tool and MUST state both ways to supply it: the environment variable and `PATH`.
+- When a required tool is missing, the driver MUST exit before running `cargo generate`.
+- The missing-tool stderr message MUST name that tool.
+- The missing-tool stderr message MUST identify its environment variable as a way to supply it.
+- The missing-tool stderr message MUST identify `PATH` as a way to supply it.
 
 **MUST NOT statements:**
 
-- With `--var-file` the driver MUST NOT read from stdin, MUST NOT show any prompt, and MUST NOT start the Wyvern wizard.
-- It MUST NOT look for or require the `wyvern` executable in this mode.
+- With `--var-file` the driver MUST NOT read from stdin.
+- With `--var-file` the driver MUST NOT show any prompt.
+- With `--var-file` the driver MUST NOT start the Wyvern wizard.
+- With `--var-file` the driver MUST NOT look for the `wyvern` executable.
+- With `--var-file` the driver MUST NOT require the `wyvern` executable.
 - The driver MUST NOT contain a hard-coded install path for `sc-compose`.
+
 ### Rationale
 
 CI and agents generate projects, and neither can answer a prompt or open a
 wizard window. The non-interactive mode therefore has no Wyvern dependency.
 An environment-variable override lets a machine point at sc-compose when it
 is not on `PATH` without the script guessing install prefixes.
+
+Preflight failure before cargo generate avoids leaving a half-generated project.
+
 ### Success Criteria
 
 1. CI runs `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` with
@@ -3636,17 +4014,23 @@ is not on `PATH` without the script guessing install prefixes.
 6. Inspection: `scripts/new_project.py` contains no absolute path to
    `sc-compose` and no Wyvern invocation or discovery logic.
 
+# Requirement: A generated project is green with no edits
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-RUN-0503: A generated project is green with no edits
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-11-05  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: REST is the daemon HTTP interface. MCP is Model Context Protocol. CLI is the command-line interface. The example operation test exercises widget.create and widget.get through those three command projections. DaemonFixture starts the production daemon code in the test process with an isolated temporary instance root.
 
 This item owns the definition of "green with no edits" and applies it to one
 answers fixture. [REQ-RUN-0701](requirements.md) applies the same sequence to
@@ -3666,16 +4050,19 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 
 **MUST statements:**
 
-- Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` from the root of a clean checkout of this repository MUST exit 0 and MUST create a project at `<dest>`.
+- Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` from the root of a clean checkout MUST exit 0.
+- That command MUST create a project at `<dest>`.
 - In that project, with no file added, changed or deleted after generation, the next commands MUST exit 0 in this order: `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`.
 - `just test` in the generated project MUST include the template's example operation test, which calls `widget.create` and `widget.get` through REST, MCP and the CLI against a daemon started by `sc_runtime::testing::DaemonFixture`.
 - The generated project MUST resolve the crates `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` without any manual step.
+
 ### Rationale
 
 This is the exit gate for the template in the minimum viable product. The
 first thing a new project does must not be fixing the scaffold, and an agent
 that generates a project must be able to trust that a red build is its own
 doing.
+
 ### Success Criteria
 
 These criteria are met by the `sqlite-mcp` entry of the fixture-matrix
@@ -3690,7 +4077,7 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    between that writes to that directory, and it exits 0.
 4. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
    `just test` includes the observability grep: `crates/daemon` requires
-   `sc-observability` at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and
+   `sc-observability` with registry requirement >=1.5.0 and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
@@ -3708,17 +4095,23 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
 7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.
 
+# Requirement: A Wyvern wizard built by copy and edit
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-RUN-0601: A Wyvern wizard built by copy and edit
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The wizard pages are the HTML files under wizard/pages/. Their fields are input controls for generation options, and their lists are the selectable option values. The options schema is wizard/answers.schema.json.
 
 Wyvern is the tool that shows a wizard's HTML pages and prints the collected data as JSON on stdout when the person finishes. The wizard consists of:
 
@@ -3743,17 +4136,20 @@ the wizard's files only (criterion 5).
 - The repository MUST contain a Wyvern wizard that collects the generation options from a person.
 - The wizard MUST be made by copying the working wizard of the private repository `Radiant-Vision-Systems/p3-nuget-template` (read at commit `9ef4d03`) and editing it.
 - The edit MUST change the fields and lists on the pages so that they match the options defined in `wizard/answers.schema.json` as that schema stands when the wizard is built.
-- The wizard MUST offer an input for every option in the schema and MUST NOT offer an input for anything the schema does not define.
+- The wizard MUST offer an input for every option in the schema.
 
 **MUST NOT statements:**
 
+- The wizard MUST NOT offer an input for anything the schema does not define.
 - The wizard MUST NOT be written from scratch.
+
 ### Rationale
 
 The `p3-nuget-template` wizard is a working example that is already driven by
 an answers schema, so the work here is an edit of about one to two hours, not
 a build. Keeping `wizard/` beside `template/` and not inside it means nothing
 has to be deleted from a generated project after rendering.
+
 ### Success Criteria
 
 1. `wizard/wizard.json`, at least one `wizard/pages/*.html`,
@@ -3769,17 +4165,23 @@ has to be deleted from a generated project after rendering.
    `find <dest> -name 'wizard.json' -o -name 'answers.schema.json' -o -name
    'wizard-answers.js' -o -name 'wizard-page.css'` prints nothing.
 
+# Requirement: Driver entry modes: wizard, `--prefill`, `--var-file`
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
 ---
 
 ## REQ-RUN-0602: Driver entry modes: wizard, `--prefill`, `--var-file`
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-09-21  
-**Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: An answers object is a complete JSON object of project-generation option values. The three modes are interactive wizard, prefilled wizard and non-interactive var-file. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test, owned by REQ-RUN-0501. Wyvern is the HTML wizard host.
 
 | Mode | Command line | Behaviour |
 |---|---|---|
@@ -3814,12 +4216,19 @@ as [ADR-RUN-0401](architecture.md).
 **MUST statements:**
 
 - The generation driver `scripts/new_project.py` (run as `just new <dest>`) MUST support exactly three ways of obtaining the answers JSON object: (see table above)
-- In all three modes the answers object MUST then be validated against `wizard/answers.schema.json` and passed through the same generation steps.
-- Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`; if neither exists it MUST fail before `cargo generate`, name `wyvern`, `WYVERN_BIN`, and `PATH` on stderr, and leave no destination.
+- In all three answer-acquisition modes, the answers object MUST be validated against `wizard/answers.schema.json`.
+- In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
+- Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`.
+- If Wyvern is found in neither place, wizard code MUST fail before `cargo generate`.
+- If Wyvern is found in neither place, wizard code MUST name `wyvern` on stderr.
+- If Wyvern is found in neither place, wizard code MUST name `WYVERN_BIN` on stderr.
+- If Wyvern is found in neither place, wizard code MUST name `PATH` on stderr.
+- If Wyvern is found in neither place, wizard code MUST leave no destination.
 
 **MUST NOT statements:**
 
 - When the wizard ends without the person finishing it, the driver MUST NOT run `cargo generate`.
+
 ### Rationale
 
 These are the three modes already proven in the `p3-nuget-template`
@@ -3827,6 +4236,7 @@ repository: a person answers, an agent guesses and a person reviews, or an
 agent or CI supplies everything with no person present. All three produce the
 same answers JSON, which is why nothing after validation needs to know which
 one was used.
+
 ### Success Criteria
 
 Each test replaces Wyvern with a stub executable named through the
@@ -3853,8 +4263,6 @@ was given and prints a canned finished-wizard result.
    line names `wyvern`, `WYVERN_BIN`, and `PATH`, and no destination is
    created.
 7. Inspection finds no absolute Wyvern path in either driver script.
-
----
 
 ## REQ-RUN-0603: Wizard output equals the equivalent answers fixture
 
@@ -3916,15 +4324,23 @@ the template, the driver or CI.
 
 ---
 
-## REQ-RUN-0701: Template CI: answers-fixture matrix workflow
+# Requirement: Template CI: answers-fixture matrix workflow
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-30  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RUN-0701: Template CI: answers-fixture matrix workflow
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: A Postgres service container is the workflow-provided PostgreSQL database service used by the generated project tests. Wyvern is the interactive HTML wizard host. A fixture is a complete answers JSON file in wizard/fixtures/ for one generated option combination.
 
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
@@ -3933,7 +4349,7 @@ the template, the driver or CI.
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
-   at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
+   with registry requirement >=1.5.0 and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
@@ -3972,8 +4388,9 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 **MUST statements:**
 
 - A GitHub Actions workflow under `.github/workflows/` in this repository MUST test the template by generating real projects.
-- For every file matching `wizard/fixtures/*.json`, each of which is one complete answers JSON file for one supported option combination, the workflow MUST run these commands in this order and MUST fail when any of them exits non-zero:
-- Each fixture MUST be a separate matrix entry, so that one failing variant is reported by its fixture name.
+- For every complete answers file matching `wizard/fixtures/*.json`, the workflow MUST run the commands below in their listed order.
+- For every fixture, the workflow MUST fail when any listed command exits non-zero.
+- Each fixture MUST be a separate matrix entry.
 - The list of fixtures MUST be derived from the files present in `wizard/fixtures/`.
 - The workflow MUST run on every pull request.
 - In every run of the workflow except the release run required by [REQ-RUN-0702](requirements.md), each generated project MUST resolve the four crates `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` from the checkout under test, not from crates.io and not from another commit.
@@ -3984,6 +4401,7 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 - Adding a fixture file MUST NOT require an edit to the workflow.
 - The workflow MUST NOT install or invoke Wyvern.
 - The workflow MUST NOT use the `cargo-generate-action` GitHub Action as its matrix mechanism.
+
 ### Rationale
 
 Every supported option combination is generated, linted and tested on every
@@ -3994,6 +4412,9 @@ Keeping the crates and the template in one repository is only useful if CI
 tests them together at one commit; after the first publish a generated
 project would otherwise resolve the published crates, and a pull request
 would be tested against the old crate code.
+
+A separate matrix entry reports a failing variant by its fixture name.
+
 ### Success Criteria
 
 1. A workflow file under `.github/workflows/` contains a job that runs
@@ -4021,6 +4442,7 @@ would be tested against the old crate code.
 7. A pull request that renames a public function in one of the four crates
    and updates the template's call to it, with no other change, produces a
    green matrix.
+
 ### Implementation Notes
 
 **Key Considerations:**
@@ -4032,9 +4454,7 @@ would be tested against the old crate code.
   Writing them after generation must not count as an edit that breaks "green
   with no edits"; how that is reconciled is part of the same question.
 
----
-
-# Requirement: Coordinated public release and registry consumers
+## REQ-RUN-0702: Coordinated public release and registry consumers
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -4042,31 +4462,31 @@ would be tested against the old crate code.
 **Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
----
-
-## REQ-RUN-0702: Coordinated public release and registry consumers
-
-**Status:** Active  
-
 ### Requirement Statement
+
+Definitions: The software development kit (SDK) in this record is the nine public crates identified by REQ-RUN-0002; `sc-storage` is its shared storage crate and `sc-monty` its Monty interpreter crate. The fixture matrix is the template CI workflow that generates one project per `wizard/fixtures/*.json` file and runs `just setup`, `just lint`, `just test`, `just build-cli`, and `just build-daemon` (REQ-RUN-0701). Registry-only resolution means the generated project's SDK crates come from crates.io without checkout paths, Git dependencies, or patch substitutes. A registry consumer proof is the build and test of a project generated from published packages with that resolution. The qualified publishing kit is the sc-publish kit pinned by `release/sc-publish-pin.toml`, together with its existing preflight and package checks. Archive rehearsal is the verified multi-package Cargo dry run and inspection of normalized `.crate` manifests and contents. A controlled-host benchmark is the workspace campaign run on `atmbench@rand-m5` with committed JSON, HTML, and report-index evidence reviewed by the quality manager. An isolated daemon lifecycle test starts a daemon binary on an isolated virtual machine or ephemeral CI runner (NFR-RUN-0010). Human release authorization and credentials are the release authorization and registry credentials described in `docs/releases/v0.1.0.md`. The release tag is the Git tag naming the source commit used for publication and registry consumer proof. The newest-tested `Cargo.lock` records dependency versions actually tested; `.sc-runtime/tested-dependencies.json` records those tested dependencies. A generated populated repository is a project generated from the delivered template with its selected profile rendered.
 
 This requirement governs the coordinated 0.3.0 release of the nine public crates identified by REQ-RUN-0002 and delivery of the generated template.
 
 **MUST statements:**
 
 - The release MUST publish all public crates at the coordinated version.
-- Publication MUST follow the dependency order of the final manifests, with independent sc-storage and sc-monty in the first wave.
+- Publication MUST follow the dependency order recorded in the final manifests.
+- The first publication wave MUST include the independent crates `sc-storage` and `sc-monty`.
 - The released template MUST resolve SDK crates from crates.io without checkout path, Git or patch substitutes.
 - The template fixture matrix MUST pass against the released registry packages.
 - The release tag MUST identify the same source used for publication and registry consumer proof.
-- The release MUST use the qualified publishing kit and its existing preflight and package checks.
+- The release MUST use the qualified publishing kit.
+- The release MUST pass the kit's existing preflight.
+- The release MUST pass the kit's existing package checks.
 - Exact packaged archives MUST pass rehearsal before upload.
 - Actual post-publication consumers MUST pass with registry-only SDK resolution.
 - The release MUST preserve the existing human-authorization and credential requirements for publication.
 - Existing controlled-host benchmark and isolated daemon lifecycle requirements MUST remain release prerequisites.
-- Each delivered template release MUST include its newest-tested Cargo.lock and matching .sc-runtime/tested-dependencies.json.
-- Generated populated repositories MUST receive the release lock and tested-dependency metadata.
-
+- Each delivered template release MUST include its newest-tested `Cargo.lock`.
+- Each delivered template release MUST include matching `.sc-runtime/tested-dependencies.json`.
+- Generated populated repositories MUST receive the release lock.
+- Generated populated repositories MUST receive tested-dependency metadata.
 **MUST NOT statements:**
 
 - Checkout-patched consumer tests MUST NOT be reported as registry proof.
@@ -4076,13 +4496,16 @@ This requirement governs the coordinated 0.3.0 release of the nine public crates
 
 Published registry packages permit consuming projects to upgrade the SDK through Cargo. A tested lock and dependency metadata recommend a known combination without restricting consumer dependency choices.
 
+
 ### Success Criteria
 
 The coordinated packages are visible in crates.io, the exact-archive rehearsal and registry-only consumer runs pass, the fixture matrix is green, and the release tag identifies the qualified source. Generated profiles receive the matching tested lock and metadata from their release build/test run.
 
+
 ### Implementation Notes
 
-ADR-RUN-0017 governs the retained observability shim. Phase D uses open dependency floors under ANC-037; obsolete earlier-release pins and forced-cleanup probes do not govern this release.
+ADR-RUN-0017 governs the retained observability shim. Under ANC-037, Phase D published/template observability requirements are >=1.5.0 with no upper bound. Normal builds and tests validate compatibility with selected versions and replace registry-availability refresh, the isolated signature/direct-Arc probes, and the forced shim-mode-fail cleanup gate. No cleanup work follows merely from an upstream release becoming available.
+
 
 ### Related Documents
 
