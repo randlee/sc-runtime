@@ -3923,7 +3923,7 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started, so a stub's record shows whether that program was started. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started and the arguments it was given, so a stub's record shows whether and how that program was started. A driver test is an integration test that runs `scripts/new_project.py` as a child process with stubs first on `PATH`, then reads the driver's exit status, its stderr and the stubs' records. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3983,13 +3983,16 @@ is not on `PATH` without the script guessing install prefixes.
    stub named `sc-compose` on `PATH`, and asserts that the one named by
    `SC_COMPOSE` was called.
 5. A driver test with `SC_COMPOSE` unset, no `sc-compose` on `PATH` and a
-   stub named `cargo` first on `PATH` asserts a non-zero exit, that stderr
-   contains `sc-compose`, `SC_COMPOSE` and `PATH`, and that the stub's record
-   shows no start of `cargo generate`.
-6. Inspection: `scripts/new_project.py` contains no absolute path to
+   stub named `cargo` first on `PATH` asserts a non-zero exit and that stderr
+   contains `sc-compose`, `SC_COMPOSE` and `PATH`.
+6. When sc-compose is missing, the driver does not start `cargo generate`:
+   a driver test with `SC_COMPOSE` unset, no `sc-compose` on `PATH` and a
+   stub named `cargo` first on `PATH` asserts that the stub's record shows
+   no start of `cargo` with `generate` as its first argument.
+7. Inspection: `scripts/new_project.py` contains no absolute path to
    `sc-compose` and no Wyvern invocation or discovery logic, and every
    generation call in it passes `stdin=subprocess.DEVNULL`.
-7. A driver test runs `--var-file` mode with `SC_COMPOSE` set to a stub and a
+8. A driver test runs `--var-file` mode with `SC_COMPOSE` set to a stub and a
    stub named `cargo` first on `PATH`, each stub recording the file its
    standard input is connected to, and asserts that every recorded file is
    `/dev/null`.
