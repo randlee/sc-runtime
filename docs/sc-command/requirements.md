@@ -861,7 +861,10 @@ third-party crate dictates them: `sc_command::IntoMcp::into_mcp` returns
 `Result<CallToolResult, McpError>` with rmcp's `ErrorData` (imported as
 `McpError`), which is what an rmcp `#[tool]` function must return; and
 axum's `IntoResponse::into_response` is infallible. `into_mcp` is the only
-fallible public function this document requires of `sc-command`. v0.1 does
+fallible public function this document requires of `sc-command`.
+[ADR-RUN-0021](../architecture.md) separately requires the shared
+`storage_read` and `storage_write` helpers, which return the typed
+`StorageCommandError`. v0.1 does
 not add an `sc-command` error enum. No function required by
 [REQ-CMD-0001](requirements.md) through [REQ-CMD-0006](requirements.md)
 originates an error other than through serde or rmcp.
@@ -901,10 +904,14 @@ rule does not reject the two signatures that rmcp and axum require.
    panicking.
 4. A test calls `.into_mcp()` on `Ok(value)` of that same type and
    completes without panicking.
-5. Inspection of the public API of `crates/sc-command/src`: apart from the
-   `serde::Serialize` and `serde::Deserialize` implementations, whose error
-   types serde dictates, the only public function returning a `Result` is
-   `IntoMcp::into_mcp`, and its error type is rmcp's `McpError`.
+5. Inspection of the exported function signatures in `crates/sc-command/src`
+   shows that every public fallible operation returns `Result<T, E>` with a
+   named error type `E`: `storage_read` and `storage_write` return
+   `StorageCommandError`; `IntoMcp::into_mcp` returns rmcp's `McpError`;
+   `CanonicalLog::emit` returns the canonical `EventError`; and the
+   `serde::Serialize` and `serde::Deserialize` implementations return the
+   error types serde dictates. The inspection does not require `into_mcp`
+   to be the only public function returning a `Result`.
 
 ### Related Documents
 
