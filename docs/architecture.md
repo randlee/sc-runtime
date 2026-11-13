@@ -2268,7 +2268,7 @@ gate.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-27  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -2282,7 +2282,7 @@ gate.
 - [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
 ### Context
 
-Withdrawn: the `store-sqlite` column of point 1 (sqlx `sqlite` driver, two sqlx pools, per-table `query!` functions) and point 2's rule that there is no shared, published store trait. Still standing: `store-postgres` and `store-mysql` use sqlx, one crate per engine.
+Amended 2026-11-13 (PRD-STO-2, PRD-STO-3): the SQLite store no longer uses sqlx, and every store is behind the shared `Storage<T>` trait. `store-postgres` and `store-mysql` use sqlx, one crate per engine.
 
 SC projects commonly pair SQLite (fast local traffic) with Postgres (a shared
 aggregate across hosts), with different schemas and roles. sqlx's `query!`
@@ -2291,24 +2291,29 @@ one database, and sqlx 0.9 requires a separate crate per database to keep
 checked queries. Its `sqlx.toml` lets each crate name its own database URL
 variable, so two such crates can build in one workspace.
 
-The problem is that one store crate cannot hold checked queries for both SQLite and Postgres under sqlx 0.9, yet SC projects need both backends in one workspace.
+The problem is that one sqlx store crate cannot hold checked queries for both Postgres and MySQL under sqlx 0.9, yet SC projects need more than one backend in one workspace.
 ### Decision
 
-1. A store MUST be one crate in the generated project bound to exactly one
-   sqlx driver:
+1. A Postgres or MySQL store MUST be one crate in the generated project bound
+   to exactly one sqlx driver (PRD-STO-2):
 
-   | | `store-sqlite` | `store-postgres` | `store-mysql` |
-   |---|---|---|---|
-   | sqlx feature | `sqlite` | `postgres` | `mysql` |
-   | URL variable in `sqlx.toml` | `SQLITE_DATABASE_URL` | `POSTGRES_DATABASE_URL` | `MYSQL_DATABASE_URL` |
-   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same | same |
-   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same | same |
-   | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool | single pool |
-   | Rendered package | `<project>-store-sqlite` | `<project>-store-postgres` | `<project>-store-mysql` |
+   | | `store-postgres` | `store-mysql` |
+   |---|---|---|
+   | sqlx feature | `postgres` | `mysql` |
+   | URL variable in `sqlx.toml` | `POSTGRES_DATABASE_URL` | `MYSQL_DATABASE_URL` |
+   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same |
+   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same |
+   | Default pool | single pool | single pool |
+   | Rendered package | `<project>-store-postgres` | `<project>-store-mysql` |
+
+   The SQLite store does not use sqlx. Its writer is the atm-core design
+   behind `Storage<T>`: async channel input and transaction batching, provided
+   by `sc-runtime-db-sqlite` (PRD-STO-3).
 
 2. On a one-store layout, `EngineStore` is optional example code for a later
-   pairing. The generated implementation stays in the store crate. `EngineStore`
-   is not a published workspace trait. Where a store exposes it, the methods
+   pairing. The generated implementation stays in the store crate. SQLite,
+   Postgres and MySQL stores are interchangeable behind the shared `Storage<T>`
+   trait of point 4 (PRD-STO-2). Where a store exposes it, the methods
    are `open`, `read_rows`, and `write_rows`, as the sprint `b-4` sample states
    them. `write_rows` replaces the named table: it clears the rows, then
    inserts the batch, so a second copy does not return `Conflict`. `OpenConfig`
@@ -2343,10 +2348,9 @@ sc-runtime design, 2026-09-19: one code path to SQL and the SQLite-plus-Postgres
 ### Consequences
 
 Both backends can build in one workspace. Each service function uses
-whichever store it needs. The SQLite default (many readers, one write
-connection) is correct under concurrency with no custom code. The batched
-write actor from the atm-core project is the known upgrade when a project
-measures write contention; it is not part of v0.1.
+whichever store it needs. The SQLite writer is the atm-core high-performance
+design: async channel input and transaction batching, inside the SQLite
+implementation behind `Storage<T>` (PRD-STO-3).
 
 **Negative:**
 
@@ -2354,7 +2358,7 @@ measures write contention; it is not part of v0.1.
 
 **Neutral:**
 
-- OPEN: the value of N for the SQLite read pool is undecided.
+- The SQLite writer's channel capacity and batch time budget are public items of `sc-runtime-db-sqlite` ([REQ-DBSQ-0002](sc-runtime-db-sqlite/requirements.md)).
 ### Alternatives Considered
 
 #### Alternative 1: A portable query layer that runs one query on several backends
@@ -2377,15 +2381,15 @@ One store crate with a cargo feature per backend.
 
 Rejected because sqlx 0.9 requires a separate crate per database for checked queries.
 
-#### Alternative 3: The atm-core batched write actor as the SQLite default
+#### Alternative 3: Two sqlx pools as the SQLite default
 
 **Description:**
 
-The atm-core batched write actor as the SQLite default.
+A sqlx read pool of several connections plus a one-connection sqlx write pool as the SQLite default.
 
 **Why Rejected:**
 
-Rejected for v0.1 because it is custom code; the standard read-pool plus write-connection arrangement needs none.
+Rejected because PRD-STO-3 requires the atm-core writer (async channel input, transaction batching) for SQLite, and PRD-STO-2 limits sqlx to Postgres and MySQL.
 ### Implementation
 
 Enforced by: the generated workspace's dependency edges, inspected with
