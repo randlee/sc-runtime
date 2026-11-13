@@ -400,5 +400,5 @@ workspace-member targets only; this tree has none, so the list is empty.
 The `Cargo.toml` inspection in [NFR-CFG-0002](requirements.md) and
 `cargo tree -p sc-config -e normal --prefix none` fail a line beginning with
 a forbidden crate name followed by a space, including
-`sc-observability-types`. The `async fn` and `.await` grep in
-[NFR-CFG-0003](requirements.md) covers the synchronous rule.
+`sc-observability-types`. The signature inspection of `load` and
+`Loader::load` in [NFR-CFG-0003](requirements.md) covers the synchronous rule.

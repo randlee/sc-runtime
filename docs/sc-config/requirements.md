@@ -723,50 +723,46 @@ circular: logging is configured from the values this crate loads.
 
 ### Requirement Statement
 
-sc-config provides synchronous startup configuration. This phase adds no watcher, reload or change notification; consumers may add async or reload behavior around it without a framework prohibition.
+`sc-config` provides synchronous start-up configuration. In v0.1 it is built
+with no file watcher, no reload and no change notification. Async
+configuration and reload are deferred, not forbidden: nothing in this record
+stops a consumer or a later version from adding them, including an async
+API next to the synchronous one
+([PRD-ENG-5, section 9](../prd/sc-runtime-prd.md)).
 
 This item binds all code under `crates/sc-config/src` for the first release
-(v0.1).
-
-1. A call to `load` or `Loader::load` reads the files, applies the overrides, deserialises, and returns on the calling thread.
-7. Automatic reloading, change notification and async interop are out of scope for v0.1.
+(v0.1). A load call is a call to `load` or to `Loader::load`; it reads the
+files, applies the overrides and deserialises the result.
 
 **MUST statements:**
 
-- Every public function and method of `sc-config` MUST be synchronous.
-
-**SHOULD statements:**
-
-- If they are built later they SHOULD go into a separate crate, possibly named `sc-config-tokio`, that depends on `sc-config`.
+- A load call MUST be callable without an async runtime.
+- A load call MUST do all of its work on the calling thread before it returns.
+- A value returned by a load call MUST stay unchanged after the call returns.
 
 **MUST NOT statements:**
 
-- The crate MUST NOT contain an `async fn`.
-- The crate MUST NOT contain an `.await`.
-- The crate MUST NOT contain a public function that returns a `Future`.
-- The crate MUST NOT watch files for changes.
-- The crate MUST NOT reload configuration after a load has returned.
-- The crate MUST NOT offer change notification: no callbacks, channels or subscriptions.
-- The crate MUST NOT spawn threads.
-- The crate MUST NOT spawn tasks.
+- A load call MUST NOT spawn a thread.
+- A load call MUST NOT spawn an async task.
 
 ### Rationale
 
-The design records automatic reloading, change notification and async interop
-as a note for later, possibly as a separate `sc-config-tokio` crate, and
-states they are not in the initial plan. Building them now would bring an
-async runtime and a file watcher into every program that reads its
-configuration once at start-up, which is every current user. A synchronous
-function can be called from `main` before a runtime exists and from inside an
-async `main` alike.
+Every current user reads its configuration once at start-up, so v0.1 builds
+only that. A synchronous function can be called from `main` before a runtime
+exists and from inside an async `main` alike. A changed file is seen only
+through a new explicit load call. The owner wants async
+configuration and reload kept open as options, possibly later as an async
+trait extending the synchronous one; under PRD-ENG-5 and PRD-ENG-6 this record
+neither forbids them nor binds a mechanism for them.
 
 ### Success Criteria
 
-1. `grep -rnE "async fn|\.await|impl Future|dyn Future" crates/sc-config/src`
-   returns no match.
-2. `grep -rn "thread::spawn" crates/sc-config/src` returns no match, and
-   `grep -nE "tokio|async-std|futures|notify" crates/sc-config/Cargo.toml`
-   returns no match.
+1. Inspection of the signatures of `load` and `Loader::load` in
+   `crates/sc-config/src` finds that neither is an `async fn` and that each
+   returns `Result<T, ConfigError>`, not a `Future`.
+2. Inspection of `load`, `Loader::load` and every function they call in
+   `crates/sc-config/src` finds no `thread::spawn`, `thread::Builder`,
+   `tokio::spawn` or other task spawn.
 3. A test calls `Loader::load` from a plain `#[test]` function with no async
    runtime and asserts it returns `Ok`.
 4. A test loads, then rewrites `default.json` with a different value, and

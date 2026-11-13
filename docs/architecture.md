@@ -1392,8 +1392,8 @@ Enforced by: the inspection and grep criteria of
 criterion for the request paths of `crates/sc-transport` and
 `crates/sc-runtime`; the `tokio` entry in the forbidden edges of the
 `sc-config` boundary manifest ([REQ-RUN-0005](requirements.md)), checked by
-`sc-lint-boundary` through `just lint`; the `async fn` and `.await` grep of
-[NFR-CFG-0003](sc-config/requirements.md).
+`sc-lint-boundary` through `just lint`; the signature inspection of `load` and
+`Loader::load` in [NFR-CFG-0003](sc-config/requirements.md).
 
 # Decision: Requirements must mean less code; prefer standard designs
 
