@@ -538,7 +538,7 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - While the cleanup callback of `run_with_cleanup` runs, `run()` of a second daemon on the same instance root MUST return `RuntimeError::LockHeld`.
 - After cleanup completion, the source of `run_with_cleanup` MUST drop the `Stores` value that the stores closure returned.
 - After the call that releases the endpoint lock, the source of `run()` MUST release the instance lock.
-- After graceful shutdown completes, `run()` MUST return `Ok(())`.
+- After graceful shutdown completes, awaiting `run()` MUST produce `Ok(())`.
 - After a startup error and cleanup completion, `run_with_cleanup` MUST return the startup error.
 - After the cleanup completion that follows a serve error, `run_with_cleanup` MUST return `RuntimeError::ServeFailed`.
 - In the source of `run()`, `run()` MUST call `run_with_cleanup` with the empty cleanup callback.
