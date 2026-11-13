@@ -4470,7 +4470,7 @@ Phase C planned amendment, owned by c-1: the baseline CLI allowlist
 includes defaults-only sc-cron-commands DTOs when standard
 cron commands are explicitly selected, directly or through api-types. This is
 the sole shared CronRequest identity, not a copied wire DTO. The exception
-introduces no scheduler/server/SQLite/Tokio/Monty dependency through the adapter
+introduces no scheduler/server/SQLite/Monty dependency through the adapter
 edge and changes
 none of the existing forbidden normal edges. C-3's isolated CLI graph proof
 and c-4's registry repetition verify the amended rule; default-off generation
@@ -4557,7 +4557,7 @@ the only process that opens the local database.
 
 Selected `cron_commands` consumers may depend on defaults-only
 sc-cron-commands DTOs directly or through api-types. That edge must introduce
-no scheduler, SQLite, Tokio, Monty or server dependency; isolated CLI graph
+no scheduler, SQLite, Monty or server dependency; isolated CLI graph
 proofs and all other forbidden edges remain binding. `cron_commands=false`
 is the generation default; true requires cron and preserves independently
 disabled MCP. Schema activation belongs only on selected daemon/service
