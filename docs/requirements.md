@@ -3432,7 +3432,7 @@ Owner (ANC-014): "it would be optional set of standard cron commands to set up c
 
 ### Requirement Statement
 
-Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set adds cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object.
+Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set adds cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object. The schema version is the integer at the root key `x-schema-version` of `wizard/answers.schema.json`; it identifies the version of the published answers schema (ADR-RUN-0401).
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
@@ -3486,7 +3486,7 @@ The generator is used for projects that are not MIT licensed and not open source
 
 - The schema MUST require `cron = true` when `cron_commands = true`.
 - The licence of a generated project MUST be an input.
-- The schema MUST carry a schema version (an identifier for the version of the published answers schema).
+- `wizard/answers.schema.json` MUST carry the schema version.
 - The driver MUST read option names from the schema.
 - The driver MUST read option defaults from the schema.
 
@@ -3544,8 +3544,7 @@ and sc-lint, so the schema is versioned like any other published contract.
   `cargo generate` takes the project name through `--name`
   ([REQ-RUN-0402](requirements.md) owns that question).
 - OPEN: the defaults of `db` and `mcp` are not decided.
-- OPEN: how the schema version is carried (which key, which format) and what
-  kind of schema change requires a new version are not decided.
+- The schema version is carried as the root integer `x-schema-version` and is raised when a breaking option change ships (ADR-RUN-0401).
 - OPEN: the JSON Schema draft (the `$schema` value) is not decided.
 - OPEN: the language and test runner of `tests/unit/` are not decided (the
   driver is Python).  
