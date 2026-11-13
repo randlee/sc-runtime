@@ -688,7 +688,7 @@ four crates and a template are built on the assumption.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository. To record the exact version used for a crate means to write the `major.minor.patch` version the spike built with into `docs/architecture.md`.
+Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository. To record the exact version used for a crate means to write the `major.minor.patch` version the spike built with into `docs/architecture.md`. The spike evidence for an evidence row is everything sprint a-1 records about that row. A version pin is the exact version recorded for one of the crates named in the MUST statements.
 
 The sc-runtime design relies on four facts it has not verified.
 
@@ -756,8 +756,8 @@ not used.
 - Sprint a-1 MUST record the exact version used for `sqlx`.
 - Sprint a-1 MUST record the exact version used for `reqwest`.
 - Sprint a-1 MUST record the exact version used for `cargo-generate`.
-- All evidence MUST be written into `docs/architecture.md`.
-- All version pins MUST be written into `docs/architecture.md`.
+- `docs/architecture.md` MUST contain the spike evidence for every evidence row.
+- `docs/architecture.md` MUST contain every version pin.
 
 **MUST NOT statements:**
 
