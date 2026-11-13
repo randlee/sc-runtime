@@ -3373,7 +3373,7 @@ Definitions: A consumer repository is an application project generated from the 
 
 Row type structs are in the schema crate. The types crate is for non-database types.
 
-The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+The adaptor depends on `<project>-schema`. Engine implementations remain table-neutral. How a row type maps to a table and who owns migrations remain open under ADR-RUN-0020 point 4; this record does not prescribe SQL generation from the schema crate.
 
 **MUST statements:**
 
