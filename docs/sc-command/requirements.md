@@ -377,7 +377,7 @@ project writes its own success-or-failure wrapping code.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -406,6 +406,8 @@ This rule is decided in this document; the design specifies that the conversion 
 
 `error.kind` is the `ErrorKind` field of `OpError` ([REQ-CMD-0002](requirements.md)). The first three kinds are caller errors. `Unavailable` and `Internal` are internal errors.
 
+HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The no-panic rule for this conversion is governed by [NFR-CMD-0003](requirements.md), the sc-command non-functional requirement for typed errors and panic prevention.
+
 **MUST statements:**
 
 - The response body MUST be the envelope serialised as JSON, identical as a JSON value to `serde_json::to_value(&envelope)`.
@@ -416,7 +418,7 @@ This rule is decided in this document; the design specifies that the conversion 
 
 **MUST NOT statements:**
 
-- It MUST NOT panic ([NFR-CMD-0003](requirements.md)).
+- The `IntoResponse::into_response` implementation for `Envelope<T>` MUST NOT panic.
 - When the `server` feature is disabled this implementation MUST NOT exist.
 - When the `server` feature is disabled the crate MUST NOT reference axum.
 
