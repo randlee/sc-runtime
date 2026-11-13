@@ -3119,7 +3119,7 @@ failing before `cargo generate` runs); the fixture matrix in
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-27  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -3171,7 +3171,7 @@ The problem is that the sc-runtime design of 2026-09-19 described these `cargo-g
    `python3 hooks/prefix_packages.py <project> . <db>`, and deletes the hook
    files. The script prefixes every generated package name with the project
    name (`<project>-<role>`) and, for a two-store layout, installs that
-   layout's adaptor manifest and `engine.rs` inside `crates/store-adaptor`.
+   layout's adaptor manifest and `engine.rs` inside `crates/store-adaptor`. The adaptor installation described in this ADR is existing interim template code (REQ-RUN-0326). It is not required while synchronization is deferred (PRD section 9), and no check depends on it.
    Package naming stays [ADR-RUN-0305](architecture.md) point 12. This point
    records the hook. The driver does not rewrite lines inside a `Cargo.toml`.
    The same `cargo generate` step then runs `cargo fmt --all` in the generated
@@ -3415,7 +3415,7 @@ Under [ADR-RUN-0301](architecture.md) point 5, `sc-runtime` only calls the proje
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-10-25  
 
@@ -3439,7 +3439,7 @@ beads-cache `develop` already contains `sc-cron`, extracted from atm-core's `atm
 The expression parser on that branch refuses a five-field string. A normal crontab string is five fields, minute first. atm-core runs a cron hook as `python3 <module> <hook-name>` with one JSON object on stdin (`cron.tick`, `cron.stop`). A consumer may instead point the same schedule at a Rust function. beads-cache's sync job calls the beads CLI and API. beads owns the Dolt database. That consumer does not open Postgres.
 ### Decision
 
-1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The generated daemon names it as an optional dependency only: feature `cron` enables it and feature `monty` implies `cron` plus `sc-cron/monty`; neither is a default feature. Comments and schema descriptions may name the crate without adding another manifest edge. `sc-runtime` does not start it.
+1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. Its workspace dependencies and dependents are those of REQ-RUN-0005. The generated daemon names it as an optional dependency only: feature `cron` enables it; feature `monty` does not require `cron`, and enables `sc-cron/monty` only when `cron` is also selected (REQ-RUN-0301); neither is a default feature. Comments and schema descriptions may name the crate without adding another manifest edge. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
 3. Configuration is one table, defined by a `CronRow` struct and stored through `Storage<CronRow>` in one of the application's databases, the SQLite database by default (PRD-CRON-2, PRD-CRON-3). There is no separate cron database, and cron requires a database (PRD-CRON-4). Amended 2026-11-11; the earlier "its own database file" wording is withdrawn. A row holds the name, the cron string, the timeout, a JSON payload, the hook target, and the canonical Python/Monty hook-environment document from [ADR-RUN-0016](architecture.md). Schedule writes go through the application's storage like any other table. Sprint b-17 defines the first published schema at `SCHEMA_VERSION = 1`; it has no compatibility obligation or migration ladder for unreleased development cuts. Amended 2026-10-28.
 4. The hook target is a Rust function, a Python module, or application-supplied in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset.
@@ -3451,15 +3451,15 @@ The expression parser on that branch refuses a five-field string. A normal cront
    MVP accepts application-supplied Monty source without signatures, a separate script-approval mechanism, or a consumer option enabling such a mechanism. Capability registration and environment policy are enforced independently. In-process Monty and custom Rust handlers retain stack-overflow, allocator-abort, panic, and non-cooperative deadline risks; they are not an isolation boundary for hostile code.
 
    `ResourceTracker` pauses VM feed-time accounting during host suspension; the row deadline applies to CLI supervision and is checked around custom synchronous handlers. Monty feeds retain their REPL until returning, and the tick does not start CPython. `Getenv` and `GetEnviron` use the ADR-RUN-0016 snapshot; every other OS call remains denied. Executable basenames resolve through daemon launch `PATH`/Windows `PATHEXT` before child environment clearing; relative executable paths with components resolve against the daemon current directory captured when adapter configuration is built. The child uses the independently configured working directory.
-5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
+5. `sc-cron` only fires the row. A schedule row points at a consumer method, in Rust or in Python. What that method does is the consumer's; synchronization between databases is deferred (PRD section 9) and is not decided here. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
 6. `CronError` is the crate's one error enum. Its variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. `BadExpression`'s recovery text names the five-field form.
-7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
+7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres access and any synchronization between databases are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
 ### Rationale
 
 Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
 ### Consequences
 
-Sprint b-3 ports the scheduler, b-9 adds Monty, and b-10 proves production host suspension/resume. Those development artifacts do not freeze the final product API. Sprint b-16 implements the application-owned registry and the sc_compose_run/atm_run CLI adapters, removes the mandatory render_template surface, and enforces the production tool-crate exclusion in REQ-RUN-0005. Sprint b-17 supplies one Python/Monty/CLI environment snapshot and the first released schema baseline. No released API or database requires a compatibility alias or a migration ladder for development cuts. Schedule limits remain embedder-supplied under ADR-RUN-0014; sc-cron starts no timer inside a consumer adaptor, owns no consumer API, and ships no HTTP/MCP/CLI surface. In-process handler resource limits are cooperative; spawned CLI children retain bounded process supervision.
+Sprint b-3 ports the scheduler, b-9 adds Monty, and b-10 proves production host suspension/resume. Those development artifacts do not freeze the final product API. Sprint b-16 implements the application-owned registry and the sc_compose_run/atm_run CLI adapters, removes the mandatory render_template surface, and enforces the production tool-crate exclusion in REQ-RUN-0005. Sprint b-17 supplies one Python/Monty/CLI environment snapshot and the first released schema baseline. No released API or database requires a compatibility alias or a migration ladder for development cuts. Schedule limits remain embedder-supplied under ADR-RUN-0014; sc-cron starts no timer inside consumer code, owns no consumer API, and ships no HTTP/MCP/CLI surface. In-process handler resource limits are cooperative; spawned CLI children retain bounded process supervision.
 
 **Negative:**
 

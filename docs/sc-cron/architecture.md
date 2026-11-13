@@ -242,7 +242,7 @@ verified by `observability_components`; b-16 owns the future child-kill row.
 
 The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DotenvSource`, `DueRun`, `EnvironmentReferenceError`, `EnvironmentReferenceRequest`, `EnvironmentReferenceResolver`, `EnvName`, `EnvOperationRef`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEnvironment`, `HookEnvironmentHost`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_ENV_DOCUMENT_BYTES`, `MAX_ENV_DOTENV_SOURCES`, `MAX_ENV_ENTRIES`, `MAX_ENV_FILE_BYTES`, `MAX_ENV_NAME_BYTES`, `MAX_ENV_PATH_BYTES`, `MAX_ENV_REFERENCE_BYTES`, `MAX_ENV_SNAPSHOT_BYTES`, `MAX_ENV_VALUE_BYTES`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `MontyHostRegistry`, `MontyHostHandler`, `MontyHostCall`, `MontyHostName`, `ScComposeHostConfig`, `AtmHostConfig`, `NewSchedule`, `process`, `PythonHook`, `RunFailureParts`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleLimits`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`. `MontyHostRegistry`, `MontyHostHandler`, `MontyHostCall`, `MontyHostName`, `ScComposeHostConfig`, `AtmHostConfig` need feature `monty`.
 
-A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule row points at one of them. This crate does not know whether that method talks to beads or to Postgres.
+The schedule row points at a consumer method. This crate does not know whether that method talks to beads or to Postgres.
 
 ## Error
 
@@ -270,7 +270,7 @@ logger handles through that resolver.
 
 ## What this crate is not
 
-It does not open Postgres, call beads, or ship an HTTP, MCP, or CLI API. The consumer may add that API and have it insert rows. beads-cache's hook calls beads. Another consumer's hook is the sync method on its adaptor.
+It does not open Postgres, call beads, or ship an HTTP, MCP, or CLI API. The consumer may add that API and have it insert rows. beads-cache's hook calls beads. Another consumer's hook is that consumer's own method.
 
 The implemented registry builder uses `register(name, handler)`,
 `with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
