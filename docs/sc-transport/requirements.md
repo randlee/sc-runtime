@@ -655,35 +655,38 @@ live. a-6 maps the string and chooses `suggested_action`, including any
 
 ### Requirement Statement
 
-In `crates/sc-transport/Cargo.toml`:
+Definitions:
 
-4. `tokio` and `reqwest` are stated by the sc-runtime design. `serde` follows from the crate's own API: the client methods are bounded by `serde::Serialize` and `serde::de::DeserializeOwned` ([REQ-TRN-0005](requirements.md)) and the configuration type implements `serde::Deserialize` ([REQ-TRN-0001](requirements.md)). `serde_json` decodes a buffered body so `ResponseDecode` can keep `body_preview`. The list does not name `sc-observability-types`. `allowed_dependencies` does not include it. `server` still adds only `axum`.
+- The manifest is the file `crates/sc-transport/Cargo.toml`.
+- The default dependency set of `sc-transport` is the set of crate names on the lines after the first line of the output of `cargo tree -p sc-transport -e normal --depth 1 --prefix none`.
+- The server dependency set of `sc-transport` is the set of crate names on the lines after the first line of the output of `cargo tree -p sc-transport -e normal --depth 1 --prefix none --features server`.
+- The default dependency tree of `sc-transport` is every package that `cargo tree -p sc-transport -e normal --prefix none` prints.
+- Listener-binding code is the Rust code in `crates/sc-transport/src` that binds a UDS or TCP listener ([REQ-TRN-0003](requirements.md)).
+- An item is gated by the `server` feature when the item, or a module that contains the item, carries `#[cfg(feature = "server")]`.
+- A command succeeds when the command exits with status 0.
+- `just test` is the test recipe of the repository `justfile` ([REQ-RUN-0004](../requirements.md)).
 
-This item is the owner of the list of third-party crates `sc-transport` may
-depend on. [REQ-RUN-0005](../requirements.md) owns the workspace-internal
-and forbidden edges and refers here for the third-party list.
-
-`cargo test --workspace` alone builds this crate only with `server` enabled.
+Context: this item owns the list of third-party crates `sc-transport` may depend on; [REQ-RUN-0005](../requirements.md) owns the workspace-internal and forbidden edges and refers here for the third-party list. `tokio` and `reqwest` are stated by the sc-runtime design. `serde` follows from the crate's API: the client methods are bounded by `serde::Serialize` and `serde::de::DeserializeOwned` ([REQ-TRN-0005](requirements.md)), and the configuration type implements `serde::Deserialize` ([REQ-TRN-0001](requirements.md)). `serde_json` decodes a buffered body so `ResponseDecode` can keep `body_preview`. `sc-observability-types` is not in the list and not in `allowed_dependencies`. `cargo test --workspace` alone builds `sc-transport` only with the `server` feature enabled.
 
 **MUST statements:**
 
-- There MUST be a cargo feature named `server`.
-- `axum` MUST be declared `optional = true`.
-- `axum` MUST be enabled only by the `server` feature.
-- With default features the direct non-dev dependencies MUST be exactly `tokio`, `reqwest`, `serde`, and `serde_json`.
-- With the `server` feature the direct non-dev dependencies MUST be exactly those four plus `axum`.
-- All listener-binding code MUST be compiled only under `#[cfg(feature = "server")]`.
-- The crate MUST build with the feature.
-- The crate MUST build without the feature.
-- The crate MUST pass its tests with the feature.
-- The crate MUST pass its tests without the feature.
-- `just test` MUST run `cargo test -p sc-transport` (REQ-RUN-0004).
-- `just test` MUST run `cargo test -p sc-transport --features server` (REQ-RUN-0004).
+- The `[features]` table of the manifest MUST contain a key named `server`.
+- The `axum` entry in the `[dependencies]` table of the manifest MUST contain `optional = true`.
+- In the `[features]` table of the manifest, `dep:axum` MUST appear only in the `server` feature list.
+- The default dependency set of `sc-transport` MUST equal the set {`reqwest`, `serde`, `serde_json`, `tokio`}.
+- The server dependency set of `sc-transport` MUST equal the set {`axum`, `reqwest`, `serde`, `serde_json`, `tokio`}.
+- Every item of listener-binding code MUST be gated by the `server` feature.
+- `cargo build -p sc-transport --features server` MUST succeed.
+- `cargo build -p sc-transport` MUST succeed.
+- `cargo test -p sc-transport --features server` MUST succeed.
+- `cargo test -p sc-transport` MUST succeed.
+- `just test` MUST run the command `cargo test -p sc-transport`.
+- `just test` MUST run the command `cargo test -p sc-transport --features server`.
 
 **MUST NOT statements:**
 
-- `server` MUST NOT be in the `default` feature list.
-- The default build MUST NOT have `axum` anywhere in its normal dependency tree.
+- The `default` list in the `[features]` table of the manifest MUST NOT contain `server`.
+- The default dependency tree of `sc-transport` MUST NOT contain a line beginning `axum ` (the name followed by a space).
 
 ### Rationale
 
