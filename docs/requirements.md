@@ -214,7 +214,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: Correct package metadata identifies the public crate itself: its name, version, description, MIT license, repository and README. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests.
+Definitions: Correct package metadata identifies the public crate itself: its name, version, description, MIT license, repository and README. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -232,7 +232,7 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST be independently publishable to crates.io.
 - Every published crate MUST declare the MIT license.
 - The repository LICENSE file MUST contain the MIT license text.
-- `sc-config` MUST remain usable without the other SDK crates or generated template.
+- When selected alone from a clean checkout without the other SDK crates or generated template, `sc-config` MUST pass its own default-feature tests.
 - `sc-transport` MUST remain usable without the other SDK crates or generated template.
 - sc-command MUST remain usable without sc-runtime, sc-config, sc-transport or the generated template.
 - sc-storage MUST use only the Rust standard library.
