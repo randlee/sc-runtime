@@ -349,13 +349,13 @@ every project. Everyone who owns a generated project is affected.
 
 ### Requirement Statement
 
-Definitions: The root `Justfile` is the file named `Justfile` (capital J) at the root of `randlee/sc-runtime`. The crate CI workflow runs lint and tests for the repository's crates. CI means continuous integration. SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.
+Definitions: The root `Justfile` is the file named `Justfile` (capital J) at the root of `randlee/sc-runtime`. The crate CI workflow is the GitHub Actions workflow named `Crate CI` that runs lint and tests for the repository's crates. The plain-generation job is the `plain-cargo-generate` job in `.github/workflows/template.yml`, the job required by [REQ-RUN-0306](requirements.md). A workflow step is one entry under `steps:` of a job in a file under `.github/workflows/`. A lint step, test step or generation step is a workflow step, outside the plain-generation job, whose command lints code, runs tests, or generates a project from `template/`. A recipe step is any lint step, test step or generation step. A step invokes a program directly when its `run:` text calls that program itself rather than through a `just` recipe. A lint tool is a static check program, such as `sc-lint`, `cargo clippy` or `cargo fmt --check`. A primary recipe is a recipe defined by its own header line in the Justfile, and its primary recipe name is the name on that line. A just alias is an `alias <name> := <recipe>` line, which gives another name to an existing recipe. CI means continuous integration. SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.
 
 The SC base command names `lint` and `test` are the recipe names that `sc-lint init --just` writes. The first line stays the sc-lint initialization header.
 
 | Recipe | Behaviour |
 |---|---|
-| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. It MUST include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |
+| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. Its checks include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |
 | `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |
 | `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |
 
@@ -392,26 +392,29 @@ sprint.
 **MUST statements:**
 
 - The root `Justfile` MUST define a recipe named `lint`.
-- The `lint` recipe MUST implement the behavior in this record's `just lint` table row.
+- Running `just lint` MUST behave as this record's `just lint` table row describes.
 - The root `Justfile` MUST define a recipe named `test`.
-- The `test` recipe MUST implement the behavior in this record's `just test` table row.
-- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `new <dest>` recipe with the behavior specified in the `just new <dest>` table row.
-- `just test` MUST execute all six numbered entries in this record's test command list.
-- Except for the plain-generation job identified by REQ-RUN-0306, each lint, test or generation operation in a job under `.github/workflows/` MUST invoke the corresponding `just lint`, `just test` or `just new` recipe.
-- The crate CI workflow MUST be defined in a file under `.github/workflows/`.
+- Running `just test` MUST behave as this record's `just test` table row describes.
+- The root `Justfile` MUST define a recipe named `new`.
+- Running `just new <dest>` MUST behave as this record's `just new <dest>` table row describes.
+- Running `just test` MUST run every command in this record's numbered test command list.
+- Each lint step MUST run its checks through `just lint`.
+- Each test step MUST run its tests through `just test`.
+- Each generation step MUST generate the project through `just new`.
+- The crate CI workflow MUST be defined in the file `.github/workflows/crates.yml`.
 - On every pull request, the crate CI workflow MUST run `just lint` at the repository root.
 - On every pull request, the crate CI workflow MUST run `just test` at the repository root.
 
 **MUST NOT statements:**
 
-- Except for the plain-generation job identified by REQ-RUN-0306, a lint, test or generation operation in a job under `.github/workflows/` MUST NOT invoke `cargo` directly.
-- Except for the plain-generation job identified by REQ-RUN-0306, a lint, test or generation operation in a job under `.github/workflows/` MUST NOT invoke `python` directly.
-- Except for the plain-generation job identified by REQ-RUN-0306, a lint, test or generation operation in a job under `.github/workflows/` MUST NOT invoke a lint tool directly.
+- A recipe step MUST NOT invoke `cargo` directly.
+- A recipe step MUST NOT invoke `python` directly.
+- A recipe step MUST NOT invoke a lint tool directly.
 
-- The primary recipe name `lint` MUST NOT be changed.
-- The `lint` recipe MUST NOT be replaced by an alias to a differently named primary recipe.
-- The primary recipe name `test` MUST NOT be changed.
-- The `test` recipe MUST NOT be replaced by an alias to a differently named primary recipe.
+- The root `Justfile` MUST NOT rename the primary recipe `lint`.
+- The root `Justfile` MUST NOT define `lint` as a just alias of a primary recipe with another name.
+- The root `Justfile` MUST NOT rename the primary recipe `test`.
+- The root `Justfile` MUST NOT define `test` as a just alias of a primary recipe with another name.
 
 ### Rationale
 
