@@ -2915,24 +2915,29 @@ The local copy gives faster or offline access. Owner, 2026-10-25 (ADR-RUN-0305):
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The layout's engine is the selected remote SQL engine, Postgres or MySQL. sqlx is the Rust SQL access crate used for those remote engines.
+Definitions: A consumer repository is an application project using the framework.
+The store adaptor template is the crate `template/crates/store-adaptor`, which generation renders into a consumer repository.
+`aggregate_host` is the store adaptor template function that implements the host-aggregate path.
+A host database is the one SQLite database of the host that runs `aggregate_host`.
+A Postgres aggregate is one Postgres database that receives rows from the host databases of many hosts.
+A MySQL aggregate is one MySQL database that receives rows from the host databases of many hosts.
+The remote engine is the layout's one sqlx engine, Postgres or MySQL.
+The rollup is the consumer-owned `Rollup` implementation that `aggregate_host` calls to map host rows to aggregate rows.
+sqlx is the Rust SQL access crate used for the remote engines.
+SQL means Structured Query Language.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. Amended 2026-10-25.
+This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Synchronization between databases is deferred.
 
 **MUST statements:**
 
-- The host-aggregate adaptor uses one SQLite database for this host.
-- The host-aggregate adaptor uses a Postgres database that aggregates many hosts.
-- When MySQL is the layout's remote sqlx engine, the host-aggregate adaptor uses one MySQL database aggregating the hosts' SQLite databases.
+- Every row that an `aggregate_host` call passes to the rollup MUST come from the host database.
+- When Postgres is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the Postgres aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
+- When MySQL is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the MySQL aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
 
 ### Rationale
 
