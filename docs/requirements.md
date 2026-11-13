@@ -5290,7 +5290,7 @@ Definitions: Repository skills are the checked-in .claude, .codex and .cursor sk
 - A skill version check MUST reject a malformed version.
 ### Rationale
 
-The owner requires skills to tolerate sc-compose >= a floor threshold (ANC-015); reproducible CI binary selection remains independent.
+The owner requires skills to tolerate sc-compose >= a floor threshold (Phase D anchor ANC-015 in docs/plans/phase-d/anchors.md, not the Phase B or Phase C anchor of that number). The PRD does not address skill version checks; a lower bound is consistent with PRD-ENG-9, which states minimum versions rather than pins. Reproducible CI binary selection remains independent.
 ### Success Criteria
 
 **Acceptance Criteria:**
