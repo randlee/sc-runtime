@@ -4479,10 +4479,12 @@ ADR-RUN-0017 governs the retained observability shim. Phase D uses open dependen
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: CLI means command-line interface. `axum`, `rmcp` and `sqlx` are Rust crates. The generated `cli` crate is the package rendered at `crates/cli` of a generated project (`<project>-cli`, REQ-RUN-0329). `api-types`, `service` and `daemon` name the generated packages `<project>-types`, `<project>-service` and `<project>-daemon`; a `store-*` crate is a generated package whose role begins `store-` (REQ-RUN-0301). The baseline CLI allowlist is `api-types`, `sc-transport`, `sc-command` and `sc-config`. `server` is the cargo feature of that name in `sc-transport` and `sc-command`. The normal dependency graph includes the direct and transitive edges followed by `cargo tree -e normal`. Statements about the generated `cli` crate are checked in the generated project using `cargo tree -p <cli package> -e normal`; statements about `sc-transport` and `sc-command` are checked in this repository using their manifests and default-feature trees.
 
 Phase C planned amendment, owned by c-1: the closed generated-CLI allowlist
 below additionally permits defaults-only sc-cron-commands DTOs when standard
@@ -4522,15 +4524,19 @@ is the sprint a-1 evidence record in `docs/architecture.md`.
 
 **MUST statements:**
 
-- `sc-transport` MUST keep its server-side dependency `axum` behind a cargo feature named `server`.
-- `sc-command` MUST keep its server-side dependencies `axum` and `rmcp` behind a cargo feature named `server`.
+- In `crates/sc-transport/Cargo.toml`, `sc-transport` MUST keep its server-side dependency `axum` behind a cargo feature named `server`.
+- In `crates/sc-command/Cargo.toml`, `sc-command` MUST keep its server-side dependency `axum` behind a cargo feature named `server`.
+- In `crates/sc-command/Cargo.toml`, `sc-command` MUST keep its server-side dependency `rmcp` behind a cargo feature named `server`.
 - In `sc-transport`, `server` MUST be off by default.
 - In `sc-command`, `server` MUST be off by default.
-- The generated `cli` crate MUST depend only on `api-types`, `sc-transport`, `sc-command` and `sc-config` among workspace and sc-runtime crates.
+- Among workspace and sc-runtime crates, the generated `cli` crate MUST depend only on crates in the baseline CLI allowlist.
 
 **MUST NOT statements:**
 
-- A command-line client built on these crates MUST NOT have `axum`, `rmcp` or `sqlx` anywhere in its normal dependency graph, directly or transitively.
+
+- A command-line client built on these crates MUST NOT have `axum` in its normal dependency graph.
+- A command-line client built on these crates MUST NOT have `rmcp` in its normal dependency graph.
+- A command-line client built on these crates MUST NOT have `sqlx` in its normal dependency graph.
 - A command-line client built on these crates MUST NOT enable the `server` feature of `sc-transport`.
 - A command-line client built on these crates MUST NOT enable the `server` feature of `sc-command`.
 - The generated `cli` crate MUST NOT have a normal dependency on the `sc-runtime` crate.
