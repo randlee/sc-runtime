@@ -481,7 +481,7 @@ serve path.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-30  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 **Decision Date:** 2026-10-30  
 
@@ -495,10 +495,17 @@ Source: B18 corrective lifecycle integration; preserves the existing startup con
 - ADR-RT-0002 — Amends: ADR-RT-0001 and ADR-RT-0002
 ### Context
 
-An application can start a background worker from its existing stores closure
-after the runtime acquires `daemon.lock`. The SDK must provide a general cleanup boundary without
-importing cron or choosing application policy.
+**Problem.** An application can start a background worker from its stores closure after the runtime acquires `daemon.lock`. If the runtime releases `daemon.lock` when HTTP serving stops, before the application joins that worker, a replacement daemon can acquire the lock and start work that overlaps the draining worker.
+
+**Constraints.** The SDK must provide a general cleanup boundary without importing cron or choosing application policy. ADR-RT-0001 fixes the startup order and rejects lifecycle hooks and a plugin registry. ADR-RT-0002 holds the instance lock for the lifetime of the process.
 ### Decision
+
+Amendments: this ADR amends ADR-RT-0001's no-callback restriction only for
+the additive ready-state cleanup boundary, and amends ADR-RT-0002's
+lifetime-of-the-process wording: on an awaited run, the instance lock is
+retained through cleanup and released before that run returns, after the
+successful stores owner is dropped. Other ADR-RT-0001 startup and builder
+decisions remain in force.
 
 NFR-RT-0001's exact seven-method surface includes this existing cleanup
 terminal method and the bound-receipt alternative alongside run. All three
@@ -526,57 +533,52 @@ retry/sleep workaround, new transport API or alternate lifecycle is introduced.
    empty cleanup. No cleanup hook exists on earlier builder states; no startup
    hook, registry, JobContext, or new startup phase is introduced.
 
-2. The    existing startup order remains unchanged: take the loaded
-   configuration,    resolve instance/endpoint, register signal streams, acquire
-   the singleton    lock, invoke the application stores closure, then assemble
-   and bind the    existing router/MCP service. The cleanup extension does not
-   inspect project    `Stores` or wrap routes or services.
+2. The existing startup order remains unchanged: take the loaded
+   configuration, resolve instance/endpoint, register signal streams, acquire
+   the singleton lock, invoke the application stores closure, then assemble
+   and bind the existing router/MCP service. The cleanup extension does not
+   inspect project `Stores` or wrap routes or services.
 
-3. When awaited normally, cleanup runs    exactly once after serving/listener
-   disposal, including typed startup and    serving failure paths. Unused
-   startup closures are dropped before early-error    cleanup, so cleanup may
-   await ownership sent by a stores closure without an    unused SDK-held sender
+3. When awaited normally, cleanup runs exactly once after serving/listener
+   disposal, including typed startup and serving failure paths. Unused
+   startup closures are dropped before early-error cleanup, so cleanup may
+   await ownership sent by a stores closure without an unused SDK-held sender
    keeping its channel alive.
 
-4. Any acquired instance    lock, the successful `Stores` owner, and the
-   retained runtime logger remain    alive through cleanup. Teardown order is
-   application cleanup, retained    `Stores`, instance lock, retained runtime
-   logger, then return the original    `RuntimeError` or success. Cleanup
-   returns unit and does not replace that    primary result.
+4. Any acquired instance lock, the successful `Stores` owner, and the
+   retained runtime logger remain alive through cleanup. Teardown order is
+   application cleanup, retained `Stores`, instance lock, retained runtime
+   logger, then return the original `RuntimeError` or success. Cleanup
+   returns unit and does not replace that primary result.
 
-5. The application owns worker drain/join and concrete logger    shutdown. The
+5. The application owns worker drain/join and concrete logger shutdown. The
    SDK has no cron dependency, logger wrapper, secret provider, or
    application policy. The application consumes concrete logger shutdown only
    after the runtime and cleanup return and their shared handles drop.
 
-6. The    caller must await the run future to completion. Dropping/canceling the
-   future    or panicking inside cleanup cannot promise asynchronous cleanup.
-   Deadlines    bound cooperative work; arbitrary native code or synchronous
-   operations    cannot be forcibly preempted. Ownership must be joined before
-   claiming    cleanup completion, even when a cooperative deadline was missed.
+6. The caller must await the run future to completion. Dropping/canceling the
+   future or panicking inside cleanup cannot promise asynchronous cleanup.
+   Deadlines bound cooperative work; arbitrary native code or synchronous
+   operations cannot be forcibly preempted. Ownership must be joined before
+   claiming cleanup completion, even when a cooperative deadline was missed.
 ### Rationale
 
-Releasing that lock when HTTP serving
-stops, before the application joins its worker, permits a replacement daemon to
-start overlapping work.
+Releasing `daemon.lock` when HTTP serving stops, before the application joins
+its worker, permits a replacement daemon to start overlapping work. Retaining
+the lock through one awaited Ready-only cleanup terminal prevents the overlap
+without lifecycle hooks, a registry or SDK-owned application policy.
 ### Consequences
 
-This explicitly amends ADR-RT-0001's no-callback restriction only for the
-additive ready-state cleanup boundary and ADR-RT-0002's lifetime-of-the-process
-wording: on an awaited run, the instance lock is retained through cleanup and
-released before that run returns, after the successful stores owner is dropped.
-Other startup and builder decisions remain in force. ADR-RT-0003's project
-`Stores`/router/service pass-through is unchanged. The original typed errors and
-application-owned observability lifecycle remain unchanged.
+**Positive.**
 
-A replacement daemon started on the same instance root while cleanup runs
-returns `LockHeld` and does not run its stores closure, so it cannot start a
-worker that overlaps the draining one. Because the lock attempt does not wait,
-that replacement fails instead of queuing and must be started again after
-cleanup returns. Cleanup that is blocked on native or synchronous work past
-its cooperative deadline keeps the instance lock held until that work is
-joined. Each application writes its own worker drain/join and concrete logger
-shutdown, and must await the run future to completion.
+- A replacement daemon started on the same instance root while cleanup runs returns `LockHeld` and does not run its stores closure, so no replacement worker overlaps the draining worker.
+- The startup order, the ADR-RT-0003 `Stores`/router/service pass-through, the original typed errors and the application-owned observability lifecycle stay unchanged.
+
+**Negative.**
+
+- The lock attempt does not wait, so a replacement daemon started during cleanup fails instead of queuing and must be started again after cleanup returns.
+- Cleanup blocked on native or synchronous work past its cooperative deadline keeps the instance lock held until that work is joined.
+- Each application writes its own worker drain/join and concrete logger shutdown, and must await the run future to completion.
 ### Alternatives Considered
 
 #### Alternative 1: Release the instance lock when HTTP serving stops
