@@ -3923,7 +3923,7 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started and the arguments it was given, so a stub's record shows whether and how that program was started. A driver test is an integration test that runs `scripts/new_project.py` as a child process with stubs first on `PATH`, then reads the driver's exit status, its stderr and the stubs' records. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started and the arguments it was given, so a stub's record shows whether and how that program was started. A driver test is an integration test that runs `scripts/new_project.py` as a child process with stubs first on `PATH`, then reads the driver's exit status, its stderr and the stubs' records. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub. A command accepts an option when a run given that option does not fail because of that option. A machine has no `wyvern` executable when `WYVERN_BIN` is unset and no directory on `PATH` holds an executable named `wyvern`. A run exits with a non-zero status because `wyvern` is absent when it exits with the missing-Wyvern error `GEN.TOOL_MISSING` of [REQ-RUN-0602](requirements.md), whose stderr names `wyvern`.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3973,7 +3973,8 @@ is not on `PATH` without the script guessing install prefixes.
 
 1. CI runs `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` with
    stdin closed (`< /dev/null`) on a runner with no `wyvern` installed, and
-   the command exits 0.
+   the command exits 0, which shows that `just new <dest>` accepts
+   `--var-file <answers file>`.
 2. A driver test runs `--var-file` mode with `WYVERN_BIN` unset and no
    `wyvern` on `PATH` and asserts that the run does not fail for that reason.
 3. A driver test runs `--var-file` mode with `WYVERN_BIN` set to a stub
@@ -4005,6 +4006,11 @@ is not on `PATH` without the script guessing install prefixes.
    with `SC_COMPOSE` unset and no `sc-compose` on `PATH`, and asserts a
    non-zero exit status and that stderr contains `sc-compose`, `SC_COMPOSE`
    and `PATH`.
+11. On a machine with no `wyvern` executable, `just new <dest> --var-file
+   <answers file>` does not exit with a non-zero status because `wyvern` is
+   absent: CI runs `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`
+   with `WYVERN_BIN` unset and no `wyvern` on `PATH`, and asserts that stderr
+   does not contain `GEN.TOOL_MISSING`.
 
 ---
 
