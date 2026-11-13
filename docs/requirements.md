@@ -5209,40 +5209,55 @@ into different lists of banned constructs.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. TCP means Transmission Control Protocol. A test is safe on a developer host when it meets the two safety obligations above without affecting a daemon the developer is running. An isolated machine is the virtual machine or ephemeral CI runner described here.
-
 This rule applies to this repository and, through
 [REQ-RUN-0311](requirements.md), to every generated project.
 
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
+Definitions:
 
-1. Tests exercise the production daemon code: either in-process through `sc_runtime::testing::DaemonFixture`, which runs the same `Daemon::builder()` path ([REQ-RT-0006](sc-runtime/requirements.md)), or by starting the real daemon binary. The `testing::DaemonFixture` module of `sc-runtime`, its crate-private shutdown trigger (which starts the same shutdown sequence a signal starts, [REQ-RT-0006](sc-runtime/requirements.md)) and a cargo feature that only gates that module (OPEN in [NFR-RT-0003](sc-runtime/requirements.md)) are not a test variant of the daemon and not a test-only switch in the sense of this obligation and obligation 4. What is forbidden is any code path that makes the daemon behave differently under test: a skipped lock, a different start-up order, stubbed stores or stubbed transport.
-3. The rule is about where a daemon-process test executes, not about which command starts it. `just test` MAY run these tests by executing them inside an isolated machine (for example a virtual machine it can start); when no isolated machine is available it MUST NOT fall back to executing them on the host, and it MUST say that they were not run. What `just test` covers is part of the standard SC `just` system, whose source of truth is the sc-lint project; this item constrains only where the tests execute. Such tests exist in two places: this repository's crate tests, and tests of generated `cli` and `daemon` binaries that live in `template/` and are rendered into a project ([REQ-RUN-0310](requirements.md) criterion 4). Phase B fixes selection and detection for the generated real-daemon SIGINT/SIGTERM tests: a dedicated `ubuntu-latest` GitHub-hosted job selects them and is the only workflow/recipe that sets `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`. Setting only the dedicated marker on a developer host is insufficient. Selection of other generated daemon-process tests remains governed by the broader OPEN below.
-5. Decided in this document, as an interpretation of the owner's decision that the owner has not yet confirmed: a test that runs the daemon in-process through `DaemonFixture` on a fresh tempdir `<instance-root>` MAY run on a developer's host, provided every resource the fixture daemon opens (the lock, the endpoint, the database files) is under that temporary `<instance-root>`. Then it cannot collide with the developer's daemon, and it cannot outlive the test process, because it is not a separate process. Where the endpoint does not derive from `<instance-root>` (the Windows TCP default, OPEN in [REQ-RT-0006](sc-runtime/requirements.md)), fixture tests are daemon-process tests under obligation 2 until that is decided.
-6. Phase A proves CLI behavior primarily through host-safe in-process paths and runs the minimal real-binary smoke on an isolated CI runner. This rule does not prescribe helper functions, attributes, or a generated unit-test layout. Every test that executes the CLI binary is treated as a process test under obligation 2 even though the Phase A CLI is report-only.
-7. Building, provisioning or scripting a virtual machine is not part of
-   v0.1 of this repository . In v0.1 the isolated
-   machine for this repository's own tests is the CI runner.
+- `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
+- A developer host is a developer's own machine, where the application's own daemon may be running.
+- An isolated machine is a virtual machine (for example one run by colima) or an ephemeral CI runner; in v0.1 the isolated machine for this repository's own tests is the CI runner.
+- An isolated machine is available to `just test` when `just test` can start a virtual machine to run tests in.
+- `DaemonFixture` is `sc_runtime::testing::DaemonFixture`, which runs the daemon in-process through the same `Daemon::builder()` path as production ([REQ-RT-0006](sc-runtime/requirements.md)).
+- A fixture resource is the `daemon.lock` file, the endpoint or a database file that a `DaemonFixture` daemon opens.
+- A host-safe test is a test that runs the daemon only in-process through `DaemonFixture` on a fresh temporary `<instance-root>`, opens every fixture resource under that `<instance-root>`, and starts no daemon or `cli` binary as a separate process.
+- A daemon-process test is any test that is not host-safe, including a test that starts the daemon binary or the generated `cli` binary as a separate operating-system process, a test that uses the default `<instance-root>`, and a `DaemonFixture` test whose endpoint is not under its `<instance-root>` (the Windows TCP default, OPEN in [REQ-RT-0006](sc-runtime/requirements.md)).
+- The template's example test is the generated project's test that starts a daemon with `DaemonFixture` and exercises the example ([REQ-RUN-0302](requirements.md)).
+- The signal-test job is the dedicated `ubuntu-latest` GitHub-hosted job that runs the Phase B generated SIGINT/SIGTERM tests.
+- The isolation variables are the three environment variable values `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`, `GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`.
+- The isolation check passes when all three isolation variables are set to those values, and fails otherwise.
+- A test runner is a GitHub Actions workflow job or a `just` recipe.
+- Production daemon code is the source compiled into the daemon binary, including `crates/sc-runtime/src`.
+- A test variant of the daemon is a crate, binary target, cargo feature, `cfg` flag or build configuration whose purpose is the daemon for tests: a daemon-like executable, a stub daemon or a daemon with parts switched off.
+- A test-only switch is a code path in production daemon code that makes the daemon behave differently under test: a skipped lock, a different start-up order, stubbed stores or stubbed transport.
+- The `testing::DaemonFixture` module of `sc-runtime`, its crate-private shutdown trigger (which starts the same shutdown sequence a signal starts, [REQ-RT-0006](sc-runtime/requirements.md)) and a cargo feature that only gates that module (OPEN in [NFR-RT-0003](sc-runtime/requirements.md)) are neither a test variant of the daemon nor a test-only switch.
+- Weakening the `daemon.lock` singleton means any change that lets a second daemon start while another daemon holds the instance lock of the same `<instance-root>` ([REQ-RT-0002](sc-runtime/requirements.md)).
+- CLI means command-line interface. TCP means Transmission Control Protocol.
+
+Scope:
+
+- The rule governs where a daemon-process test executes, not which command starts it. `just test` MAY run daemon-process tests inside an isolated machine that `just test` starts. What `just test` covers belongs to the standard SC `just` system, whose source of truth is the sc-lint project.
+- Daemon-process tests exist in this repository's crate tests and in tests of the generated `cli` and `daemon` binaries that live in `template/` ([REQ-RUN-0310](requirements.md) criterion 4).
+- Phase B selects the generated real-daemon SIGINT/SIGTERM tests with the signal-test job. Selection of other generated daemon-process tests remains OPEN.
+- The host-safe classification of `DaemonFixture` tests is an interpretation of the owner's decision that the owner has not yet confirmed.
+- Phase A proves CLI behavior primarily through host-safe tests and runs the minimal real-binary smoke test on an isolated CI runner. This rule does not prescribe helper functions, attributes or a generated unit-test layout.
+- Building, provisioning or scripting a virtual machine is not part of v0.1 of this repository.
 
 **MUST statements:**
 
-- A test that starts a daemon as a separate operating-system process, or that uses the default `<instance-root>`, MUST run only on an isolated machine: a virtual machine (for example one run by colima) or an ephemeral CI runner.
-- Before starting a daemon, each test MUST also require `GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`; absence or mismatch of any of the three values fails closed without spawning a process.
-- When a test cannot be made safe on a developer's host, the answer MUST be to run it on an isolated machine.
-- The template's example test MUST place its database under the fixture's `<instance-root>` ([REQ-RUN-0302](requirements.md)).
-- A test of obligation 2 MUST refuse to start a daemon when it finds it is not on an isolated machine.
+- A test MUST start a daemon only through the production `Daemon::builder()` path.
+- The definition of every test runner that runs a daemon-process test MUST target an isolated machine.
+- When its isolation check fails, a daemon-process test MUST return before its first process-spawning call.
+- When no isolated machine is available to `just test`, `just test` MUST print a line stating that the daemon-process tests were not run.
+- The template's example test MUST place its database files under the temporary `<instance-root>` of its `DaemonFixture`.
+- The signal-test job MUST be the only test runner that sets `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`.
 
 **MUST NOT statements:**
 
-- There MUST NOT be a test variant of the daemon: no crate, binary, cargo feature or build configuration that is "the daemon, but for tests" (a daemon-like executable, a stub daemon, a daemon with parts switched off).
-- It MUST NOT run on a developer's host, where the application's own daemon may be running and where a leaked test daemon would keep running after the test.
-- A test of obligation 2 MUST NOT execute on a developer's host.
-- The solution MUST NOT be to add a test-only daemon.
-- The solution MUST NOT be to weaken the `daemon.lock` singleton (REQ-RT-0002).
-- The solution MUST NOT be to add a test-only switch to production daemon code.
-- A test that may run on a developer's host MUST NOT execute the CLI binary.
+- The workspace MUST NOT contain a test variant of the daemon.
+- Production daemon code MUST NOT contain a test-only switch.
+- When no isolated machine is available to `just test`, `just test` MUST NOT execute a daemon-process test on the host.
+- Production daemon code MUST NOT weaken the `daemon.lock` singleton.
 
 ### Rationale
 
@@ -5266,32 +5281,32 @@ test daemon.
    or `cfg` flag whose purpose is a test variant of the daemon, and no branch
    in `crates/sc-runtime/src` that changes the daemon's behaviour under test.
    The `testing` module, its crate-private shutdown trigger and a feature
-   that only gates that module are not such branches (obligation 1).
+   that only gates that module are not such branches (Definitions).
 2. Every test, in this repository and in a generated project, that starts a
    daemon as a separate process
    (the child-process tests of [REQ-RT-0005](sc-runtime/requirements.md),
    [REQ-RT-0008](sc-runtime/requirements.md) and
    [REQ-RUN-0310](requirements.md), plus any future tests introduced with
    deferred [REQ-RUN-0206](requirements.md)) is
-   among the tests obligation 3 governs; none of them executes on a
-   developer's host, whichever command started the run.
+   a daemon-process test; none of them executes on a
+   developer host, whichever command started the run.
 3. The Phase B generated SIGINT/SIGTERM tests exit without starting a daemon
    unless all three fixed values are present:
    `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`, `GITHUB_ACTIONS=true`, and
-   `RUNNER_ENVIRONMENT=github-hosted`. Other obligation-2 tests likewise
+   `RUNNER_ENVIRONMENT=github-hosted`. Other daemon-process tests likewise
    refuse a non-isolated host, with their broader selection mechanism still
-   governed by the qualified OPEN above.
-4. This repository's crate CI workflow runs this repository's tests of
-   obligation 2. A dedicated `ubuntu-latest` GitHub-hosted job runs the Phase
+   OPEN (Scope).
+4. This repository's crate CI workflow runs this repository's daemon-process
+   tests. A dedicated `ubuntu-latest` GitHub-hosted job runs the Phase
    B generated SIGINT/SIGTERM tests and sets their dedicated marker. Once the
    broader selection OPEN is decided, the fixture-matrix workflow also runs
-   the remaining generated-project tests of obligation 2 for every fixture.
+   the remaining generated-project daemon-process tests for every fixture.
 5. After the full test suite has run on a developer's host, no daemon
    process started by a test is still running. The same holds after a run in
    which a fixture was made to fail.
 6. Inspection of this repository's tests and of `template/` finds no test
-   that spawns the generated `cli` binary other than the isolated-machine
-   tests of obligation 2.
+   that spawns the generated `cli` binary other than daemon-process tests on an
+   isolated machine.
 
 The production tool-crate exclusion is enforced across the five release crates
 by the `production-tool-boundary` lint companion in `sc-lint.toml`: package
