@@ -496,7 +496,7 @@ Owner (ANC-034): "python/monty having consistent settings would be least confusi
 
 ### Requirement Statement
 
-Definitions: ATM means agent-team-mail and its tool crates. sc-compose crates are sc-compose, sc-composer and sc-composer-beads; sc-sha is published from the sc-compose repository but is not an sc-compose crate (ANC-061). The command contract edge is the dependency on sc-command with `default-features = false` and no features, permitted by ADR-RUN-0017. sc-storage is the shared `Storage<T>` crate and sc-monty is the shared Monty interpreter crate; both are workspace crates that REQ-RUN-0002 requires sc-cron to consume. The interpreter crates are sc-monty, monty, monty-types, monty-pool, monty-fs and monty-runtime. The default tree is the output of `cargo tree -p sc-cron -e normal`; the monty-feature tree is the same command with `--features monty`. sc-lint-boundary accepts workspace names only, so monty/monty-types are enforced by cargo-tree gates rather than entries in that list. Test and benchmark references are permitted; CLI process invocation creates no crate dependency. The `allowed_dependencies` list is in `boundaries/sc-cron/sc-cron.toml`. Production dependency checks cover normal and build dependencies across production features; production Rust imports are imports in non-test and non-benchmark code in `crates/sc-cron`. Permitted interpreter crates in the monty-feature tree are sc-monty, monty and monty-types.
+Definitions: ATM means agent-team-mail and its tool crates. sc-compose crates are sc-compose, sc-composer and sc-composer-beads; sc-sha is published from the sc-compose repository but is not an sc-compose crate (ANC-061). The command contract edge is the dependency on sc-command with `default-features = false` and no features, permitted by ADR-RUN-0017. sc-storage is the shared `Storage<T>` crate and sc-monty is the shared Monty interpreter crate; both are workspace crates that REQ-RUN-0002 requires sc-cron to consume. The interpreter crates are sc-monty, monty, monty-types, monty-pool, monty-fs and monty-runtime. The default tree is the output of `cargo tree -p sc-cron -e normal`; the monty-feature tree is the same command with `--features monty`. sc-lint-boundary accepts workspace names only, so monty/monty-types are enforced by cargo-tree gates rather than entries in that list. Test and benchmark references are permitted; CLI process invocation creates no crate dependency. The `allowed_dependencies` list is in `boundaries/sc-cron/sc-cron.toml`. The production trees are the outputs of `cargo tree -p sc-cron -e normal,build` with default features and with `--features monty`. The schedule store has moved to Storage<CronRow> once `crates/sc-cron` no longer defines the `ScheduleStore` trait (code-alignment CRON-3). The third-party entries are the entries of the allowed_dependencies list that are not workspace crates. A workspace crate is a member of the workspace declared in the root `Cargo.toml`. The permitted workspace crates are sc-command, sc-storage and sc-monty. A production import is a `use` item or an `extern crate` item in the Rust code of `crates/sc-cron` outside test and benchmark code. Permitted interpreter crates in the monty-feature tree are sc-monty, monty and monty-types.
 
 `rusqlite` leaves this list when the schedule store moves to `Storage<CronRow>`.
 
@@ -506,8 +506,8 @@ The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM 
 
 **MUST statements:**
 
-- Until the schedule store moves to Storage<CronRow>, the normal allowed_dependencies list in `boundaries/sc-cron/sc-cron.toml` MUST be async-trait, chrono, cron, getrandom, process-wrap, rusqlite (bundled), sc-observability-types, sc-sha, serde, serde_json, tempfile, tokio and tracing.
-- When the schedule store moves to Storage<CronRow>, rusqlite MUST leave the normal allowed_dependencies list in `boundaries/sc-cron/sc-cron.toml`.
+- Until the schedule store has moved to Storage<CronRow>, the third-party entries in `boundaries/sc-cron/sc-cron.toml` MUST be exactly async-trait, chrono, cron, getrandom, process-wrap, rusqlite (bundled), sc-observability-types, sc-sha, serde, serde_json, tempfile, tokio and tracing.
+- When the schedule store has moved to Storage<CronRow>, the allowed_dependencies list in `boundaries/sc-cron/sc-cron.toml` MUST omit rusqlite.
 - Feature monty MUST remain optional.
 - The default tree MUST contain no interpreter crate.
 - Every interpreter crate in the monty-feature tree MUST be a permitted interpreter crate.
@@ -515,17 +515,18 @@ The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM 
 - In the monty-feature tree, every path to monty-types MUST pass through sc-monty.
 - sc-cron-tree-default in sc-lint.toml MUST enforce the default tree.
 - sc-cron-tree-monty in sc-lint.toml MUST enforce the monty-feature tree.
+- The sc-command dependency in `crates/sc-cron/Cargo.toml` MUST be the command contract edge.
 
 **MUST NOT statements:**
 
-- sc-cron MUST NOT depend on any workspace crate outside the permitted workspace edges: sc-command through the command contract edge, sc-storage and sc-monty.
+- Each production tree MUST NOT list a workspace crate other than sc-cron and the permitted workspace crates.
 - sc-cron MUST NOT depend on monty-pool.
 - sc-cron MUST NOT depend on monty-fs.
 - sc-cron MUST NOT depend on monty-runtime.
-- Production dependencies MUST NOT include sc-compose crates.
-- Production dependencies MUST NOT include ATM crates.
-- Production Rust imports MUST NOT include sc-compose crates.
-- Production Rust imports in `crates/sc-cron` MUST NOT include ATM crates.
+- Each production tree MUST NOT list an sc-compose crate.
+- Each production tree MUST NOT list an ATM crate.
+- A production import MUST NOT name an sc-compose crate.
+- A production import MUST NOT name an ATM crate.
 
 ### Rationale
 
