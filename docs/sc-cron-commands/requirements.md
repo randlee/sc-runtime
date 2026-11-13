@@ -27,7 +27,7 @@ The `sc-cron-commands` crate provides `cron.start`, `cron.end` and `cron.list` a
 5. Every error that a command of the cron command contract returns MUST be an `OpError`.
 6. Each command MUST have one request type that every projection uses.
 7. Each command MUST have one result type that every projection returns.
-8. Every projection MUST show the namespaced error code of a failed command unchanged.
+8. Every projection MUST show each failed command's namespaced error code exactly as the command returned it.
 9. `cron.start` MUST accept a Rust target.
 10. `cron.start` MUST accept a Python target.
 11. In a build that includes Monty, `cron.start` MUST accept a Monty target.
@@ -68,7 +68,7 @@ The `sc-cron-commands` crate provides `cron.start`, `cron.end` and `cron.list` a
 43. A diagnostic MUST NOT contain hook source code.
 44. A diagnostic MUST NOT contain payload content.
 45. One `cron.end` request MUST NOT end more than one schedule.
-46. A command of the version-1 cron command contract MUST NOT perform hard deletion.
+46. Each command of the version-1 cron command contract MUST NOT perform hard deletion.
 47. The version-1 request types MUST NOT contain an ATM team field.
 48. The version-1 request types MUST NOT contain an ATM phase field.
 49. The version-1 request types MUST NOT contain an ATM mandatory-until field.

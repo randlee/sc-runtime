@@ -540,7 +540,7 @@ For each crate that ADR-RUN-0017 covers and each supported production feature co
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when the result the client receives for its request is the result that function returned for that request. An MCP client is any program that sends MCP Streamable HTTP requests over the server's Unix socket. `tools/call` is the MCP request that runs one named tool.
+Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when the result the client receives for its request is the result that function returned for that request. An MCP client is any program that sends MCP Streamable HTTP requests over the server's Unix socket. `tools/call` is the MCP request that runs one named tool. A REST route is an HTTP route that the spike registers with the `routes!` macro of `utoipa-axum` 0.2 `OpenApiRouter`.
 
 `examples/spike` in the `randlee/sc-runtime` repository is a throwaway proof,
 built before any of the four library crates exists, so it uses the third-party
@@ -575,7 +575,7 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - The MCP tool MUST call the one async service function that reads or writes the SQLite database.
 - The spike MUST contain a `clap` command-line client.
 - The spike `clap` client MUST connect to the server socket using `reqwest` 0.13 `ClientBuilder::unix_socket(path)`.
-- The spike `clap` client MUST call the REST route.
+- The spike `clap` client MUST send an HTTP request to the REST route when it runs.
 - Against one running spike server process, `curl --unix-socket <path>` calling the REST route MUST reach the one async SQLite service function.
 - Against one running spike server process, the `clap` client MUST reach the one async SQLite service function.
 - Against one running spike server process, an MCP `tools/call` request sent by an MCP client to `/mcp` MUST reach the one async SQLite service function.
@@ -4004,7 +4004,7 @@ is not on `PATH` without the script guessing install prefixes.
 
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record. REST means representational state transfer. A clean checkout is a checkout of this repository in which `git status --porcelain` prints nothing. `<dest>` is the directory where `just new` creates the project. The generated project is the project created at `<dest>`. The green sequence is `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, run in that order in the generated project with no file added, changed or deleted after generation. The example operation test is the template's test of `widget.create` and `widget.get` (REQ-RUN-0302). The selected dependency graph is the dependency graph of the generated project for the fixture's answers `db = sqlite` and `mcp = true`.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record. REST means representational state transfer. A clean checkout is a checkout of this repository in which `git status --porcelain` prints nothing. `<dest>` is the directory where `just new` creates the project. The generated project is the project created at `<dest>`. The green sequence is `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, run in that order in the generated project with no file added, changed or deleted after generation. The example operation test is the template's test of `widget.create` and `widget.get` (REQ-RUN-0302). The selected dependency graph is the dependency graph of the generated project for the fixture's answers `db = sqlite` and `mcp = true`. `sc_runtime::testing::DaemonFixture` is the fixture in the `sc-runtime` crate's `testing` module that starts the daemon the example operation test runs against. A crate resolves when Cargo can select a version of it that satisfies the dependency declared for it, from crates.io or from the `[patch.crates-io]` entry or git tag that supplies it.
 
 This item owns the definition of "green with no edits" and applies it to one
 answers fixture. [REQ-RUN-0701](requirements.md) applies the same sequence to
@@ -4024,7 +4024,7 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 
 **MUST statements:**
 
-- Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` from the root of a clean checkout MUST exit 0.
+- When run from the root of a clean checkout, `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` MUST exit 0.
 - Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` MUST create a project at `<dest>`.
 - Every command of the green sequence MUST exit 0.
 - `just test` in the generated project MUST run the example operation test.
@@ -4035,7 +4035,7 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 - The example operation test MUST call `widget.get` through MCP.
 - The example operation test MUST call `widget.get` through the CLI.
 - The example operation test MUST run against a daemon started by `sc_runtime::testing::DaemonFixture`.
-- Every crate of the public package set that is in the selected dependency graph MUST resolve during the green sequence.
+- When the green sequence runs, every crate of the public package set that is in the selected dependency graph MUST resolve.
 
 ### Rationale
 
