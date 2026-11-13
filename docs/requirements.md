@@ -4133,7 +4133,7 @@ as [ADR-RUN-0401](architecture.md).
 - Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`.
 - If neither location supplies Wyvern, wizard code MUST fail before `cargo generate`.
 - If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
-- If neither location supplies Wyvern, wizard code MUST name `WYVERN_BIN` on stderr.
+- If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
 - If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
 - If neither location supplies Wyvern, wizard code MUST leave no destination.
 
