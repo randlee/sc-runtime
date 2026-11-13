@@ -1276,7 +1276,7 @@ status 200, and the body is the `sc_command` success envelope from
 - The daemon MUST assemble exactly one daemon router.
 - The daemon MUST serve the daemon router from one process.
 - `run()` MUST serve the daemon router unchanged on every listener.
-- The daemon router MUST serve the project's own routes from its `.routes(...)` closure, as specified in the table above.
+- The daemon router MUST serve the routes of the `OpenApiRouter` that the project's `.routes(...)` closure returns (in the template: `POST /ops/widget.create` and `POST /ops/widget.get`).
 - The daemon router MUST serve the OpenAPI document generated from the same `OpenApiRouter`, as specified in the table above.
 - The daemon router MUST serve the health route added by `sc-runtime`, as specified in the table above.
 - The daemon router MUST serve the optional MCP endpoint at `/mcp` from the `.mcp(...)` closure, as specified in the table above.
