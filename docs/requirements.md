@@ -282,6 +282,8 @@ Generated project licensing remains an independent generation option. Consumers 
 "Generated project" means the Cargo workspace that `cargo generate` renders
 from `template/`. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002).
 
+Definitions: A "crates.io version requirement" is either a `version = "..."` key or the bare-string form `name = "..."`. A `Cargo.toml` depends on a crate when it lists that crate in a dependency table: `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]`, `[workspace.dependencies]` or a `[target.*]` form of these.
+
 3. This obligation does not apply to a `[patch.crates-io]` table, whose entries are normally `path` or `git` entries. (Path dependencies between the generated project's own crates, such as `daemon` on `service`, are unaffected.)
 4. Before a crate's first crates.io publish, and when testing unreleased
    crate changes, the dependency MAY instead be satisfied by a
@@ -298,7 +300,7 @@ Checkout validation MAY satisfy that requirement with the same `[patch.crates-io
 
 **MUST statements:**
 
-- Every `Cargo.toml` rendered into a generated project that depends on one of the public crates MUST name it by a crates.io version requirement (a `version = "..."` key or the bare-string form).
+- When a `Cargo.toml` rendered into a generated project depends on one of the public crates, it MUST name that crate by a crates.io version requirement.
 - The Phase B continuation extends this requirement to the optional published crate `sc-cron`: when the generated daemon enables its optional `cron` feature, every rendered dependency on `sc-cron` MUST retain a crates.io version requirement.
 
 **MUST NOT statements:**
