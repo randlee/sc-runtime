@@ -1295,14 +1295,14 @@ constructs of point 3 reachable from public functions.
 
 ### Context
 
-Point 5 stands as scope: `sc-config` is synchronous today and nothing more is built. It does not take the option of async or reload away from a consumer; see the note on [ADR-CFG-0003](sc-config/architecture.md).
-
-A daemon built with these crates serves REST requests and MCP tool calls on
+The problem is deciding which code may block a thread and which must be
+asynchronous. A daemon built with these crates serves REST requests and MCP tool calls on
 one Tokio runtime and reaches application storage through the asynchronous `Storage<T>` contract. A Tokio worker thread serves many requests, so one blocking call in a
 handler or a service function stalls every other request scheduled on that
 worker. `sc-config`, in contrast, is called once at the top of `main`, before
-any request exists, and must stay usable by programs that have no async
-runtime.
+any request exists, so its load calls being synchronous today blocks no request.
+
+Point 5 stands as scope: `sc-config` is synchronous today and nothing more is built. It does not take the option of async or reload away from a consumer; see the note on [ADR-CFG-0003](sc-config/architecture.md).
 
 ### Decision
 
