@@ -2957,23 +2957,24 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database;
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The same function shape means the application-owned rollup mapping host-row inputs into aggregate-row outputs for the selected remote engine.
+Definitions: A consumer repository is an application project using the framework.
+A host row is a row in a host SQLite database.
+A Postgres aggregate is a PostgreSQL database collecting data from multiple hosts.
+A MySQL aggregate is a MySQL database collecting data from multiple hosts.
+A rollup function is an application-owned mapping from host rows to aggregate rows.
+The remote engine is the selected Postgres or MySQL database engine.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-The consumer repository defines the rollup from host rows into the Postgres aggregate. The same function shape maps host rows into the MySQL aggregate when MySQL is that engine. Amended 2026-10-25.
+This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Database synchronization is deferred.
 
 **MUST statements:**
 
-- The consumer repository defines the rollup from host rows into the Postgres aggregate.
-- The same function shape maps host rows into the MySQL aggregate when MySQL is that engine.
+- The consumer repository MUST define a rollup function mapping host rows into the Postgres aggregate.
+- When MySQL is the remote engine, the consumer repository MUST define a rollup function mapping host rows into the MySQL aggregate.
 
 ### Rationale
 
