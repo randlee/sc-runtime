@@ -105,7 +105,7 @@ each waits until a project asks for it.
 
 ### Requirement Statement
 
-Definitions: A workspace member is a Cargo package selected by the root `Cargo.toml` workspace members list. The member table is the table headed `Member path | Crate name | Purpose`. The path table is the separate table headed `Path | Contents`; it lists repository support paths, not member packages.
+Definitions: A workspace member is a Cargo package selected by the root `Cargo.toml` workspace members list. The member table is the table headed `Member path | Crate name | Purpose`. The path table is the separate table headed `Path | Contents`; it lists repository support paths, not member packages. A path-table entry is one value in the Path column of the path table, read without its trailing `/`; files named only in the Contents column are not path-table entries. A required path-table entry is any path-table entry, except `examples/spike/` at and after the `v0.1.0` tag.
 
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
@@ -159,15 +159,15 @@ The files in `template/` contain `cargo-generate` placeholders and do not compil
 
 **MUST statements:**
 
-- The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.
+- The root `Cargo.toml` of the GitHub repository `randlee/sc-runtime` MUST contain one `[workspace]` table.
 - The workspace members MUST be exactly the nine packages listed in the member table.
-- The repository root MUST contain each directory and file listed in the path table, except that `examples/spike/` is exempt at and after the `v0.1.0` tag.
+- The output of `git ls-tree -r -t --name-only HEAD` MUST list each required path-table entry.
+- Every string in the `[workspace] members` list of the root `Cargo.toml` MUST start with `crates/`.
 
 **MUST NOT statements:**
 
 - Each directory and file in the path table MUST NOT be a workspace member.
-- `template/` MUST NOT be a workspace member.
-- `template/` MUST NOT be matched by a workspace `members` glob.
+- The `[workspace] members` array in the root `Cargo.toml` MUST NOT contain a string that starts with `template`.
 - The repository MUST NOT contain a `docs/adr/` directory.
 
 ### Rationale
