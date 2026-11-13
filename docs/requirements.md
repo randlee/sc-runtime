@@ -1,6 +1,6 @@
 # sc-runtime Requirements
 
-**ID Range:** REQ-RUN-0001 through REQ-RUN-0702; NFR-RUN-0001 through NFR-RUN-0010  
+**ID Range:** REQ-RUN-0001 through REQ-RUN-0703; NFR-RUN-0001 through NFR-RUN-0010  
 **Status:** Draft  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-09-19  
@@ -8,7 +8,7 @@
 
 ---
 
-**Authority (2026-11-11).** [PRD v2.0](prd/sc-runtime-prd.md) governs this document. Where a requirement below disagrees with the PRD, the PRD is right. Requirements changed to match it carry the date 2026-11-11 and a PRD id.
+**Authority (2026-11-11).** [PRD v2.1](prd/sc-runtime-prd.md) governs this document. Where a requirement below disagrees with the PRD, the PRD is right. Requirements changed to match it carry the date 2026-11-11 and a PRD id.
 
 Repo-level requirements for `sc-runtime`. They were extracted from
 [`sc-runtime-design.md`](sc-runtime-design.md) (final input for sprint planning,
@@ -25,14 +25,16 @@ Crate-level requirements live beside each crate's architecture:
 | `sc-runtime` | [requirements](sc-runtime/requirements.md) | [architecture](sc-runtime/architecture.md) |
 | `sc-cron` | [requirements](sc-cron/requirements.md) | [architecture](sc-cron/architecture.md) |
 | `sc-cron-commands` (Phase C planned) | [requirements](sc-cron-commands/requirements.md) | [architecture](sc-cron-commands/architecture.md) |
+| `sc-storage` | none | none |
+| `sc-monty` | none | none |
+| `sc-runtime-db-sqlite` | [requirements](sc-runtime-db-sqlite/requirements.md) | [architecture](sc-runtime-db-sqlite/architecture.md) |
 
 ## Product purpose
 
 Every SC project that needs a local service has so far hand-assembled the same
 stack (Tokio, Axum, an MCP server, a Clap CLI, SQL) slightly differently.
 `sc-runtime` removes that work without acquiring opinions about what a project
-does. It is a `cargo-generate` template plus four small, independently
-published library crates. A new project supplies an answers JSON file (written
+does. It is a `cargo-generate` template plus the independently published library crates of REQ-RUN-0002. A new project supplies an answers JSON file (written
 by hand, by an agent, or by a Wyvern wizard) and gets a compiling workspace with
 one example operation reachable from REST, MCP and the CLI.
 
@@ -203,7 +205,7 @@ are not valid Rust until rendered.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -225,6 +227,7 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST provide a README.
 - Each public crate's README MUST contain a Rust usage example.
 - Each public crate's README Rust usage example MUST compile as a doctest.
+- Each public crate's README Rust usage example MUST use no other crate of the public package set, except the workspace crates that REQ-RUN-0005 lists as that crate's dependencies.
 - Each public crate's `name` in `cargo metadata --no-deps` output MUST equal that crate's name in the public package set.
 - Each public crate's `version` in `cargo metadata --no-deps` output MUST equal the version the public package set is released together at.
 - Each public crate's `description` in `cargo metadata --no-deps` output MUST state what that crate provides.
@@ -798,7 +801,7 @@ second example that nobody maintains.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -866,7 +869,7 @@ the template's example operation `widget.create`.
 - An operation MUST define exactly one response struct in the generated `api-types` crate.
 - An operation MUST have exactly one service function.
 - Each operation MUST be reachable through REST.
-- Each operation MUST be reachable through MCP.
+- When the generation option `mcp` is `true`, each operation MUST be reachable through MCP.
 - Each operation MUST be reachable through CLI.
 
 **MUST NOT statements:**
@@ -1268,10 +1271,12 @@ it prefers, without this project choosing one.
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
+
+This record is deferred under the owner's 2026-09-21 disposition. It is not binding on Phase A; its detailed design is retained for a later optional application layer. It does not authorize implementing auto-start in Phase D. REQ-RUN-0202 governs the delivered CLI's behavior when the daemon is not running.
 
 Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A CLI command finds that the daemon is not running when the `sc-transport` client returns `TransportError::DaemonNotRunning` ([REQ-TRN-0006](sc-transport/requirements.md)). A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value. A permitted daemon argument is an argument of the service definition or an explicit invocation value. A value is passed to the daemon visibly when the value appears in the started daemon's arguments or configuration. An isolated machine is a virtual machine or an ephemeral CI runner ([NFR-RUN-0010](requirements.md)).
 
@@ -1290,7 +1295,7 @@ explicitly supplied path; its default location is undecided
 
 2. That exception is decided in this document: the owner decided the clean, launchd-equivalent launch and that the environment must not leak; the alternative that needs no exception is recorded in the first OPEN below.
 3. No environment variable set in the shell, agent session or parent process that ran the CLI may appear in the daemon's environment because the CLI started it. This is the known failure mode of auto-start: variables leaking from whichever caller happened to start the daemon make the daemon behave differently from one start to the next, and the leak persists for the life of the daemon.
-6. If the daemon that won is not reachable at the endpoint this CLI resolved (for example it was started on the default socket while this CLI was given another endpoint), obligation 7 applies.
+6. A daemon that won can be unreachable at the endpoint this CLI resolved, for example when it was started on the default socket while this CLI was given another endpoint.
 9. On that machine they MAY use the default `<instance-root>`; tests that share one `<instance-root>` MUST NOT run at the same time.
 
 The daemon.lock singleton (REQ-RT-0002) decides the winner.
@@ -1325,6 +1330,7 @@ Auto-start starts a real daemon process.
 - Starting the daemon MUST remain the only action the CLI takes about a missing daemon.
 - Tests of this item MUST run only on an isolated machine (NFR-RUN-0010).
 - The CLI whose daemon lost MUST connect to the daemon that won.
+- If the daemon that won the startup race remains unreachable, the caller MUST return `DAEMON.NOT_RUNNING` after the bounded retry described by this record.
 - In either case, readiness retries MUST enforce a finite retry bound.
 
 **MUST NOT statements:**
@@ -1602,7 +1608,7 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 **Key Considerations:**
 
 - Implementation scope: whether the template renders a daemon service definition (launchd property list on macOS, and the Linux and Windows equivalents), and where, is not decided; [REQ-RUN-0206](requirements.md) owns the question for the CLI's auto-start.
-- Implementation scope: whether v0.1 renders a default TCP port into `config/default.json` is not decided. If it does, that one value in `template/config/default.json` is exempt from the port-literal prohibition and comes from the project's range in the synaptic-canvas port registry.
+- Implementation scope: whether v0.1 renders a default TCP port into `config/default.json` is not decided. If it does, that one value in `template/config/default.json` is exempt from the port-literal prohibition. That value MUST come from the range registered for the project in the synaptic-canvas port registry.
 - Implementation scope: whether the template renders a `config/local.json` file or only its `.gitignore` entry, and the keys of `config/default.json`, are not stated.
 
 # Requirement: Template example operations `widget.create`, `widget.get`
@@ -1610,7 +1616,7 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -2471,12 +2477,12 @@ is logged.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: The template is the `cli` and `daemon` crates of a project rendered from `template/`; `cli` and `daemon` name those crates and their binaries. Template code is the code of those two crates. The endpoint is where the daemon listens: a Unix domain socket path or a TCP address. The resolver is the `sc-transport` endpoint resolver (REQ-TRN-0001). A global option is an option accepted with every subcommand of that binary. The instance root is the per-application, per-user directory resolved by sc-transport, or a directory path supplied explicitly ([REQ-TRN-0002](sc-transport/requirements.md)). An explicit instance root is an instance root path given to the binary instead of one sc-transport resolves. The project's configuration is the configuration the template loads at startup. A socket file name is the last component of a Unix domain socket path, such as `daemon.sock`. A crate's default features are the features listed under `default` in its `Cargo.toml`. A crate depends on another crate when `cargo tree` output for the first crate lists the second.
+Definitions: The template is the `cli` and `daemon` crates of a project rendered from `template/`; `cli` and `daemon` name those crates and their binaries. Template code is the code of those two crates. The endpoint is where the daemon listens: a Unix domain socket path or a TCP address. The resolver is the `sc-transport` endpoint resolver (REQ-TRN-0001). A global option is an option accepted with every subcommand of that binary. The instance root is the per-application, per-user directory resolved by sc-transport, or a directory path supplied explicitly ([REQ-TRN-0002](sc-transport/requirements.md)). An explicit instance root is an instance root path given to the binary instead of one sc-transport resolves. The project's configuration is the configuration the template loads at startup. A socket file name is the last component of a Unix domain socket path, such as `daemon.sock`. A crate's default features are the features listed under `default` in its `Cargo.toml`. A crate depends on another crate when `cargo tree -e normal` output for the first crate lists the second; dev-dependencies and build-dependencies do not count ([NFR-RUN-0001](requirements.md)).
 
 This applies to the `cli` and `daemon` crates of a project rendered from
 `template/`. The "endpoint" is where the daemon listens: a Unix domain socket
@@ -2606,10 +2612,12 @@ tested in `sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
+
+This record is deferred under the 2026-09-21 disposition and is not binding on Phase A. Its detailed statements are retained as decision history, not as additional Phase D implementation or validation work.
 
 Definitions: CLI means command-line interface. An agent document is the `AGENTS.md` or `CLAUDE.md` file of a project generated from `template/`, rendered from `template/AGENTS.md.j2` or `template/CLAUDE.md.j2` ([REQ-RUN-0305](requirements.md)). The daemon-testing section is the section of an agent document on testing the daemon. A daemon-process test is an integration test that runs the daemon as a separate process, uses the default instance root, or involves the service manager or the CLI's auto-start. An isolated machine is a virtual machine, for example one run by colima, or an ephemeral CI runner. The instance root is the per-application, per-user directory resolved by sc-transport, or a directory the caller supplies explicitly ([REQ-RT-0002](sc-runtime/requirements.md)). A temporary instance root is a temporary directory a test supplies as the instance root. The daemon singleton is the operating-system exclusive lock on the file `daemon.lock` in the instance root, which lets only one daemon run per instance root ([REQ-RT-0002](sc-runtime/requirements.md)). A daemon collides with another daemon when both daemons use the same `daemon.lock`, endpoint or database files. A test is safe on the host when the test cannot collide with a daemon the developer is running and cannot leave a daemon running after the test ends. Request construction and result rendering are the CLI command functions defined in [REQ-RUN-0312](requirements.md). The CLI binary is the `cli` executable of a generated project. A host-run test is a test that may run on a developer's host ([REQ-RUN-0312](requirements.md)). A test daemon is a crate, binary or cargo feature that is mostly the daemon but built for tests. colima is the virtual machine tool named as the example in [NFR-RUN-0010](requirements.md). A virtual machine definition is a file that defines a virtual machine, such as a `Vagrantfile` or a `*.lima.yaml` file. A colima configuration is a file that configures colima. A provisioning script is a script that creates a virtual machine or installs software on one. v0.1 is release version 0.1 of sc-runtime.
 
@@ -2674,10 +2682,12 @@ the owner decided that building a virtual machine is not part of v0.1.
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
+
+This record is deferred under the 2026-09-21 disposition and is not binding on Phase A. Its detailed statements are retained as decision history, not as additional Phase D implementation or validation work.
 
 Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. A split CLI command is a CLI command written as two pure functions, request construction and result rendering, with the HTTP call made between them. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". The template is the `template/` directory. A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)). The example unit tests are the unit tests of the example commands, in `template/crates/cli`. A test is for a unit-test case when it sets up the input the case gives and asserts the result the case states. A call to a function includes a call through other functions. A function opens a socket when it creates a TCP, UDP or Unix-domain socket. A function uses the network when it sends or receives data over a socket, for example through `sc_transport::Client`. A function starts a child process when it runs `std::process::Command` or `tokio::process::Command`. A testability-only abstraction is a trait whose only implementors are a real implementation and a test double, or a type or module that only test code uses.
 
@@ -2883,9 +2893,8 @@ This Draft record is deferred and does not apply to Phase D. It creates no imple
 
 **MUST statements:**
 
-- Every row that an `aggregate_host` call passes to the rollup MUST be a row that the call read from the host database.
-- When Postgres is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the Postgres aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
-- When MySQL is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the MySQL aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
+- The host-aggregate adaptor MUST pair one SQLite database for the host with one Postgres database that aggregates many hosts.
+- When MySQL is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one MySQL database that aggregates many hosts.
 
 ### Rationale
 
@@ -2957,7 +2966,7 @@ Leaving the pairing for each consumer to invent was rejected: a common pattern h
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -2975,7 +2984,7 @@ Definitions:
 - A store adaptor is a crate under `template/crates/store-adaptor*` that moves rows between a local SQLite store and one remote SQL engine.
 - A store-adaptor generator is source code that writes the source files of a store adaptor.
 
-Deferral: this record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened. Synchronization between databases is deferred. Command-path code may be written directly as the interim form; no command path is required to be hand-written. A command whose Tcli converts directly to Tsql uses the default conversion without a custom transform. Consumer-side generators are follow-up work running in a consumer repository against delivered sc-runtime; this record does not forbid them. No generator is built in Phase D.
+Deferral: this record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened. Synchronization between databases is deferred. Consumer-side generators are follow-up work running in a consumer repository against delivered sc-runtime; this record does not forbid them (PRD-CMD-11). No generator is built in Phase D. The default plain conversion required by ANC-056 remains governed by NFR-RT-0001; this record's deferral does not defer that command-path requirement.
 
 **MUST NOT statements:**
 
@@ -3196,7 +3205,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -3237,6 +3246,7 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - `store-mysql` MUST use `sqlx` for MySQL storage.
 - `store-sqlite` MUST use the SQLite writer of `sc-runtime-db-sqlite`.
 - Every store MUST implement `Storage<T>` for each row type it stores.
+- When the generated `store-sqlite` store is opened on an empty database, every table that the SQL files in `crates/store-sqlite/migrations/` create MUST exist before the first read or write.
 
 ### Rationale
 
@@ -3249,6 +3259,7 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
 5. A test of the generated `store-sqlite` store submits 100 concurrent inserts, awaits their completion, asserts that all succeeded and asserts that the row count increased by 100. Its coordination does not depend on sleeps, scheduling order or elapsed time.
 6. A test opens the generated `store-sqlite` store on a temporary-directory database file and asserts that `PRAGMA journal_mode` returns `wal`.
+7. A test opens the generated `store-sqlite` store on an empty temporary-directory database and asserts that the widget table exists.
 
 ## REQ-RUN-0327: Paired stores use the same schema or a similar schema
 
@@ -3497,7 +3508,7 @@ This record amends the optional cron composition of REQ-RUN-0301 and the schema 
 
 ### Requirement Statement
 
-Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set is the v0.1 option set plus cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object. A meta-schema is a JSON Schema used to validate another JSON Schema; the `$schema` value names it. The project-name option is the project name row in the Option table; its key spelling remains undecided. The licence option is the licence row in the Option table. A generation-option property is the entry for a generation option in the top-level `properties` object of `wizard/answers.schema.json`. The v0.1 answers schema is `wizard/answers.schema.json` as released for v0.1; the Phase C answers schema is `wizard/answers.schema.json` as released by Phase C. A conditional requirement between options makes one option depend on another, such as `cron_commands = true` requiring `cron = true`. The schema version is the integer at the root key `x-schema-version` of `wizard/answers.schema.json`; it identifies the version of the published answers schema (ADR-RUN-0401).
+Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set is the v0.1 option set plus cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object. A meta-schema is a JSON Schema used to validate another JSON Schema; the `$schema` value names it. The project-name option is the project name row in the Option table; its property key is `project_name`. The licence option is the licence row in the Option table; its property key is `licence`. A generation-option property is the entry for a generation option in the top-level `properties` object of `wizard/answers.schema.json`. The v0.1 answers schema is `wizard/answers.schema.json` as released for v0.1; the Phase C answers schema is `wizard/answers.schema.json` as released by Phase C. A conditional requirement between options makes one option depend on another, such as `cron_commands = true` requiring `cron = true`. The schema version is the integer at the root key `x-schema-version` of `wizard/answers.schema.json`; it identifies the version of the published answers schema (ADR-RUN-0401).
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
@@ -3580,7 +3591,7 @@ and sc-lint, so the schema is versioned like any other published contract.
    `mysql`, `sqlite-postgres`, `sqlite-mysql`,
    that `mcp` is a boolean property, that a string property for the project
    name exists, and that a string property for the licence exists whose
-   default is `MIT` (its key name follows the licence OPEN above). Amended
+   default is `MIT`. Amended
    2026-10-25.
 3. For v0.1, the test asserts that the top-level `properties` object has exactly
    four option keys: `db`, `mcp`, the project-name key and the licence key.
@@ -3597,15 +3608,8 @@ and sc-lint, so the schema is versioned like any other published contract.
 
 **Key Considerations:**
 
-- OPEN: the property key of the licence option, the form of its value (an
-  SPDX licence expression as Cargo's `license` field takes, or something else),
-  and how a project that is not open source states its licence (Cargo offers a
-  `license-file` field for non-SPDX licences) are not decided.
-- OPEN: the property key for the project-name option is not decided.
-  Whether that key also appears as a placeholder in
-  `template/cargo-generate.toml` is not decided either, because
-  `cargo generate` takes the project name through `--name`
-  ([REQ-RUN-0402](requirements.md) owns that question).
+- OPEN: the form of the licence value (an SPDX licence expression as Cargo's `license` field takes, or something else), and how a project that is not open source states its licence, are not decided.
+- OPEN: whether `project_name` also appears as a placeholder in `template/cargo-generate.toml` is not decided ([REQ-RUN-0402](requirements.md) owns that question).
 - OPEN: the defaults of `db` and `mcp` are not decided.
 - The schema version is carried as the root integer `x-schema-version` and is raised when a breaking option change ships (ADR-RUN-0401).
 - OPEN: the JSON Schema draft (the `$schema` value) is not decided.
@@ -3792,7 +3796,7 @@ and only asserts that it was not called.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -3827,7 +3831,7 @@ the rule that the driver stops at the first failure are unchanged.
 **MUST statements:**
 
 - The repository MUST contain a Python script `scripts/new_project.py`, called here the driver.
-- The root `justfile` MUST expose the driver as `just new <dest>`.
+- The root `Justfile` MUST expose the driver as `just new <dest>`.
 - The base driver MUST obtain one complete answers JSON object from the file given with `--var-file`.
 - The base driver MUST run the six-step pipeline on the answers object it obtained from `--var-file`.
 - When a step fails, the driver MUST stop.
@@ -3896,12 +3900,12 @@ naming the failed step tells a person or an agent where to look.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started and the arguments it was given, so a stub's record shows whether and how that program was started. A driver test is an integration test that runs `scripts/new_project.py` as a child process with stubs first on `PATH`, then reads the driver's exit status, its stderr and the stubs' records. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub. A command accepts an option when a run given that option does not fail because of that option. A machine has no `wyvern` executable when `WYVERN_BIN` is unset and no directory on `PATH` holds an executable named `wyvern`. In `--var-file` mode, the absence of a `wyvern` executable is not a failure condition, whatever diagnostic or error code a failure is reported with. `GEN.TOOL_MISSING` naming `wyvern` is the missing-Wyvern diagnostic that [REQ-RUN-0602](requirements.md) specifies for the interactive and prefill modes; it does not limit which `--var-file` runs exit with a non-zero status because `wyvern` is absent.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when no directory on `PATH` holds an executable named `sc-compose` and `SC_COMPOSE` is either unset or does not name an executable file. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`. To start a program is to run it as a child process by any means, `subprocess.run` included. A stub is an executable put in place of a program that records each time it is started and the arguments it was given, so a stub's record shows whether and how that program was started. A driver test is an integration test that runs `scripts/new_project.py` as a child process with stubs first on `PATH`, then reads the driver's exit status, its stderr and the stubs' records. To start `cargo generate` is to start the program `cargo` with `generate` as its first argument; this holds whether `cargo` is the real program or a stub. A command accepts an option when a run given that option does not fail because of that option. A machine has no `wyvern` executable when `WYVERN_BIN` is unset and no directory on `PATH` holds an executable named `wyvern`. In `--var-file` mode, the absence of a `wyvern` executable is not a failure condition, whatever diagnostic or error code a failure is reported with. `GEN.TOOL_MISSING` naming `wyvern` is the missing-Wyvern diagnostic that [REQ-RUN-0602](requirements.md) specifies for the interactive and prefill modes; it does not limit which `--var-file` runs exit with a non-zero status because `wyvern` is absent.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3934,7 +3938,7 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 **MUST NOT statements:**
 
 - When sc-compose is missing, the driver MUST NOT start `cargo generate`.
-- `scripts/new_project.py` MUST NOT contain code that reads standard input.
+- When `--var-file` is given, the driver MUST NOT read standard input.
 - When `--var-file` is given, `just new <dest>` MUST NOT write a prompt.
 - When `--var-file` is given, the driver MUST NOT start `scripts/run_wizard.py`.
 - `scripts/new_project.py` MUST NOT contain code that searches for the `wyvern` executable.
@@ -3999,7 +4003,7 @@ is not on `PATH` without the script guessing install prefixes.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-05  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -4013,7 +4017,7 @@ release commit; neither restates it.
 
 `wizard/fixtures/sqlite-mcp.json` is the answers fixture with `db = sqlite` and `mcp = true`.
 
-`just setup` installs the sc-lint 0.8.4 consumer and is not a source edit. This sequence (`just new` with `--var-file`, then `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, with nothing written to the project in between) is what "green with no edits" means.
+`just setup` installs the sc-lint consumer that REQ-RUN-0307 specifies and is not a source edit. This sequence (`just new` with `--var-file`, then `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, with nothing written to the project in between) is what "green with no edits" means.
 
 Before those crates are published to crates.io, a `[patch.crates-io]` entry or a git tag supplies them; that allowance, and the undecided question of who writes the `[patch.crates-io]` entry, are owned by [REQ-RUN-0003](requirements.md).
 
@@ -4314,7 +4318,7 @@ the template, the driver or CI.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-30  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -4322,7 +4326,7 @@ the template, the driver or CI.
 Definitions: CI means continuous integration. JSON means JavaScript Object Notation. ADR means architecture decision record. The workflow is the one GitHub Actions workflow that this record requires, and the workflow file is the YAML file that defines it. A fixture is one answers JSON file matching `wizard/fixtures/*.json`. The fixture name is the fixture's file name without the `.json` suffix. A generated project is the directory tree at `<dest>` that command 1 of the numbered list below renders from `template/` for one fixture. The fixture sequence is commands 1 to 6 of the numbered list below, in that order, and command 7 once the selection question of NFR-RUN-0010 is decided. A matrix entry is one job instance that the `strategy.matrix` key of the workflow file produces. The matrix job is the job in the workflow file that carries that `strategy.matrix` key. The fixture list is the set of files that match `wizard/fixtures/*.json` in the checkout under test, listed when the workflow runs. A branch filter is a `branches` or `branches-ignore` key. A path filter is a `paths` or `paths-ignore` key. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The selected dependency graph of a generated project is the set of packages listed in its `Cargo.lock`. The checkout under test is the commit the workflow run checked out. A crate is resolved from the checkout under test when its `Cargo.lock` entry has no `source` line; a crate taken from crates.io or from another commit is not resolved from it. The release run is the run of the workflow that REQ-RUN-0702 requires for a release. A test run is any run of the workflow other than the release run. A tested crate of a generated project is a crate of the public package set that is in the project's selected dependency graph. Postgres is the PostgreSQL database engine. A Postgres service container is an entry under the `services:` key of the matrix job that starts a Postgres server for the generated project. The `db` value of a fixture is the value of the `db` key in its JSON object. Wyvern is the optional interactive wizard program, whose executable is named `wyvern`.
 
 1. `just new <dest> --var-file <fixture>` from the repository root, which runs the generation driver `scripts/new_project.py` without the wizard.
-2. `just setup` inside the generated project at `<dest>`. It installs the sc-lint 0.8.4 consumer and is not a source edit.
+2. `just setup` inside the generated project at `<dest>`. It installs the sc-lint consumer that REQ-RUN-0307 specifies and is not a source edit.
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the observability grep: rendered `crates/daemon` requires `sc-observability` with the registry requirement `>=1.5.0` and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
@@ -4348,14 +4352,14 @@ No step of the workflow may write to `<dest>` between those commands. This is th
 
 - The `pull_request` entry of the `on:` key MUST NOT contain a branch filter.
 - The `pull_request` entry of the `on:` key MUST NOT contain a path filter.
-- The workflow file MUST NOT contain the file name of any fixture.
+- Adding a fixture file MUST NOT require an edit to the workflow file.
 - The workflow file MUST NOT contain a step that installs Wyvern.
 - The workflow file MUST NOT contain a step that invokes Wyvern.
 - The matrix job MUST NOT contain a `uses:` line that names the `cargo-generate-action` GitHub Action.
 
 ### Rationale
 
-Every supported option combination is generated, linted and tested on every change. That catches a new `rmcp` release, a crate change or a template edit breaking generated projects before a user meets it. Running the real driver with `--var-file` tests the same path that agents and CI users take; the driver is what is tested. Keeping the crates and the template in one repository is only useful if CI tests them together at one commit. After the first publish a generated project would otherwise resolve the published crates, and a pull request would be tested against the old crate code. The four matrix rules (one entry per fixture, the list derived from the directory, no workflow edit for a new fixture, every pull request) are decided in this record. The Postgres statement places no obligation on v0.1, because the only accepted `db` value in v0.1 is `sqlite`. Open: the workflow file name is not decided, and who writes the `[patch.crates-io]` entries into the generated project is owned by REQ-RUN-0003.
+Every supported option combination is generated, linted and tested on every change. That catches a new `rmcp` release, a crate change or a template edit breaking generated projects before a user meets it. Running the real driver with `--var-file` tests the same path that agents and CI users take; the driver is what is tested. Keeping the crates and the template in one repository is only useful if CI tests them together at one commit. After the first publish a generated project would otherwise resolve the published crates, and a pull request would be tested against the old crate code. The four matrix rules (one entry per fixture, the list derived from the directory, no workflow edit for a new fixture, every pull request) are decided in this record. The Postgres statement places no obligation on v0.1, because the only accepted `db` value in v0.1 is `sqlite`. The workflow file is `.github/workflows/template.yml`, the Template workflow of REQ-RUN-0702. Who writes the `[patch.crates-io]` entries into the generated project is owned by REQ-RUN-0003.
 
 ### Success Criteria
 
@@ -4367,14 +4371,18 @@ Every supported option combination is generated, linted and tested on every chan
 6. Inspection: the `on:` key has a `pull_request` entry with no `branches`, `branches-ignore`, `paths` or `paths-ignore` key (statements 8, 11 and 12).
 7. Inspection of a pull-request run's artifacts: the `Cargo.lock` of each generated project lists every public package selected by that fixture with no `source` line (statement 9).
 8. Inspection, once `store-postgres` exists: the matrix job has a `services:` entry for Postgres that applies to every fixture whose `db` value is `postgres` or `sqlite-postgres` (statement 10).
-9. `ls wizard/fixtures/` piped to `grep -F -f - <workflow file>` prints nothing (statement 13).
+9. Inspection: the matrix values are not a written list of fixture file names.
 10. `grep -ri "wyvern" .github/workflows/` prints nothing (statements 14 and 15).
 11. `grep -n "cargo-generate-action" <workflow file>` prints nothing (statement 16).
+12. A run of the workflow shows one matrix entry per file in `wizard/fixtures/*.json`, each labelled with its fixture name, all green.
+13. A pull request that adds a new valid fixture file and changes nothing else produces a run with one more matrix entry.
+14. A pull request that breaks the template for `mcp = false` only turns that variant's entry red and leaves `sqlite-mcp` green.
+15. A pull request that renames a public function in one crate of the public package set and updates the template's call to it, with no other change, produces a green matrix.
 ### Implementation Notes
 
 **Key Considerations:**
 
-- OPEN: the workflow file name is not decided.
+- The workflow file is `.github/workflows/template.yml`, the Template workflow of REQ-RUN-0702.
 - OPEN: who writes the `[patch.crates-io]` entries into the generated
   project (a template option, the driver `scripts/new_project.py`, or this
   workflow) is not decided; [REQ-RUN-0003](requirements.md) owns the question.
@@ -4388,7 +4396,7 @@ Every supported option combination is generated, linted and tested on every chan
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -4399,7 +4407,7 @@ Every supported option combination is generated, linted and tested on every chan
 
 ### Requirement Statement
 
-Definitions for the following statements: The SDK (software development kit) is the nine public crates of REQ-RUN-0002: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The qualified publishing kit is sc-publish at the revision pinned in `release/sc-publish-pin.toml`. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The first publication wave is the first group of packages published in the dependency order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. The released template is the `template/` directory at the release tag. The registry proof run is the workflow run that performs the registry proof; the registry proof commit is the commit it checks out. The rehearsed archives are the packaged archives that passed archive rehearsal. In the rehearsed archives, the source files and Cargo manifests of a package are the files unpacked from its `.crate` archive; in the registry proof commit, they are the files under the package directory of that SDK crate, at the same relative paths. Two sets of files differ when a path is in one set only or the bytes at a path are not identical in both, that is, when `diff -r` of the two directories prints any line. Human authorization and registry credentials are the existing release permission and credential requirements. The release run is the run of the Template workflow (`.github/workflows/template.yml`) started by pushing the release tag, in which every generated project resolves the SDK from crates.io with no checkout patch. Registry proof is the build and tests of a consumer whose Cargo.lock gives a crates.io source for every SDK crate, with no checkout path, Git or patch substitute. An actual SDK consumer is a project that depends on SDK crates published to crates.io, such as a project generated from the released template. The controlled-host benchmark check is the publish preflight run of `scripts/benchmark/check_release_evidence.py` on committed controlled-host benchmark evidence for the release tag commit, required by ADR-RUN-0015. A fixture matrix entry is the Template workflow job for one answers JSON file under `wizard/fixtures/`. The daemon-process tests are the tests that NFR-RUN-0010 requires to run on an isolated machine. For this release, sc-storage has no dependency on another package in the release; sc-monty likewise has no dependency on another package in the release. JSON means JavaScript Object Notation. A checkout-path dependency resolves to a local checkout; a patched source overrides the registry package source. The preflight checks and package checks are the respective checks supplied by the qualified publishing kit. This record governs the coordinated 0.3.0 release of the SDK and delivery of the generated template; it is not a permanent restriction on consumers choosing different dependency versions.
+Definitions for the following statements: The SDK (software development kit) is the nine public crates of REQ-RUN-0002: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The qualified publishing kit is sc-publish at the revision pinned in `release/sc-publish-pin.toml`. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The first publication wave is the first group of packages published in the dependency order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. The released template is the `template/` directory at the release tag. The registry proof run is the workflow run that performs the registry proof; the registry proof commit is the commit it checks out. The rehearsed archives are the packaged archives that passed archive rehearsal. In the rehearsed archives, the source files and Cargo manifests of a package are the files unpacked from its `.crate` archive; in the registry proof commit, they are the files under the package directory of that SDK crate, at the same relative paths. Two sets of files differ when a path is in one set only or the bytes at a path are not identical in both, that is, when `diff -r` of the two directories prints any line. Human authorization and registry credentials are the existing release permission and credential requirements. The release run is the run of the Template workflow (`.github/workflows/template.yml`) started by pushing the release tag, in which every generated project resolves the SDK from crates.io with no checkout patch. Registry proof is the build and tests of a consumer whose Cargo.lock gives a crates.io source for every SDK crate, with no checkout path, Git or patch substitute. An actual SDK consumer is a project that depends on SDK crates published to crates.io, such as a project generated from the released template. The actual SDK consumers include at least one generated project with cron and Monty selected; its registry proof builds and tests the cron and Monty code. The controlled-host benchmark check is the publish preflight run of `scripts/benchmark/check_release_evidence.py` on committed controlled-host benchmark evidence for the release tag commit, required by ADR-RUN-0015. A fixture matrix entry is the Template workflow job for one answers JSON file under `wizard/fixtures/`. The daemon-process tests are the tests that NFR-RUN-0010 requires to run on an isolated machine. For this release, sc-storage has no dependency on another package in the release; sc-monty likewise has no dependency on another package in the release. JSON means JavaScript Object Notation. A checkout-path dependency resolves to a local checkout; a patched source overrides the registry package source. The preflight checks and package checks are the respective checks supplied by the qualified publishing kit. This record governs the coordinated 0.3.0 release of the SDK and delivery of the generated template; it is not a permanent restriction on consumers choosing different dependency versions.
 
 
 
@@ -4609,7 +4617,7 @@ projection edges, never shared CLI defaults.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -4671,8 +4679,7 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
    and `crates/daemon/src/mcp.rs` that serves a request, every public function
    in `crates/service`, and every public query function in the store crate is
    declared `async fn`.
-2. `grep -rn "block_on\|thread::sleep\|reqwest::blocking" crates/*/src
-   template` prints no line in non-test code.
+2. `grep -rn "block_on\|thread::sleep\|reqwest::blocking" crates/*/src template` prints no line in non-test code, other than the SQLite writer thread's `Runtime::block_on` in `crates/sc-runtime-db-sqlite/src` (ADR-RUN-0011) and the `block_on` in `crates/sc-runtime/src/testing.rs` named in criterion 5.
 3. Review of the same directories finds no `std::fs` or `std::net` call
    reachable from a request handler.
 4. Library request paths: `grep -rn "std::fs\|std::net\|block_on\|thread::sleep"
@@ -5087,6 +5094,8 @@ The sc-runtime design states the rule ("discriminated union; no panics") for `sc
 | `sc-runtime` | `RuntimeError` |
 | `sc-runtime-db-sqlite` | `SqliteWriterError` in the legacy public writer; `sc-storage::StorageError` for the Phase D `Storage<T>` contract |
 | `sc-cron` | `CronError` |
+| `sc-cron-commands` | none of its own; commands return `OpError` (REQ-CRNC-0001) |
+| `sc-storage` | `StorageError` |
 | `sc-command` | undecided; see the scope notes below |
 
 Recorded exception: a signature dictated by a third-party trait or macro keeps the types that contract requires, and the shared `Storage<T>` contract requires `StorageError` for storage operations. `sc_command::IntoMcp::into_mcp` returns `Result<CallToolResult, McpError>`, where `McpError` is `rmcp`'s error type, because an `rmcp` `#[tool]` function must return that type. The `axum::response::IntoResponse` implementation for `Envelope<T>` is infallible, because `into_response` returns a `Response`, not a `Result`. Neither is an error the crate itself originates.
@@ -5095,7 +5104,7 @@ Recorded exception: a signature dictated by a third-party trait or macro keeps t
 
 **MUST statements:**
 
-- Unless a third-party trait or macro signature or the shared `Storage<T>` contract fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
+- Unless a third-party trait or macro signature, the shared `Storage<T>` contract or the `sc-command` `OpError` contract of REQ-CRNC-0001 fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
 - Each covered crate MUST define at most one public error enum.
 - When a service function returns an error, the stdout of the CLI command run with `--json` for the operation that the service function implements MUST be an OpError envelope.
 - When a service function returns an error, the content of the `CallToolResult` returned by the MCP tool that called it MUST be an OpError envelope.
@@ -5181,7 +5190,7 @@ into different lists of banned constructs.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -5229,6 +5238,7 @@ Scope:
 - Daemon-process tests exist in this repository's crate tests and in tests of the generated `cli` and `daemon` binaries that live in `template/` ([REQ-RUN-0310](requirements.md) criterion 4).
 - Phase B selects the generated real-daemon SIGINT/SIGTERM tests with the signal-test job.
 - Selection and isolation detection for other daemon-process tests remain OPEN.
+- If that selection adds a `just` recipe, the closed recipe list of the generated `Justfile` ([REQ-RUN-0307](requirements.md)) is amended in the same change.
 - The host-safe classification of `DaemonFixture` tests is an interpretation of the owner's decision that the owner has not yet confirmed.
 - Phase A proves CLI behavior primarily through host-safe tests and runs the minimal real-binary smoke test on an isolated CI runner. This rule does not prescribe helper functions, attributes or a generated unit-test layout.
 - Building, provisioning or scripting a virtual machine is not part of v0.1 of this repository.

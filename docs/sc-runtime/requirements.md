@@ -313,14 +313,14 @@ The ordering and retention clauses are checked by inspecting the startup and cle
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
 Definitions: MCP means Model Context Protocol. A migration is database schema initialization or upgrade owned by the project's store code, rather than daemon assembly. A receiving closure is the project's routes closure or its MCP closure. Passing the `Stores` value includes moving or cloning it into a receiving closure.
 
-`Stores` being opaque to this crate is the current design. The shared command path needs `Storage<T>`; whether it lives in this crate or beside it is undecided.
+`Stores` being opaque to this crate describes this release. `Storage<T>` is defined in the `sc-storage` crate (REQ-RUN-0002); this record does not restrict it.
 
 `Stores` is a plain struct defined by the generated project (for example one holding a SQLite store and a Postgres store).
 
@@ -480,7 +480,7 @@ versions change and this shape does not.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -513,7 +513,6 @@ Definitions:
 - The 503 error envelope is the existing HTTP 503 response whose JSON body carries a stable error code.
 - The empty cleanup callback is a cleanup callback whose future resolves without doing any work.
 - Ctrl-C is the Windows `CTRL_C_EVENT` console control event; Ctrl-Break is the Windows `CTRL_BREAK_EVENT` console control event.
-- The request-timeout middleware is the `with_request_timeout` layer in `crates/sc-runtime/src/router.rs` that applies the request-handler timeout and the drain timeout.
 - A handler future is the future that runs a route handler for one request.
 - The stores closure is the project-supplied asynchronous `.stores(...)` closure that opens stores and returns the project's `Stores` value.
 - A startup closure is the stores closure, routes closure or MCP closure passed to the daemon builder.
@@ -800,11 +799,11 @@ Out of scope: the project's `main` maps the result of `run()` to a process exit 
 - A downstream test MUST compile a trait-bound assertion for `std::fmt::Debug`.
 - A downstream test MUST compile a trait-bound assertion for `std::fmt::Display`.
 - A downstream test MUST compile a per-variant match.
-- When `run()` fails, the `Err` value returned by `run()` in a downstream test MUST hold the variant that the variant table names for the failure.
-- When the instance root cannot be resolved, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::InstanceFailed`.
-- When opening `daemon.lock` fails for a reason other than lock contention, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::InstanceFailed`.
-- When the endpoint cannot be parsed, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::EndpointFailed`.
-- When the endpoint cannot be resolved, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::EndpointFailed`.
+- When `run()` fails, `run()` MUST return `Err` holding the variant that the variant table names for the failure.
+- When the instance root cannot be resolved, `run()` MUST return `Err(RuntimeError::InstanceFailed)`.
+- When opening `daemon.lock` fails for a reason other than lock contention, `run()` MUST return `Err(RuntimeError::InstanceFailed)`.
+- When the endpoint cannot be parsed, `run()` MUST return `Err(RuntimeError::EndpointFailed)`.
+- When the endpoint cannot be resolved, `run()` MUST return `Err(RuntimeError::EndpointFailed)`.
 - In `crates/sc-runtime/src/error.rs`, the `code` field of `RuntimeError::StoresFailed` MUST be declared with type `&'static str`.
 - In `crates/sc-runtime/src/error.rs`, the `message` field of `RuntimeError::StoresFailed` MUST be declared with type `String`.
 - In `crates/sc-runtime/src/error.rs`, the `remediation` field of `RuntimeError::StoresFailed` MUST be declared with type `String`.
@@ -859,12 +858,12 @@ payload lets the caller print the failure detail.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. Code is feature-gated when a `#[cfg(...)]` or `#[cfg_attr(...)]` attribute that names a Cargo feature guards it. The daemon is the process that calls `run()`. To bind an endpoint is to listen on it for connections. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources. Calling an `sc-transport` function is not endpoint logic.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `DaemonBuilder`, the type that `Daemon::builder` returns. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. Code is feature-gated when a `#[cfg(...)]` or `#[cfg_attr(...)]` attribute that names a Cargo feature guards it. The daemon is the process that calls `run()`. To bind an endpoint is to listen on it for connections. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources. Calling an `sc-transport` function is not endpoint logic.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that
@@ -929,8 +928,7 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - `sc-runtime` MUST NOT choose a default port.
 - `sc-runtime` MUST NOT parse an endpoint string.
 - `sc-runtime` MUST NOT apply a precedence between endpoint sources.
-- The builder MUST NOT have a method for instance-root resolution.
-- The builder MUST NOT have a method for endpoint resolution.
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the `--endpoint` flag value, the configured endpoint or the explicit instance root.
 - `sc-runtime` MUST NOT parse the command line.
 - The `serde::Deserialize` implementation for `TransportConfig` MUST NOT be feature-gated.
 
@@ -1154,12 +1152,12 @@ lets the project report a config error before anything else starts.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-04  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
+The public package set is the nine crates of REQ-RUN-0002. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
 
 Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is any file whose contents supply configuration values to the daemon, including `config/default.json` and `config/local.json`, which `sc_config::load` reads. Reading a file means obtaining its contents at run time. The source files under `crates/sc-runtime/src` are the `.rs` files in that directory and its subdirectories. The direct dependency set of `sc-runtime` is the set of crate names that `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` prints, one per line before the version, without `sc-runtime` itself.
 
@@ -1192,7 +1190,7 @@ Allowed dependencies table:
   that, are owned by [NFR-RUN-0001](../requirements.md). Sprint a-6 runs that
   command.
 
-REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate depending on the others; `sc-cron` depends on `sc-storage` and `sc-monty` (PRD-CRON-2, PRD-MONTY-2). [NFR-RT-0002](requirements.md) owns the ban on configuration loading, `sqlx` and the `sc-observability` runtime crates; the statements below repeat those bans for this crate's dependency list.
+REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate; its only workspace dependencies are `sc-transport` and `sc-command`. `sc-cron` depends on `sc-storage` and `sc-monty` (PRD-CRON-2, PRD-MONTY-2). [NFR-RT-0002](requirements.md) owns the ban on configuration loading, `sqlx` and the `sc-observability` runtime crates; the statements below repeat those bans for this crate's dependency list.
 
 **MUST statements:**
 
@@ -1200,21 +1198,21 @@ REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace li
 
 **MUST NOT statements:**
 
-- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-runtime `.
-- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-transport `.
-- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-command `.
-- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-runtime `.
-- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-config `.
-- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-command `.
-- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-runtime `.
-- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-config `.
-- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-transport `.
-- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-config `.
+- The output of `cargo tree -p sc-config -e normal --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-config -e normal --prefix none` MUST NOT contain a line beginning `sc-transport `.
+- The output of `cargo tree -p sc-config -e normal --prefix none` MUST NOT contain a line beginning `sc-command `.
+- The output of `cargo tree -p sc-transport -e normal --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-transport -e normal --prefix none` MUST NOT contain a line beginning `sc-config `.
+- The output of `cargo tree -p sc-transport -e normal --prefix none` MUST NOT contain a line beginning `sc-command `.
+- The output of `cargo tree -p sc-command -e normal --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-command -e normal --prefix none` MUST NOT contain a line beginning `sc-config `.
+- The output of `cargo tree -p sc-command -e normal --prefix none` MUST NOT contain a line beginning `sc-transport `.
+- The output of `cargo tree -p sc-runtime -e normal --prefix none` MUST NOT contain a line beginning `sc-config `.
 - Source files under `crates/sc-runtime/src` MUST NOT call `sc_config::load`.
 - Source files under `crates/sc-runtime/src` MUST NOT read a configuration file.
-- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sqlx `.
-- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-observability `.
-- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-observability-otlp `.
+- The output of `cargo tree -p sc-runtime -e normal --prefix none` MUST NOT contain a line beginning `sqlx `.
+- The output of `cargo tree -p sc-runtime -e normal --prefix none` MUST NOT contain a line beginning `sc-observability `.
+- The output of `cargo tree -p sc-runtime -e normal --prefix none` MUST NOT contain a line beginning `sc-observability-otlp `.
 
 ### Rationale
 
@@ -1253,7 +1251,7 @@ would reject one.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -1319,6 +1317,5 @@ original JSON POST bytes from ordinary RMCP HTTP Parts. The attachment retains
 the service's configured byte cap, original headers, bytes and absolute deadline.
 The application owns canonical DTO validation and arbitrary JSON payload semantics;
 runtime adds no global duplicate-key rule or command registry. Requests outside
-that path return None. This accessor is the sole free-function exception in
-NFR-RT-0001. Normal serde_json is unnecessary and remains outside NFR-RT-0003's
+that path return None. This accessor is the only free function that NFR-RT-0001 allows in a build without `test-util`. Normal serde_json is unnecessary and remains outside NFR-RT-0003's
 exact dependency budget; JSON parsers used only in runtime tests are dev edges.

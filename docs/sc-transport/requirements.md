@@ -38,7 +38,7 @@ pair, not only sc-runtime ones.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -124,8 +124,6 @@ not decide that.
 - Parsing the rendered string MUST yield an endpoint equal to the original.
 
 **MUST NOT statements:**
-
-- After a successful UDS bind, `bind` MUST NOT have changed the mode of any path other than the socket file to `0o600`.
 
 - The convenience form MUST NOT use `std::env::var`.
 - The convenience form MUST NOT use `std::env::vars`.
@@ -330,7 +328,7 @@ v0.1 `TransportConfig` describes exactly one endpoint and has no `additional_end
 - For a requested TCP port of `0`, `Listener::local_endpoint()` MUST return the address assigned by the operating system.
 - One process MUST support simultaneous ownership of a UDS listener and a TCP listener.
 - One process MUST be able to serve the same router concurrently on a UDS listener and a TCP listener.
-- When socket binding fails, `sc_transport::bind` MUST return `Err(TransportError::Bind { .. })`.
+- When the operating-system bind call for the socket fails, `sc_transport::bind` MUST return `Err(TransportError::Bind { .. })`.
 - The `bind` export in `crates/sc-transport/src/lib.rs` MUST be guarded by `#[cfg(feature = "server")]`.
 - The `Listener` export in `crates/sc-transport/src/lib.rs` MUST be guarded by `#[cfg(feature = "server")]`.
 
@@ -380,7 +378,7 @@ uses this crate must not link axum.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -428,6 +426,7 @@ The endpoint lock is separate from `<instance-root>/daemon.lock`. The runtime in
 **MUST NOT statements:**
 
 - After a successful UDS `bind`, the socket file MUST NOT allow access by an operating-system user other than the process owner.
+- After a successful UDS bind, `bind` MUST NOT have changed the mode of any path other than the socket file to `0o600`.
 
 - When `bind` fails to acquire the endpoint lock, it MUST NOT inspect the socket file.
 - After endpoint-lock acquisition fails, `bind` MUST NOT unlink the socket file.

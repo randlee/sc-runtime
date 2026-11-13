@@ -9,7 +9,7 @@
 **Status:** Active  
 **Version:** 1.1.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -28,8 +28,8 @@ Definitions: The dependency list is the crate's normal and build dependencies in
 
 **MUST NOT statements:**
 
-- The dependency list MUST NOT contain a crate other than `rusqlite`, `tokio` and `sc-storage`.
-- The dependency graph MUST NOT contain a workspace crate other than `sc-storage`.
+- In this release, the dependency list MUST NOT contain a crate other than `rusqlite`, `tokio` and `sc-storage`.
+- In this release, the dependency graph MUST NOT contain a workspace crate other than `sc-storage`.
 - The dependency graph MUST NOT contain `sqlx`.
 
 ### Rationale
@@ -145,14 +145,14 @@ ADR-RUN-0012 point 3: contiguous executes share one savepoint inside one `BEGIN 
 **Status:** Superseded  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
 Definitions: sc-runtime-db-sqlite is the workspace crate at `crates/sc-runtime-db-sqlite`. A dependency entry is a key in any `[dependencies]`, `[dev-dependencies]` or `[build-dependencies]` table of a `Cargo.toml`. The listed historical statements remain nonbinding under the Superseded status and the explicit scope text.
 
-The template's SQLite store and the runtime use this writer. The text below binds nothing.
+The template's SQLite store uses this writer ([REQ-RUN-0326](../requirements.md)). `sc-runtime` still has no dependency on this crate ([REQ-RUN-0005](../requirements.md)). The text below binds nothing.
 
 **MUST NOT statements:**
 

@@ -9,7 +9,7 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ---
@@ -20,7 +20,7 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 
 ### Requirement Statement
 
-Definitions: sc-monty is the shared Monty interpreter implementation. sc-storage is the shared `Storage<T>` crate. The common sc-command read/write helpers are the asynchronous `storage_read` and `storage_write` functions over `Storage<T>` named in ADR-RUN-0021. Sprint d-9 is the Phase D sc-cron boundary sprint (`run-d-9`) covering scheduler migration to application-supplied storage and thin sc-cron-commands API/bound adaptations. The Phase D public package set is the nine crates named in REQ-RUN-0002, released together at version 0.3.0. A Monty value is an interpreter value passed to a hook function through sc-monty's value-level invocation, as opposed to a JSON-encoded string. The port preserves the existing test assertions while moving the interpreter implementation into sc-monty. Weakening an assertion means removing a checked condition, widening an expected value, range or tolerance, or replacing an exact comparison with a looser one. The local facade is the former unpublished observability-types shim. A workspace library crate is a library crate that is a member of this Cargo workspace. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. Registry types are the canonical event types imported from the published sc-observability-types crate. The command contract edge is the normal `sc-command` dependency entry in `crates/sc-cron/Cargo.toml`, permitted by ADR-RUN-0017. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the command contract edge after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. An isolated consumer is a crate outside this workspace that depends only on the crate under test, so workspace feature unification does not apply. Server-feature leakage is the appearance of axum, rmcp or the sc-command `server` feature in `cargo tree -e features` output for an isolated consumer of sc-cron-commands with default features or with the `monty` feature. The generated daemon is the `crates/daemon` package of a project rendered from this repository's `template` directory. The embedding application is the application that renders the template and chooses the template's `cron` placeholder, whose default is `false`. A default generated build is a default-feature build of a project rendered with the `cron` placeholder at its default. A counterpart assertion is the assertion in `crates/sc-cron` test source ported from one beads-cache `develop` test assertion. The beads-cache `develop` original of a counterpart assertion is the assertion it was ported from in `crates/sc-cron` of the randlee/beads-cache repository at branch `develop`. monty and monty-types are the third-party Monty interpreter crates that sc-monty depends on. An independent Monty engine is code outside sc-monty that compiles Monty source, manages Monty sessions, hosts Monty functions, enforces Monty limits, or dumps or loads Monty state.
+Definitions: sc-monty is the shared Monty interpreter implementation. sc-storage is the shared `Storage<T>` crate. The common sc-command read/write helpers are the asynchronous `storage_read` and `storage_write` functions over `Storage<T>` named in ADR-RUN-0021. Sprint d-9 is the Phase D sc-cron boundary sprint (`run-d-9`) covering scheduler migration to application-supplied storage and thin sc-cron-commands API/bound adaptations. The Phase D public package set is the nine crates named in REQ-RUN-0002, released together at version 0.3.0. A Monty value is an interpreter value passed to a hook function through sc-monty's value-level invocation, as opposed to a JSON-encoded string. The port preserves the existing test assertions while moving the interpreter implementation into sc-monty. Weakening an assertion means removing a checked condition, widening an expected value, range or tolerance, or replacing an exact comparison with a looser one. The local facade is the former unpublished observability-types shim. A workspace library crate is a library crate that is a member of this Cargo workspace. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. Registry types are the canonical event types imported from the published sc-observability-types crate. The command contract edge is the normal `sc-command` dependency entry in `crates/sc-cron/Cargo.toml`, permitted by ADR-RUN-0017. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the command contract edge after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. An isolated consumer is a crate outside this workspace that depends only on the crate under test, so workspace feature unification does not apply. Server-feature leakage is the appearance of axum, rmcp or the sc-command `server` feature in `cargo tree -e features` output for an isolated consumer of sc-cron or of sc-cron-commands, with default features or with the `monty` feature. The generated daemon is the `crates/daemon` package of a project rendered from this repository's `template` directory. The embedding application is the application that renders the template and chooses the template's `cron` placeholder, whose default is `false`. A default generated build is a default-feature build of a project rendered with the `cron` placeholder at its default. A counterpart assertion is the assertion in `crates/sc-cron` test source ported from one beads-cache `develop` test assertion. The beads-cache `develop` original of a counterpart assertion is the assertion it was ported from in `crates/sc-cron` of the randlee/beads-cache repository at branch `develop`. monty and monty-types are the third-party Monty interpreter crates that sc-monty depends on. An independent Monty engine is code outside sc-monty that compiles Monty source, manages Monty sessions, hosts Monty functions, enforces Monty limits, or dumps or loads Monty state.
 
 `crates/sc-cron` is a workspace member, ported from beads-cache at `develop`, and is one of the Phase D public package set. Phase D sc-cron consumes the single sc-monty implementation for interpreter behavior and sc-storage for shared storage behavior; it no longer directly depends on monty or monty-types. It retains cron policy and JSON-to/from-value adaptation; Monty hooks receive Monty values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after sprint d-9 closes, without server-feature leakage.
 
@@ -42,7 +42,7 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - When sc-cron invokes a Monty hook, the hook function MUST receive the hook data as a Monty value.
 - Each assertion in the beads-cache `develop` unit-test source MUST have a counterpart assertion in the `crates/sc-cron` unit-test source.
 - Each assertion in the beads-cache `develop` integration-test source MUST have a counterpart assertion in the `crates/sc-cron` integration-test source.
-- After sprint d-9 closes, sc-cron-commands MUST consume the common sc-command read/write helpers.
+- sc-cron-commands MUST consume the common sc-command read/write helpers.
 - The command contract edge MUST be the only normal `sc-command` dependency entry in `crates/sc-cron/Cargo.toml`.
 - The command contract edge MUST set `default-features = false`.
 - The command contract edge MUST enable no features.
@@ -70,6 +70,7 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the `monty` crate.
 - `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the `monty-types` crate.
 - `crates/sc-cron/src/` MUST NOT contain an independent Monty engine.
+- An isolated consumer of sc-cron MUST NOT show server-feature leakage.
 - An isolated consumer of sc-cron-commands MUST NOT show server-feature leakage.
 - The `sc-runtime` crate MUST NOT declare `sc-cron` in any dependency manifest.
 - `cargo tree` output for a default generated build MUST NOT list sc-cron.
@@ -91,18 +92,18 @@ An independently packaged scheduler can be embedded without the generated templa
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of exactly five whitespace-separated fields in standard crontab order, minute first, with no seconds field.
+Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of five whitespace-separated fields in standard crontab order: minute, hour, day of month, month and day of week. The aliases and the six-field form of ADR-RUN-0013 point 2 stay valid; this record does not exclude them.
 
 A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
 
 **MUST statements:**
 
-- A schedule MUST use a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
+- sc-cron MUST accept a normal crontab string as a schedule.
 
 ### Rationale
 
@@ -264,7 +265,7 @@ sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. 
 
 ### Rationale
 
-configuration is one SQLite table. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration, and sc-cron must not depend on `sc-config` (ADR-RUN-0014).
+The schedule configuration is one CronRow table in an application database. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration, and sc-cron must not depend on `sc-config` (ADR-RUN-0014).
 
 ### Success Criteria
 
@@ -709,7 +710,7 @@ Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owne
 - A cooperative operation blocked acquiring a lock MUST NOT stay blocked after the live operation scope ends.
 - Dropping the waiter future of owned work MUST NOT let `WorkerHandle::join_owned` return before the owned work physically completes.
 - While a bundled-store COMMIT runs, the commit fence MUST NOT hold the controller mutex.
-- While terminal cleanup has not completed, the bundled store MUST NOT hand a connection in uncertain connection state to another operation.
+- The bundled store MUST NOT hand a connection in uncertain connection state to another operation.
 - When a mutation's `PersistenceOutcome` is `Indeterminate`, sc-cron MUST NOT re-issue the mutation.
 - When the live operation scope has ended, sc-cron MUST NOT start a readback under the live operation scope.
 - Once `WorkerHandle::join_owned` has returned, owned work MUST NOT start a store write.
@@ -734,7 +735,7 @@ Phase C approved target contract (planned, not implemented). Status is Draft sin
 **Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -816,5 +817,7 @@ This completes the existing pre-submission admission/physical-ownership promise 
 ### Implementation Notes
 
 Phase C approved target contract (planned, not implemented).
+
+PRD-CRON-2 replaces the legacy ScheduleStore contract with Storage<CronRow>. References to ScheduleStore in this record describe the legacy interface, not a requirement to retain that trait. Capacity, admission, generation fencing and bounded-query behavior remain obligations of the scheduler using the shared storage contract.
 
 Scope: Standard command execution requires these operations. `list_active` alone does not satisfy the query obligations. Command capacity does not change embedder row limits. Command capacity and admission do not apply to application `CronOperations` or `CronExecutor` implementations, which own their own intake. No new job kind, job registry, second database or arbitrary hard-delete command is implied. Ordinary registration continues through REQ-CRON-0003 APIs. The Phase C compatibility contract defines exact configuration, reason mapping and causal proof owners; the Scheduler implementation belongs to sprint c-5.
