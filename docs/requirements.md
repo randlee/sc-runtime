@@ -3853,7 +3853,7 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`. A generation call is a `subprocess.run` call in `scripts/new_project.py` that does not start `scripts/run_wizard.py`.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
@@ -3871,12 +3871,12 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 **MUST statements:**
 
 - `just new <dest>` MUST accept the option `--var-file <answers file>`.
-- The `cargo generate` process that `just new <dest>` starts MUST have its standard input closed.
-- Each child process that `just new <dest> --var-file <answers file>` starts MUST have its standard input closed.
-- `just new <dest>` MUST pass the option `--template-values-file` to `cargo generate`.
-- `just new <dest>` MUST pass the option `--silent` to `cargo generate`.
-- When `SC_COMPOSE` is set, `just new <dest>` MUST run the file named by `SC_COMPOSE` as sc-compose.
-- When `SC_COMPOSE` is unset, the sc-compose process that `just new <dest>` starts MUST run the `sc-compose` executable found on `PATH`.
+- In `scripts/new_project.py`, the `subprocess.run` call that starts `cargo generate` MUST pass `stdin=subprocess.DEVNULL`.
+- Every generation call MUST pass `stdin=subprocess.DEVNULL`.
+- The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--template-values-file`.
+- The `cargo generate` argument list in `scripts/new_project.py` MUST contain the option `--silent`.
+- When `SC_COMPOSE` is set, `scripts/new_project.py` MUST start the file named by `SC_COMPOSE` as sc-compose.
+- When `SC_COMPOSE` is unset, `scripts/new_project.py` MUST start the `sc-compose` found on `PATH` as sc-compose.
 - When sc-compose is missing, `just new <dest>` MUST exit with a non-zero status.
 - When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `sc-compose`.
 - When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `SC_COMPOSE`.
@@ -3885,8 +3885,8 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 **MUST NOT statements:**
 
 - When sc-compose is missing, `just new <dest>` MUST NOT start `cargo generate`.
-- The `just new <dest> --var-file <answers file>` process MUST NOT read from its standard input.
-- `just new <dest> --var-file <answers file>` MUST NOT write a prompt.
+- `scripts/new_project.py` MUST NOT contain code that reads standard input.
+- When `--var-file` is given, `just new <dest>` MUST NOT write a prompt.
 - `just new <dest> --var-file <answers file>` MUST NOT start the wizard.
 - `scripts/new_project.py` MUST NOT contain code that searches for the `wyvern` executable.
 - On a machine with no `wyvern` executable, `just new <dest> --var-file <answers file>` MUST NOT exit with a non-zero status because `wyvern` is absent.
