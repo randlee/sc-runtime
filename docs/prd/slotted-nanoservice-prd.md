@@ -1,17 +1,19 @@
 # Slotted Nanoservice Architecture
 
 **Product Requirements Document**
-Draft 0.2 · 2026-11-12 · Synaptic Canvas
+Draft 0.3 · 2026-11-12 · Synaptic Canvas
 
 **Status.** Draft for owner review. Not binding. This document is **not** an input
 to Phase D planning, gating or review. Owner, 2026-11-12: "it is my hope that I we
 can start phase-d w/out slotted-nanoservice architecture and layer it on in
 phase-e/f."
 
-**Relationship to the sc-runtime PRD.** `sc-runtime-prd.md` (v2.0) stays the top of
-the sc-runtime document hierarchy. This document describes the architecture that
-is layered onto it in later phases. Where the two disagree today, the sc-runtime
-PRD governs.
+**Relationship to the sc-runtime PRD.** `sc-runtime-prd.md` v2.1 on branch
+`docs/prd-v2.1` (reviewed source `8d5462d`) stays the top of the sc-runtime
+document hierarchy. Its section 2 and PRD-ENG-7 explicitly leave room for the
+architecture described here in later phases. Where the two disagree today, the
+sc-runtime PRD governs. References below are to that v2.1 revision, which is
+under review on its own branch; this draft does not change that branch.
 
 **Provenance rule.** Same rule as the sc-runtime PRD. A requirement is the owner's
 statement, quoted. Everything else is marked:
@@ -58,22 +60,32 @@ typed registry and can be replaced at run time.
 | Id | Principle |
 |---|---|
 | SNA-1 | **[D]** Tokio throughout; no synchronous code unless absolutely necessary (sc-runtime PRD-ENG-1, PRD-ENG-2). |
-| SNA-2 | **[D]** "This architecture strictly does NOT allow code to go outside it's nanoservice boundary." |
+| SNA-2 | **[D, Rust scope per owner-requested narrowing, 2026-11-12]** Rust plug-ins must stay within their nanoservice boundary. This is the Rust dependency and call contract of section 5, not an in-process security sandbox. No equivalent enforcement guarantee is made for CPython or C-ABI (section 7). |
 | SNA-3 | **[D]** "every function essentially a plug-in and the ability to add infinite functions that are tied together in a registry" |
 | SNA-4 | **[D]** Business logic can "be replaced w/ python/monty at run-time". |
 | SNA-5 | **[D]** "yes, you can chain functions." |
 | SNA-6 | **[D]** "You need to underrstand exactly what inputs/outputs are when the function is created and registered." |
-| SNA-7 | **[D]** "everything is statically type checked at compile time and even if you change rust at runtime you only need to compile a single crate w/ references to the traits in/out it requires." |
+| SNA-7 | **[D, Rust scope per owner-requested narrowing, 2026-11-12]** Rust code is statically type checked at each compilation; a replacement Rust plug-in compiles as one crate against its input/output contracts. Separately compiled code still needs the load-time compatibility check in section 6. This compile-time guarantee does not apply to Monty, CPython or C-ABI calls. |
 | SNA-8 | **[D]** Use cases are pushed as far as possible so nothing is ruled out: "I am trying to push use cases i.e. user stories as far as possible so things aren't ruled out." |
 
 ## 3. Building blocks
 
 ### 3.1 Daemon
 
-**[P]** The daemon is only a supervisor. It builds services in dependency order,
-hands each one the handles it needs at construction, owns one cancellation signal,
-shuts services down in reverse start order, and applies a per-service policy when a
-service task dies. It stays a singleton with a hard gate (existing sc-runtime rule).
+**[P]** Here, “the daemon” means the consuming project's `daemon` crate,
+not the published `sc-runtime` crate. The project daemon supervises services:
+it builds them in dependency order, hands each one its handles at construction,
+owns one cancellation signal, shuts services down in reverse start order, and
+applies a per-service policy when a service task dies. It retains the existing
+singleton hard gate.
+
+**[P]** Services start inside the existing REQ-RT-0001 startup steps; this
+proposal does not replace or reorder those steps. Resource construction and
+service readiness run in the project's asynchronous stores closure, after the
+singleton lock is held. Route and MCP assembly use the returned project handles;
+the existing final step binds the HTTP listener. The project owns cleanup through
+the existing cleanup path. No new `sc-runtime` hook or public builder method is
+implied. These are later-phase project wiring proposals, not Phase D work.
 
 ### 3.2 Nanoservice
 
@@ -82,8 +94,15 @@ typed handle. The high-performance SQLite writer already has this shape.
 
 | Role | Owns | Examples **[D]** | Business logic |
 |---|---|---|---|
-| Resource | State | Storage (SQLite, other databases, JSON config file); RAM state such as an immutable database cache with enrichment | None |
+| Resource | State | Storage (SQLite, other databases); configuration resource backed by a JSON file; RAM state such as an immutable database cache with enrichment | None |
 | Driver | An inbound edge | HTTP server; cron | None. It turns an event into a typed input. |
+
+**[P]** The configuration resource is a later service that wraps `sc-config`
+through the async-trait extension path described in v2.1 section 9. The trait
+names there are illustrative, not an API decision. The wrapper owns any future
+task, watcher, reload or notification behavior; it changes nothing in `sc-config`
+now. `sc-config` remains synchronous, with no tasks, watcher or reload. PRD-ENG-5
+keeps the async option open and PRD-ENG-6 creates no current work for it.
 
 ### 3.3 Function
 
@@ -99,12 +118,16 @@ hooks and transform methods are all functions.
 **[P]** Consequences:
 
 - A function receives data and returns data. It holds no service handles.
-- The daemon supplies the second input and performs the write.
+- The consuming project's `service` crate supplies the second input and
+  performs the write through the storage contract. The project `daemon` crate
+  constructs and passes the resource handles; `sc-runtime` never inspects
+  `Stores` or calls its methods (REQ-RT-0003). The shared command helpers remain
+  in `sc-command`; this proposal does not move them into `sc-runtime`.
 - The one-input transform of the sc-runtime command pattern is the same thing with
   no second input.
 
-**[D]** An outcome that writes nothing is still a typed result: "returning nothing
-would still return Result<_,E> unless it is impossible to emit an error."
+**[D]** Write-nothing outcomes follow PRD-CMD-9; that binding requirement is
+not restated here.
 
 **[P]** Recommended outcome shape: `Result<Outcome, E>` where the outcome is
 "write this `Tsql`" or "write nothing". **[O]** Not yet accepted in place of
@@ -112,12 +135,24 @@ would still return Result<_,E> unless it is impossible to emit an error."
 
 ### 3.4 Registry
 
+**[P]** The registry lives in a separate crate, provisionally `sc-registry`,
+not in `sc-runtime`. Its public traits and registry API belong to that crate.
+The consuming project wires it through its `service` crate; `sc-runtime` neither
+re-exports it nor adds public items for it. NFR-RT-0001's closed facade therefore
+needs no change. The crate name is proposed, not an owner-decided API.
+
 **[P]** The registry holds slots and implementations.
 
 - **Slot:** a named, typed position. Its input and output types are fixed at
   registration (SNA-6).
 - **Implementation:** fills a slot. Replacing logic at run time replaces the
   implementation; the slot's signature cannot change (SNA-4).
+
+**[P]** A slot is the replaceable transform called inside the operation's
+existing async service function; it does not replace that service function.
+REST and MCP handlers still call the same project `service` function, and CLI
+requests still reach it through HTTP (REQ-RUN-0201, REQ-RUN-0302). Resource reads,
+slot invocation and conditional writes are coordinated there, not in handlers.
 
 **[P]** A binding has four declared parts: source (a driver), reads (zero or more
 resources), function (the slot), sink (a resource).
@@ -129,12 +164,16 @@ chain.
 
 ### 3.5 Atomic transactions
 
-> "the transaction future WOULD be extensible both to consumers OR to a slotted
-> plug-in. We may need to add monty support, but being able to define an atomic
-> transaction w/ custom retry logic seems very aligned w/ slotted nanoservices."
+**[D]** Atomic units, transaction futures and consumer-defined retry follow
+PRD-STO-6 through PRD-STO-8. Their binding requirements are not duplicated here.
+**[D]** The owner's additional later-phase use is extension to slotted plug-ins.
 
-**[D]** The transaction future is a first-class extension point for consumers and
-for slotted plug-ins, including custom retry logic.
+**[D, scope clarification]** Custom transaction retry does not override cron's
+no-replay rule. An uncertain mutation is never replayed (REQ-CRON-0020), and the
+standard public command path does not automatically replay work
+(REQ-CRON-0021). A transaction's retry policy must respect those rules and the
+existing admission, deadline and outcome contract; cancellation or a timeout
+cannot be treated as evidence of rollback.
 
 **[P]** A transaction body is a slot whose only permitted calls are transaction
 operations. No separate transaction trait is needed in the Monty crate: it is an
@@ -148,20 +187,19 @@ has to prove.
 
 ## 4. Monty
 
-> "I would think that sc-monty ONLY have pydantic/monty dependencies and that
-> sc-crom would depend on monty. then we could define additional monty calling
-> signatures for slotted-nanoservice and db-transaction"
+The binding Monty decisions are referenced below rather than quoted again.
+The remaining part of the owner's section 4 statement is:
 
-> "All of the business logic to support monty method calling should be implemented
-> in sc-monty crate, potentially behind a MontyInvoke<Tin,Tout> trait."
+> "then we could define additional monty calling signatures for
+> slotted-nanoservice and db-transaction"
 
 | Id | Statement |
 |---|---|
-| SNA-MONTY-1 | **[D]** `sc-monty` depends on the pydantic Monty crates only. It is a wave-1 crate with no `sc-*` dependencies. |
-| SNA-MONTY-2 | **[D]** All logic for calling Monty lives in `sc-monty`, potentially behind `MontyInvoke<Tin, Tout>`. |
-| SNA-MONTY-3 | **[D]** `sc-cron` depends on `sc-monty`. serde is "a cron concern, not a monty concern". |
+| SNA-MONTY-1 | **[D]** Dependency policy: PRD-MONTY-2. The existing wave-1 placement remains a delivery decision, not a second dependency contract. |
+| SNA-MONTY-2 | **[D]** One implementation of Monty calling logic: PRD-MONTY-1. |
+| SNA-MONTY-3 | **[D]** Cron dependency and serialization ownership: PRD-MONTY-2 and PRD-MONTY-3. |
 | SNA-MONTY-4 | **[D]** Further calling signatures are defined on top of it for slotted functions and database transactions. |
-| SNA-MONTY-5 | **[D]** Monty source is changeable at run time: "no point in using monty for hook/cron if end user can't change it at run-time." |
+| SNA-MONTY-5 | **[D]** Runtime source replacement: PRD-MONTY-4 (and PRD-CMD-10). |
 | SNA-MONTY-6 | **[D]** Monty's own type checker "should be called for validation or inside MontyInvoke depending on use case." |
 
 **[P]** Shape that follows from SNA-MONTY-1: with no runtime inside it, `sc-monty`
@@ -191,10 +229,15 @@ type, and each consumer crate owns its own.
 |---|---|---|
 | Contract | Input and output types and traits. No logic, no service handles. | Nothing in the system |
 | Plug-in | One or more function implementations | The contract only |
-| Host | Daemon, registry, drivers, resources | The contract. Never a plug-in crate. |
+| Registry (`sc-registry`, proposed) | Slots, bindings and implementation selection | The contract. Never a plug-in implementation crate. |
+| Project host (`daemon` and `service`) | Supervision, drivers, resources and operation coordination | The contract and registry. Never a plug-in implementation crate. |
 
-The plug-in rule is the nanoservice boundary for Rust code (SNA-2). A dependency
-lint can enforce it, and it is what makes "compile a single crate" true (SNA-7).
+The plug-in dependency rule is the Rust architectural boundary (SNA-2).
+A dependency lint checks crate edges; signatures restrict the handles supplied to
+a function. Neither prevents arbitrary native code from performing I/O through
+standard-library or foreign calls. Rust plug-ins must honor that boundary; this
+is not a sandbox claim. SNA-7 concerns compiling the plug-in against the contract.
+The published `sc-runtime` facade is not the “Host” crate in this table.
 
 ## 6. Type checking across the boundary
 
@@ -207,7 +250,7 @@ against and the host refuses anything that differs.
 |---|---|---|
 | Rust, linked into the host | Host compile | rustc |
 | Rust, loaded at run time | Plug-in compile, plus fingerprint at load | rustc, then the host |
-| Monty | Registration | Monty's type checker (SNA-MONTY-6) |
+| Monty | Registration, proposed; not Rust compile time | Monty's type checker (SNA-MONTY-6); Rust exposure remains open |
 | CPython (PyO3) | Registration at best | Schema validation of values |
 | C-ABI | Registration | Fingerprint and schema |
 
@@ -216,12 +259,24 @@ against and the host refuses anything that differs.
 | Backend | How strictly SNA-2 holds |
 |---|---|
 | Monty | By construction. No I/O unless the host exposes a function. |
-| Native Rust | By function signature plus the dependency lint. |
-| CPython via PyO3 | Not enforced. Python can open files and sockets. One interpreter lock: functions run one at a time. |
+| Native Rust | Architectural contract: signatures and dependency lint constrain supplied handles and crate edges, not arbitrary native I/O. |
+| CPython via PyO3 | Not enforced. Python can open files and sockets. In the single-interpreter-lock model considered here, calls requiring that lock serialize. |
 | C-ABI | Not enforced. Arbitrary native code in the daemon's process; a crash takes the daemon down. |
 
-**[O]** SNA-2 is mechanical for Monty, achievable for Rust, and a convention for
-CPython and C-ABI unless those run out of process or are accepted as trusted-only.
+**[D, scope clarification]** SNA-2 binds Rust's architectural boundary and
+SNA-7 binds Rust compilation. Neither promises enforced isolation or compile-time
+type checking for CPython or C-ABI; Monty has its own registration-time checking
+path. This resolves the universal claims without selecting a sandbox mechanism.
+
+**[D]** CPython calls never run on a Tokio request worker. **[P]** The host
+awaits results from dedicated blocking execution capacity outside the request
+workers; interpreter-lock acquisition and Python execution both happen there.
+This preserves PRD-ENG-1 and PRD-ENG-2 without sync-over-async. The precise
+executor is a later-phase design choice, not current implementation work.
+
+**[O]** Whether CPython and C-ABI plug-ins are accepted as trusted in-process
+code or isolated out of process remains a deployment decision. This open choice
+is no longer needed to make SNA-2 or SNA-7 true.
 
 ## 8. Run-time replacement
 
@@ -231,9 +286,8 @@ which implementation version produced each write.
 
 ## 9. Generators
 
-**[D]** "the expection is generators will be created in a follow up phase. A
-generator would work against a delivered sc-runtime by a consuming project". No
-requirement may say the command path must be hand-written.
+**[D]** Generators and the prohibition on requiring hand-written command paths
+are governed by PRD-CMD-11. No separate requirement is restated here.
 
 ## 10. Future considerations and research
 
@@ -241,11 +295,11 @@ Nothing here is a requirement. No work follows until the owner asks.
 
 | Item | Owner statement |
 |---|---|
-| **[F]** Typed struct in/out for Monty calls | "Longer term, I would expect crates could construct monty calls based on rust struct in/out." "typed in/out - save the idea as a 'research later' todo in PRD" |
+| **[F]** Typed struct in/out for Monty calls | See v2.1 section 9, “Typed Rust struct in and out for Monty calls”; remains research, not implementation work. |
 | **[F]** Serialization route | "we can serialize/deserialize either in monty OR in rust at the rust/monty boundary in the fastest possible manner. i.e. if serde is faster, serialize/deserialize in serde and cron would get concrete types. If customer types are included we would likely need serialization/deserialization to be handled by monty as we would not know the types at compile time. this is an argument to support both in cron." Saved for future optimizations. |
 | **[F]** JSON invoke | "if cron is json based, it would be defined by a MontyJsonInvoke : MontyInvoke<string,string>" |
 | **[F]** Async and aggregate invokes | "MontyInvokeAsync and MontyChannelAsync (i.e. select-many or channel-aggregate) type functions will want to be on the 'future considerations list'" |
-| **[F]** Monty transaction bodies | "We may need to add monty support" (section 3.5). |
+| **[F]** Monty transaction bodies | Later-phase proposal in section 3.5; PRD-CMD-12 and PRD-MONTY-6 leave the calling form open. |
 
 ## 11. Open decisions
 
@@ -260,18 +314,56 @@ Nothing here is a requirement. No work follows until the owner asks.
    response returns, and who invalidates it.
 5. **[O]** What crosses into a run-time-loaded Rust plug-in: native Rust types or
    serialized values.
-6. **[O]** Untrusted CPython and C-ABI plug-ins: in process and trusted-only, or out
-   of process.
+6. **[O]** CPython and C-ABI deployment: trusted-only in process, or isolated
+   out of process. SNA-2 and SNA-7 make no guarantee for these backends.
 7. **[O]** How the Rust Monty crates expose the type checker (SNA-MONTY-6).
 
 ## 12. Phasing
 
 **[D]** Phase D proceeds without this architecture. It is layered on in Phase E/F.
 
-**[P]** What Phase D must not foreclose is tracked in the Phase D plan itself, in
-the sc-runtime PRD's terms, without reference to this document.
+**[D]** The published basis for keeping later extensions possible is now
+PRD-CMD-12, PRD-ENG-7 and v2.1 section 10 line 7. The Phase D plan is not a
+separate source of that authority. Line 7 leaves today's startup, store opacity
+and per-operation service wiring unchanged for this release. It creates no
+later-phase specification, implementation or testing work (PRD-ENG-6).
+
+**[P]** Sections 3.1 through 3.4 describe how the later architecture can compose
+with those existing boundaries. They are proposals for a later phase, not new
+Phase D acceptance criteria.
 
 ## 13. Naming
 
 Working name: **Slotted Nanoservice Architecture (SNA)**. Nanoservices each own one
 thing; typed slots are what functions plug into.
+
+## 14. Private watch list for apyr
+
+Owner-only review aid; do not copy into Phase D plans, gates or team briefs.
+Consumer: apyr. It protects later extension while gating only this draft's
+consistency review. The observed defect class is a current-release wiring rule
+being read as a permanent prohibition, plus the host/facade ambiguity corrected
+in sections 3.1–3.4. Remove this list when the later-phase requirements are
+published and replace it with their ordinary record links. It assigns no work.
+
+Record baseline: `1bdcebb`; PRD authority: v2.1 at `8d5462d`. These are watch
+points, not claims that every listed record currently conflicts. Re-read the
+exact target revision before reporting a conflict. Published PRD authority alone
+must justify any finding sent to the Phase D team.
+
+| Draft id | Records to watch | Boundary or blocking reading to check |
+|---|---|---|
+| SNA-1 | REQ-RT-0001; NFR-RUN-0002; NFR-CFG-0003; ADR-CFG-0003 | Service startup stays inside existing steps; later config wrapper does not make sc-config async now; Python execution stays off request workers. |
+| SNA-2 | REQ-RUN-0201; REQ-RUN-0302; REQ-RT-0003 | The project service coordinates resource access; handlers and sc-runtime do not. Rust dependency checks are not process isolation. |
+| SNA-3 | NFR-RUN-0003; NFR-RT-0001; ADR-RUN-0001 | A release-scoped registry exclusion must not become a permanent ban; proposed registry has its own crate, outside the closed sc-runtime facade. |
+| SNA-4 | ADR-RUN-0021; REQ-RUN-0201; REQ-RUN-0302 | A replaceable implementation remains behind the existing per-operation service function; PRD-CMD-10 governs runtime source changes. |
+| SNA-5 | REQ-RUN-0201; REQ-RUN-0302; ADR-RUN-0021 | One entry service function per operation must not be read as forbidding later internal function chains. |
+| SNA-6 | NFR-RT-0001; REQ-RT-0003; ADR-RUN-0021 | Registration contracts live outside sc-runtime; its opaque Stores parameter does not become a resource interface. |
+| SNA-7 | NFR-RT-0001; ADR-RUN-0001; ADR-RUN-0021 | Rust contract types and registration APIs belong outside the closed facade; do not turn Rust compile-time checking into a claim about other backends. |
+| SNA-8 | REQ-RT-0001; REQ-RT-0003; REQ-RUN-0201; REQ-RUN-0302; NFR-RT-0001 | Preserve current startup, store opacity and service entry points; PRD-ENG-7 keeps extension possible without current work. |
+| SNA-MONTY-1 | REQ-CRON-0001; NFR-CRON-0001 | Dependency descriptions must preserve the separate sc-monty implementation under PRD-MONTY-2. |
+| SNA-MONTY-2 | ADR-RUN-0021; REQ-CRON-0001 | Transform and cron calling paths must not duplicate Monty implementation (PRD-MONTY-1). |
+| SNA-MONTY-3 | REQ-CRON-0001; NFR-CRON-0001 | Blanket workspace-dependency bans must not prevent cron using sc-monty; serialization remains a cron concern. |
+| SNA-MONTY-4 | ADR-RUN-0020; ADR-RUN-0021; REQ-CRON-0020; REQ-CRON-0021 | Later calling forms remain possible; transaction retry never authorizes replay of uncertain cron mutations. |
+| SNA-MONTY-5 | ADR-RUN-0021; REQ-CRON-0003 | Do not turn a schedule generation or transform binding into a permanent prohibition on replacing source. |
+| SNA-MONTY-6 | ADR-RUN-0021; REQ-CRON-0001 | Do not claim the type checker is integrated before its Rust interface is verified; no Phase D work follows from this draft. |
