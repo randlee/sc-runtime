@@ -1145,7 +1145,7 @@ lets the project report a config error before anything else starts.
 
 The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
 
-Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is any file whose contents supply configuration values to the daemon, including `config/default.json` and `config/local.json`, which `sc_config::load` reads. Reading a file means obtaining its contents, at run time or at build time. The source files under `crates/sc-runtime/src` are the `.rs` files in that directory and its subdirectories. The direct dependency set of `sc-runtime` is the set of crate names that `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` prints, one per line before the version, without `sc-runtime` itself.
+Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is any file whose contents supply configuration values to the daemon, including `config/default.json` and `config/local.json`, which `sc_config::load` reads. Reading a file means obtaining its contents at run time. The source files under `crates/sc-runtime/src` are the `.rs` files in that directory and its subdirectories. The direct dependency set of `sc-runtime` is the set of crate names that `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` prints, one per line before the version, without `sc-runtime` itself.
 
 Allowed dependencies table:
 
@@ -1176,7 +1176,7 @@ Allowed dependencies table:
   that, are owned by [NFR-RUN-0001](../requirements.md). Sprint a-6 runs that
   command.
 
-REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate depending on the others; cron temporarily depends only on command under ADR-RUN-0017. [NFR-RT-0002](requirements.md) owns the ban on configuration loading, `sqlx` and the `sc-observability` runtime crates; the statements below repeat those bans for this crate's dependency list.
+REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate depending on the others; `sc-cron` depends on `sc-storage` and `sc-monty` (PRD-CRON-2, PRD-MONTY-2). [NFR-RT-0002](requirements.md) owns the ban on configuration loading, `sqlx` and the `sc-observability` runtime crates; the statements below repeat those bans for this crate's dependency list.
 
 **MUST statements:**
 
