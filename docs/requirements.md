@@ -3427,9 +3427,10 @@ Definitions:
 - The core crates are the reusable library crates.
 - A selected interface is CLI, HTTP, or MCP when its generation option is enabled.
 - The CLI reaches the shared handler through the daemon HTTP route; using a handler does not mean linking its implementation into the CLI.
-- Generation reads option defaults from `wizard/answers.schema.json` ([REQ-RUN-0401](requirements.md)).
+- Generation takes option defaults from `wizard/answers.schema.json`: the driver reads them from the schema ([REQ-RUN-0401](requirements.md)), and the placeholder defaults of plain `cargo generate` are identical to them ([REQ-RUN-0306](requirements.md)).
 - Cron is enabled when the `cron` generation answer is true. MCP is enabled when the `mcp` generation answer is true.
 - The sc-cron-commands start, end and list request types are the start, end and list request types of the standard start/end/list DTO. The shared sc-cron-commands handler is the standard handler.
+- A projection uses a request type when each request it carries to the shared handler is a value of that type.
 - To wire the standard handler into an interface is to make that interface's cron start, end and list projections call it.
 - An interface's cron start, end or list projection is the generated code that exposes the cron start, end or list command on that interface: a CLI subcommand, an HTTP route or an MCP tool.
 
@@ -3467,11 +3468,18 @@ Definitions:
 
 ### Rationale
 
-The statements preserve the existing contract while separating independently observable obligations.
+Owner anchor ANC-014 asks for an optional set of standard cron commands so that every interface has a similar JSON interface. Default-off generation leaves the core usable alone. Selected generation wires the real shared handler into the existing interfaces.
 
 ### Success Criteria
 
-Generate default-off and selected-cron projects with MCP both enabled and disabled. Inspect their source call paths and request types. Inspect the default option value and feature-off Cargo graphs for the stated dependency exclusions.
+1. Generate a project with default answers: it has no standard cron commands and no adapter worker, its CLI dependency graph holds no server, cron, SQLite or Monty crate, and MCP stays disabled when not selected. Inspect the `default` of `cron_commands` in `wizard/answers.schema.json`.
+2. Generate projects with `cron_commands=true` and cron enabled, once with MCP enabled and once with MCP disabled. Inspect each projection's request type and its call to the shared handler.
+3. In those projects, send the same start, end and list request through the CLI, the HTTP interface and, where enabled, the MCP interface, for Rust, Python and Monty targets: each interface returns equivalent normalized data or the same error.
+4. Inspect the Cargo dependency graphs of core and generated builds with cron disabled for the scheduler and server exclusions.
+
+### Implementation Notes
+
+This record amends the optional cron composition of REQ-RUN-0301 and the schema and fixture key set of REQ-RUN-0401, REQ-RUN-0402 and REQ-RUN-0403. REQ-CRNC-0001 and REQ-CRNC-0002 govern the JSON, the errors and the Rust, Python and Monty options. The shared public release of REQ-RUN-0702 includes the optional adapter.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
