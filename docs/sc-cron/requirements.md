@@ -20,13 +20,13 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 
 ### Requirement Statement
 
-Definitions: sc-monty is the shared Monty interpreter implementation. sc-storage is the shared `Storage<T>` crate. The common sc-command read/write helpers are the asynchronous `storage_read` and `storage_write` functions over `Storage<T>` named in ADR-RUN-0021. Sprint d-9 is the Phase D sc-cron boundary sprint (`run-d-9`) covering scheduler migration to application-supplied storage and thin sc-cron-commands API/bound adaptations. The Phase D public package set is the nine crates named in REQ-RUN-0002, released together at version 0.3.0. A Monty value is an interpreter value passed to a hook function through sc-monty's value-level invocation, as opposed to a JSON-encoded string. The port preserves the existing test assertions while moving the interpreter implementation into sc-monty. Weakening an assertion means removing a checked condition, widening an expected value, range or tolerance, or replacing an exact comparison with a looser one. The local facade is the former unpublished observability-types shim. A workspace library crate is a library crate that is a member of this Cargo workspace. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. Registry types are the canonical event types imported from the published sc-observability-types crate. The command contract edge is the normal dependency on sc-command with `default-features = false` and no features, permitted by ADR-RUN-0017. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the command contract edge after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.
+Definitions: sc-monty is the shared Monty interpreter implementation. sc-storage is the shared `Storage<T>` crate. The common sc-command read/write helpers are the asynchronous `storage_read` and `storage_write` functions over `Storage<T>` named in ADR-RUN-0021. Sprint d-9 is the Phase D sc-cron boundary sprint (`run-d-9`) covering scheduler migration to application-supplied storage and thin sc-cron-commands API/bound adaptations. The Phase D public package set is the nine crates named in REQ-RUN-0002, released together at version 0.3.0. A Monty value is an interpreter value passed to a hook function through sc-monty's value-level invocation, as opposed to a JSON-encoded string. The port preserves the existing test assertions while moving the interpreter implementation into sc-monty. Weakening an assertion means removing a checked condition, widening an expected value, range or tolerance, or replacing an exact comparison with a looser one. The local facade is the former unpublished observability-types shim. A workspace library crate is a library crate that is a member of this Cargo workspace. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. Registry types are the canonical event types imported from the published sc-observability-types crate. The command contract edge is the normal `sc-command` dependency entry in `crates/sc-cron/Cargo.toml`, permitted by ADR-RUN-0017. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the command contract edge after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. An isolated consumer is a crate outside this workspace that depends only on the crate under test, so workspace feature unification does not apply. Server-feature leakage is the appearance of axum, rmcp or the sc-command `server` feature in `cargo tree -e features` output for an isolated consumer of sc-cron-commands with default features or with the `monty` feature. The generated daemon is the `crates/daemon` package of a project rendered from this repository's `template` directory. The embedding application is the application that renders the template and chooses the template's `cron` placeholder, whose default is `false`. A default generated build is a default-feature build of a project rendered with the `cron` placeholder at its default. A counterpart assertion is the assertion in `crates/sc-cron` test source ported from one beads-cache `develop` test assertion. monty and monty-types are the third-party Monty interpreter crates that sc-monty depends on. An independent Monty engine is code outside sc-monty that compiles Monty source, manages Monty sessions, hosts Monty functions, enforces Monty limits, or dumps or loads Monty state.
 
 `crates/sc-cron` is a workspace member, ported from beads-cache at `develop`, and is one of the Phase D public package set. Phase D sc-cron consumes the single sc-monty implementation for interpreter behavior and sc-storage for shared storage behavior; it no longer directly depends on monty or monty-types. It retains cron policy and JSON-to/from-value adaptation; Monty hooks receive Monty values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after sprint d-9 closes, without server-feature leakage.
 
 The command contract edge supplies the retained observability port. Canonical event values remain direct registry `sc-observability-types` imports. Registry types use the open floor `>=1.5.0` with no upper bound, as every published registry dependency does under REQ-RUN-0002. The historical `0.1.1` release used an exact `=1.5.0` command pin; that pin does not govern Phase D.
 
-`sc-runtime` does not name sc-cron. The generated daemon may name it only as the optional `cron` dependency selected by the embedding application; default generated builds do not link it. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
+`sc-runtime` does not name sc-cron. The generated daemon may name sc-cron only as an optional dependency enabled by its `cron` feature, which the embedding application selects; a default generated build does not link sc-cron. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
 
 sc-cron's command contract edge enables neither the sc-command `server` feature nor the sc-command `test-util` feature; test doubles use dev-dependencies only. The local facade is gone and does not return. Capability-proven upstream cleanup removes the command contract edge, after which sc-storage and sc-monty are the only workspace library crates sc-cron depends on.
 
@@ -36,41 +36,43 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - `crates/sc-cron` MUST be ported from beads-cache.
 - sc-cron MUST be a member of the Phase D public package set.
 - Phase D sc-cron MUST consume the single sc-monty implementation.
-- Phase D sc-cron MUST consume sc-storage for shared storage behavior.
+- Phase D sc-cron's shared storage MUST be sc-storage's `Storage<T>`.
 - sc-cron MUST retain cron policy.
 - sc-cron MUST retain JSON-to/from-value adaptation.
-- Hook data passed by sc-cron to Monty hooks MUST be Monty values.
-- The port from beads-cache MUST preserve the existing unit-test assertions in the resulting test suites.
-- The port from beads-cache MUST preserve the existing integration-test assertions in the resulting test suites.
+- When sc-cron invokes a Monty hook, the hook function MUST receive the hook data as a Monty value.
+- Each assertion in the beads-cache `develop` unit-test source MUST have a counterpart assertion in the `crates/sc-cron` unit-test source.
+- Each assertion in the beads-cache `develop` integration-test source MUST have a counterpart assertion in the `crates/sc-cron` integration-test source.
 - After sprint d-9 closes, sc-cron-commands MUST consume the common sc-command read/write helpers.
-- sc-cron's only normal dependency on sc-command MUST be the command contract edge.
+- The command contract edge MUST be the only normal `sc-command` dependency entry in `crates/sc-cron/Cargo.toml`.
 - The command contract edge MUST set `default-features = false`.
 - The command contract edge MUST enable no features.
 - Canonical event values MUST remain direct registry sc-observability-types imports.
 - sc-cron's sc-observability-types requirement MUST be the registry floor `>=1.5.0`.
 - Test doubles MUST use dev-dependencies only.
-- Capability-proven upstream cleanup MUST remove the command contract edge.
+- Capability-proven upstream cleanup MUST delete the command contract edge from `crates/sc-cron/Cargo.toml`.
 
-- If the generated daemon declares an `sc-cron` manifest dependency, that dependency MUST be optional `cron` selected by the embedding application.
+- If the generated daemon's `Cargo.toml` declares an `sc-cron` dependency, the `sc-cron` dependency entry MUST set `optional = true`.
+- If the generated daemon's `Cargo.toml` declares an `sc-cron` dependency, the generated daemon's `cron` Cargo feature MUST enable the `sc-cron` dependency.
+- If the generated daemon's `Cargo.toml` declares an `sc-cron` dependency, the generated daemon's `default` feature list MUST include `cron` only when the embedding application sets the `cron` placeholder to `true`.
 
 **MUST NOT statements:**
 
-- sc-cron MUST NOT pass hook data to its Monty hooks as JSON strings.
+- When sc-cron invokes a Monty hook, the hook function MUST NOT receive the hook data as a JSON-encoded string.
 
-- sc-cron MUST NOT depend on any workspace library crate other than sc-command, sc-storage and sc-monty.
-- After capability-proven upstream cleanup, sc-cron MUST NOT depend on any workspace library crate other than sc-storage and sc-monty.
+- `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on any workspace library crate besides sc-cron, sc-command, sc-storage and sc-monty.
+- After capability-proven upstream cleanup, `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on any workspace library crate besides sc-cron, sc-storage and sc-monty.
 - sc-cron's sc-observability-types requirement MUST NOT declare an upper bound.
-- sc-cron MUST NOT depend on the local facade.
-- The resulting integration test suites MUST NOT omit any existing beads-cache integration-test assertion.
-- The port MUST NOT weaken any existing integration-test assertion, using this record's definition of weakening.
-- The resulting unit test suites MUST NOT omit any existing beads-cache unit-test assertion.
-- The port MUST NOT weaken any existing unit-test assertion, using this record's definition of weakening.
-- sc-cron MUST NOT directly depend on monty.
-- sc-cron MUST NOT directly depend on monty-types.
-- sc-cron MUST NOT retain an independent Monty compile/session/host/limits/dump/load engine.
-- sc-cron-commands MUST NOT introduce server-feature leakage.
+- `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the local facade.
+- The `crates/sc-cron` integration-test source MUST NOT lack a counterpart assertion for any assertion in the beads-cache `develop` integration-test source.
+- A side-by-side reading of each counterpart assertion under `crates/sc-cron/tests/` and its beads-cache `develop` original MUST NOT show weakening.
+- The `crates/sc-cron` unit-test source MUST NOT lack a counterpart assertion for any assertion in the beads-cache `develop` unit-test source.
+- A side-by-side reading of each counterpart assertion under `crates/sc-cron/src/` and its beads-cache `develop` original MUST NOT show weakening.
+- `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the `monty` crate.
+- `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the `monty-types` crate.
+- `crates/sc-cron/src/` MUST NOT contain an independent Monty engine.
+- An isolated consumer of sc-cron-commands MUST NOT show server-feature leakage.
 - The `sc-runtime` crate MUST NOT declare `sc-cron` in any dependency manifest.
-- Default generated builds MUST NOT link sc-cron.
+- `cargo tree` output for a default generated build MUST NOT list sc-cron.
 - The command contract edge MUST NOT enable the sc-command `server` feature.
 - The command contract edge MUST NOT enable the sc-command `test-util` feature.
 
