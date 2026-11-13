@@ -4272,7 +4272,8 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 **MUST NOT statements:**
 
 - Adding a fixture file MUST NOT require an edit to the workflow.
-- The workflow MUST NOT install or invoke Wyvern.
+- The workflow MUST NOT install Wyvern.
+- The workflow MUST NOT invoke Wyvern.
 - The workflow MUST NOT use the `cargo-generate-action` GitHub Action as its matrix mechanism.
 
 ### Rationale
