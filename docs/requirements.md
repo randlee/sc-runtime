@@ -1627,10 +1627,10 @@ REST and MCP have exactly one place to call.
    the paths that layout includes exist, and that the store
    directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
    present exactly when the fixture's `mcp` is `true`. 2. In each rendered project, `cargo metadata --format-version 1` shows the
-   package names `<project>-<role>` for the non-synchronization roles that
-   layout renders: `types`, `schema`, each store, `service`, `daemon` and
-   `cli`. This criterion makes no assertion about the presence or absence
-   of a consumer synchronization/adaptor package. 3. In each rendered project,
+   package names `<project>-<role>` for the roles that layout renders:
+   `types`, `schema`, each store, `service`, `daemon` and `cli`, and no other
+   package except a synchronization or adaptor package, about which this
+   criterion asserts nothing. 3. In each rendered project,
    `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
    `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
    `<project>-daemon ` (the name followed by a space). 4. In each rendered project, `sqlx` appears under `[dependencies]` only in

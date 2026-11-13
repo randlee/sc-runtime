@@ -2339,22 +2339,22 @@ The problem is that one store crate cannot hold checked queries for both SQLite 
    keys are column names, using the encoding table in the sprint `b-4` sample.
    `read_rows` and `write_rows` reject more than 10_000 rows or a payload over
    1 MiB. `EngineStore` is static dispatch. Amended 2026-10-27.
-3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
-   on the `store-*` crates whose rows it moves, and `service` depends on the
-   adaptor. A one-store layout has no adaptor, and `service` depends on that
-   store. `daemon` and `cli` do not depend on `store-*`. Amended 2026-10-25.
+3. Only remote-engine `store-*` crates depend on sqlx; SQLite uses
+   `sc-runtime-db-sqlite`. On a one-store layout, `service` depends on that
+   store. `daemon` and `cli` do not depend on `store-*`. How `service` reaches
+   the stores of a two-store layout is deferred with synchronization
+   (PRD §9) and is not decided here.
 4. A SQL query is written for one backend. No layer runs one SQL string on
    more than one engine. Stores in one application use the same schema or a
    similar schema, and one shared trait or a different trait per store
    ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. The template adaptor (`template/crates/store-adaptor`), as consumer source,
-   is the one place rows move between stores, including a local cache
-   ([ADR-RUN-0305](architecture.md)). The sc-runtime crates and the framework
-   crates do not move rows between stores. This repository does not contain a
-   replication mechanism, an outbox, or a routing policy.
-   Amended 2026-10-25 by [ADR-RUN-0305](architecture.md).
+6. Synchronization between databases is deferred under PRD §9. This ADR
+   does not bind an adaptor, a row-moving location, replication, an outbox
+   or a routing policy. None is implemented or validated for Phase D merely
+   because a two-store layout is selected. The earlier adaptor design in
+   ADR-RUN-0305 is deferred context, not a current mechanism requirement.
 7. The layouts a new application can use are [REQ-RUN-0326](requirements.md).
    v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
    in that requirement. SQL Server is out of scope because sqlx has no driver
@@ -2411,10 +2411,11 @@ Rejected for v0.1 because it is custom code; the standard read-pool plus write-c
 ### Implementation
 
 Enforced by: the generated workspace's dependency edges, inspected with
-`cargo metadata` per fixture ([REQ-RUN-0301](requirements.md)): only `store-*` crates depend
-on sqlx; a two-store layout's adaptor depends on the `store-*` crates whose
-rows it moves and `service` depends on the adaptor; a one-store layout has no
-adaptor and `service` depends on that store; `arch-qa` review for points 4 to 6.
+`cargo metadata` per fixture ([REQ-RUN-0301](requirements.md)): only remote-engine
+`store-*` crates depend on sqlx; the SQLite store uses `sc-runtime-db-sqlite`;
+a one-store layout's `service` depends on that store; `daemon` and `cli`
+depend on no `store-*` crate. Review of points 4 to 6 does not introduce
+an implementation or validation obligation for deferred synchronization.
 Amended 2026-10-25.
 
 ---
@@ -2707,7 +2708,7 @@ function returns `Result<Widget, OpError>`, and `OpError` is defined in
 names `api-types` structs.
 ### Decision
 
-The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema` and on the store crates whose rows it moves. `service` depends on the adaptor. `daemon` and `cli` do not.
+The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. On a one-store layout, `service` depends on that store. Two-store service wiring and any synchronization adaptor are deferred under PRD §9. `daemon`, `cli`, `api-types` and `schema` do not depend on store crates.
 
 The owner of these edges and of their criteria is
 [REQ-RUN-0301](requirements.md); this ADR records the decision behind them.
@@ -2717,14 +2718,17 @@ The owner of these edges and of their criteria is
    | Crate | MUST depend on | Source of the edge |
    |---|---|---|
    | `api-types` | `serde`, `schemars`, `utoipa` | design table |
-   | `store-*` | `sqlx` with exactly one driver feature | design table |
-   | `service` | the adaptor, `api-types`; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
-   | adaptor | `<project>-schema` and the `store-*` crates whose rows it moves | [ADR-RUN-0305](architecture.md), [REQ-RUN-0324](requirements.md) |
-   | `daemon` | `service`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; `api-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron` | design table and composition-root contract; handler/configuration types require the direct command/transport/types edges; the embedding application owns optional cron |
+   | `store-sqlite` | `sc-runtime-db-sqlite` | PRD-STO-3; REQ-RUN-0301 |
+   | `store-postgres` or `store-mysql`, when rendered | `sqlx` with exactly one corresponding driver feature | PRD-STO-2; REQ-RUN-0301 |
+   | `service` | `api-types`; `sc-command` with default features; the store on a one-store layout | design table; `sc-command` follows from service functions returning `OpError` |
+   | `daemon` | `service`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; `api-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron`; optional `sc-monty` behind generated feature `monty` | design table and composition-root contract; handler/configuration types require the direct command/transport/types edges; the embedding application owns optional cron |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
-2. Only `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates. `service` depends on the adaptor. `daemon` and `cli` do not. Amended 2026-10-25.
-3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`. The adaptor holds the store handles it uses to move rows. Amended 2026-10-25: the adaptor, as well as `service`, may depend on `store-*`.
+2. Only remote-engine `store-*` crates depend on sqlx. `daemon`, `cli`,
+   `api-types` and `schema` do not depend on `store-*` crates. On a one-store
+   layout, `service` depends on that store. Two-store service wiring is
+   deferred with synchronization (PRD §9).
+3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
    or on any framework crate from this repository.
 5. `cli` MUST NOT have a normal (non-dev) dependency, direct or transitive,
@@ -2736,8 +2740,9 @@ The owner of these edges and of their criteria is
    dev-dependency for the example test is covered by the OPEN in
    [REQ-RUN-0302](requirements.md) on which crate hosts that test.
 8. Generated feature `cron` enables the optional daemon dependency on
-   `sc-cron`; generated feature `monty` implies `cron` and enables
-   `sc-cron/monty`. Feature-off generated builds do not link `sc-cron`.
+   `sc-cron`. Generated feature `monty` enables optional `sc-monty` without
+   requiring `cron`; selecting both also enables `sc-cron/monty`.
+   Feature-off generated builds do not link `sc-cron`.
    `sc-cron` remains independent of the generated workspace and never loads
    application configuration.
 
@@ -2797,7 +2802,8 @@ Rejected because `api-types` would then depend on the store crates and, through 
 Enforced by: the criteria of [REQ-RUN-0301](requirements.md), run per fixture by the
 fixture matrix ([REQ-RUN-0701](requirements.md)): `cargo metadata --format-version 1` in
 the rendered project shows the required edges of point 1, and sqlx appears
-under `[dependencies]` only in `store-*` manifests; for point 5,
+under `[dependencies]` only in remote-engine `store-*` manifests;
+the SQLite store instead uses `sc-runtime-db-sqlite`; for point 5,
 `cargo tree -p cli -e normal --prefix none` prints no line beginning with
 `sqlx `, `axum `, `rmcp `, `sc-runtime `, `service `, `daemon ` or a `store-`
 crate name followed by a space; `arch-qa` review of `template/` for point 3.
