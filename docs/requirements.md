@@ -861,7 +861,7 @@ second example that nobody maintains.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. A store crate is a generated engine-specific crate containing that database engine's SQL; only the service function calls it.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. A store crate is a generated engine-specific crate containing that database engine's SQL; only the service function calls it. An operation is one named action of a project generated from `template/`; the template's example is `widget.create`. The generated crates are the crates of that project. The three surfaces are REST (an HTTP route of the daemon), MCP (a tool at the daemon's MCP endpoint) and CLI (a command of the generated `cli` crate). The service function is the operation's one async function in the generated `service` crate.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -917,11 +917,16 @@ the template's example operation `widget.create`.
 - An operation MUST define exactly one request struct in the generated `api-types` crate.
 - An operation MUST define exactly one response struct in the generated `api-types` crate.
 - An operation MUST define exactly one async service function in the generated `service` crate.
-- The operation MUST be reachable through all three surfaces in the table above.
-- Each surface MUST limit its work to the input conversion, service-function call and result conversion specified here.
+- Each operation MUST be reachable through REST.
+- Each operation MUST be reachable through MCP.
+- Each operation MUST be reachable through CLI.
+- For an operation, a REST handler MUST restrict its work to input conversion, the service-function call and result conversion.
+- For an operation, an MCP tool MUST restrict its work to input conversion, the service-function call and result conversion.
 - `sqlx` MUST be a dependency of the generated `store-*` crates only.
 
 **MUST NOT statements:**
+
+- For an operation, a CLI command MUST NOT perform work outside request construction, HTTP submission to that operation's daemon REST route, and response presentation.
 
 - REST handlers MUST NOT contain SQL.
 - REST handlers MUST NOT call `sqlx`.
