@@ -478,7 +478,7 @@ and recovery steps are the error inventory in
 - `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::fmt::Debug` for `ConfigError`.
 - `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::fmt::Display` for `ConfigError`.
 - `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::error::Error` for `ConfigError`.
-- The `Display` text of a variant that carries a file path MUST contain that path.
+- Formatting a variant that carries a file path with `Display` MUST produce text containing that path.
 - The `Display` text of a variant that carries a variable name MUST contain that name.
 - The `Display` text of the `Parse` variant MUST contain its line number.
 - The `Display` text of the `Parse` variant MUST contain its column number.
