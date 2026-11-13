@@ -64,7 +64,7 @@ Source: sc-runtime design, 2026-09-19; applies the repository rule that library 
 
 - NFR-CFG-0001 — public API returns `Result<T, ConfigError>`; no panics
 - REQ-CFG-0004 — the `ConfigError` variants and the data each carries
-- NFR-RUN-0009 — owner of the list of banned panicking constructs for the four library crates
+- NFR-RUN-0009 — owner of the list of banned panicking constructs for the public library crates
 
 **Architecture Decisions:**
 
