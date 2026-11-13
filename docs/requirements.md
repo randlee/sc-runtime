@@ -3165,18 +3165,17 @@ The framework instantiates; each project wires (framework charter). Owner, 2026-
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. SQL means Structured Query Language. The consumer adaptor is the store adaptor crate generated from `template/crates/store-adaptor` into the consumer repository. Store synchronization is copying rows from one store to another store through `read_rows` and `write_rows`. A schedule is code that decides when store synchronization runs. A timer is code that waits for elapsed time or repeats on an interval. Application code is code in the consumer repository outside the consumer adaptor.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+This record is deferred, does not apply to Phase D, and creates no implementation or validation obligation until reopened.
 
 **MUST statements:**
 
-- Store synchronization is scheduled by the consuming application.
-- The adaptor starts no timer.
+- The schedule for store synchronization MUST be in application code.
+
+**MUST NOT statements:**
+
+- The source files of the consumer adaptor MUST NOT contain a timer.
 
 ### Rationale
 
