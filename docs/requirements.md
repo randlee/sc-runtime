@@ -4690,7 +4690,7 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. Job code is Rust code in `crates/` or `template/` that serves HTTP routes, serves MCP tools, generates OpenAPI, runs SQL, parses CLI arguments, sends HTTP requests or renders the project template. A documented API is a public item shown in the listed crate's rustdoc documentation. A crate override is a REQ, NFR or ADR record in `docs/`, or a sentence added to this record, that names a crate or code other than the listed crate for one job in the Job/Crate table; a crate override takes precedence over the table's crate choice for that one job only.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. Job code is Rust code in `crates/` or `template/` that serves HTTP routes, serves MCP tools, generates OpenAPI, runs SQL, parses CLI arguments, sends HTTP requests or renders the project template. A documented API is a public item shown in the listed crate's rustdoc documentation. A minimum tested version is the lowest version of a crate with which the project has tested; a version listed in the Job/Crate table is a minimum tested version and sets no upper bound (PRD-ENG-9).
 
 No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. Phase D builds no generator.
 
@@ -4700,21 +4700,22 @@ Code generation for the command pattern, including an sc-compose or syn-based ge
 
 Phase D adds no command or operation registry, portable query layer or extra library-hiding wrapper in `crates/` or `template/`. The shared command path, `Storage<T>` and its SQLite, Postgres and MySQL implementations remain required. This describes what is built in Phase D; it does not forbid a later consumer option and creates no work to implement or test one.
 
-The Job/Crate table lists the chosen crates:
+The Job/Crate table lists one chosen crate for each job:
 
 | Job | Crate |
 |---|---|
-| HTTP server and router | `axum` 0.8 |
+| HTTP server and router | `axum` (minimum tested version 0.8) |
 | MCP server | `rmcp` (tested floor owned by NFR-RUN-0007; `StreamableHttpService`, `#[tool]`, `#[tool_router]`) |
 | OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |
-| SQL | `sqlx` 0.9 |
+| SQL in the Postgres and MySQL engines (PRD-STO-2) | `sqlx` (minimum tested version 0.9) |
+| SQL in the SQLite writer (PRD-STO-3) | `rusqlite` |
 | CLI parsing | `clap` derive |
-| HTTP client | `reqwest` 0.13 |
+| HTTP client | `reqwest` (minimum tested version 0.13) |
 | template rendering | `cargo-generate` |
 
 **MUST statements:**
 
-- For each job in the Job/Crate table, job code for the job MUST call the listed crate's documented API, unless a crate override names a different crate or code for the job.
+- Job code MUST call the documented API of the crate that the Job/Crate table lists for that code's job.
 
 ### Rationale
 
