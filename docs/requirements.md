@@ -3244,11 +3244,11 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
-Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core writer (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
+Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the writer of `sc-runtime-db-sqlite`, the atm-core design (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
 
 | Layout | Stores |
 |---|---|
@@ -3272,13 +3272,13 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - The generation options MUST accept the `SQLite and Postgres` layout from the table above.
 - The generation options MUST accept the `SQLite and MySQL` layout from the table above.
 - Generating a layout MUST render the stores in its table row.
-- A no-database layout MUST render no store crate.
+- Generating the `no database` layout MUST render no store crate.
 - Generating a two-store layout MUST render the adaptor crate.
 - Generating a layout with fewer than two stores MUST render no adaptor crate.
-- Postgres stores MUST use sqlx.
-- MySQL stores MUST use sqlx.
-- SQLite stores MUST use the atm-core writer.
-- Every store MUST implement `Storage<T>`.
+- `store-postgres` MUST use `sqlx` for PostgreSQL storage.
+- `store-mysql` MUST use `sqlx` for MySQL storage.
+- `store-sqlite` MUST use the SQLite writer of `sc-runtime-db-sqlite`.
+- Every store MUST implement `Storage<T>` for each row type it stores.
 
 ### Rationale
 
