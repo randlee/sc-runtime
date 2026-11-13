@@ -375,120 +375,81 @@ Every cross-boundary failure exposes stable codes, causes, and recovery/remediat
 
 ### Requirement Statement
 
-Definitions: Canonical plaintext schedule data is the serialized HookEnvironment configuration, including deliberate Set values, rather than secret values inherited or resolved at execution. Provider prose is text from the application reference resolver; only Denied, Unavailable, missing or a value crosses that resolver protocol. Resolved values are values supplied from daemon variables, dotenv files or references. Output assembly means composing fixed codes/recovery, outcomes, events, traces and persisted reasons. Stable text and metadata mean the fixed codes, recovery messages and non-provider metadata; they and the canonical configuration write are excluded from value replacement. The resolved map is the immutable map of environment names to values resolved for a schedule run. Schedule operations are the name-keyed `Set`, `Reference` or `Clear` operations of the schedule environment. The row deadline is the deadline of the schedule row being run. The CLI adapter children are the child processes started by sc_compose_run and atm_run. An invoking caller is the code or process that calls into sc-cron.
-
-Python and Monty schedule rows share one `HookEnvironment`; existing
-constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
-which daemon-process variables may be inherited, authorizes absolute `.env`
-files or canonical roots, and supplies an optional reference resolver. The
-generated administrator config exposes empty-by-default `allow_process`,
-`allow_dotenv_files`, and `allow_dotenv_roots` arrays. Every
-host default is empty. The crate never infers or captures an invoking caller's
-environment. The generated daemon passes a prebuilt host policy into scheduler
-composition so an application-provided resolver is preserved.
-
-Reference resolution receives the schedule name, variable name, opaque
-reference, and row deadline. The provider returns only `Denied`, `Unavailable`,
-missing, or a value; sc-cron emits no provider prose. Resolution is bounded by
-the row deadline, and expiration is `RunOutcome::TimedOut` before hook source
-runs.
-
-The schedule environment contains ordered absolute `.env` sources followed
-by name-keyed `Set`, `Reference`, or `Clear` operations. One immutable map is
-resolved before `cron.stop` and reused for `cron.tick`: allowlisted daemon
-values, then files in declaration order, then schedule operations. Explicit
-set values are canonical plaintext schedule data. Daemon, file, and reference
-values are never persisted. A non-empty environment on a Rust row is invalid;
-trusted Rust jobs keep their existing `Job` interface.
-
-Reference locators are non-secret plaintext registry metadata; only their
-resolved values remain external. Every intermediate/final map has at most 128
-entries, every stored/resolved value is at most 16 KiB, and the encoded final
-block is at most 32,000 UTF-8 bytes. Per-source oversize failures and aggregate
-`ENV_SNAPSHOT_LIMIT` failures are value-free.
-
-Python starts with exactly the resolved map rather than the daemon's complete
-environment. Monty source initialization and hook feeds answer `Getenv` and
-`GetEnviron` from the same map with ordinary absent/default behavior; every
-other OS call remains denied. Both sc_compose_run and atm_run children receive that map
-and do not inherit the daemon environment. sc-cron never mutates the daemon
-process environment. Full semantics, limits, file authorization, and the
-release-v1 schema baseline are [ADR-RUN-0016](../architecture.md).
-
-Every hook/provider-controlled failure detail or stop reason has each distinct
-non-empty resolved value replaced with `[REDACTED_ENV]` before byte capping and
-before fixed codes/recovery, outcomes, events, traces, or persisted reasons are
-assembled. Stable text, metadata, and the canonical environment configuration
-write are exempt; deliberate set values remain plaintext schedule data. Python
-output, Monty exception/return text, and both CLI adapters' stdout/stderr are included. Trusted
-direct callers may read raw public `HookOutput` fields, but `HookOutput` debug
-formatting omits their contents. This exact-value replacement mitigates
-accidental propagation; trusted hooks can transform or exfiltrate values and
-remain outside an untrusted-code boundary.
+Definitions: sc-cron is the scheduler crate of this workspace. CLI means command-line interface. OS means operating system. KiB means 1,024 bytes. UTF-8 is the Unicode byte encoding. A schedule row is one stored schedule. A Python row, a Monty row and a Rust row are schedule rows whose hook is Python source, Monty source and a Rust `Job`. A scripted row is a Python row or a Monty row. Hook source is the Python or Monty code of a scripted row. A schedule run is one execution of a schedule row. `cron.stop` and `cron.tick` are the two hook entry points of a schedule run, the stop check and the tick, called in that order. `HookEnvironment` is the type that holds a row's environment configuration: an ordered list of absolute dotenv file paths followed by schedule operations. Schedule operations are the name-keyed `Set`, `Reference` and `Clear` operations of a `HookEnvironment`: `Set` gives a literal value, `Reference` names an opaque reference, and `Clear` removes the name. A `HookEnvironment` is empty when it has no dotenv file and no schedule operation. An existing constructor is a schedule-row constructor that sc-cron offered before `HookEnvironment` was added. `HookEnvironmentHost` is the daemon-scoped policy type with four parts: the inherit list (names of daemon-process variables that may be inherited), the list of authorized dotenv files, the list of authorized dotenv roots, and an optional reference resolver. An empty host is a `HookEnvironmentHost` whose three lists are empty and whose reference resolver is absent. The daemon is the application's long-running process, and the daemon environment is the set of environment variables of that process. The reference resolver is the application-supplied function that turns an opaque reference into a value; it answers `Denied`, `Unavailable`, missing or a value. An opaque reference is the locator string of a `Reference` operation, which sc-cron does not interpret. Reference resolution is one call of the reference resolver. The resolver request is the argument set of that call and has exactly four fields: the schedule name, the variable name that the `Reference` operation is keyed by, the opaque reference, and the row deadline. Provider prose is any text from the reference resolver other than a returned value. sc-cron emits a text when it writes that text to an outcome, an event, a trace, a log or a persisted reason. The row deadline is the deadline of the schedule row being run. `RunOutcome::TimedOut` is the outcome sc-cron records for a run that passed its deadline. The generated administrator configuration is the daemon configuration file that the project template renders. Its allowlist keys are `allow_process`, `allow_dotenv_files` and `allow_dotenv_roots`. Generated scheduler composition is the generated daemon code that builds the scheduler. The prebuilt host policy is the `HookEnvironmentHost` value that the generated daemon builds and passes to generated scheduler composition. An allowlisted daemon value is the value of a daemon-process variable named in the inherit list. A file value is a value read from a dotenv file. A reference value is a value returned by the reference resolver. A resolved value is an allowlisted daemon value, a file value or a reference value. A stored value is a `Set` value held in a schedule row. An environment value is a stored value or a resolved value. Resolution builds the resolved map from sources; applying a source writes its entries into the map being built and replaces an entry of the same name. The resolution order is: first the allowlisted daemon values, then the dotenv files in the order in which the `HookEnvironment` lists them, then the schedule operations. The resolved map is the map of environment names to values that resolution produces for one schedule run. A snapshot map is the map being built after any one source is applied, or the resolved map. The encoded final environment block is the byte encoding of the resolved map that is handed to a hook; ADR-RUN-0016 specifies the encoding. A limit failure is the error for one source that breaks a limit of this record (a per-source oversize failure), or the `ENV_SNAPSHOT_LIMIT` error for a snapshot map or an encoded block that breaks a limit of this record (an aggregate-limit failure). To persist is to write to the sc-cron database or to a file. A Monty OS call is a request from Monty code to its host for an operating-system service. `Getenv` is the Monty OS call that reads one variable and takes a caller-supplied default. `GetEnviron` is the Monty OS call that reads all variables. A non-environment OS call is a Monty OS call that is not `Getenv` and is not `GetEnviron`. A Monty OS call is denied when sc-cron returns an error to the Monty code and does not perform the service. An absent key is a key that no source set, or a key that a `Clear` operation removed. A CLI adapter child is a child process started by `sc_compose_run` or `atm_run`. An unmapped daemon variable is a variable of the daemon environment whose name is not a key of the resolved map. An invoking caller is the code or process that calls into sc-cron. sc-cron takes a caller's environment when it reads the caller's process environment variables (capture), or derives a variable value from anything about the caller other than an explicit `HookEnvironment` or `HookEnvironmentHost` (inference). A controlled text is a failure detail (the error text of a failed run) or a stop reason (the text a hook gives for stopping its schedule) that contains text produced by hook code, a CLI adapter child or the reference resolver: Python output, Monty exception text, Monty return text, and the standard output and standard error of each CLI adapter child. Value replacement substitutes the literal `[REDACTED_ENV]` for each occurrence of each distinct non-empty resolved value in a text. A later step is the byte cap (the length limit sc-cron applies to a controlled text) or output assembly (composing fixed codes, recovery messages, outcomes, events, traces and persisted reasons). An exempt text is stable text (the fixed codes and recovery messages), the non-provider metadata of a run, or the serialized `HookEnvironment` written by the canonical environment configuration write. `HookOutput` is the public type that carries a hook's raw output; its raw output fields hold text that has had no value replacement.
 
 **MUST statements:**
 
-- Python and Monty schedule rows MUST share one `HookEnvironment`.
-- Existing constructors MUST default the hook environment to empty.
-- Every default of `HookEnvironmentHost` MUST be empty.
-- Generated administrator configuration MUST expose an empty-by-default `allow_process` array.
-- Generated administrator configuration MUST expose an empty-by-default `allow_dotenv_files` array.
-- Generated administrator configuration MUST expose an empty-by-default `allow_dotenv_roots` array.
-- Generated scheduler composition MUST preserve an application-provided resolver in its prebuilt host policy.
-- Reference resolution MUST receive the schedule name.
-- Reference resolution MUST receive the variable name.
-- Reference resolution MUST receive the opaque reference.
-- Reference resolution MUST receive the row deadline.
-- Reference resolution MUST be bounded by the row deadline.
-- If the row deadline expires during reference resolution, the run's outcome MUST be `RunOutcome::TimedOut`.
-- One immutable map MUST be resolved before cron.stop.
-- cron.tick MUST reuse the immutable map resolved for cron.stop.
-- Resolution MUST first apply allowlisted daemon values.
-- After allowlisted daemon values, resolution MUST apply files in declaration order.
-- After the files, resolution MUST apply schedule operations.
-- Explicit Set values MUST be canonical plaintext schedule data.
-- A non-empty hook environment on a Rust row MUST be rejected.
-- Each intermediate and final map MUST contain at most 128 entries.
-- Each stored or resolved value MUST be at most 16 KiB.
-- The encoded final environment block MUST be at most 32,000 UTF-8 bytes.
-- Per-source oversize failures MUST be value-free.
-- Aggregate-limit failures MUST be value-free.
-- Python MUST start with exactly the resolved map.
-- Monty Getenv MUST return the resolved-map value for a present key.
-- Monty Getenv MUST return the call's supplied default when the key is missing or cleared.
-- Monty GetEnviron MUST return the resolved map.
-- Every Monty OS call other than `Getenv` and `GetEnviron` MUST be denied.
-- Each CLI adapter child MUST receive the resolved map.
-- Hook/provider-controlled failure details and stop reasons MUST replace distinct non-empty resolved values with `[REDACTED_ENV]` before byte caps and the output assembly described above.
-- Stable text, metadata and canonical environment configuration writes MUST remain exempt from resolved-value replacement.
-- The `Debug` formatting of `HookOutput` MUST omit the contents of its raw output fields.
+1. Every scripted row MUST hold its environment configuration as a `HookEnvironment`.
+2. Each existing constructor MUST create a schedule row whose `HookEnvironment` is empty.
+3. The default value of `HookEnvironmentHost` MUST be an empty host.
+4. The generated administrator configuration MUST set `allow_process` to an empty array.
+5. The generated administrator configuration MUST set `allow_dotenv_files` to an empty array.
+6. The generated administrator configuration MUST set `allow_dotenv_roots` to an empty array.
+7. The scheduler built by generated scheduler composition MUST use the reference resolver of the prebuilt host policy.
+8. Each reference resolution MUST pass the complete resolver request to the reference resolver.
+9. Reference resolution MUST end no later than the row deadline.
+10. If the row deadline expires during reference resolution, the run's outcome MUST be `RunOutcome::TimedOut`.
+11. Resolution MUST finish building the resolved map before `cron.stop` is called.
+12. `cron.tick` MUST receive the resolved map that `cron.stop` received.
+13. Resolution MUST apply its sources in the resolution order.
+14. The canonical environment configuration write MUST store each `Set` value as unencrypted text.
+15. sc-cron MUST reject a Rust row whose `HookEnvironment` is not empty.
+16. Every snapshot map MUST contain at most 128 entries.
+17. Every environment value MUST be at most 16 KiB long.
+18. The encoded final environment block MUST be at most 32,000 UTF-8 bytes long.
+19. The error text of every limit failure MUST contain no environment value.
+20. The environment of the Python process that runs a Python row MUST equal the resolved map.
+21. For a key present in the resolved map, `Getenv` MUST return the resolved-map value.
+22. For an absent key, `Getenv` MUST return the default supplied in the call.
+23. `GetEnviron` MUST return the resolved map.
+24. Each non-environment OS call MUST be denied.
+25. The environment of each CLI adapter child MUST contain every entry of the resolved map.
+26. Value replacement MUST be applied to every controlled text.
+27. Value replacement of a controlled text MUST run before each later step of that text.
+28. Value replacement MUST leave every exempt text unchanged.
+29. The `Debug` formatting of `HookOutput` MUST omit the contents of its raw output fields.
 
 **MUST NOT statements:**
 
-- If the row deadline expires during reference resolution, hook source MUST NOT run.
-
-- CLI adapter children MUST NOT inherit the daemon environment.
-- `sc-cron` MUST NOT infer or capture the environment of an invoking caller.
-- `sc-cron` MUST NOT emit provider prose.
-- Resolved daemon values MUST NOT be persisted.
-- Resolved file values MUST NOT be persisted.
-- Resolved reference values MUST NOT be persisted.
-- `sc-cron` MUST NOT mutate the daemon process environment.
+30. The resolved map MUST NOT change after resolution finishes.
+31. If the row deadline expires during reference resolution, hook source MUST NOT run.
+32. A CLI adapter child MUST NOT receive an unmapped daemon variable.
+33. sc-cron MUST NOT take the environment of an invoking caller.
+34. sc-cron MUST NOT emit provider prose.
+35. sc-cron MUST NOT persist a resolved value.
+36. sc-cron MUST NOT change a variable of the daemon environment.
 
 ### Rationale
 
-Owner (ANC-034): "python/monty having consistent settings would be least confusing" (ANC-037): "Never capture or persist inherited host values accidentally" ADR-RUN-0016: environment variables are not uniformly secrets. Durable values such as `ATM_IDENTITY` and `ATM_TEAM` belong with a schedule. API keys may instead be daemon-wide inherited values, explicit schedule values, references resolved by an application secret provider, or values loaded from an authorized absolute `.env` file.
+ANC-034 asks for consistent Python and Monty settings, so both row kinds use one `HookEnvironment`. ANC-037 forbids accidental capture or persistence of inherited host values, so the default host is empty and resolved values stay out of storage. ADR-RUN-0016 records that environment variables are not uniformly secrets: durable values such as `ATM_IDENTITY` and `ATM_TEAM` belong with a schedule, while API keys may be daemon-wide inherited values, explicit schedule values, references resolved by an application secret provider, or values loaded from an authorized absolute dotenv file. Reference locators are non-secret registry metadata; only their resolved values remain external. Trusted Rust jobs keep their existing `Job` interface, which is why a Rust row carries no hook environment. Trusted direct callers may read the raw `HookOutput` fields. Value replacement mitigates accidental propagation only: a trusted hook can transform or exfiltrate a value, so this record sets no untrusted-code boundary. Full semantics, limits, file authorization and the release-v1 schema baseline are in ADR-RUN-0016.
+
 ### Success Criteria
+
+Every check below is a unit test in the sc-cron test suite unless it names a file. Each test drives time through a controlled clock and a controlled reference resolver.
 
 **Acceptance Criteria:**
 
-- [ ] The same environment cases produce equivalent Python and Monty results.
-- [ ] An allowed daemon value is delivered and an unlisted value is absent.
-- [ ] Two schedules set distinct identities and clearing removes a prior value.
-- [ ] Ambient canaries are absent from persisted rows without explicit set input.
-- [ ] A consumer resolver supplies a referenced value without persisting the result.
-- [ ] An authorized absolute dotenv file supplies hook values.
-- [ ] A top-level getenv reads the configured snapshot before cron_stop or cron_tick.
+- [ ] Statement 1: a unit test builds a Python row and a Monty row from one `HookEnvironment` value and reads the same value back from each.
+- [ ] Statement 2: a unit test calls each existing constructor and asserts the row's `HookEnvironment` is empty.
+- [ ] Statement 3: a unit test asserts the three lists and the resolver of the default `HookEnvironmentHost`.
+- [ ] Statements 4 to 6: inspection of the generated administrator configuration file of a generated project shows the three allowlist keys as empty arrays.
+- [ ] Statement 7: a unit test of generated scheduler composition passes a host policy with a recording resolver and asserts a `Reference` operation reaches that resolver.
+- [ ] Statement 8: a unit test with a recording resolver asserts the four fields of the resolver request.
+- [ ] Statements 9, 10 and 31: a unit test uses a resolver that does not answer, advances the controlled clock past the row deadline, and asserts the call ended, the outcome is `RunOutcome::TimedOut`, and the hook source recorded no call.
+- [ ] Statements 11, 12 and 30: a unit test records the map seen at `cron.stop` and at `cron.tick`, changes a daemon variable between the two, and asserts both maps are equal.
+- [ ] Statement 13: a unit test sets one name in a daemon variable, two dotenv files and a `Set` operation, and asserts which value wins at each step.
+- [ ] Statements 14 and 28: a unit test stores a row with a `Set` value equal to a resolved value and reads the same text back from the stored row; a second test asserts fixed codes, recovery messages and metadata that contain a resolved value are unchanged.
+- [ ] Statement 15: a unit test asserts an error for a Rust row with one `Set` operation.
+- [ ] Statements 16 to 19: unit tests at each limit and one over it assert acceptance, then the failure, and assert the error text holds none of the test's values.
+- [ ] Statement 20: a unit test runs a Python row that returns its whole environment and compares it with the resolved map.
+- [ ] Statements 21 to 24: unit tests run a Monty row that calls `Getenv` for a present key, a never-set key and a cleared key, calls `GetEnviron`, and makes one non-environment OS call.
+- [ ] Statements 25 and 32: a unit test starts each CLI adapter child with a stub program that returns its environment, with a canary variable set in the daemon environment.
+- [ ] Statements 26 and 27: unit tests feed a resolved value through Python output, Monty exception text and adapter standard error, and assert `[REDACTED_ENV]` in the failure detail and the stop reason, and a replaced value that is not cut by the byte cap.
+- [ ] Statement 29: a unit test formats a `HookOutput` with `{:?}` and asserts the raw text is absent.
+- [ ] Statement 33: a unit test sets a canary variable in the test process and asserts it is absent from the resolved map of a row run with an empty host.
+- [ ] Statement 34: a unit test uses a resolver whose `Denied` answer carries extra text and asserts that text is absent from every outcome, event, trace and persisted reason.
+- [ ] Statement 35: a unit test resolves a canary daemon value, file value and reference value, then asserts none appears in the sc-cron database.
+- [ ] Statement 36: a unit test compares the daemon environment before and after a schedule run.
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
