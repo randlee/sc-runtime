@@ -187,7 +187,7 @@ resolves the daemon's bind endpoint only through this resolver
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -225,9 +225,11 @@ and `AsRef<str>`. It does not implement `Deref`. Tests load
 - Two different application names MUST give different paths for the same user.
 - The same application name and user MUST give the same path on every call.
 - The function MUST compute the path at run time from the operating system or environment.
-- Every public function of the crate that uses an instance root (endpoint resolution in particular) MUST also accept an explicitly supplied instance root path, and MUST use that path unchanged in place of the default when it is supplied.
+- Every public function of the crate that uses an instance root (endpoint resolution in particular) MUST accept an explicitly supplied instance root path.
+
+- Every public function of the crate that uses an instance root MUST use the explicitly supplied path unchanged in place of the default when it is supplied.
 - Failure to determine the default location MUST be returned as an `Err` of the crate's error enum `TransportError`.
-- The default path MUST be built by one function inside the crate that receives the per-user base location as an input (a path, or "absent"), so that the per-user property and the failure case can be tested without changing the process environment.
+- The default path MUST be built by one function inside the crate that receives the per-user base location as an input (a path, or "absent").
 
 **MUST NOT statements:**
 
@@ -235,6 +237,8 @@ and `AsRef<str>`. It does not implement `Deref`. Tests load
 - The function MUST NOT panic.
 
 ### Rationale
+
+This input allows the per-user property and the failure case to be tested without changing the process environment.
 
 The socket and the daemon lock live in the instance root, so the directory
 is what identifies "this application's daemon for this user". Daemon and CLI
@@ -275,10 +279,12 @@ that tests run in parallel and never touch a developer's real daemon
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: UDS means Unix domain socket.
 
 In the crate's public-surface sketch these are `bind(&Endpoint) -> Result<Listener, TransportError>` and `Listener`. `Listener` is one type for both transports. `local_endpoint` returns the bound `Endpoint` (`TransportError::Bind` if the TCP address cannot be read). A TCP port of `0` is reported as the port the operating system assigned. `Listener` implements `axum::serve::Listener`.
 
@@ -298,12 +304,18 @@ returns `TransportError::UnsupportedEndpoint`
 - For a UDS endpoint the function MUST bind a Unix domain socket at the given path.
 - For a TCP endpoint the function MUST bind the given socket address.
 - When the TCP port is `0` the listener MUST let the caller read the actual bound address.
-- One process MUST be able to hold a UDS listener and a TCP listener from this same time and serve the same router on both. v0.1 `TransportConfig` describes exactly one endpoint.
+- One process MUST be able to hold a UDS listener and a TCP listener at the same time.
+
+- One process MUST be able to serve the same router on both listeners at the same time. v0.1 `TransportConfig` describes exactly one endpoint.
 - A bind failure (for example the address is in use, or the directory does not exist) MUST be returned as an `Err` of the crate's error enum `TransportError`.
 
 **MUST NOT statements:**
 
-- The router and its handlers MUST NOT need any change, type parameter or wrapper that depends on whether the listener is UDS or TCP.
+- The router and its handlers MUST NOT need any change that depends on whether the listener is UDS or TCP.
+
+- The router and its handlers MUST NOT need any type parameter that depends on whether the listener is UDS or TCP.
+
+- The router and its handlers MUST NOT need any wrapper that depends on whether the listener is UDS or TCP.
 - The function MUST NOT panic.
 - The function and the listener type MUST NOT exist in a build without the `server` feature.
 
@@ -343,7 +355,7 @@ uses this crate must not link axum.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -380,14 +392,23 @@ a socket, `bind` returns `TransportError::NotASocket`
 - After a successful bind the socket file MUST be accessible only to the operating-system user that owns the process: the file's permission bits for group and for others MUST all be zero (`mode & 0o077 == 0`).
 - Before inspecting or removing an existing UDS socket file, `bind` MUST acquire a nonblocking OS-exclusive endpoint lock at the sibling path `<socket-path>.lock`.
 - The returned `Listener` MUST retain that lock for its lifetime.
-- Once it holds the endpoint lock, `bind` MUST remove an existing stale socket file and bind the new socket at the same path.
-- Cleanup MUST remove the socket only while the same `Listener` still holds the endpoint lock.
+- If `bind` fails to acquire the endpoint lock, it MUST return an error of the `TransportError` enum.
+- Once it holds the endpoint lock, `bind` MUST remove an existing stale socket file.
+
+- Once it holds the endpoint lock, `bind` MUST bind the new socket at the same path.
+- The `Listener` MUST remove its socket during cleanup only while it still holds the endpoint lock.
 
 **MUST NOT statements:**
 
-- Failure to acquire it is a typed bind error and MUST NOT inspect, remove, or replace the socket file.
+- If `bind` fails to acquire the endpoint lock, it MUST NOT inspect the socket file.
+
+- If `bind` fails to acquire the endpoint lock, it MUST NOT remove the socket file.
+
+- If `bind` fails to acquire the endpoint lock, it MUST NOT replace the socket file.
 - It MUST NOT fail with "address in use" merely because a socket file was left by a process that no longer holds the endpoint lock.
-- It MUST NOT use a connect probe or process check to infer liveness.
+- `bind` MUST NOT use a connect probe to infer liveness.
+
+- `bind` MUST NOT use a process check to infer liveness.
 - A failed competing bind or its cleanup MUST NOT remove another listener's socket.
 
 ### Rationale
@@ -431,6 +452,8 @@ instance roots may resolve to the same overridden socket path.
 
 ### Requirement Statement
 
+Definitions: UDS means Unix domain socket.
+
 In the design sketch it is used as:
 
 ```rust
@@ -443,6 +466,8 @@ let widget: Envelope<Widget> =
 2. The UDS base URL is `http://localhost`.
 5. Deserialisation runs for every HTTP status, including non-2xx. A body that is `T` is `Ok(T)`.
 7. No method may panic; every failure is a `TransportError` value.
+
+The caller chooses `T`.
 
 The constructor signature is
 `Client::new(endpoint: Endpoint) -> Result<Client, TransportError>`.
@@ -459,18 +484,36 @@ endpoint.
 **MUST statements:**
 
 - The crate `sc-transport` MUST expose, in its default build (no cargo features), a public HTTP client type.
-- `Client::new(endpoint)` MUST take an endpoint (a UDS path or a TCP address) and nothing else.
+- `Client::new(endpoint)` MUST take only an endpoint (a UDS path or a TCP address).
 - It MUST build a `reqwest::Client` (reqwest 0.13).
 - For a UDS endpoint it MUST configure it with `reqwest::ClientBuilder::unix_socket(path)`.
 - For a TCP endpoint it MUST use the base URL `http://<ip>:<port>`.
 - `get(path)` MUST send an HTTP `GET` to `path` on that endpoint.
 - `post(path, &body)` MUST send an HTTP `POST` to `path` with `body` serialised as JSON, for any `B: serde::Serialize`.
-- Both methods MUST be `async`, MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`, and MUST return `Result<T, TransportError>`.
+- `get` MUST be `async`.
+
+- `post` MUST be `async`.
+
+- `get` MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`.
+
+- `post` MUST deserialise the JSON response body into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`.
+
+- `get` MUST return `Result<T, TransportError>`.
+
+- `post` MUST return `Result<T, TransportError>`.
 
 **MUST NOT statements:**
 
-- `Client::new` MUST NOT perform any endpoint resolution of its own: it MUST NOT read `SC_ENDPOINT`, configuration or the instance root.
-- The crate MUST NOT name or depend on any concrete response type such as `Envelope<T>`; the caller chooses `T`.
+- `Client::new` MUST NOT perform any endpoint resolution of its own.
+
+- `Client::new` MUST NOT read the process environment variable named `SC_ENDPOINT`.
+
+- `Client::new` MUST NOT read configuration (application settings such as an endpoint in a configuration file).
+
+- `Client::new` MUST NOT read the instance root (the per-application, per-user directory resolved by sc-transport or explicitly supplied).
+- The crate MUST NOT name any concrete response type such as `Envelope<T>`.
+
+- The crate MUST NOT depend on any concrete response type such as `Envelope<T>`.
 
 ### Rationale
 
@@ -511,6 +554,8 @@ the two crates must stay independent so either can be used alone
 
 ### Requirement Statement
 
+Definitions: UDS means Unix domain socket.
+
 2. `code()` returns `DAEMON.NOT_RUNNING`. The variant has no `suggested_action`, no `AppName`, no `sc_observability_types::ErrorCode`, and no `Remediation`. This crate does not name `daemon start`. a-6 maps the string to `ErrorCode` and owns `suggested_action` for every `TransportError`.
 3. Phase A's generated CLI is report-only. Deferred [REQ-RUN-0206](../requirements.md) preserves a possible later optional auto-start layer outside this transport boundary.
 4. A body that deserialises as `T` is `Ok(T)` for every HTTP status.
@@ -530,12 +575,22 @@ records the same table as the decision for `DaemonNotRunning`.
 
 - The error enum `TransportError` of the crate `sc-transport` MUST have a variant `DaemonNotRunning`.
 - The client ([REQ-TRN-0005](requirements.md): `Client::new`, `get`, `post`) MUST return `TransportError::DaemonNotRunning` from the first `get` or `post` when it cannot open a connection to the endpoint for one of these reasons: the UDS socket file does not exist; the UDS socket file exists but nothing is listening (connection refused); the TCP connection is refused.
-- `DaemonNotRunning` MUST carry `code: &'static str`, exactly `DAEMON.NOT_RUNNING`, the endpoint, and the cause.
+- `DaemonNotRunning` MUST carry `code: &'static str`.
+
+- The `DaemonNotRunning` code MUST have the exact value `DAEMON.NOT_RUNNING`.
+
+- `DaemonNotRunning` MUST carry the endpoint.
+
+- `DaemonNotRunning` MUST carry the cause.
 - A response body that cannot be deserialised into the requested type MUST produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`), which carries the HTTP status, the cause, and `body_preview` (a lossy UTF-8 prefix of at most 512 bytes of the body).
 
 **MUST NOT statements:**
 
-- The `Client` MUST NOT start the daemon, spawn any process, or retry in order to wait for a daemon.
+- The `Client` MUST NOT start the daemon.
+
+- The `Client` MUST NOT spawn any process.
+
+- The `Client` MUST NOT retry in order to wait for a daemon.
 
 ### Rationale
 
@@ -582,7 +637,7 @@ live. a-6 maps the string and chooses `suggested_action`, including any
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -598,12 +653,22 @@ and forbidden edges and refers here for the third-party list.
 **MUST statements:**
 
 - There MUST be a cargo feature named `server`.
-- `axum` MUST be declared `optional = true` and MUST be enabled only by the `server` feature.
+- `axum` MUST be declared `optional = true`.
+
+- `axum` MUST be enabled only by the `server` feature.
 - With default features the direct non-dev dependencies MUST be exactly `tokio`, `reqwest`, `serde`, and `serde_json`.
 - With the `server` feature the direct non-dev dependencies MUST be exactly those four plus `axum`.
 - All listener-binding code MUST be compiled only under `#[cfg(feature = "server")]`.
-- The crate MUST build and pass its tests both with and without the feature.
-- `just test` MUST run both `cargo test -p sc-transport` and `cargo test -p sc-transport --features server` ([REQ-RUN-0004](../requirements.md)), because `cargo test --workspace` alone builds this crate only with `server` enabled.
+- The crate MUST build with the `server` feature.
+
+- The crate MUST build without the `server` feature.
+
+- The crate MUST pass its tests with the `server` feature.
+
+- The crate MUST pass its tests without the `server` feature.
+- `just test` MUST run `cargo test -p sc-transport` ([REQ-RUN-0004](../requirements.md)).
+
+- `just test` MUST run `cargo test -p sc-transport --features server` ([REQ-RUN-0004](../requirements.md)).
 
 **MUST NOT statements:**
 
@@ -611,6 +676,8 @@ and forbidden edges and refers here for the third-party list.
 - The default build MUST NOT have `axum` anywhere in its normal dependency tree.
 
 ### Rationale
+
+`cargo test --workspace` alone builds this crate only with `server` enabled.
 
 The CLI of a generated project depends on this crate for its client, and a
 CLI binary must link none of axum, rmcp or sqlx
@@ -647,22 +714,32 @@ therefore all run with `-p sc-transport`.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
+Definitions: UDS means Unix domain socket.
+
 
 **MUST statements:**
 
-- The crate `sc-transport` MUST make every client HTTP request, over UDS and over TCP, through `reqwest` 0.13.
+- The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.
+
+- The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.
 - For UDS it MUST use `reqwest::ClientBuilder::unix_socket(path)`.
 
 **MUST NOT statements:**
 
 - The crate MUST NOT depend on `hyperlocal`.
 - It MUST NOT implement its own hyper or tower connector (for example a type implementing `tower::Service<Uri>` or hyper-util's `Connect`).
-- It MUST NOT write or parse HTTP messages on a raw `UnixStream` or `TcpStream`.
+- The crate MUST NOT write HTTP messages on a raw `UnixStream`.
+
+- The crate MUST NOT write HTTP messages on a raw `TcpStream`.
+
+- The crate MUST NOT parse HTTP messages on a raw `UnixStream`.
+
+- The crate MUST NOT parse HTTP messages on a raw `TcpStream`.
 
 ### Rationale
 
