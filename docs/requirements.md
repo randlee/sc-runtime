@@ -4070,12 +4070,12 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: The wizard is the Wyvern HTML user interface for collecting generation options. Page fields are option inputs and page lists are their choices. Generation options are the properties in wizard/answers.schema.json at the time the wizard is built.
+Definitions: The wizard is the Wyvern HTML user interface for collecting generation options. Page fields are option inputs and page lists are their choices. Generation options are the properties in `wizard/answers.schema.json` at the time the wizard is built. The path table is the table headed Path in this repository and What it is. The copied wizard is the source wizard copied from `.scaffold/wizard/` into this repository's `wizard/` directory. The copied pages are the resulting HTML files under `wizard/pages/`. Matching option inputs and choices means the page fields and their lists correspond to the options and values in `wizard/answers.schema.json` at the time the wizard is built.
 
 Wyvern is the tool that shows a wizard's HTML pages and prints the collected data as JSON on stdout when the person finishes. The wizard consists of:
 
@@ -4097,10 +4097,13 @@ the wizard's files only (criterion 5).
 
 **MUST statements:**
 
-- The repository MUST contain a Wyvern wizard that collects the generation options from a person.
-- The wizard MUST be made by copying the working wizard of the private repository `Radiant-Vision-Systems/p3-nuget-template` (read at commit `9ef4d03`) and editing it.
-- The edit MUST change the fields and lists on the pages so that they match the options defined in `wizard/answers.schema.json` as that schema stands when the wizard is built.
-- The wizard MUST offer an input for every option in the schema.
+- The repository MUST contain the Wyvern wizard files listed in the path table.
+- The wizard MUST collect a person's generation-option choices through its HTML interface.
+- The wizard under `wizard/` MUST originate from copies of the listed `.scaffold/wizard/` files read from `Radiant-Vision-Systems/p3-nuget-template` at commit `9ef4d03`.
+- The copied wizard MUST be edited to produce this repository's wizard.
+- When the wizard is built, the option-input fields in `wizard/pages/*.html` MUST match the generation options defined in `wizard/answers.schema.json`.
+- The copied pages' option-choice lists MUST match the corresponding choices defined in `wizard/answers.schema.json` when the wizard is built.
+- The wizard MUST provide a user input for every generation option defined in `wizard/answers.schema.json`.
 
 **MUST NOT statements:**
 
