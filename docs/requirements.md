@@ -1978,15 +1978,16 @@ Liquid syntax intended for cargo-generate is markup that `cargo-generate` substi
 `exclude` is the list in `template/cargo-generate.toml` whose files `cargo-generate` copies byte-for-byte without Liquid rendering, as [ADR-RUN-0402](architecture.md) records.
 The driver is the generation script `scripts/new_project.py` that `just new` runs.
 `<dest>` is the destination directory of a driver run, into which `cargo generate` writes the generated project.
-A driver test is a test in `tests/integration/generation/test_driver.py` that runs the driver.
-A stub sc-compose is an executable that a driver test names in the `SC_COMPOSE` environment variable so that the driver runs it in place of sc-compose.
 The answers JSON is the answers file that the driver passes to `cargo generate`.
 JSON means JavaScript Object Notation.
 ADR means architecture decision record.
 The wait call is the call in `scripts/new_project.py` that waits for the `cargo generate` process to exit.
 A step is one external command that the driver runs, such as `cargo generate` or `sc-compose render`.
 The failed step is the step whose command exited with a non-zero status.
-An argument pair is the options `--file <input> --output <output>` on one `sc-compose render` command line, which together name one template to render and the file to write.
+An `sc-compose` step is a step that runs the executable named by the `SC_COMPOSE` environment variable, or the `sc-compose` found on `PATH` when `SC_COMPOSE` is unset.
+An `sc-compose` step renders a template into a file when that step writes the result of rendering that template to that file.
+`widget-app` is the `project_name` value in `wizard/fixtures/sqlite-mcp.json`.
+The exact `sc-compose` command line, including how the answers JSON and the input and output paths are passed, is not decided by this record.
 The driver reports a step as the failed step by naming that step in the driver's standard error output.
 This record owns the driver's sc-compose step, the failure behaviour of that step and the removal of the `.j2` files.
 
@@ -2001,11 +2002,12 @@ This record owns the driver's sc-compose step, the failure behaviour of that ste
 - The `exclude` list in `template/cargo-generate.toml` MUST contain `AGENTS.md.j2`.
 - The `exclude` list in `template/cargo-generate.toml` MUST contain `CLAUDE.md.j2`.
 - In `scripts/new_project.py`, the wait call MUST appear before every `sc-compose render` call.
-- In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/AGENTS.md.j2 --output <dest>/AGENTS.md`.
-- In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/CLAUDE.md.j2 --output <dest>/CLAUDE.md`.
-- In `scripts/new_project.py`, every `sc-compose render` command line MUST pass the answers JSON as `--var-file`.
-- In a driver test whose stub sc-compose exits with status 1, the driver MUST exit with a non-zero status.
-- In a driver test whose stub sc-compose exits with status 1, the failed step that the driver reports MUST be `sc-compose`.
+- An `sc-compose` step of the driver MUST render `<dest>/AGENTS.md.j2` into `<dest>/AGENTS.md`.
+- An `sc-compose` step of the driver MUST render `<dest>/CLAUDE.md.j2` into `<dest>/CLAUDE.md`.
+- After `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits with status 0, `<dest>/AGENTS.md` MUST contain `widget-app`.
+- After `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits with status 0, `<dest>/CLAUDE.md` MUST contain `widget-app`.
+- If an `sc-compose` step exits with a non-zero status, the driver MUST exit with a non-zero status.
+- If an `sc-compose` step exits with a non-zero status, the failed step that the driver reports MUST be `sc-compose`.
 
 **MUST NOT statements:**
 
@@ -2025,13 +2027,24 @@ each tool does the job it is built for and no render engine is written here.
 
 1. `template/cargo-generate.toml` lists `AGENTS.md.j2` and `CLAUDE.md.j2`
    under `exclude`.
-2. After `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`,
-   `<dest>/AGENTS.md` and `<dest>/CLAUDE.md` exist and are non-empty.
+2. Checks the two render statements and the two `widget-app` statements by
+   a command run: run `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`
+   with the real `sc-compose`; after it exits with status 0, the files
+   `<dest>/AGENTS.md` and `<dest>/CLAUDE.md` exist and each contains
+   `widget-app`, the fixture's `project_name` value. `cargo generate` copies
+   the two `.j2` files without rendering them (they are in `exclude`), so
+   `widget-app` in those files shows that an `sc-compose` step rendered them.
 3. In the same `<dest>`, `find . -name '*.j2'` prints nothing.
 4. In the same `<dest>`, `grep -n '{{\|{%' AGENTS.md CLAUDE.md` prints
    nothing, showing no unrendered template syntax remains.
-5. A driver test with a stub `sc-compose` that exits 1 asserts the driver
-   exits non-zero and its error output names `sc-compose`.
+5. Checks the two `sc-compose` failure statements: the `sc-compose` case of
+   `test_each_pipeline_step_failure_stops` in
+   `tests/integration/generation/test_driver.py` places an `sc-compose`
+   executable that exits with status 1 on the driver's `PATH`, runs the
+   driver, and asserts that the driver exits with a non-zero status and that
+   its standard error output is the single line
+   `GEN.STEP_FAILED step is sc-compose — <recovery>`, which names
+   `sc-compose` as the failed step.
 ### Implementation Notes
 
 **Key Considerations:**
