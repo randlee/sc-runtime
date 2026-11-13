@@ -490,6 +490,7 @@ Definitions:
 - The crate-private trigger is the internal shutdown notification, visible only inside `sc-runtime`, that `testing::DaemonFixture` uses to stop its own daemon without a process signal ([REQ-RT-0006](requirements.md)).
 - An in-flight request is a request that the listener accepted before graceful shutdown began and whose response is not yet sent.
 - Graceful shutdown is the sequence of steps that the MUST statements below impose on `run()` after a shutdown request.
+- SIGINT is the Unix interrupt signal, and SIGTERM is the Unix termination signal.
 - The request-handler timeout is the `REQUEST_TIMEOUT` constant in `crates/sc-runtime/src/router.rs`.
 - The drain timeout is the `DRAIN_TIMEOUT` constant in `crates/sc-runtime/src/shutdown.rs`.
 - The 503 error envelope is the existing HTTP 503 response whose JSON body carries a stable error code.
@@ -508,21 +509,21 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 
 - While serving, `run()` MUST begin graceful shutdown when the process receives SIGINT.
 - While serving, `run()` MUST begin graceful shutdown when the process receives SIGTERM.
-- On Windows, while serving, `run()` MUST begin graceful shutdown on a `CTRL_C_EVENT` console control event.
-- On Windows, while serving, `run()` MUST begin graceful shutdown on a `CTRL_BREAK_EVENT` console control event.
-- On Windows, in the source of `run()`, the call that registers the Ctrl-C console handler MUST precede the call that takes the instance lock.
-- On Windows, in the source of `run()`, the call that registers the Ctrl-Break console handler MUST precede the call that takes the instance lock.
-- On Windows, when Ctrl-C reaches the console handler of `run()` between console handler registration and the start of serving, `run()` MUST return `Ok(())`.
-- On Windows, when Ctrl-Break reaches the console handler of `run()` between console handler registration and the start of serving, `run()` MUST return `Ok(())`.
+- On Windows, while serving, `run()` MUST begin graceful shutdown when the process receives Ctrl-C.
+- On Windows, while serving, `run()` MUST begin graceful shutdown when the process receives Ctrl-Break.
+- When `run()` is compiled for Windows, the call that registers the Ctrl-C console handler MUST come before the call that takes the instance lock in the source of `run()`.
+- When `run()` is compiled for Windows, the call that registers the Ctrl-Break console handler MUST come before the call that takes the instance lock in the source of `run()`.
+- When the Windows process receives Ctrl-C after `run()` starts listening for Ctrl-C and before serving starts, `run()` MUST return `Ok(())`.
+- When the Windows process receives Ctrl-Break after `run()` starts listening for Ctrl-Break and before serving starts, `run()` MUST return `Ok(())`.
 - `run()` MUST begin graceful shutdown when the crate-private trigger fires.
 - After graceful shutdown begins, the listener MUST refuse each new connection attempt.
 - When the handler of an in-flight request finishes within the drain timeout, the client MUST receive the complete response of the handler.
 - While an in-flight request has no response, `run()` MUST keep serving the in-flight request on the listener.
-- Before the call that releases the endpoint lock, the source of `run()` MUST remove the socket file.
-- For a Unix domain socket endpoint, `run()` MUST remove the socket file before `run()` returns.
+- The source of `run()` MUST place the call that removes the socket file before the call that releases the endpoint lock.
+- For a Unix domain socket endpoint, the socket file MUST no longer exist when `run()` returns.
 - After the call that stops serving on the listener, the source of `run_with_cleanup` MUST call the cleanup callback.
-- When a startup error occurs, `run_with_cleanup` MUST run the cleanup callback.
-- Before the call to the cleanup callback, the source of `run_with_cleanup` MUST drop every startup closure that `run_with_cleanup` did not call.
+- When a startup error occurs, the cleanup callback passed to `run_with_cleanup` MUST run.
+- When a startup closure is not called, the source of `run_with_cleanup` MUST drop that startup closure before the call to the cleanup callback.
 - While the cleanup callback of `run_with_cleanup` runs, `run()` of a second daemon on the same instance root MUST return `RuntimeError::LockHeld`.
 - After cleanup completion, the source of `run_with_cleanup` MUST drop the `Stores` value that the stores closure returned.
 - After the call that releases the endpoint lock, the source of `run()` MUST release the instance lock.
@@ -534,8 +535,8 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - The drain timeout MUST equal 30 seconds.
 - When a handler runs longer than the request-handler timeout, `sc-runtime` MUST answer the request with the `RUNTIME.REQUEST_TIMEOUT` 503 error envelope.
 - When an in-flight request's handler runs past the drain timeout, `run()` MUST answer the in-flight request with the 503 error envelope whose code is `RUNTIME.DRAIN_TIMEOUT`.
-- The request-handler timeout branch in the source of the request-timeout middleware MUST drop the handler future.
-- The drain timeout branch in the source of the request-timeout middleware MUST drop the handler future.
+- In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the request-handler timeout expires MUST drop the handler future.
+- In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the drain timeout expires MUST drop the handler future.
 - When the drain timeout expires during graceful shutdown, `run()` MUST return `Ok(())`.
 - For a Unix domain socket endpoint, after `run()` returns, the endpoint-lock file MUST still exist.
 - Every call site of `run()` MUST await the future returned by `run()` to completion.
