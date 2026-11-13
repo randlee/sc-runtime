@@ -3170,13 +3170,13 @@ A cache moves rows between the two stores. Store-to-store cache sync inside the 
 
 ### Requirement Statement
 
-Definitions: The sc-runtime crates are the framework library crates in the `crates/` directory of this repository. A store is one database: one SQLite database file, or one Postgres or MySQL database. Reading or writing a store means issuing SQL (Structured Query Language) to that database through a client library such as sqlx or the `sc-runtime-db-sqlite` writer. A row is one record of a database table. A function, method or closure moves rows between stores when it reads rows from one store and writes those rows, changed or unchanged, to another store. A consumer repository is an application project using the framework. The store adaptor is the `store-adaptor` crate in `template/crates/` that is generated into a consumer repository, outside the sc-runtime crates.
+Definitions: sc-runtime is the framework repository `randlee/sc-runtime`. The sc-runtime crates are the framework library crates in its top-level `crates/` directory. A store is one database: one SQLite database file, or one Postgres or MySQL database; connections to the same database are the same store. Reading or writing a store means issuing SQL (Structured Query Language) to that database through any client library or driver, including sqlx and the `sc-runtime-db-sqlite` writer. A row is one record of a database table. A function, method or closure moves rows between stores when it reads rows from one store and writes those rows, changed or unchanged, to another store, either in its own body or through the functions it calls. A consumer repository is an application project using the framework. The store adaptor is the `store-adaptor` crate in `template/crates/` that is generated into a consumer repository, outside the sc-runtime crates.
 
 Deferral: Synchronization between databases is deferred. This record does not apply to Phase D and creates no implementation or validation obligation until reopened.
 
 **MUST NOT statements:**
 
-- Files in the `crates/` directory MUST NOT contain a function, method or closure that moves rows between stores.
+- Files under the top-level `crates/` directory of the `randlee/sc-runtime` repository MUST NOT contain a function, method or closure that moves rows between stores.
 
 ### Rationale
 
