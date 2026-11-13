@@ -351,12 +351,19 @@ Source: decided in this document; applies repo [ADR-RUN-0003](../architecture.md
 
 ### Context
 
+The problem: which crate names the response type of a transport call, and
+which crate maps a transport failure to an `OpError`?
+
 Two facts pull `sc-transport` toward knowing the types of the crate
 `sc-command`. First, the CLI example in the sc-runtime design receives an
 `Envelope<Widget>` from `client.post(...)`, and `Envelope<T>` is defined in
 `sc-command`. Second, `DAEMON.NOT_RUNNING` is an error code in the sc-ai-cli
 error convention, whose error type `OpError` is also defined in
 `sc-command`.
+
+One rule pulls the other way. `sc-config`, `sc-transport` and `sc-command`
+are standalone crates with no dependency edges among them, so each can be
+published and used alone ([ADR-RUN-0003](../architecture.md)).
 
 ### Decision
 
@@ -389,11 +396,10 @@ where the mapping lives.
 
 ### Rationale
 
-But the repository rule is that `sc-config`, `sc-transport`
-and `sc-command` are standalone crates with no dependency edges among them,
-so each can be published and used alone
-([ADR-RUN-0003](../architecture.md)). A dependency from `sc-transport` on
-`sc-command` would break that rule.
+A dependency from `sc-transport` on `sc-command` would break the
+standalone-crate rule of [ADR-RUN-0003](../architecture.md). Making the
+response type generic and leaving the `OpError` mapping to the caller meets
+both facts in Context without that dependency.
 
 ### Consequences
 
