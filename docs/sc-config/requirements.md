@@ -441,7 +441,7 @@ file names `config/default.json` and `config/local.json`.
 
 ### Requirement Statement
 
-Definitions: The failure table is the table of five load failures in this requirement. Failure N is row N of the failure table. A failure's data is the entry in that row's third column. The five failure variants are `MissingDefault`, `Read`, `Parse`, `Override` and `Deserialize`, for failures 1 to 5 in that order.
+Definitions: The failure table is the table of five load failures in this requirement. Failure N is row N of the failure table. A failure's data is the set of values named in that row's third column. The five failure variants are `MissingDefault`, `Read`, `Parse`, `Override` and `Deserialize`, for failures 1 to 5 in that order. A trait implementation for `ConfigError` is a `#[derive]` of the trait on `ConfigError` or an `impl` block of the trait for `ConfigError` in `crates/sc-config/src/error.rs`.
 
 This item covers the public error enum `ConfigError` of the `sc-config` crate
 (`crates/sc-config`). It is the error type of `load` and of `Loader::load`.
@@ -470,13 +470,13 @@ and recovery steps are the error inventory in
 **MUST statements:**
 
 - `ConfigError` MUST have one distinct variant for each of the five failures of the failure table.
-- Each of the five failure variants MUST carry its failure's data as typed fields of the variant.
+- Each of the five failure variants MUST carry its failure's data as typed fields.
 - A `local.json` that exists but cannot be read MUST produce failure 2.
 - Failure 1 MUST produce the variant `MissingDefault`.
 - Every I/O error on `default.json` or `local.json` other than failure 1 MUST produce the variant `Read`.
-- `ConfigError` MUST implement `std::fmt::Debug`.
-- `ConfigError` MUST implement `std::fmt::Display`.
-- `ConfigError` MUST implement `std::error::Error`.
+- `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::fmt::Debug` for `ConfigError`.
+- `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::fmt::Display` for `ConfigError`.
+- `crates/sc-config/src/error.rs` MUST contain a trait implementation of `std::error::Error` for `ConfigError`.
 - The `Display` text of a variant that carries a file path MUST contain that path.
 - The `Display` text of a variant that carries a variable name MUST contain that name.
 - The `Display` text of the `Parse` variant MUST contain its line number.
