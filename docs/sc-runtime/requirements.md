@@ -863,7 +863,7 @@ payload lets the caller print the failure detail.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `DaemonBuilder`, the type that `Daemon::builder` returns. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. Code is feature-gated when a `#[cfg(...)]` or `#[cfg_attr(...)]` attribute that names a Cargo feature guards it. The daemon is the process that calls `run()`. To bind an endpoint is to listen on it for connections. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources. Calling an `sc-transport` function is not endpoint logic.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `DaemonBuilder`, the type that `Daemon::builder` returns. The Phase D `DaemonBuilder` is `DaemonBuilder` as delivered by Phase D of the plan in `docs/plans/phase-d/phase-d-plan.md`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. Code is feature-gated when a `#[cfg(...)]` or `#[cfg_attr(...)]` attribute that names a Cargo feature guards it. The daemon is the process that calls `run()`. To bind an endpoint is to listen on it for connections. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources. Calling an `sc-transport` function is not endpoint logic.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that
@@ -928,7 +928,9 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - `sc-runtime` MUST NOT choose a default port.
 - `sc-runtime` MUST NOT parse an endpoint string.
 - `sc-runtime` MUST NOT apply a precedence between endpoint sources.
-- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the `--endpoint` flag value, the configured endpoint or the explicit instance root.
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the `--endpoint` flag value (`DaemonConfig.endpoint_flag`).
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the configured endpoint (`DaemonConfig.transport.endpoint`).
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the explicit instance root (`DaemonConfig.transport.instance_root`).
 - `sc-runtime` MUST NOT parse the command line.
 - The `serde::Deserialize` implementation for `TransportConfig` MUST NOT be feature-gated.
 

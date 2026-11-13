@@ -227,7 +227,7 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST provide a README.
 - Each public crate's README MUST contain a Rust usage example.
 - Each public crate's README Rust usage example MUST compile as a doctest.
-- Each public crate's README Rust usage example MUST use no other crate of the public package set, except the workspace crates that REQ-RUN-0005 lists as that crate's dependencies.
+- Each public crate's README Rust usage example MUST use no other crate of the Phase D public package set, except the crates that the "Workspace crates it depends on" column of REQ-RUN-0005's crate graph table lists for that crate.
 - Each public crate's `name` in `cargo metadata --no-deps` output MUST equal that crate's name in the public package set.
 - Each public crate's `version` in `cargo metadata --no-deps` output MUST equal the version the public package set is released together at.
 - Each public crate's `description` in `cargo metadata --no-deps` output MUST state what that crate provides.
@@ -2890,7 +2890,7 @@ This Draft record is deferred and does not apply to Phase D. It creates no imple
 **MUST statements:**
 
 - When Postgres is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one Postgres database that aggregates many hosts.
-- When MySQL is the layout's one sqlx engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one MySQL database that aggregates many hosts.
+- When MySQL is the remote engine, the host-aggregate adaptor MUST pair one SQLite database for the host with one MySQL database that aggregates many hosts.
 
 ### Rationale
 
@@ -5100,7 +5100,7 @@ Recorded exception: a signature dictated by a third-party trait or macro keeps t
 
 **MUST statements:**
 
-- Unless a third-party trait or macro signature, the shared `Storage<T>` contract or the `sc-command` `OpError` contract of REQ-CRNC-0001 fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
+- Unless a third-party trait or macro signature, the shared `Storage<T>` contract or the `sc-command` `OpError` contract of REQ-CRNC-0001 dictates the error type that the public function returns, each public function that can return a crate-originated error MUST return its crate result type.
 - Each covered crate MUST define at most one public error enum.
 - When a service function returns an error, the stdout of the CLI command run with `--json` for the operation that the service function implements MUST be an OpError envelope.
 - When a service function returns an error, the content of the `CallToolResult` returned by the MCP tool that called it MUST be an OpError envelope.
