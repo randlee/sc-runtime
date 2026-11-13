@@ -2947,12 +2947,16 @@ Leaving the pairing for each consumer to invent was rejected: a common pattern h
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Each database engine's SQL is in that engine's store crate.
+Definitions: A store crate is the generated package for one database engine, such as `store-sqlite` or `store-postgres` (REQ-RUN-0326).
+
+**MUST statements:**
+
+- Each database engine's SQL MUST reside in that engine's store crate.
 ### Rationale
 
 A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL string executed on both SQLite and Postgres was rejected: each engine has its own SQL (ADR-RUN-0305). The framework has no portable query layer (framework charter).
@@ -3053,14 +3057,16 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+Definitions: A database layout is the selected set of stores listed in the table below. `sqlx` is the SQL crate used by the Postgres and MySQL stores. `Storage<T>` is the shared storage trait from PRD-STO-2. The SQLite writer is the atm-core writer from PRD-STO-3. A store crate is the generated package for one database engine.
 
-Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core writer (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
+The table below lists the supported database layouts and their store crates.
+
+Amended 2026-11-11. The layouts are:
 
 | Layout | Stores |
 |---|---|
@@ -3071,9 +3077,26 @@ Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the atm-core wr
 | SQLite and Postgres | `store-sqlite` and `store-postgres` |
 | SQLite and MySQL | `store-sqlite` and `store-mysql` |
 
-A layout renders the stores in its row. Synchronization and adaptor generation are deferred (PRD §9); a two-store layout does not require an adaptor. Existing adaptor code remains as interim code, not a new implementation or deletion obligation. A layout with no database renders no store crate.
+Phase b's existing pairing/adaptor code is historical implementation, retained as interim code.
 
-Phase b's existing pairing/adaptor code is historical implementation, retained as interim code. The target supports all six database layouts without requiring synchronization or a new adaptor.
+**MUST statements:**
+
+- A new application MUST support the no-database layout.
+- A new application MUST support the SQLite-only layout.
+- A new application MUST support the Postgres-only layout.
+- A new application MUST support the MySQL-only layout.
+- A new application MUST support the SQLite-and-Postgres layout.
+- A new application MUST support the SQLite-and-MySQL layout.
+- Each generated layout MUST render the stores listed in its table row.
+- A layout with no database MUST render no store crate.
+- Postgres stores MUST use sqlx.
+- MySQL stores MUST use sqlx.
+- The SQLite store MUST use the atm-core writer (PRD-STO-3).
+- Every store MUST implement `Storage<T>` (PRD-STO-2).
+
+**MUST NOT statements:**
+
+- Generation MUST NOT require synchronization or adaptor generation for a two-store layout (PRD §9).
 ### Rationale
 
 sc-runtime is a set of crates and a template for deploying a new application that can use its database immediately (phase-b intent).
@@ -3111,12 +3134,18 @@ One SQL string executed on both engines was rejected: each engine has its own SQ
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Every store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.
+Definitions: `Storage<T>` is the shared storage trait from PRD-STO-2. A store is the database-specific package in a generated application layout.
+
+Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.
+
+**MUST statements:**
+
+- Every store in an application MUST implement the same `Storage<T>` trait.
 ### Rationale
 
 One SQL string executed on both engines was rejected: each engine has its own SQL, and a shared trait, or a different trait per engine, is allowed (ADR-RUN-0305). Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
@@ -3129,12 +3158,19 @@ One SQL string executed on both engines was rejected: each engine has its own SQ
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-A generated crate's package name is the project name, a hyphen, and its role. Every generated package that is published uses that prefix. `<project>-types` is the non-database types crate. `<project>-schema` is the schema crate.
+Definitions: The project name is the non-empty string in the generation answers (REQ-RUN-0401). A role is the package suffix identifying a generated crate's purpose. The non-database types crate holds non-database types; the schema crate holds row types.
+
+**MUST statements:**
+
+- A generated crate package name MUST be the project name, a hyphen, and its role.
+- Every generated package that is published MUST use the project-name prefix.
+- The package `<project>-types` MUST be the non-database types crate.
+- The package `<project>-schema` MUST be the schema crate.
 ### Rationale
 
 Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
@@ -3147,14 +3183,20 @@ Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Row type structs are in the schema crate. The types crate is for non-database types.
+Definitions: A row type struct is a Rust struct for a database row. The schema crate is the generated crate that defines row type structs. The types crate is the generated crate for non-database types. A database engine is SQLite, Postgres, or MySQL (REQ-RUN-0326). A store crate is the engine-specific generated package named in the database layout table (REQ-RUN-0326). The `<project>-schema` package is the schema crate named from the generated project name and the `schema` role (REQ-RUN-0329). An adaptor is consumer code that uses the schema crate (REQ-RUN-0322).
 
-The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+**MUST statements:**
+
+- Row type structs MUST reside in the schema crate.
+- The types crate MUST serve as the crate for non-database types.
+- The adaptor MUST depend on `<project>-schema`.
+- Each store crate MUST contain SQL for its database engine.
+- Each store crate's SQL MUST be generated from the schema crate.
 ### Rationale
 
 Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the consumer repository.
@@ -3169,14 +3211,24 @@ Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. A consumer is an application generated from the template. A backend operation is the service operation called by a generated command. A database layout is the selected set of stores for a generated application (REQ-RUN-0326).
 
-A layout with no database renders none of these commands.
+**MUST statements:**
+
+- The template MUST expose general database commands through the CLI.
+- The template MUST expose general database commands through MCP.
+- The template MUST expose general database commands through HTTP.
+- The general database command surface MUST include `delete row <table> <id>`.
+- A consumer MUST be able to disable the general database command surface.
+- An application command MUST call the same backend operation through its CLI command.
+- An application command MUST call the same backend operation through its MCP tool.
+- An application command MUST call the same backend operation through its HTTP route.
+- A layout with no database MUST render none of these commands.
 ### Rationale
 
 General database commands are the bootstrap. The consumer disables that public surface and adds application commands that call the same backend operations (phase-b intent).
@@ -3191,21 +3243,29 @@ General database commands are the bootstrap. The consumer disables that public s
 **Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Phase C target, planned: generation defaults `cron_commands` to false. When
-explicitly selected with cron enabled, the generated application wires the
-same standard start/end/list DTO/handler into its CLI and HTTP and, only when
-MCP is selected, MCP. REQ-CRNC-0001/0002 governs JSON, errors and existing
-Rust/Python/Monty options. Feature-off core and generated builds gain no
-scheduler/server dependency from DTO use. This amends REQ-RUN-0301's optional
-cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-only
-example or DTO library does not satisfy selected generation. REQ-RUN-0702's
-shared public release includes the optional new adapter. CLI clients remain
-free of cron/server implementation under NFR-RUN-0001.
+Definitions: DTO means Data Transfer Object. `cron_commands` is the generation option for standard cron commands. The feature-off core is the build with the cron feature disabled. MCP means Model Context Protocol. The shared public release is the coordinated 0.3.0 release of the nine public packages (REQ-RUN-0002). The optional adapter is the `sc-cron-commands` package in that release.
+
+This requirement covers the selected optional standard cron command surface and its generation defaults. REQ-CRNC-0001 and REQ-CRNC-0002 govern JSON, error behavior, and the existing Rust/Python/Monty options. This amends REQ-RUN-0301's optional cron composition and the schema/fixture key set in REQ-RUN-0401/0402/0403.
+
+**MUST statements:**
+
+- Generation MUST default `cron_commands` to `false`.
+- When `cron_commands` is selected and cron is enabled, the generated application MUST wire the shared standard start/end/list DTO and handler into its CLI.
+- When `cron_commands` is selected and cron is enabled, the generated application MUST wire the same standard start/end/list DTO and handler into HTTP.
+- When `cron_commands` is selected and cron is enabled and MCP is selected, the generated application MUST wire the same standard start/end/list DTO and handler into MCP.
+- The shared public release MUST include the optional new adapter.
+
+**MUST NOT statements:**
+
+- When MCP is not selected, the generated application MUST NOT wire the standard cron command into MCP.
+- Feature-off core and generated builds MUST NOT gain a scheduler or server dependency from DTO use.
+- A docs-only example or DTO library MUST NOT satisfy selected generation of cron commands.
+- CLI clients MUST NOT contain cron or server implementation (NFR-RUN-0001).
 ### Rationale
 
 Owner (ANC-014): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." Phase C objective 4: default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.

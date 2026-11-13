@@ -387,7 +387,8 @@ This rule is decided in this document; the design specifies that the conversion 
 **MUST NOT statements:**
 
 - It MUST NOT panic ([NFR-CMD-0003](requirements.md)).
-- When the `server` feature is disabled this implementation MUST NOT exist and the crate MUST NOT reference axum.
+- When the `server` feature is disabled this implementation MUST NOT exist.
+- When the `server` feature is disabled the crate MUST NOT reference axum.
 
 ### Rationale
 
@@ -538,7 +539,7 @@ into `Envelope<serde_json::Value>`.
 - This MUST hold for `T = serde_json::Value` with arbitrary JSON inside `data`, including fields the CLI has no struct for.
 - This MUST hold for arbitrary JSON inside `error.details`, whatever `T` is.
 - `details` is the structured-context field of `OpError` ([REQ-CMD-0002](requirements.md)); its type MUST therefore preserve arbitrary JSON.
-- A key whose value is `null` in the input (`error` in the success case, `data` in the failure case) MUST be present with the value `null` in the output; it MUST NOT be dropped.
+- For a key whose value is `null` in the input (`error` in the success case, `data` in the failure case), the output MUST contain that key with the value `null`.
 - The `version` value in the output MUST be the value read from the input, not the version constant of the `sc-command` build doing the printing.
 
 ### Rationale
