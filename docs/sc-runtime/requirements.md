@@ -1131,7 +1131,7 @@ lets the project report a config error before anything else starts.
 
 The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
 
-Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is a file that holds project configuration, such as `config/default.json` or `config/local.json`, which `sc_config::load` reads.
+Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is any file whose contents supply configuration values to the daemon, including `config/default.json` and `config/local.json`, which `sc_config::load` reads. Reading a file means obtaining its contents, at run time or at build time. The source files under `crates/sc-runtime/src` are the `.rs` files in that directory and its subdirectories. The direct dependency set of `sc-runtime` is the set of crate names that `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` prints, one per line before the version, without `sc-runtime` itself.
 
 Allowed dependencies table:
 
@@ -1166,7 +1166,7 @@ REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace li
 
 **MUST statements:**
 
-- The set of first words of the lines of the output of `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`, excluding the word `sc-runtime`, MUST equal the set of crates named in the Allowed dependencies table.
+- The direct dependency set of `sc-runtime` MUST equal the set of crates named in the Allowed dependencies table.
 
 **MUST NOT statements:**
 
