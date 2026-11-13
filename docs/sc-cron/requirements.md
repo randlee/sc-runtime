@@ -127,75 +127,75 @@ The beads-cache expression parser refused a five-field string; a normal crontab 
 
 ### Requirement Statement
 
-Definitions: Monty is the Pydantic Python interpreter. sc-monty is the standalone Rust crate owning that interpreter implementation. bd-cache, also called beads-cache, is the consumer application providing a local SQLite read/write cache in front of the Beads bd CLI; its application-specific cache fields are outside the scheduler hook protocol. ATM means agent-team-mail. MCP means Model Context Protocol. A domain transaction is the existing scheduler lifecycle storage transaction, as distinct from a user command calling storage_read or storage_write.
+Definitions: Monty is the Pydantic Python interpreter. sc-monty is the Rust crate owning the Monty interpreter implementation. Interpreter extraction is the move of the Monty interpreter implementation from sc-cron into sc-monty. A Monty interpreter call is a call that compiles Monty source or runs or resumes a Monty session. A Monty interpreter host is code that compiles Monty source, runs or resumes a Monty session, enforces Monty limits, or dumps and loads Monty sessions. A cron host adapter is an sc-cron function converting between JSON values and Monty values for a host-function call. A thin value-level adapter is a cron host adapter that converts values and calls sc-monty without being a Monty interpreter host. Cron capability behavior is the values, error codes and run outcomes cron host adapters produce for a hook source and input. Weakening an assertion means deleting the assertion, removing a checked condition, widening an expected value, range or tolerance, or loosening an exact comparison. A `Job` is an in-process Rust implementation of sc-cron's `Job` trait. Beads is the bd issue tracker. An HTTP route is a URL path bound to a handler in an HTTP server. A consumer-specific field is a field that exists only to serve one consumer application. bd-cache (beads-cache) is a consumer application caching the Beads bd CLI in SQLite. ATM means agent-team-mail. MCP means Model Context Protocol. CLI means command-line interface. argv is the ordered argument list a child process receives, starting with the executable path. The hook object is the `sc-cron.hook.v1` JSON object with fields `protocol`, `event`, `schedule`, `payload` and `deadline`. A run outcome is the `RunOutcome` stored in a schedule row's `last_outcome` column. A run outcome records error code X when the run outcome is `Failed` with detail beginning with X. A custom handler is an application-supplied `MontyHostHandler`. A reserved host name is `__hook`, `cron_stop` or `cron_tick`. A valid host-name identifier is an ASCII letter or underscore followed by ASCII letters, digits or underscores. Bridge argument conversion converts a Monty host-function call's arguments to JSON. A CLI adapter is the opt-in `sc_compose_run` or `atm_run` host function. The CLI adapter call shape is one non-empty command/subcommand string plus an optional list of strings, with no keyword arguments. The configured executable and configured working directory are the program path and working directory in `ScComposeHostConfig` or `AtmHostConfig`. The resolved environment snapshot is the environment sc-cron resolves from a schedule's hook environment under ADR-RUN-0016. The expected argv of a CLI adapter call is the configured executable followed by the call's command/subcommand string and the call's string arguments in call order. A CronStorage operation is a method of sc-cron's `CronStorage` facade, which enforces sc-cron schedule policy. A configured value is a non-empty environment-variable value in the resolved environment snapshot. `MAX_HOOK_OUTPUT_BYTES` is sc-cron's per-stream child output capture limit. The CLI result object is the JSON object whose keys `stdout`, `stderr` and `exit_code` hold the child's captured standard output, standard error and exit code. The storage action of a command is the closure the command passes to `storage_write`. The blocking child driver is the synchronous child runner in `crates/sc-cron/src/monty_compose.rs`. The row deadline is the deadline of one schedule run, from the row's timeout. Process-group termination kills every process in the child's process group. The feed thread is the blocking thread running a Monty session. `drive_feed` is the production Monty resume loop in `crates/sc-cron/src/monty_run.rs`. User cron.start, cron.end and cron.list are the commands of those names in `crates/sc-cron-commands/src`. The application transform is the `Transform` the embedding application supplies to cron.start. A domain transaction is the existing scheduler lifecycle storage transaction, as distinct from a user command calling `storage_read` or `storage_write`. An internal scheduler lifecycle operation is a storage operation sc-cron performs for scheduling rather than for a user command.
 
-All Monty execution calls sc-monty. Retain the existing cron host adapters, capability behavior and unit/integration assertions as thin value-level adapters, not another interpreter host. A schedule supplies Monty or Python source plus JSON data, which the embedding application can enrich in the shared cron.start transform before persistence. cron.start and cron.end use storage_write with policy-checked CronStorage actions; cron.list uses storage_read. Internal scheduler lifecycle operations retain domain transactions because they are not user commands.
+sc-cron schedules application-defined jobs; the consumer owns its API and schedule limits. `MontyHostRegistry` is immutable. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` (validated `MontyHostName`, positional and keyword JSON arguments, schedule name, hook phase, row deadline) and returns `Result<serde_json::Value, CronError>`; matching closures are supported. `MontyHostName::new` validates and `as_str()` borrows; registry keys use `MontyHostName` while registration accepts strings. Hook source cannot install or replace handlers. Private typed dispatch preserves supplied-adapter errors without parsing custom error text. The deadline check cannot preempt application code.
 
-sc-cron is a general-purpose scheduler for application-defined jobs. A schedule row names an in-process `Job`, a Python module, or `Monty { source }` under optional feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`. It has no consumer-specific beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. The consumer owns that API and configures schedule limits; sc-cron does not read sc-config.
+Executable defaults are `sc-compose` and `atm`; the working-directory default is the daemon directory captured at configuration. Every command/subcommand is supported; flags including `--root` are forwarded unchanged; no render arguments or temp-root staging are forced. CLI adapters do not call async `process::supervise`. Hook code decides how a child result affects the hook. Spawn failures record `HOST_SPAWN`. `render_template` is not a product requirement and need not be a registered host function.
 
-Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its validated `MontyHostName`, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. `MontyHostName::new` validates the identifier and `as_str()` borrows it; registry keys use the same type while registration still accepts strings. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
-
-Phase B supplies opt-in `sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` adapters through this same registry. `ScComposeHostConfig` and `AtmHostConfig` select non-empty executable paths (defaults `sc-compose` and `atm`) and working directories (default the daemon directory captured at configuration). Each adapter accepts one command/subcommand string and an optional list of string arguments, with no keyword arguments. It forwards the non-empty command/subcommand followed by those ordered arguments directly as argv, never through a shell. Every command/subcommand is supported; flags including `--root` are forwarded unchanged. Neither adapter forces render arguments or temp-root staging. Scripts choose arguments, not the configured executable or working directory. Both adapters share the existing blocking child driver in `monty_compose`, generalized for argv/cwd, with row deadline, process-group termination, and `MAX_HOOK_OUTPUT_BYTES` per stream. They do not call the async `process::supervise` from the blocking feed thread or introduce a runtime/`block_on` bridge. A completed child returns `{stdout, stderr, exit_code}`, including nonzero exits; script code decides how that result affects its hook. A deadline expiration records `TimedOut`; spawn, decoding, and capture-limit failures record stable host errors. The adapters receive the resolved environment snapshot from ADR-RUN-0016. Neither CLI is required when its adapter is unused. `render_template` is not a product requirement; an internal helper may remain an implementation convenience without becoming a mandatory registered host function.
-
-MVP accepts application-supplied Monty source without signatures, a separate script-approval mechanism, or a consumer option enabling such a mechanism. Capability registration and environment policy are enforced independently. In-process Monty and custom Rust handlers retain stack-overflow, allocator-abort, panic, and non-cooperative deadline risks; they are not an isolation boundary for hostile code.
-
-The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoint VM limits, and joined shutdown behavior remain as specified by ADR-RUN-0013. Host calls use the production `drive_feed` resume loop; the cfg(test) helper is not a separate production path.
+MVP accepts application-supplied Monty source without signatures, script approval, or a consumer option enabling approval. Capability registration and environment policy are enforced independently. In-process Monty and custom handlers keep stack-overflow, allocator-abort, panic and non-cooperative deadline risks and are no isolation boundary for hostile code. Stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoint VM limits and joined shutdown remain as ADR-RUN-0013 specifies. The cfg(test) helper is not a production path.
 
 **MUST statements:**
 
-- All Monty interpreter execution MUST call `sc-monty`.
-- The existing cron host adapters MUST remain thin value-level adapters.
-- Interpreter extraction MUST preserve the existing cron capability behavior.
-- Interpreter extraction MUST preserve existing unit/integration assertions.
-- A schedule MUST support an in-process `Job` target.
-- A schedule MUST support a Python module target.
+- In `crates/sc-cron/src`, every Monty interpreter call MUST target the sc-monty crate.
+- Every cron host adapter in `crates/sc-cron/src` MUST be a thin value-level adapter.
+- After interpreter extraction, cron capability behavior for each existing hook test input MUST equal the cron capability behavior before interpreter extraction.
+- When a schedule row whose target is an in-process `Job` is due, the scheduler MUST call the `Job`'s `run` method.
+- When a schedule row whose target is a Python module is due, the scheduler MUST run the Python module in a `python3` child process.
 - With optional feature `monty`, a schedule MUST support a `Monty { source }` target.
-- Python and Monty MUST receive the `sc-cron.hook.v1` object with the fields listed above.
-- Application-owned Monty handlers MUST be registered through the immutable `MontyHostRegistry` installed by `Scheduler::with_monty_hosts`.
-- The empty host registry MUST register no application call.
-- Host registration MUST reject invalid names with `InvalidSpec`, using the name rules above.
-- Host registration MUST reject duplicate names with `InvalidSpec`, using the name rules above.
-- Host registration MUST reject reserved names with `InvalidSpec`, using the name rules above.
-- An unregistered host name MUST fail with `HOST_UNDEFINED`.
-- Rejected bridge argument conversion MUST fail with `HOST_DENIED`.
-- Rejected supplied CLI adapter shape MUST fail with `HOST_DENIED`.
-- A custom handler error MUST record `HOST_CALL_FAILED`.
-- Configured values in custom-handler error details MUST be redacted before those details are recorded.
-- Host dispatch MUST check the row deadline before each synchronous handler.
-- Host dispatch MUST check the row deadline after each synchronous handler.
-- The opt-in `sc_compose_run` adapter MUST forward the command/subcommand and ordered string arguments directly as argv.
-- The opt-in `atm_run` adapter MUST forward the command/subcommand and ordered string arguments directly as argv.
-- CLI adapters MUST use the existing blocking child driver.
+- A Python hook MUST receive the hook object as its input.
+- A Monty hook MUST receive the hook object as its input.
+- Custom handlers MUST reach Monty hooks only through the `MontyHostRegistry` installed by `Scheduler::with_monty_hosts`.
+- `MontyHostRegistry::new()` MUST return a registry containing no registered host name.
+- `MontyHostRegistry` registration MUST return `CronError::InvalidSpec` for a host name that is not a valid host-name identifier.
+- `MontyHostRegistry` registration MUST return `CronError::InvalidSpec` for a host name that is already registered.
+- `MontyHostRegistry` registration MUST return `CronError::InvalidSpec` for a reserved host name.
+- A Monty hook call to an unregistered host name MUST produce a run outcome recording error code `HOST_UNDEFINED`.
+- A failed bridge argument conversion MUST produce a run outcome recording error code `HOST_DENIED`.
+- A CLI adapter call whose arguments do not match the CLI adapter call shape MUST produce a run outcome recording error code `HOST_DENIED`.
+- A custom handler that returns an error, including `CronError::InvalidSpec`, MUST produce a run outcome recording error code `HOST_CALL_FAILED`.
+- When the row deadline has passed before a host-function call, host dispatch MUST record a `TimedOut` run outcome.
+- When a synchronous handler returns after the row deadline, host dispatch MUST record a `TimedOut` run outcome.
+- The child argv of an `sc_compose_run` call MUST equal the expected argv of the call.
+- The child argv of an `atm_run` call MUST equal the expected argv of the call.
+- In `crates/sc-cron/src`, each CLI adapter MUST start its child process only through the blocking child driver.
 - The child driver MUST enforce the row deadline.
-- The child driver MUST use process-group termination.
-- The child driver MUST enforce MAX_HOOK_OUTPUT_BYTES per stream.
-- A completed child MUST return the `{stdout, stderr, exit_code}` result, including nonzero exits.
-- A child deadline expiry MUST record `TimedOut`.
-- Both CLI adapters MUST receive the resolved environment snapshot from ADR-RUN-0016.
-- User cron.start MUST use `storage_write`.
-- The storage action used by user cron.start MUST enforce `CronStorage` policy.
-- User cron.end MUST use `storage_write`.
-- The storage action used by user cron.end MUST enforce `CronStorage` policy.
-- User cron.list MUST use `storage_read`.
-- cron.start MUST permit the application transform to enrich schedule JSON before persistence.
-- Internal scheduler lifecycle operations MUST retain domain transactions.
-- Monty host calls MUST use the production `drive_feed` resume loop.
+- When the row deadline expires, the blocking child driver MUST apply process-group termination to the child.
+- When a CLI adapter's child writes more than `MAX_HOOK_OUTPUT_BYTES` bytes to stdout, the run outcome of the schedule run MUST record error code `HOST_OUTPUT`.
+- When a CLI adapter's child writes more than `MAX_HOOK_OUTPUT_BYTES` bytes to stderr, the run outcome of the schedule run MUST record error code `HOST_OUTPUT`.
+- When a CLI adapter's child exits with exit code zero, the CLI adapter call MUST evaluate to the CLI result object in the Monty hook.
+- When a CLI adapter's child exits with a nonzero exit code, the CLI adapter call MUST evaluate to the CLI result object in the Monty hook.
+- When the row deadline expires while a CLI adapter's child runs, the run outcome MUST be `TimedOut`.
+- The environment of an `sc_compose_run` child MUST equal the resolved environment snapshot.
+- The environment of an `atm_run` child MUST equal the resolved environment snapshot.
+- User cron.start MUST write its schedule row only by calling `storage_write`.
+- The storage action of user cron.start MUST call only CronStorage operations.
+- User cron.end MUST write its schedule change only by calling `storage_write`.
+- The storage action of user cron.end MUST call only CronStorage operations.
+- User cron.list MUST read schedule rows only by calling `storage_read`.
+- User cron.start MUST store the schedule JSON returned by the application transform in the new schedule row.
+- In `crates/sc-cron/src`, each internal scheduler lifecycle operation MUST run inside a domain transaction.
+- In `crates/sc-cron/src`, `drive_feed` MUST be the only production code that resumes a Monty session after a host-function call.
 
 **MUST NOT statements:**
 
-- The opt-in CLI adapters MUST NOT execute those arguments through a shell.
-- `sc-cron` MUST NOT implement a second Monty interpreter host.
-- `sc-cron` MUST NOT introduce consumer-specific beads fields.
-- `sc-cron` MUST NOT introduce consumer-specific bd-cache fields.
-- `sc-cron` MUST NOT introduce consumer-specific ATM fields.
-- `sc-cron` MUST NOT expose an HTTP route.
-- `sc-cron` MUST NOT expose an MCP tool.
-- `sc-cron` MUST NOT expose a binary.
-- `sc-cron` MUST NOT read sc-config.
-- Scripts MUST NOT select the configured executable.
-- Scripts MUST NOT select the configured working directory.
-- CLI adapters MUST NOT introduce an async-runtime or block_on bridge on the blocking feed thread.
-- Unused CLI adapters MUST NOT require their executable to be installed.
+- The interpreter-extraction diff of `crates/sc-cron` MUST NOT weaken any unit or integration test assertion.
+- When a custom handler returns an error, the detail text of the run outcome MUST NOT include a configured value.
+- When the row deadline has passed before a host-function call, host dispatch MUST NOT call the handler.
+- In `crates/sc-cron/src`, CLI adapter code MUST NOT invoke a shell to start a child process.
+- `crates/sc-cron/src` MUST NOT contain a Monty interpreter host.
+- In `crates/sc-cron/src/hook.rs`, the hook object MUST NOT contain a consumer-specific field for Beads.
+- In `crates/sc-cron/src/hook.rs`, the hook object MUST NOT contain a consumer-specific field for bd-cache.
+- In `crates/sc-cron/src/hook.rs`, the hook object MUST NOT contain a consumer-specific field for ATM.
+- `crates/sc-cron/src` MUST NOT register an HTTP route.
+- `crates/sc-cron/src` MUST NOT define an MCP tool.
+- The sc-cron package MUST NOT define a binary target.
+- `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on sc-config.
+- A Monty hook MUST NOT be able to change the configured executable.
+- A Monty hook MUST NOT be able to change the configured working directory.
+- A CLI adapter MUST NOT start an async runtime on the feed thread.
+- A CLI adapter MUST NOT call `block_on` on the feed thread.
+- A Monty hook that calls no CLI adapter MUST NOT fail when the `sc-compose` and `atm` executables are absent.
 
 ### Rationale
 
