@@ -3665,35 +3665,37 @@ mechanically.
 
 ### Requirement Statement
 
-Definitions: An answers object is a JSON object of generation options validated by `wizard/answers.schema.json`. The schema keys are the keys listed under `properties` in `wizard/answers.schema.json`. A fixture is a file matching `wizard/fixtures/*.json`. A variant is the set of values a fixture gives to every schema key except `project_name`. CI means continuous integration. Template CI is the CI workflow `.github/workflows/template.yml`, which generates a project from every fixture. The `mcp` key selects whether the generated project contains MCP (Model Context Protocol) code. A schema-invalid answers file is a JSON answers file in `tests/fixtures/refused/` that fails validation against `wizard/answers.schema.json`. The driver is `scripts/new_project.py`. The driver fails closed when it exits with a non-zero status, does not call `cargo generate`, and does not create the destination directory.
+Definitions: An answers object is a JSON object of generation options validated by `wizard/answers.schema.json`. The schema keys are the keys listed under `properties` in `wizard/answers.schema.json`. A fixture is a file matching `wizard/fixtures/*.json`. The complete-answers schema is `wizard/answers.schema.json` with every schema key listed in `required`. The licence-required schema is `wizard/answers.schema.json` with `licence` listed in `required`. A variant is the set of values a fixture gives to every schema key except `project_name`. CI means continuous integration. Template CI is the CI workflow `.github/workflows/template.yml`, which generates a project from every fixture. The `mcp` key selects whether the generated project contains MCP (Model Context Protocol) code. A schema-invalid answers file is a JSON answers file in `tests/fixtures/refused/` that fails validation against `wizard/answers.schema.json`. The driver is `scripts/new_project.py`. The driver fails closed when it exits with a non-zero status, does not call `cargo generate`, and does not create the destination directory.
 
 The default variant is exercised by [REQ-RUN-0303](requirements.md) criterion 7, not by a fixture. The test that the driver fails closed on `db` equal to `both` is owned by [REQ-RUN-0303](requirements.md) criterion 4. Answers objects whose `db` is `postgres`, `mysql`, `sqlite-postgres` or `sqlite-mysql` pass schema validation since sprint `b-8`; v0.1 reserved them. Amended 2026-10-25. No clause of this item depends on the unverified `cargo-generate` mechanics held in [ADR-RUN-0402](architecture.md).
 
 **MUST statements:**
 
-- Every fixture MUST set a value for each schema key.
 - Every fixture MUST pass validation against `wizard/answers.schema.json`.
+- Every fixture MUST pass validation against the complete-answers schema.
+- Every fixture MUST pass validation against the licence-required schema.
+- Each fixture's variant MUST differ from the variant of every other fixture.
 - `wizard/fixtures/sqlite-mcp.json` MUST set `db` to `"sqlite"`.
 - `wizard/fixtures/sqlite-mcp.json` MUST set `mcp` to `true`.
 - `wizard/fixtures/sqlite-no-mcp.json` MUST set `db` to `"sqlite"`.
 - `wizard/fixtures/sqlite-no-mcp.json` MUST set `mcp` to `false`.
 - `wizard/fixtures/` MUST contain a fixture whose `licence` value is not `"MIT"`.
-- The top-level keys of each fixture MUST include `licence`.
-- `tests/fixtures/refused/` MUST contain an answers file whose top-level keys omit a required schema key.
-- `tests/fixtures/refused/` MUST contain an answers file whose value for one schema key has the wrong JSON type.
-- `tests/fixtures/refused/` MUST contain an answers file whose `db` value is outside the `db` enum of `wizard/answers.schema.json`.
-- `tests/fixtures/refused/` MUST contain an answers file whose top-level keys include a key that is not a schema key.
+- `tests/fixtures/refused/missing-key.json` MUST omit the required key `project_name`.
+- `tests/fixtures/refused/wrong-type.json` MUST set `mcp` to `"yes"`.
+- `tests/fixtures/refused/db-outside-enum.json` MUST set `db` to `"sqlserver"`.
+- `tests/fixtures/refused/unknown-key.json` MUST contain the top-level key `extra`.
 - `tests/fixtures/refused/both.json` MUST set `db` to `"both"`.
 - `tests/unit/` MUST contain a unit test that asserts every fixture passes validation against `wizard/answers.schema.json`.
 - `tests/unit/` MUST contain a unit test that asserts every schema-invalid answers file fails validation against `wizard/answers.schema.json`.
-- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, exits with a non-zero status.
-- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, does not call `cargo generate`.
-- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, does not create the destination directory.
+- A unit test in `tests/unit/` MUST assert that, when the driver is run with `--var-file` set to a schema-invalid answers file, the driver exits with a non-zero status.
+- A unit test in `tests/unit/` MUST assert that, when the driver is run with `--var-file` set to a schema-invalid answers file, the driver does not call `cargo generate`.
+- A unit test in `tests/unit/` MUST assert that, when the driver is run with `--var-file` set to a schema-invalid answers file, the driver does not create the destination directory.
 
 **MUST NOT statements:**
 
-- Two fixtures MUST NOT have the same variant.
-- Validating any file in `wizard/fixtures/` against `wizard/answers.schema.json` MUST NOT report an error.
+- `wizard/answers.schema.json` MUST NOT reject any file in `wizard/fixtures/`.
+- The `db` enum of `wizard/answers.schema.json` MUST NOT list `"sqlserver"`.
+- The `properties` of `wizard/answers.schema.json` MUST NOT list `extra`.
 - Code outside `tests/unit/` MUST NOT read files in `tests/fixtures/refused/`.
 
 ### Rationale
