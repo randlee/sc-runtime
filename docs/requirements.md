@@ -4782,7 +4782,7 @@ item and [NFR-RUN-0003](requirements.md) as its enforcement.
 
 ### Requirement Statement
 
-Definitions: Test code is the code in `#[cfg(test)]` modules and in `tests/` directories under `crates/` and `template/`. Non-test code is all other code under `crates/` and `template/`. A test's temporary directory is a directory that the test creates through a temporary-directory API or `DaemonFixture`. The default instance root is the instance root that sc-transport resolves when no path is supplied; a daemon the developer runs uses the default instance root. `just test` is `cargo test --workspace` plus the per-crate default-feature and `server` feature runs defined by [REQ-RUN-0004](requirements.md). TCP means Transmission Control Protocol. A literal temporary-directory path is a string literal naming a system temporary directory, such as `/tmp`. A literal home-directory path is a string literal naming a user's home directory, such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`.
+Definitions: Test code is the code in `#[cfg(test)]` modules and in `tests/` directories under `crates/` and `template/`. Non-test code is all other code under `crates/` and `template/`. A test's temporary directory is a directory that the test creates through a temporary-directory API or `DaemonFixture`. The default instance root is the instance root that sc-transport resolves when no path is supplied; a daemon the developer runs uses the default instance root. `just test` is `cargo test --workspace` plus the per-crate default-feature and `server` feature runs defined by [REQ-RUN-0004](requirements.md). TCP means Transmission Control Protocol. A literal temporary-directory path is a string literal naming a system temporary directory, such as `/tmp`. A literal home-directory path is a string literal naming a user's home directory, such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`. A file-write call is a call that creates, changes or deletes a file or directory, such as `std::fs::write` or `std::fs::create_dir`.
 
 The instance root is the directory that holds a daemon's `daemon.lock` and `daemon.sock`. `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](sc-transport/requirements.md)). Tests that start no daemon, such as the `sc-config` tests, have no instance root and need only the temporary directory.
 
@@ -4811,7 +4811,7 @@ starts a daemon as a separate process does not run there at all
 
 - Non-test code MUST NOT contain a literal temporary-directory path.
 - Non-test code MUST NOT contain a literal home-directory path.
-- Test code MUST NOT write to a filesystem path outside a temporary directory of the same test.
+- Test code MUST NOT contain a file-write call to a path outside a temporary directory of the same test.
 - Test code MUST NOT use an instance root other than a temporary directory of the same test.
 - Test code MUST NOT use the default instance root.
 - The `just test` recipes MUST NOT set `--test-threads=1`.
