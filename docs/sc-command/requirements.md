@@ -154,7 +154,7 @@ sides agree on the shape at compile time.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -252,7 +252,7 @@ The tested minimum is 1.5.0.
 **MUST NOT statements:**
 
 - `sc-command` MUST NOT define its own error-code type.
-- It MUST NOT serialise as a JSON object.
+- The `suggested_action` wire field MUST NOT serialise as a JSON object.
 - `sc-command` MUST NOT define a parallel remediation type.
 - The `sc-observability-types` requirement in `crates/sc-command/Cargo.toml` MUST NOT declare an upper bound.
 
