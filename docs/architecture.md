@@ -2856,13 +2856,21 @@ on the developer's machine ([ADR-RUN-0009](architecture.md)).
 direction given by the owner on 2026-09-20 (reduce the complexity of testing a CLI that posts and gets over HTTP; generated code with generated tests can be proven in a unit test without a daemon); the two-function shape is decided in this document and is pending the owner's confirmation
 ### Consequences
 
-A command's behaviour is proven in milliseconds, in every project, from the
-moment of generation. `just test` on a developer's host needs no daemon for
-the CLI and cannot trigger auto-start. What the unit tests do not reach is
-covered elsewhere: the transport by `sc-transport`'s tests, the handler by
-fixture tests, and type agreement by the shared `api-types` structs
-([ADR-RUN-0302](architecture.md)). The route string is the one thing the
-compiler does not check, which is why it is recorded as OPEN.
+**Positive:**
+
+- A command's behaviour is proven in milliseconds, in every project, from the
+  moment of generation.
+- `just test` on a developer's host needs no daemon for the CLI and cannot
+  trigger auto-start.
+
+**Negative:**
+
+- The unit tests do not reach the transport, the handler or type agreement.
+  These are covered elsewhere: the transport by `sc-transport`'s tests, the
+  handler by fixture tests, and type agreement by the shared `api-types`
+  structs ([ADR-RUN-0302](architecture.md)).
+- The route string is the one thing the compiler does not check, which is why
+  it is recorded as OPEN.
 
 **Neutral:**
 
