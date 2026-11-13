@@ -202,67 +202,75 @@ C-5 implements operations for real Scheduler; c-6 implements the executor with d
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object. CLI means command-line interface. The adapter is the `sc-cron-commands` crate at `crates/sc-cron-commands`. The adapter manifest is `crates/sc-cron-commands/Cargo.toml`. The cron DTO family is the set of public structs and enums in `crates/sc-cron-commands/src/contract.rs`. The DTO dependency set is `serde`, `serde_json` and `sc-command` with `default-features = false`. The schema traits are `schemars::JsonSchema` and `utoipa::ToSchema`. The schema dependencies are the `schemars` and `utoipa` entries of the adapter manifest. The envelope/error model is the `sc-command` types `Envelope<T>`, `OpError` and `ErrorKind`. `CronResponse` is the cron response enum in the cron DTO family. The `server` cargo feature of `sc-command` adds `axum` and `rmcp`. clap is the Rust command-line argument parser crate `clap`. Axum is the Rust HTTP framework crate `axum`. RMCP is the Model Context Protocol crate `rmcp`. The default tree command is `cargo tree -p sc-cron-commands -e normal --prefix none`. The schema tree command is `cargo tree -p sc-cron-commands -e normal --prefix none --features schema`. The default feature query is `cargo tree -p sc-cron-commands -e features --prefix none -i sc-command`. The schema feature query is `cargo tree -p sc-cron-commands -e features --prefix none -i sc-command --features schema`. A generated project with cron commands is a project generated with the `cron_commands` option set to true ([REQ-CRNC-0002](#req-crnc-0002-optional-executor-and-actual-opt-in-ui-wiring)). The CLI tree command is `cargo tree -p <project>-cli -e normal --prefix none`, run in a generated project with cron commands ([NFR-RUN-0001](../requirements.md)). A schema matches the JSON emitted by a `Serialize` implementation when every JSON value that implementation emits validates against the schema and the schema names exactly the fields and variants that implementation emits. A copy of a type is a separate struct or enum with the same serde fields or variants. A generic schema is a schema that accepts any JSON value, such as the schema of `serde_json::Value`.
+Definitions: DTO means data transfer object. CLI means command-line interface. The adapter is the `sc-cron-commands` crate at `crates/sc-cron-commands`. The adapter manifest is `crates/sc-cron-commands/Cargo.toml`. The cron DTO family is the set of public structs and enums in `crates/sc-cron-commands/src/contract.rs`. The DTO dependency entries are `serde`, `serde_json` and `sc-command` with `default-features = false`. A required dependency entry is a `[dependencies]` entry of the adapter manifest without `optional = true`. The schema traits are `schemars::JsonSchema`, `utoipa::ToSchema` and `utoipa::PartialSchema`. An implementation of a trait is an `impl` block or a `derive` of that trait. The schema dependencies are the `schemars` and `utoipa` entries of the adapter manifest. The envelope/error model is the `sc-command` types `Envelope<T>`, `OpError` and `ErrorKind`. `CronResponse` is the cron response enum in the cron DTO family. The `server` cargo feature of `sc-command` adds `axum` and `rmcp`. The default tree command is `cargo tree -p sc-cron-commands -e normal --prefix none`. The schema tree command is `cargo tree -p sc-cron-commands -e normal --prefix none --features schema`. The sc-command tree command is `cargo tree -p sc-command -e normal --prefix none`. The sc-runtime tree command is `cargo tree -p sc-runtime -e normal --prefix none`. The schema feature tree is `cargo tree -p sc-cron-commands -e features --prefix none --features schema`. The scheduler feature tree is `cargo tree -p sc-cron-commands -e features --prefix none --features scheduler`. The default feature query is `cargo tree -p sc-cron-commands -e features --prefix none -i sc-command`. The schema feature query is `cargo tree -p sc-cron-commands -e features --prefix none -i sc-command --features schema`. A generated project with cron commands is a project that `cargo-generate` renders from `template/` with the `cron_commands` placeholder set to true ([REQ-CRNC-0002](#req-crnc-0002-optional-executor-and-actual-opt-in-ui-wiring)). The CLI tree command is `cargo tree -p <project>-cli -e normal --prefix none`, run in a generated project with cron commands ([NFR-RUN-0001](../requirements.md)). A feature list is the array assigned to a feature name in the `[features]` table of the adapter manifest. A command output lists a package when one of its lines starts with the package name followed by ` v`. The schemars schema of a type is the schema returned by `schemars::schema_for!` for that type. The utoipa schema of a type is the schema returned by `utoipa::PartialSchema::schema` for that type. The serialized members of a type are the field names and variant names that its `Serialize` implementation emits. The schema members of a schema are the property names and enum variant names that the schema declares. A copy of a type is a separate struct or enum with the same serde fields or variants. A schema rejects a JSON value when that value fails validation against the schema.
 
 **MUST statements:**
 
-- The non-optional `[dependencies]` entries of the adapter manifest MUST be exactly the DTO dependency set.
+- Every required dependency entry MUST be a DTO dependency entry.
+- Each DTO dependency entry MUST be a required dependency entry.
+- The schemars schema of `CronRequest` MUST reject at least one JSON value.
+- The utoipa schema of `CronRequest` MUST reject at least one JSON value.
+- The schemars schema of `Envelope<CronResponse>` MUST reject at least one JSON value.
+- The utoipa schema of `Envelope<CronResponse>` MUST reject at least one JSON value.
 - In the adapter manifest, the `scheduler` feature list MUST be exactly `["dep:sc-cron"]`.
-- The adapter manifest MUST enable `sc-cron/monty` only from the `monty` feature.
+- In the adapter manifest, the `monty` feature list MUST contain `sc-cron/monty`.
+- If a feature list contains `sc-cron/monty`, it MUST be the `monty` feature list.
 - With the `schema` feature enabled, `schemars::schema_for!` MUST return a schema for every type in the cron DTO family.
 - With the `schema` feature enabled, `utoipa::PartialSchema::schema` MUST return a schema for each type in the cron DTO family.
 - Each schema dependency MUST be declared with `optional = true` in the adapter manifest.
-- In a generated project with cron commands, the `sc-cron-commands` dependency entry in `crates/daemon/Cargo.toml` MUST list the `schema` feature.
-- In a generated project with cron commands, the `sc-cron-commands` dependency entry in `crates/service/Cargo.toml` MUST list the `schema` feature.
-- Every schema-trait implementation for `Envelope<T>` MUST be located in `crates/sc-command/src/`.
-- Every schema-trait implementation for `OpError` MUST be located in `crates/sc-command/src/`.
-- Every schema-trait implementation for `ErrorKind` MUST be located in `crates/sc-command/src/`.
-- The schema returned by `schemars::schema_for!(Envelope<T>)` MUST match the JSON emitted by the `Serialize` implementation of `Envelope<T>`.
-- The schema returned by `<Envelope<T> as utoipa::PartialSchema>::schema()` MUST match the JSON emitted by the `Serialize` implementation of `Envelope<T>`.
-- The schema returned by `schemars::schema_for!(OpError)` MUST match the JSON emitted by the `Serialize` implementation of `OpError`.
-- The schema returned by `<OpError as utoipa::PartialSchema>::schema()` MUST match the JSON emitted by the `Serialize` implementation of `OpError`.
-- The schema returned by `schemars::schema_for!(ErrorKind)` MUST match the JSON emitted by the `Serialize` implementation of `ErrorKind`.
-- The schema returned by `<ErrorKind as utoipa::PartialSchema>::schema()` MUST match the JSON emitted by the `Serialize` implementation of `ErrorKind`.
-- With the `schema` feature enabled, `schemars::schema_for!(Envelope<CronResponse>)` MUST return a schema.
-- With the `schema` feature enabled, `<Envelope<CronResponse> as utoipa::PartialSchema>::schema()` MUST return a schema.
-- Piping the schema tree command into `grep -o '^schemars v[0-9.]*' | sort -u | wc -l` MUST print 1.
-- Piping the schema tree command into `grep -o '^utoipa v[0-9.]*' | sort -u | wc -l` MUST print 1.
-- Piping the default tree command into `grep '^sc-cron v'` MUST exit with status 1.
-- Piping the default tree command into `grep sqlite` MUST exit with status 1.
-- Piping the default tree command into `grep '^tokio v'` MUST exit with status 1.
-- Piping the default tree command into `grep monty` MUST exit with status 1.
-- Piping the default tree command into `grep '^clap v'` MUST exit with status 1.
-- Piping the default tree command into `grep '^axum v'` MUST exit with status 1.
-- Piping the default tree command into `grep '^rmcp v'` MUST exit with status 1.
-- Piping the default feature query into `grep -F 'sc-command feature "server"'` MUST exit with status 1.
-- Piping the CLI tree command into `grep '^sc-cron v'` MUST exit with status 1.
-- In a generated project with cron commands, piping `cargo tree -p <project>-cli -e features --prefix none -i sc-command` into `grep -F 'sc-command feature "server"'` MUST exit with status 1.
-- Piping the schema tree command into `grep '^sc-cron v'` MUST exit with status 1.
-- Piping the schema tree command into `grep sqlite` MUST exit with status 1.
-- Piping the schema tree command into `grep '^tokio v'` MUST exit with status 1.
-- Piping the schema tree command into `grep monty` MUST exit with status 1.
-- Piping the schema tree command into `grep '^axum v'` MUST exit with status 1.
-- Piping the schema tree command into `grep '^rmcp v'` MUST exit with status 1.
-- Piping the schema feature query into `grep -F 'sc-command feature "server"'` MUST exit with status 1.
-- In a generated project with cron commands, piping `cargo tree -p <project>-cli -e features --prefix none -i sc-cron-commands` into `grep -F 'sc-cron-commands feature "schema"'` MUST exit with status 1.
-- Piping `cargo tree -p sc-command -e normal --prefix none` into `grep '^sc-cron v'` MUST exit with status 1.
-- Piping `cargo tree -p sc-command -e normal --prefix none` into `grep '^sc-cron-commands v'` MUST exit with status 1.
-- Piping `cargo tree -p sc-runtime -e normal --prefix none` into `grep '^sc-cron v'` MUST exit with status 1.
-- Piping `cargo tree -p sc-runtime -e normal --prefix none` into `grep '^sc-cron-commands v'` MUST exit with status 1.
+- In a generated project with cron commands, the `features` array of the `sc-cron-commands` dependency entry in `crates/daemon/Cargo.toml` MUST contain `"schema"`.
+- In a generated project with cron commands, the `features` array of the `sc-cron-commands` dependency entry in `crates/service/Cargo.toml` MUST contain `"schema"`.
+- Every implementation of a schema trait for `Envelope<T>` MUST be in a file under `crates/sc-command/src/`.
+- Every implementation of a schema trait for `OpError` MUST be in a file under `crates/sc-command/src/`.
+- Every implementation of a schema trait for `ErrorKind` MUST be in a file under `crates/sc-command/src/`.
+- Every JSON value emitted by the `Serialize` implementation of `Envelope<T>` MUST validate against the schemars schema of `Envelope<T>`.
+- Every JSON value emitted by the `Serialize` implementation of `Envelope<T>` MUST validate against the utoipa schema of `Envelope<T>`.
+- The schema members of the schemars schema of `Envelope<T>` MUST equal the serialized members of `Envelope<T>`.
+- The schema members of the utoipa schema of `Envelope<T>` MUST equal the serialized members of `Envelope<T>`.
+- Every JSON value emitted by the `Serialize` implementation of `OpError` MUST validate against the schemars schema of `OpError`.
+- Every JSON value emitted by the `Serialize` implementation of `OpError` MUST validate against the utoipa schema of `OpError`.
+- The schema members of the schemars schema of `OpError` MUST equal the serialized members of `OpError`.
+- The schema members of the utoipa schema of `OpError` MUST equal the serialized members of `OpError`.
+- Every JSON value emitted by the `Serialize` implementation of `ErrorKind` MUST validate against the schemars schema of `ErrorKind`.
+- Every JSON value emitted by the `Serialize` implementation of `ErrorKind` MUST validate against the utoipa schema of `ErrorKind`.
+- The schema members of the schemars schema of `ErrorKind` MUST equal the serialized members of `ErrorKind`.
+- The schema members of the utoipa schema of `ErrorKind` MUST equal the serialized members of `ErrorKind`.
+- With the `schema` feature enabled, calling `schemars::schema_for!(Envelope<CronResponse>)` MUST return a JSON Schema document.
+- With the `schema` feature enabled, calling `<Envelope<CronResponse> as utoipa::PartialSchema>::schema()` MUST return a JSON Schema document.
+- The number of distinct `schemars` versions in the output of the schema tree command MUST be 1.
+- The number of distinct `utoipa` versions in the output of the schema tree command MUST be 1.
 
 **MUST NOT statements:**
 
-- In the adapter manifest, the `schema` feature MUST NOT enable the `scheduler` feature.
-- In the adapter manifest, the `scheduler` feature MUST NOT enable the `schema` feature.
+- The output of the schema feature tree MUST NOT contain the text `sc-cron-commands feature "scheduler"`.
+- The output of the scheduler feature tree MUST NOT contain the text `sc-cron-commands feature "schema"`.
 - The `default` feature list in the adapter manifest MUST NOT contain `schema`.
 - The `default` feature list in the adapter manifest MUST NOT contain `scheduler`.
 - A crate other than `sc-cron-commands` MUST NOT implement a schema trait for a type in the cron DTO family.
 - A crate other than `sc-cron-commands` MUST NOT define a copy of a type in the cron DTO family.
-- `schemars::schema_for!(CronRequest)` MUST NOT return a generic schema.
-- `<CronRequest as utoipa::PartialSchema>::schema()` MUST NOT return a generic schema.
 - A crate other than `sc-command` MUST NOT define a copy of a type in the envelope/error model.
-- `schemars::schema_for!(Envelope<CronResponse>)` MUST NOT return a generic schema.
-- `<Envelope<CronResponse> as utoipa::PartialSchema>::schema()` MUST NOT return a generic schema.
+- The output of the default tree command MUST NOT list the `sc-cron` package.
+- The output of the default tree command MUST NOT contain the text `sqlite`.
+- The output of the default tree command MUST NOT list the `tokio` package.
+- The output of the default tree command MUST NOT contain the text `monty`.
+- The output of the default tree command MUST NOT list the `clap` package.
+- The output of the default tree command MUST NOT list the `axum` package.
+- The output of the default tree command MUST NOT list the `rmcp` package.
+- The output of the default feature query MUST NOT contain the text `sc-command feature "server"`.
+- The output of the CLI tree command MUST NOT list the `sc-cron` package.
+- In a generated project with cron commands, the output of `cargo tree -p <project>-cli -e features --prefix none -i sc-command` MUST NOT contain the text `sc-command feature "server"`.
+- The output of the schema tree command MUST NOT list the `sc-cron` package.
+- The output of the schema tree command MUST NOT contain the text `sqlite`.
+- The output of the schema tree command MUST NOT list the `tokio` package.
+- The output of the schema tree command MUST NOT contain the text `monty`.
+- The output of the schema tree command MUST NOT list the `axum` package.
+- The output of the schema tree command MUST NOT list the `rmcp` package.
+- The output of the schema feature query MUST NOT contain the text `sc-command feature "server"`.
+- In a generated project with cron commands, the output of `cargo tree -p <project>-cli -e features --prefix none -i sc-cron-commands` MUST NOT contain the text `sc-cron-commands feature "schema"`.
+- The output of the sc-command tree command MUST NOT list the `sc-cron` package.
+- The output of the sc-command tree command MUST NOT list the `sc-cron-commands` package.
+- The output of the sc-runtime tree command MUST NOT list the `sc-cron` package.
+- The output of the sc-runtime tree command MUST NOT list the `sc-cron-commands` package.
 
 ### Rationale
 
