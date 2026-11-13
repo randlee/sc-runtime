@@ -91,14 +91,14 @@ Merged value:
 
 **MUST statements:**
 
-- The crate root `crates/sc-config/src/lib.rs` MUST make `load` public under the path `sc_config::load`.
+- `crates/sc-config/src/lib.rs` MUST contain a `pub use` item that re-exports `load`.
 - `load` MUST read the default file.
 - When the default file is absent, `load` MUST return the missing-default error.
 - When the local file exists, `load` MUST read the local file.
 - `load` MUST obtain each file's value by passing the file's bytes to `serde_json::from_slice::<serde_json::Value>`.
 - `load` MUST compute the merged value by the rules of the merge table.
 - `load` MUST apply the environment overrides of `app` to the merged value.
-- `load` MUST deserialise the final value into `T` with one call to `serde_json::from_value::<T>` and no other deserialisation.
+- The `Ok` value that `load` returns MUST be the value that `serde_json::from_value::<T>` returns for the final value.
 
 **MUST NOT statements:**
 
