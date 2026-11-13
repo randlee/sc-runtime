@@ -3137,17 +3137,15 @@ A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL s
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. Store building blocks are the engine-specific store crates and their SQL operations available to the consuming application.
+Definitions: A consumer repository is an application project using the framework. A store is the crate that holds one database engine's rows and SQL. SQL means Structured Query Language. An adaptor is a crate in a consumer repository that moves rows between a SQLite store and a Postgres or MySQL store. The copy adaptor is the generated adaptor that keeps a local SQLite database with the remote schema. The host-aggregate adaptor is the generated adaptor that pairs one SQLite database for this host with a remote database that aggregates many hosts. An advanced adaptor is an adaptor that is neither the copy adaptor nor the host-aggregate adaptor; the consumer writes an advanced adaptor from the store building blocks. The consumer is the owner of a consumer repository. The store building blocks are the store crates `store-sqlite`, `store-postgres` and `store-mysql` and their SQL operations. The project generator is `just new` (`scripts/new_project.py`).
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
-An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+**MUST NOT statements:**
 
-**MUST statements:**
-
-- An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+- The files that the project generator writes into a consumer repository MUST NOT contain an advanced adaptor.
 
 ### Rationale
 
