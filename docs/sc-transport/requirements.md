@@ -722,22 +722,24 @@ therefore all run with `-p sc-transport`.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. The crate is `sc-transport`. `reqwest` is the HTTP client library declared with version requirement `0.13`. Hyper or tower connectors include types implementing `tower::Service<Uri>` or hyper-util's `Connect`. A raw stream is a `UnixStream` or `TcpStream` used directly to read or write HTTP messages.
+Definitions: HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. The crate is `sc-transport`. `reqwest` is the HTTP client library declared with version requirement `>=0.13`. Hyper or tower connectors include types implementing `tower::Service<Uri>` or hyper-util's `Connect`. A raw stream is a `UnixStream` or `TcpStream` used directly to read or write HTTP messages.
 
 **MUST statements:**
 
-- The manifest `crates/sc-transport/Cargo.toml` MUST declare `reqwest` with version requirement `0.13`.
+- The manifest `crates/sc-transport/Cargo.toml` MUST declare `reqwest` with version requirement `>=0.13`.
 
 - Every client HTTP request that `sc-transport` sends over UDS MUST use `reqwest`.
 - The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest`.
 - The crate `sc-transport` MUST configure its UDS client with `reqwest::ClientBuilder::unix_socket(path)`.
 
 **MUST NOT statements:**
+
+- The `reqwest` requirement in `crates/sc-transport/Cargo.toml` MUST NOT declare an upper bound.
 
 - The crate MUST NOT depend on `hyperlocal`.
 - The crate `sc-transport` MUST NOT implement its own hyper connector.
@@ -760,7 +762,7 @@ Standard crates used the documented way mean less code to own and review.
    with `--features server` each print no line beginning with `hyperlocal `
    (the name followed by a space).
 2. `crates/sc-transport/Cargo.toml` declares `reqwest` with version
-   requirement `0.13`.
+   requirement `>=0.13`.
 3. Inspection of `crates/sc-transport/src` finds a call to `unix_socket(`,
    no `impl` of a hyper or tower connector trait, and no code that writes an
    HTTP request line (such as `"GET "` or `"HTTP/1.1"`) to a stream.
