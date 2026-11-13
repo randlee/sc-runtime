@@ -2506,6 +2506,8 @@ is logged.
 
 ### Requirement Statement
 
+Definitions: The template is the `cli` and `daemon` crates of a project rendered from `template/`; `cli` and `daemon` name those crates and their binaries. Template code is the code of those two crates. The endpoint is where the daemon listens: a Unix domain socket path or a TCP address. The resolver is the `sc-transport` endpoint resolver (REQ-TRN-0001). A global option is an option accepted with every subcommand of that binary.
+
 This applies to the `cli` and `daemon` crates of a project rendered from
 `template/`. The "endpoint" is where the daemon listens: a Unix domain socket
 path or a TCP address. The `sc-transport` crate exposes one endpoint resolver
@@ -2523,7 +2525,6 @@ sources that supplies a value:
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 
-1. "Global" means it is accepted with every subcommand of that binary.
 2. The resolver accepts the `SC_ENDPOINT` value as an explicit input; a convenience form of the resolver that reads it with `std::env::var_os` may be used instead.
 3. Neither binary may compute an endpoint itself.
 4. `cli` passes the resolved endpoint to the `sc-transport` client.
@@ -2540,7 +2541,7 @@ configured `endpoint`, `instance_root`, and `tcp_port`. `endpoint_flag` is
 parsed ([REQ-RT-0001](sc-runtime/requirements.md),
 [ADR-RT-0001](sc-runtime/architecture.md)).
 
-The `sc-transport` configuration type of obligation 6 is `TransportConfig`.
+The `sc-transport` configuration type is `TransportConfig`.
 The resolver is
 `resolve_endpoint(&AppName, flag: Option<&OsStr>, environment: Option<&OsStr>, &TransportConfig)`
 and `resolve_endpoint_from_env`, which reads only
@@ -2556,11 +2557,17 @@ The resolver applies the source order above.
 - The generated `cli` binary MUST accept a global command-line option `--endpoint <value>`.
 - The generated `daemon` binary MUST accept a global command-line option `--endpoint <value>`.
 - Each binary MUST obtain its endpoint only from the `sc-transport` resolver.
-- The template MUST give the resolver the `--endpoint` value (or "absent").
+- When `--endpoint` is given, the template MUST give its value to the resolver.
+- When `--endpoint` is not given, the template MUST give the resolver no flag value.
 - The template MUST give the resolver the `SC_ENDPOINT` value.
 - The template MUST give the resolver the endpoint from its loaded configuration.
-- It MUST place the `--endpoint` value into the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`, together with the configured endpoint and any explicit instance root.
-- The endpoint and instance-root part of the project's configuration MUST be a `Deserialize` type exported by `sc-transport` with default features.
+- The `daemon` binary MUST place the `--endpoint` value in the `endpoint_flag` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
+- The `daemon` binary MUST place the configured endpoint in the `transport` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
+- The `daemon` binary MUST place any explicit instance root in the `transport` field of the `DaemonConfig` value it passes to `sc_runtime::Daemon::builder(...)`.
+- The endpoint in the project's configuration MUST be a field of its `sc_transport::TransportConfig` value.
+- The instance root in the project's configuration MUST be a field of its `sc_transport::TransportConfig` value.
+- `sc_transport::TransportConfig` MUST implement `Deserialize`.
+- `sc_transport::TransportConfig` MUST be exported by `sc-transport` with default features.
 
 **MUST NOT statements:**
 
