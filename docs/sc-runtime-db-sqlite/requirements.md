@@ -99,7 +99,7 @@ The outer commit commits the batch transaction containing an `execute` operation
 **MUST statements:**
 
 - The writer thread MUST execute every `rusqlite` call made on the write-mode connection.
-- Each read MUST execute on a reader worker's reader connection.
+- Each read made outside an atomic unit MUST execute on a reader worker's reader connection.
 - A successful `execute` reply MUST contain the number of rows affected by that operation.
 - The batch transaction containing an `execute` operation MUST have completed its commit when its successful reply is sent.
 
