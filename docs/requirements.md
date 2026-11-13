@@ -4804,24 +4804,30 @@ is recorded in [ADR-RUN-0008](architecture.md).
 
 ### Requirement Statement
 
-Definitions: Less code means less code to write across consuming projects compared with omitting the proposed requirement or boundary. Custom code is code written for a job already performed by a standard tool. The standard tools and their jobs are the examples below. MCP means Model Context Protocol. ADR means architecture decision record. The application layer is the project-specific operations, service functions, routes, tools, CLI commands, schema and data flow that legitimately differ between projects.
+sc-runtime standardises build, test, reporting and runtime, which are the same in every project. This rule governs what may be added to the sc-runtime requirements, architecture and sprint plans.
 
-This is a rule for what may be added to the sc-runtime requirements,
-architecture and sprint plans.
+Definitions:
 
-sc-runtime standardises build, test, reporting and runtime, which are the same in every project.
-
-Examples of jobs already covered by standard tools here: template rendering (`cargo-generate`), agent-document rendering (`sc-compose`), the options UI (Wyvern), OpenAPI generation (`utoipa`), MCP serving (`rmcp`), lint and `just` infrastructure (sc-lint).
+- An addition is a new or changed requirement in the `docs/` requirements files, or a new crate boundary.
+- A crate boundary is the split of code into a separate Rust crate.
+- A consuming project is a project that uses sc-runtime.
+- A reviewer is the person or agent who reviews a sprint plan or a requirement change.
+- Admitting an addition means the reviewer approves the addition for merge.
+- A standard tool is an existing tool or crate that already performs a job; the standard tools here and their jobs include template rendering (`cargo-generate`), agent-document rendering (`sc-compose`), the options UI (Wyvern), OpenAPI generation (`utoipa`), MCP serving (`rmcp`), and lint and `just` infrastructure (sc-lint).
+- Custom code is code, including an adapter, written for a job that a standard tool already performs.
+- A sprint deliverable is a sprint plan item that adds code.
+- The application layer is the project-specific operations, service functions, routes, tools, CLI commands, schema and data flow that legitimately differ between projects.
+- MCP means Model Context Protocol. ADR means architecture decision record.
 
 **MUST statements:**
 
-- A requirement or a crate boundary MUST be admitted only if it results in less code to write across the projects that use sc-runtime.
-- A requirement that can only be met by writing custom code or an adapter, where a standard tool or crate already does the job, MUST be rejected or rewritten to use that tool.
+- An addition MUST be admitted only if the reviewer names code that consuming projects would have to write if the addition were omitted.
 
 **MUST NOT statements:**
 
-- It MUST NOT add requirements at the application layer, where projects legitimately differ.
-- A sprint deliverable MUST NOT introduce custom code for a job that a standard tool already does.
+- An addition that requires custom code MUST NOT be admitted.
+- An addition MUST NOT place a requirement on the application layer.
+- A sprint deliverable MUST NOT contain custom code.
 
 ### Rationale
 
