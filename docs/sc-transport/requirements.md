@@ -376,56 +376,66 @@ uses this crate must not link axum.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: UDS means Unix domain socket. OS means operating system. ADR means architecture decision record. Listener is the value owning the bound socket and the endpoint-scoped exclusive lock. Cleanup removes the socket while that same lock remains owned.
+Definitions: UDS is a Unix domain socket.
+`bind` is the `sc-transport` listener-binding function for a UDS endpoint, enabled by the `server` Cargo feature.
+The endpoint lock is a nonblocking operating-system exclusive lock on the file named by appending `.lock` to the complete socket path ([ADR-TRN-0006](architecture.md)).
+`Listener` owns the bound socket and its endpoint lock.
+A typed bind error is an `Err(TransportError)` returned by `bind`.
+The process owner is the operating-system user running the binding process.
+The endpoint path is the filesystem path selected for the UDS socket.
+Socket access is permission to use the UDS socket through the filesystem.
+A process check queries whether a process is alive.
+Address in use is the operating-system error for a socket address already in use.
+`TRANSPORT.NOT_A_SOCKET` is the stable code for `TransportError::NotASocket` in the transport error inventory.
+Cleanup associated with a failed competing bind is cleanup of the failed bind attempt or result.
+A stale socket is an existing socket file at the endpoint path after `bind` acquires the endpoint lock.
+A competing bind is a bind attempt while another listener holds the endpoint lock.
+The instance root is the per-application, per-user directory resolved or explicitly supplied through `sc-transport` ([REQ-TRN-0002](requirements.md)).
+The default root is `<base>/<app>`, where Unix uses non-empty `XDG_RUNTIME_DIR` or `$HOME/.local/state` and Windows uses `LOCALAPPDATA`.
+`instance_root` does not create the directory.
 
-This requirement applies to the listener-binding function of the crate
-`sc-transport` (sketched as `bind(&Endpoint)`, behind the `server` cargo
-feature) when the endpoint is a UDS path.
-
-1. These permissions are the only access control on a UDS listener ([ADR-TRN-0005](architecture.md)).
-2. The lock path is formed by appending the literal `.lock` to the full socket path, not by replacing its extension.
-4. This endpoint lock is distinct from `<instance-root>/daemon.lock`: the runtime lock serializes one application instance before stores open, while the endpoint lock protects an arbitrary overridden UDS path shared by otherwise different instance roots. The endpoint-lock file is never deleted; releasing the OS lock is sufficient and avoids a remove/recreate inode race.
-
-Points 2, 3 and 4 are decided in this document
-([ADR-TRN-0006](architecture.md)); the sc-runtime design states only that
-file permissions restrict access to the user.
-
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path. On Unix the default base is
-non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`. On Windows it
-is `LOCALAPPDATA`. The path is `<base>/<app>`
-([REQ-TRN-0002](requirements.md)). `instance_root` does not create it.
-
-Removing the old file and setting the permissions happen once, at bind time.
-They are outside the request path, so they do not conflict with the rule
-that request handling never blocks ([NFR-RUN-0002](../requirements.md)).
-
-The socket file mode is `0o600`. The mode is set on the socket file only.
-The instance-root directory is left unchanged. When the existing path is not
-a socket, `bind` returns `TransportError::NotASocket`
-(`TRANSPORT.NOT_A_SOCKET`) and leaves the path in place.
+The endpoint lock is separate from `<instance-root>/daemon.lock`. The runtime instance lock serializes one application instance before stores open. Socket replacement and permission changes occur once at bind time, outside the request path ([NFR-RUN-0002](../requirements.md)). File permissions are the UDS listener's only access control ([ADR-TRN-0005](architecture.md)).
 
 **MUST statements:**
 
-- After a successful bind the socket file MUST be accessible only to the operating-system user that owns the process: the file's permission bits for group and for others MUST all be zero (`mode & 0o077 == 0`).
-- Before inspecting or removing an existing UDS socket file, `bind` MUST acquire a nonblocking OS-exclusive endpoint lock at the sibling path `<socket-path>.lock`.
-- The returned `Listener` MUST retain that lock for its lifetime.
-- Once it holds the endpoint lock, `bind` MUST remove an existing stale socket file.
-- After removing an existing stale socket file under that lock, `bind` MUST bind the new socket at the same path.
-- Cleanup MUST remove the socket only while the same `Listener` still holds the endpoint lock.
+- `bind` MUST leave the instance-root directory permission bits unchanged.
+- During socket removal by `Listener` cleanup, that `Listener` MUST hold the endpoint lock.
+
+- After a successful UDS bind, the socket file mode MUST be `0o600`.
+- After a successful UDS bind, the socket file's group and other permission bits MUST be zero (`mode & 0o077 == 0`).
+- Before inspecting an existing UDS socket file, `bind` MUST acquire the endpoint lock.
+- Before removing an existing UDS socket file, `bind` MUST acquire the endpoint lock.
+- The returned `Listener` MUST hold the endpoint lock until the `Listener` is dropped.
+- When a stale socket file exists at the endpoint path, `bind` MUST remove the stale socket file.
+- After removing a stale socket, `bind` MUST bind the replacement at the same endpoint path.
+- During stale-socket replacement, `bind` MUST retain the endpoint lock.
+- The UDS socket file MUST be removed when its `Listener` is dropped.
+- If endpoint-lock acquisition fails, `bind` MUST return `Err(TransportError)`.
+- If an existing endpoint path is not a socket, `bind` MUST return `TransportError::NotASocket`.
+- The `code()` method of `TransportError::NotASocket` MUST return `TRANSPORT.NOT_A_SOCKET`.
+- If an existing endpoint path is not a socket, `bind` MUST leave the path in place.
 
 **MUST NOT statements:**
 
-- Failure to acquire it is a typed bind error and MUST NOT inspect, remove, or replace the socket file.
-- It MUST NOT fail with "address in use" merely because a socket file was left by a process that no longer holds the endpoint lock.
-- The listener MUST NOT use a connect probe to infer liveness.
-- The listener MUST NOT use a process check to infer liveness.
-- A failed competing bind or its cleanup MUST NOT remove another listener's socket.
+- `bind` MUST NOT apply the socket mode `0o600` to a path other than the socket file.
+
+- After a successful UDS `bind`, the socket file MUST NOT allow access by an operating-system user other than the process owner.
+
+- When `bind` fails to acquire the endpoint lock, it MUST NOT inspect the socket file.
+- After endpoint-lock acquisition fails, `bind` MUST NOT unlink the socket file.
+- If endpoint-lock acquisition fails, `bind` MUST NOT replace the existing socket file.
+- `bind` MUST NOT return an address-in-use error solely because an existing socket file has no endpoint-lock holder.
+- The listener MUST NOT connect to an existing UDS socket to determine listener liveness.
+- The listener MUST NOT use a process check to determine listener liveness.
+- A failed competing bind MUST NOT remove another listener's socket.
+- Cleanup associated with a failed competing bind MUST NOT remove another listener's socket.
+- `sc-transport` MUST NOT delete the endpoint-lock file.
+
 
 ### Rationale
 
