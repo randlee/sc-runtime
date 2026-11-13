@@ -5107,12 +5107,12 @@ into different lists of banned constructs.
    `sc-runtime`: every fallible public function returns `Result<_, E>` with
    `E` equal to `ConfigError`, `TransportError` and `RuntimeError`
    respectively.
-4. Inspection of the public API of `sc-command`: the only public signatures
-   that name an error type not defined in `sc-command` are
-   `IntoMcp::into_mcp` (returning `McpError`) and the infallible
-   `IntoResponse` implementation. Once the `sc-command` enum question above
-   is decided: any other fallible public function returns that enum, or none
-   exists.
+4. Inspect public `sc-command` signatures: foreign error types are permitted
+   only where required by the named third-party trait or macro contracts,
+   including `IntoMcp::into_mcp` returning `McpError` and `CanonicalLog::emit`
+   returning `EventError`, or by the shared `Storage<T>` contract. Other
+   fallible public operations return the crate-owned typed error required
+   by this record. `IntoResponse` remains infallible.
 5. In all nine Phase D crates no public signature names `anyhow::Error` or
    `Box<dyn Error>`
    (`grep -rn "anyhow::Error\|Box<dyn .*Error" crates/*/src` prints no line
