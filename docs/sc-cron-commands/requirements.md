@@ -114,7 +114,7 @@ Phase C target, planned and unimplemented.
 
 ### Requirement Statement
 
-Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces. The adapter is the `sc-cron-commands` crate. `CronExecutor` is the object-safe executor trait exported by the adapter with default features. `StandardCronExecutor` is the executor provided under its non-default scheduler feature; the standard executor and standard implementation mean it. `CronOperations` is sc-cron's native operations port ([REQ-CRON-0021](../sc-cron/requirements.md)).
+Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces. The adapter is the `sc-cron-commands` crate. `CronExecutor` is the object-safe executor trait exported by the adapter with default features. `StandardCronExecutor` is the executor provided under its non-default scheduler feature; the standard executor and standard implementation mean it. `CronOperations` is sc-cron's native operations port ([REQ-CRON-0021](../sc-cron/requirements.md)). A custom cron implementation is an application's own implementation of `CronOperations` or of `CronExecutor`. A custom-implementation application is an application that supplies a custom cron implementation. To document a responsibility of a custom cron implementation is to state, in the application's documentation of that implementation, how that implementation carries the responsibility instead of inheriting the bundled cooperative guarantee. `CronRequest` is the adapter's request type. A real deadline is the caller's absolute deadline for one request, passed as a `std::time::Instant`. `ApplicationTargetBindings` is the adapter's trait through which an application names its targets. The operation context is the `StoreOperationContext` that the standard executor was built with. A child operation context is derived from that context for a request, preserves its shared stop and cancellation state, and has the earlier of the parent deadline and the request deadline. The cron store is the store that `CronOperations` writes to; persistence is a write to the cron store. The bundled store is the SQLite cron store that sc-cron provides. A selected project is a project made by selected generation. A projection is a generated, working command surface (a CLI command, an HTTP route or an MCP tool) that forwards its typed request to a `CronExecutor`. A selected project contains a projection when the generated project serves that projection without further edits. The shared executor is the `CronExecutor` execution path that all projections of a selected project use. A request reaches the shared executor when the result its sender receives is the result that the shared executor returned for that request. The cron commands are `cron.start`, `cron.end` and `cron.list` (REQ-CRNC-0001). A recommended example is example code that a user must copy to obtain a command surface. A DTO-only library is a library that provides the request and response types and no command surface. A production success stub is non-test code, in a projection or in an executor, that returns success for a cron command without performing it. A supported cron command is a cron command that the selected build and application bindings support. A production unsupported stub is non-test code, in a projection or in an executor, that substitutes an unsupported error for a missing implementation of a supported cron command. A required unsupported-target refusal is not a stub. DTO means data transfer object. The public API of the core is the set of `pub` items of the `sc-cron` crate that make up the core. An application can call an item when the application compiles with a call to that item. Monty is the Pydantic Python interpreter. A Monty target is a schedule target that runs Monty source. A refused request is rejected before scheduler or store work begins and returns a failed `Envelope` (REQ-CRNC-0001). The selected-default recipe is the section of the adapter README that shows how to wire a selected project with the bundled store. The generated-consumer proof is the test in which a generated project consumes the selected-default recipe. The registry-only proof is the test in which a project that takes its `sc-*` crates only from the crates.io registry consumes that recipe. Each of the two proofs uses only public APIs and documented selection, without manual framework-source edits. The core custom-store example is sc-cron's documented working example of an application-owned store and schema. Supported replacement means supplying an application implementation of `CronOperations` or `CronExecutor` through its public seam.
 
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
@@ -140,34 +140,37 @@ No consumer-product migration or automatic job start is implied.
 
 **MUST statements:**
 
-- The default-surface object-safe CronExecutor MUST accept the sole CronRequest type.
-- The default-surface object-safe CronExecutor MUST accept a real deadline.
-- Scheduler-feature StandardCronExecutor MUST consume native CronOperations.
-- Scheduler-feature StandardCronExecutor MUST consume explicit ApplicationTargetBindings.
-- The standard executor MUST derive a child operation context.
-- Custom CronOperations or CronExecutor implementations MUST document task/physical-join ownership responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document persistence truth responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document authorization responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document error mapping responsibilities.
-- The standard implementation MUST retain standard validation.
-- The standard implementation MUST retain scope propagation.
-- Unsupported Monty MUST fail before persistence.
-- Selected generation MUST install an actual CLI start projection calling that same executor.
-- Selected generation MUST install an actual CLI end projection calling that same executor.
-- Selected generation MUST install an actual CLI list projection calling that same executor.
-- Selected generation MUST install actual HTTP projections calling that same executor.
-- Selected generation MUST install actual optional MCP projections calling that same executor.
-- cron_commands MUST default to false.
-- Selecting cron_commands MUST require cron.
-- Applications MUST be able to use the core without commands.
-- The adapter README MUST provide a working selected-default recipe.
-- That recipe MUST demonstrate the bundled store.
-- That recipe MUST demonstrate explicit worker/target registration.
-- That recipe MUST demonstrate startup.
-- That recipe MUST demonstrate commands.
-- That recipe MUST demonstrate stop handling.
-- That recipe MUST demonstrate join handling.
-- That recipe MUST demonstrate outcome handling.
+- The `CronExecutor` trait MUST accept a request only as a `CronRequest` value.
+- The `CronExecutor` trait MUST accept a real deadline with each request.
+- The constructor of `StandardCronExecutor` MUST take a `CronOperations` implementation.
+- The constructor of `StandardCronExecutor` MUST take an `ApplicationTargetBindings` implementation.
+- For each request that passes standard validation, the standard executor MUST derive one child operation context.
+- A custom-implementation application MUST document its custom cron implementation's task ownership responsibilities.
+- A custom-implementation application MUST document its custom cron implementation's physical-join ownership responsibilities.
+- A custom-implementation application MUST document its custom cron implementation's persistence truth responsibilities.
+- A custom-implementation application MUST document its custom cron implementation's authorization responsibilities.
+- A custom-implementation application MUST document its custom cron implementation's error mapping responsibilities.
+- The standard executor MUST apply standard validation to every request.
+- The standard executor MUST apply scope propagation to every request that passes standard validation.
+- A request with an unsupported Monty target MUST be a refused request.
+- In a selected project, the output of the CLI command for a `cron.start` request MUST be the result the shared executor returned for that request.
+- In a selected project, the output of the CLI command for a `cron.end` request MUST be the result the shared executor returned for that request.
+- In a selected project, the output of the CLI command for a `cron.list` request MUST be the result the shared executor returned for that request.
+- In a selected project, the HTTP response to each cron command request MUST be the result the shared executor returned for that request.
+- When MCP is enabled in a selected project, the MCP tool result for each cron command request MUST be the result the shared executor returned for that request.
+- In `wizard/answers.schema.json`, the `default` of the option `cron_commands` MUST be `false`.
+- When `cron_commands` is `true`, the generated project MUST also have the `cron` option equal to `true`.
+- The public API of the core MUST be callable from an application that does not depend on `sc-cron-commands`.
+- The adapter README MUST contain the selected-default recipe.
+- The selected-default recipe MUST pass the generated-consumer proof.
+- The selected-default recipe MUST pass the registry-only proof.
+- The selected-default recipe MUST show the bundled store.
+- The selected-default recipe MUST show explicit worker/target registration.
+- The selected-default recipe MUST show startup.
+- The selected-default recipe MUST show the commands.
+- The selected-default recipe MUST show stop handling.
+- The selected-default recipe MUST show join handling.
+- The selected-default recipe MUST show outcome handling.
 - The adapter README MUST link the core custom-store example.
 - The adapter README MUST describe supported replacement.
 
@@ -175,11 +178,11 @@ No consumer-product migration or automatic job start is implied.
 
 - The standard executor MUST NOT introduce a separate timeout policy.
 - The standard executor MUST NOT introduce a separate ownership policy.
-- A recommended example MUST NOT satisfy selected generation.
-- A DTO-only library MUST NOT satisfy selected generation.
-- A production success stub MUST NOT satisfy selected generation.
-- A production unsupported stub MUST NOT satisfy selected generation.
-- Selecting cron_commands MUST NOT enable MCP when MCP is disabled.
+- Selected generation MUST NOT produce a recommended example as a command surface.
+- The files that selected generation produces MUST NOT be limited to a DTO-only library.
+- Selected generation MUST NOT produce a production success stub.
+- Selected generation MUST NOT produce a production unsupported stub.
+- When the `mcp` option is `false`, the files that selected generation produces MUST NOT contain an MCP endpoint.
 
 ### Rationale
 
