@@ -2153,7 +2153,8 @@ sc-lint is the tool installing the common SC repository commands.
 just is the command runner exposing named recipes.
 A public recipe is a command listed by just --list in the generated project.
 A recipe is a named command in the generated project’s Justfile.
-db-prepare is the consumer-owned recipe regenerating checked-in sqlx offline query data in crates/store-sqlite/.sqlx/.
+db-prepare is the consumer-owned recipe regenerating checked-in sqlx offline query metadata for a selected sqlx store.
+A selected sqlx store is the crates/store-postgres or crates/store-mysql crate in a generated project, whose sqlx offline query metadata is that crate's .sqlx/ directory.
 CI means continuous integration.
 A run step is a shell command in a GitHub Actions workflow run: entry.
 A linting run step executes lint checks, including formatting or clippy analysis.
@@ -2168,11 +2169,12 @@ The template commits `template/sc-lint.toml` with `minimum_version` 0.8.6 and `t
 
 The public recipes are `setup`, `lint`, `test` and `upgrade`; `lint` and `test` are the standard SC base command names. The consumer owns `db-prepare`. `AGENTS.md` and `CLAUDE.md` refer to `setup`, `lint`, `test`, `upgrade` and `db-prepare` by name only.
 
-Tests starting a separate daemon process never execute on a developer’s host ([NFR-RUN-0010](requirements.md)); whether `just test` also runs such tests inside an isolated machine remains the question recorded there. This item owns recipe names and committed template files; a-6 owns generated consumer installation. The no-hand-written-lint-knowledge rule is [NFR-RUN-0006](requirements.md).
+Tests starting a separate daemon process never execute on a developer’s host ([NFR-RUN-0010](requirements.md)); whether `just test` also runs such tests inside an isolated machine remains the question recorded there. Postgres and MySQL are where sqlx is used (PRD-STO-2); the SQLite store uses rusqlite, so `db-prepare` is not required to produce sqlx offline query metadata for `crates/store-sqlite`. This item owns recipe names and committed template files; a-6 owns generated consumer installation. The no-hand-written-lint-knowledge rule is [NFR-RUN-0006](requirements.md).
 
 **MUST statements:**
 
-- When a later `sc-lint init` completes in a generated project, `just db-prepare` MUST regenerate `crates/store-sqlite/.sqlx/`.
+- When a later `sc-lint init` completes in a generated project, `just --list` in that project MUST still list `db-prepare`.
+- In a generated project with a selected sqlx store, `just db-prepare` MUST regenerate that store's `.sqlx/` directory.
 - Every linting `run:` step in the rendered `.github/workflows/ci.yml` MUST invoke only `just lint`.
 - Every testing `run:` step in the rendered `.github/workflows/ci.yml` MUST invoke only `just test`.
 
@@ -2196,10 +2198,11 @@ remain after a later init.
 2. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
    `just --list` shows `setup`, `lint`, `test`, `upgrade`, and `db-prepare`.
 3. In that project `just lint` and `just test` exit 0 with no edits.
-4. In that project, copy `crates/store-sqlite/.sqlx/` to a directory outside
-   the project, delete the original, and run `just db-prepare`: it recreates
-   the directory, and `diff -r` of the copy and the recreated directory
-   prints nothing. After customization, repeated native `sc-lint init --just`
+4. In a project generated from `wizard/fixtures/postgres.json`, copy
+   `crates/store-postgres/.sqlx/` to a directory outside the project, delete
+   the original, and run `just db-prepare`: it recreates the directory, and
+   `diff -r` of the copy and the recreated directory prints nothing. In the
+   `wizard/fixtures/sqlite-mcp.json` project, after customization, repeated native `sc-lint init --just`
    and the public `just setup` and `just upgrade` commands succeed and preserve
    the SDK's custom profiles, `db-prepare`, and edited external boundary policy.
 5. The rendered `.github/workflows/ci.yml` has at least one `run:` step that
