@@ -406,27 +406,13 @@ Status as recorded: Active release amendment; source under verification
 
 ### Context
 
-Command paths need not be hand-written; default direct conversion requires no custom transform. Consumer-side generation remains permitted follow-up work.
+The problem is assembling a working daemon once while exposing every project operation through REST, MCP and CLI without restricting the libraries’ normal APIs.
 
-the framework instantiates, the project wires. The mechanism in points 1 and 2 (every operation hand-written as its own REST handler, MCP tool and CLI command, with no shared command path) was a design recommendation chosen to reach an MVP without a code generator. It is the interim form. The target is the PRD §3 command pattern: one shared write path and one shared read path, with the project supplying `Tcli`, `Tsql` and the transform. "No command registry" does not forbid that shared path.
+The framework combines a `cargo-generate` template with published libraries including `sc-config`, `sc-transport`, `sc-command`, `sc-runtime` and `sc-cron`. Projects use an Axum HTTP server, an rmcp MCP server, a clap CLI and sqlx stores. Assembly belongs in one place; application types and wiring remain project-owned.
 
-`sc-runtime` is a `cargo-generate` template plus five published library crates
-(`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`) that together give a
-new project a working daemon: an Axum HTTP server, an MCP server (the `rmcp`
-crate), a clap CLI and sqlx stores. Every operation of such a project must be
-reachable from three surfaces: a REST route, an MCP tool and a CLI command.
+A typed command registry would generate the three adapters from one registration, but would require framework-owned wrappers and a macro or generator. Those wrappers limit projects to the APIs the framework exposes. The decision retains the single assembly point without adopting the registry.
 
-An earlier plan for this scaffold used a typed command registry. A project
-would register each command once, and the framework would generate the REST,
-MCP and CLI adapters from the registry. That plan also called for a single
-assembly point where the daemon is put together. That plan is the decision
-this ADR amends: the single assembly point is kept, the command registry is
-not.
-
-A registry puts the framework between the project and Axum, rmcp and clap.
-That requires wrapper types around those libraries, a macro or code generator
-that this repository must maintain, and a framework opinion about what a
-command is. A project could then do only what the wrappers expose.
+The PRD §3 shared command pattern has one write path and one read path, with project-supplied `Tcli`, `Tsql` and transform. Default direct conversion needs no custom transform. The separately hand-written adapters in Decision points 1 and 2 are the interim form; command paths need not be hand-written. Consumer-side generation remains permitted follow-up work. “No command registry” does not prohibit the shared paths.
 
 ### Decision
 
