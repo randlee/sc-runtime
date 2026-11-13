@@ -477,7 +477,7 @@ by c-1 boundary manifests and checked by c-6/c-4 isolated graph tests.
 
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
-criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,
+the `cargo tree` checks in Success Criteria. sc-lint 0.8.0 cannot fail a crates.io edge,
 so b-13's types-only rule is measured with direct-depth `cargo tree` checks
 for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
 must print no direct `sc-observability ` or `sc-observability-otlp ` line.
@@ -514,6 +514,10 @@ The statements preserve the existing contract while separating independently obs
 ### Success Criteria
 
 Inspect boundaries/<crate>/<crate>.toml for each public crate against the local format and graph, including reverse dependent entries and the per-crate additional dependency list. Compare the graph with docs/architecture.md and ADR-RUN-0003. Inspect production Rust imports and normal/build package closures, including renamed dependencies, for the tool exclusions. Inspect the root Justfile invocation; a scratch manifest violation produces nonzero exit from just lint.
+
+For each crate in the Forbidden edges table, `cargo tree -p <crate> -e normal --prefix none` prints no line beginning with a name in that crate's Forbidden edges cell. For `sc-transport` and `sc-command` the same holds with `--features server` added.
+
+For each crate that ADR-RUN-0017 covers and each supported production feature combination, `cargo tree -p <crate> -e normal,build --prefix none` prints no line beginning `sc-observability ` or `sc-observability-otlp `.
 ### Related Documents
 
 **Architecture Decisions:**
@@ -3201,7 +3205,7 @@ Definitions: A layout is a database-store combination in the table below. The ad
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
-Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the writer of `sc-runtime-db-sqlite`, the atm-core design (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
+Postgres and MySQL are the SQL engines and use sqlx. A later phase may add another sqlx driver as an additional engine in this set. SQLite uses the writer of `sc-runtime-db-sqlite`, the atm-core design (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
 
 | Layout | `db` value | Stores |
 |---|---|---|
@@ -3243,6 +3247,8 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
 4. Cron selected with the no-database layout is rejected before generation (PRD-CRON-4, 2026-11-11).
+5. A test of the generated `store-sqlite` store submits 100 concurrent inserts, awaits their completion, asserts that all succeeded and asserts that the row count increased by 100. Its coordination does not depend on sleeps, scheduling order or elapsed time.
+6. A test opens the generated `store-sqlite` store on a temporary-directory database file and asserts that `PRAGMA journal_mode` returns `wal`.
 
 ## REQ-RUN-0327: Paired stores use the same schema or a similar schema
 
@@ -3734,8 +3740,8 @@ The default variant is exercised by [REQ-RUN-0303](requirements.md) criterion 7,
 **MUST NOT statements:**
 
 - `wizard/answers.schema.json` MUST NOT reject any file in `wizard/fixtures/`.
-- The `db` enum of `wizard/answers.schema.json` MUST NOT list `"sqlserver"`.
-- The `properties` of `wizard/answers.schema.json` MUST NOT list `extra`.
+- In this release, the `db` enum of `wizard/answers.schema.json` MUST NOT list `"sqlserver"`.
+- In this release, the `properties` of `wizard/answers.schema.json` MUST NOT list `extra`.
 - Refused answers files MUST NOT be generation fixtures under wizard/fixtures/.
 
 ### Rationale
@@ -4200,7 +4206,7 @@ as [ADR-RUN-0401](architecture.md).
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
 - When `WYVERN_BIN` is set, wizard code MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
 - When `WYVERN_BIN` is unset or does not supply Wyvern, wizard code MUST look for Wyvern as `wyvern` on `PATH`.
-- When `WYVERN_BIN` is unset and `wyvern` is not on `PATH`, `just new <dest>` in wizard mode MUST exit before it runs `cargo generate`.
+- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit with a non-zero status before it runs `cargo generate`.
 - If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
 - If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
 - If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
@@ -4899,7 +4905,7 @@ the easy path and test suites stay parallel and fast.
 
 ### Requirement Statement
 
-Definitions: The template is the `cargo-generate` template in the `template/` directory of this repository. The sc-lint consumer install is `template/sc-lint.toml` (`minimum_version` 0.8.6), `template/.sc-lint/bootstrap.py` and the `template/Justfile` recipes installed by `sc-lint init --just`, all owned by REQ-RUN-0307. Lint configuration is a lint rule, lint level or formatting option set outside the sc-lint consumer install, including a `clippy.toml`, `.clippy.toml`, `rustfmt.toml`, `.rustfmt.toml` or `deny.toml` file, a `[lints]` or `[workspace.lints]` table, and a custom lint rule. A maintainer boundary manifest is a crate-boundary rule or manifest copied from this repository's `boundaries/<crate>/` directories. The configuration-derived inventory is the application crate and allowed-edge list that `template/boundaries/render.py` generates once from the selected crates, as defined in ADR-RUN-0005 and ADR-RUN-0303. A `just` module is a `*.just` file or a `just` file pulled in by `import` or `mod`. A surface snapshot is a stored copy of `openapi.json`, of the MCP `tools/list` result or of the clap command model. A snapshot test is test code that compares a generated `openapi.json`, MCP `tools/list` result or clap command model against a surface snapshot.
+Definitions: The template is the `cargo-generate` template in the `template/` directory of this repository. The sc-lint consumer install is `template/sc-lint.toml` (`minimum_version` 0.8.6), `template/.sc-lint/bootstrap.py` and the `template/Justfile` recipes installed by `sc-lint init --just`, all owned by REQ-RUN-0307. Lint configuration is a lint rule, lint level or formatting option set outside the sc-lint consumer install, including a `clippy.toml`, `.clippy.toml`, `rustfmt.toml`, `.rustfmt.toml` or `deny.toml` file, a `[lints]` or `[workspace.lints]` table, and a custom lint rule. A maintainer boundary manifest is a crate-boundary rule or manifest copied from this repository's `boundaries/<crate>/` directories. The configuration-derived inventory is the application crate and allowed-edge list that `template/boundaries/render.py` generates once from the selected crates, as defined in ADR-RUN-0005 and ADR-RUN-0303. A `just` module is a `*.just` file or a `just` file pulled in by `import` or `mod`. A surface snapshot is a stored copy of `openapi.json`, of the MCP `tools/list` result or of the clap command model. A snapshot test is test code that compares a generated `openapi.json`, MCP `tools/list` result or clap command model against a surface snapshot. Surface-parity tooling is a file under `template/` whose purpose is to check that the REST, MCP and CLI surfaces of a generated project stay in step; a surface snapshot and a snapshot test are surface-parity tooling.
 
 The template commits the sc-lint consumer install and does not ship a placeholder `Justfile`. The public recipes are `setup`, `lint`, `test` and `upgrade`; the consumer-owned recipe `db-prepare` survives a later init. The configuration-derived inventory includes only selected crates and allowed edges, omits disabled store and MCP components, and becomes consumer-owned after setup. All other excluded infrastructure is owned by the sc-lint project.
 
@@ -4912,6 +4918,7 @@ This requirement restricts `template/` only. The sc-runtime repository lints its
 - Files under `template/` MUST NOT contain a `just` module.
 - Files under `template/` MUST NOT contain a surface snapshot.
 - Files under `template/` MUST NOT contain a snapshot test.
+- The template delivered in this release MUST NOT contain surface-parity tooling.
 
 ### Rationale
 
@@ -5062,7 +5069,7 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 
 This item is the single owner of the error rule and the panic rule for the public API of every covered crate. Each crate's own non-functional requirement references this item and adds only strictness specific to that crate. The decision is recorded in [ADR-RUN-0006](architecture.md); the 2026-10-25 amendment added `sc-runtime-db-sqlite` and `sc-cron`.
 
-sc-monty returns typed compile, session, invoke, dump and load failures. Cron maps invalid cached bytes, version or hook names to recompilation from source, and rejects invalid source at schedule submission.
+sc-monty returns typed compile, session, invoke, dump and load failures. REQ-CRON-0004 states that invalid hook source is rejected at schedule submission. When sc-cron saves a compiled Monty blob (PRD-MONTY-5), REQ-CRON-0004 also states how invalid cached bytes are handled.
 
 ADR-RUN-0017 permits the fixed Noop fallback literal invariant, validated against the selected tested types version, and the foreign `CanonicalLog::emit` `EventError` signature. ADR-RUN-0017 also defines application-only `try_log` unwind containment and its abort and hook limits. The fixed literal invariant is the only exception to the banned-construct statements below, and remains bounded as ADR-RUN-0017 writes it.
 

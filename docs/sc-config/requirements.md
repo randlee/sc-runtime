@@ -366,7 +366,7 @@ This item covers the `Loader` type and the free function `load` of the `sc-confi
 - `Loader::load` MUST apply the environment-override rules to the merged document with the pairs of its `environment` argument.
 - `load::<T>(app)` MUST return the same result as `Loader::new(app, config_dir, environment).load::<T>()` called with the default inputs.
 - When reading the process environment, `load` MUST use `std::env::vars_os`.
-- Every directory path in `sc-config` test code MUST derive from a temporary-directory API call in the same test.
+- Tests MUST obtain their directories from a temporary-directory API.
 
 **MUST NOT statements:**
 
@@ -565,9 +565,10 @@ Decided in this document, stricter than NFR-RUN-0009: `assert!`, `assert_eq!` an
 
 - A public function MUST NOT have a return type of `Option` for reporting failure.
 - A public function MUST NOT have a return type containing an opaque error type.
-- Reachable code MUST NOT call an output macro.
+- Reachable code MUST NOT report a failure by printing or logging.
 - Reachable code MUST NOT use a panicking construct.
 - Non-test code MUST NOT call `std::env::vars()`.
+- The `Display`, `Debug`, `std::error::Error` and `From` implementations that `sc-config` provides on its public types MUST NOT panic for any input.
 
 ### Rationale
 
