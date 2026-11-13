@@ -817,7 +817,6 @@ Definitions: `sc-cron` is the crate in `crates/sc-cron`. The Scheduler is `sc_cr
 - When `WorkerStopControl::new()` has returned `Ok`, `check()` on a `StoreOperationContext` from `WorkerStopControl::operation_context()` MUST return `Ok`.
 - When no Scheduler exists, `WorkerStopControl::new()` called inside a Tokio runtime MUST return `Ok`.
 - When no framework worker is running, `WorkerStopControl::new()` called inside a Tokio runtime MUST return `Ok`.
-- An application `CronOperations` implementation MUST perform admission for each call.
 - An application `CronOperations` implementation MUST execute the store work of calls made to the implementation.
 - Before calling `WorkerStopControl::finish_application_shutdown()`, an application MUST join all store work started by the application's `CronOperations` implementation.
 - After `WorkerStopControl::finish_application_shutdown()` returns `Ok`, `check()` on a pre-shutdown context MUST return an error.
@@ -858,4 +857,4 @@ This completes the existing pre-submission admission/physical-ownership promise 
 
 Phase C approved target contract (planned, not implemented).
 
-Scope: Standard command execution requires these operations. `list_active` alone does not satisfy the query obligations. Command capacity does not change embedder row limits and does not apply to application `CronOperations` or `CronExecutor` implementations. No new job kind, job registry, second database or arbitrary hard-delete command is implied. Ordinary registration continues through REQ-CRON-0003 APIs. The Phase C compatibility contract defines exact configuration, reason mapping and causal proof owners; the Scheduler implementation belongs to sprint c-5.
+Scope: Standard command execution requires these operations. `list_active` alone does not satisfy the query obligations. Command capacity does not change embedder row limits. Command capacity and admission do not apply to application `CronOperations` or `CronExecutor` implementations, which own their own intake. No new job kind, job registry, second database or arbitrary hard-delete command is implied. Ordinary registration continues through REQ-CRON-0003 APIs. The Phase C compatibility contract defines exact configuration, reason mapping and causal proof owners; the Scheduler implementation belongs to sprint c-5.
