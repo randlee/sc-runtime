@@ -2869,20 +2869,22 @@ The local copy gives faster or offline access. Owner, 2026-10-25 (ADR-RUN-0305):
 
 Definitions: A consumer repository is an application project using the framework.
 The store adaptor template is the crate `template/crates/store-adaptor`, which generation renders into a consumer repository.
-`aggregate_host` is the store adaptor template function that implements the host-aggregate path.
+`aggregate_host` is the public function in `template/crates/store-adaptor/src/shared.rs` that moves one table's rows from a host database to an aggregate database.
+A row is one `RowRecord`, which holds a table name and the payload of one table row.
 A host database is the one SQLite database of the host that runs `aggregate_host`.
 A Postgres aggregate is one Postgres database that receives rows from the host databases of many hosts.
 A MySQL aggregate is one MySQL database that receives rows from the host databases of many hosts.
 The remote engine is the layout's one sqlx engine, Postgres or MySQL.
 The rollup is the consumer-owned `Rollup` implementation that `aggregate_host` calls to map host rows to aggregate rows.
 sqlx is the Rust SQL access crate used for the remote engines.
+`Ok` is the Rust `Result::Ok` variant that an `aggregate_host` call returns when it succeeds.
 SQL means Structured Query Language.
 
 This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Synchronization between databases is deferred.
 
 **MUST statements:**
 
-- Every row that an `aggregate_host` call passes to the rollup MUST come from the host database.
+- Every row that an `aggregate_host` call passes to the rollup MUST be a row that the call read from the host database.
 - When Postgres is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the Postgres aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
 - When MySQL is the remote engine, an `aggregate_host` call that returns `Ok` MUST leave in the MySQL aggregate every row that the rollup returns for the host database's rows of the table passed to the call.
 
