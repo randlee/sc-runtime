@@ -42,7 +42,9 @@ of the CLI.
 
 ### Requirement Statement
 
-The names below are pinned. The shape and the order are binding. `run` exists only after `stores` and `routes` (consuming typestate, [ADR-RT-0001](architecture.md)).
+The exact builder surface, five-step startup inventory and prohibition on inserting or reordering steps describe the Phase D deliverable. They do not prohibit a later owner-directed extension and create no work for it in Phase D. The current lock-before-stores, readiness-before-listen and failure-short-circuit requirements remain binding.
+
+For Phase D, the names below are pinned and the shape and order are binding. `run` exists only after `stores` and `routes` (consuming typestate, [ADR-RT-0001](architecture.md)).
 
 | Call | Argument | Required |
 |---|---|---|
@@ -158,9 +160,9 @@ with default features. `DaemonConfig` embeds that type.
 
 - The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that assembles and runs a daemon.
 - It MUST implement `serde::Deserialize`.
-- `run()` MUST perform exactly the five numbered startup steps above.
+- In Phase D, `run()` MUST perform exactly the five numbered startup steps above.
 
-- `run()` MUST perform the five numbered startup steps above in their listed order.
+- In Phase D, `run()` MUST perform the five numbered startup steps above in their listed order.
 - If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT execute any later step.
 
 **MUST NOT statements:**
@@ -170,7 +172,7 @@ with default features. `DaemonConfig` embeds that type.
 - `run()` MUST NOT read an environment variable to load configuration.
 - `run()` MUST NOT call the stores closure before the lock is held.
 - `run()` MUST NOT bind a listener before steps 1 to 4 have succeeded.
-- The builder MUST NOT offer hooks, callbacks or configuration that insert work between steps or reorder them (decided in this document and recorded in [ADR-RT-0001](architecture.md); the design lists the five steps and says the crate is a bootstrap, not a framework layer).
+- In Phase D, the builder MUST NOT offer hooks, callbacks or configuration that insert work between steps or reorder them (decided in this document and recorded in [ADR-RT-0001](architecture.md); the design lists the five steps and says the crate is a bootstrap, not a framework layer).
 
 ### Rationale
 
@@ -200,7 +202,7 @@ last so no request is accepted before it can be served.
    second daemon uses distinct root `R2` and the same override `S`; its
    startup fails safely, the first daemon remains reachable through `S`, and
    the failed startup and cleanup do not remove `S`.
-6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
+6. For the Phase D deliverable, inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
    public method other than `logger`, `stores`, `routes`, `mcp`, `run`,
    `run_with_cleanup` and `run_with_cleanup_and_bound`. The three terminal
    run alternatives are implemented only on Ready.
