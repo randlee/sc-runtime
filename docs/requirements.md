@@ -1187,7 +1187,7 @@ anything.
 
 ### Requirement Statement
 
-Definitions: The rewritten spike server main file is `examples/spike/server/src/main.rs`. Its startup sequence comprises configuration loading with `sc-config`, the `sc_runtime::Daemon::builder(...)` call chain and conversion of the run result into the process exit code. The configuration-loading call to `sc-config` is the call to `sc_config::load` that reads the spike's configuration into a struct.
+Definitions: The rewritten spike server main file is `examples/spike/server/src/main.rs`. Its startup sequence comprises configuration loading with `sc-config`, the `sc_runtime::Daemon::builder(...)` call chain and conversion of the run result into the process exit code. The configuration-loading call to `sc-config` is a call to the function `sc_config::load`, which reads the spike server's configuration and returns it as a value of the server's configuration type. The rewritten `examples/spike/server/src/main.rs` is that file after `examples/spike` is rewritten on the four library crates `sc-config`, `sc-transport`, `sc-command` and `sc-runtime`.
 
 `examples/spike` is first written directly on `axum`, `utoipa-axum`, `rmcp`
 and `sqlx`, then rewritten on the four library crates `sc-config`,
@@ -1208,7 +1208,7 @@ excluded from the root workspace.
 
 - After the rewrite, the `main.rs` of the spike's server binary MUST be under 30 lines, that is 29 lines or fewer.
 - The rewritten `examples/spike/server/src/main.rs` MUST contain the complete daemon startup sequence described in this record.
-- The rewritten `examples/spike/server/src/main.rs` MUST contain the configuration-loading call to `sc-config`.
+- The rewritten `examples/spike/server/src/main.rs` MUST contain a call to the function `sc_config::load`.
 - The rewritten `examples/spike/server/src/main.rs` MUST contain the complete `sc_runtime::Daemon::builder(...)` call chain, including `.stores(...)`, `.routes(...)`, `.mcp(...)` and `.run().await`.
 - That `main.rs` MUST itself turn the result into the process exit code.
 
