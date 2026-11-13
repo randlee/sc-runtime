@@ -501,10 +501,10 @@ must print no direct `sc-observability ` or `sc-observability-otlp ` line.
 - The crate dependency table in ADR-RUN-0003 MUST list the same edges as the crate graph table.
 - The crate graph in `docs/architecture.md` MUST list the same crates as the crate graph table.
 - The crate graph in `docs/architecture.md` MUST list the same edges as the crate graph table.
-- Every crate in the public package set MUST have no normal or build dependency, direct or transitive, on any package named `sc-compose` or `sc-compose-*`.
-- Every crate in the public package set MUST have no normal or build dependency, direct or transitive, on any ATM tool crate.
+- Every crate in the public package set MUST exclude sc-compose crate dependencies.
+- Every crate in the public package set MUST exclude ATM crate dependencies.
 - Every crate in the public package set MUST exclude sc-compose Rust imports.
-- Every crate in the public package set MUST contain no production Rust import of an ATM tool crate, referred to by its Rust library name such as `atm_core` or `agent_team_mail`.
+- Every crate in the public package set MUST exclude ATM Rust imports.
 - Each manifest's `allowed_dependencies` MUST equal the union of its crate graph row and its additional dependency list.
 - The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary` against the boundary manifests.
 - `just lint` MUST fail when a manifest is violated.
@@ -1854,7 +1854,7 @@ compilable as Rust.
 
 ### Requirement Statement
 
-Definitions: A Liquid control tag is a tag written `{% ... %}`. A tag pair is an opening Liquid control tag and its closing tag. A permitted tag pair is a tag pair whose enclosed lines all belong to one permitted location. A conditional line is a line that contains a Liquid control tag or lies between the two tags of a tag pair. A `.rs` file is a file whose name ends in `.rs`. A value substitution is a tag written `{{ ... }}`. The template is the `template/` directory, whose files `cargo-generate` renders with the Liquid template language. An option is a `cargo-generate` variable whose value is chosen for one generated variant, such as `db` or `mcp`. A generated variant is the project rendered from `template/` for one combination of option values. A permitted location is one of these three places: the fields of the `Stores` struct in the `service` crate; the `mod mcp;` line of `crates/daemon/src/main.rs`; and the `.mcp(...)` line of the `Daemon::builder()` chain in `crates/daemon/src/main.rs`. A file-level difference is a difference between two generated variants that is not made by a value substitution and is not made by a conditional line in a permitted location. A conditional `ignore` list is an `ignore` list in `template/cargo-generate.toml` whose entries depend on option values.
+Definitions: A Liquid control tag is a tag written `{% ... %}`. A conditional line is a line that contains a Liquid control tag, or a line that lies between an opening control tag and its closing tag. A value substitution is a tag written `{{ ... }}`. A generated variant is the project rendered from `template/` for one combination of option values. The three permitted locations are the locations listed in item 2.
 
 `cargo-generate` renders files under `template/` with the Liquid template
 language. Liquid control tags are written `{% ... %}` (for example
@@ -1876,12 +1876,12 @@ language. Liquid control tags are written `{% ... %}` (for example
 
 **MUST statements:**
 
-- The total number of conditional lines in all `.rs` files in the template MUST be fewer than ten.
-- Each file-level difference MUST be made by whole-file inclusion and exclusion through a conditional `ignore` list.
+- Across all `.rs` files under `template/`, the number of conditional lines MUST be fewer than ten in total.
+- A difference between generated variants that is made neither by a value substitution nor by a conditional line in one of the three permitted locations MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml`.
 
 **MUST NOT statements:**
 
-- A Liquid control tag MUST NOT appear in a `.rs` file in the template outside a permitted tag pair.
+- A Liquid control tag MUST NOT appear in a `.rs` file under `template/` unless it belongs to a tag pair that encloses only one of the three permitted locations: fields of the `Stores` struct in the `service` crate, the `mod mcp;` line of `crates/daemon/src/main.rs`, or the `.mcp(...)` line of the `Daemon::builder()` chain in `crates/daemon/src/main.rs`.
 ### Rationale
 
 Rust source threaded with template conditionals cannot be compiled, formatted,
@@ -5069,7 +5069,7 @@ Related: [REQ-RUN-0004](requirements.md) defines `just lint`; [NFR-RUN-0004](req
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. A covered crate is one of the nine Phase D crates listed in REQ-RUN-0002: sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty. A public function is a function or method that a covered crate exports in its public API. Public-reachable code is every non-test function body in a covered crate's `src` directory that a public function of that crate calls directly or indirectly. A crate-originated error is an error that the code of a covered crate itself detects. A crate result type is `Result<T, E>` where `E` is the one public typed error enum defined by the same covered crate. `[]` indexing is an `[]` index or range expression on a slice, `Vec`, string or map. A service function is a function that implements an operation and that the REST handler, the MCP tool and the CLI command all call. An OpError envelope is the `sc-command` JSON response envelope whose `ok` is `false` and whose `error` is an `OpError` object with a stable `code` and the keys `kind`, `code`, `message`, `details` and `suggested_action`. `CallToolResult` is the rmcp tool result type, whose content carries the response envelope. An opaque error type is an error type whose variants a caller cannot match, such as `anyhow::Error` or `Box<dyn std::error::Error>`. The shared `Storage<T>` contract is the Phase D storage contract under which storage operations return `StorageError`. The `sc-command` `OpError` contract is the contract of REQ-CRNC-0001 under which the commands of `sc-cron-commands` return `OpError`.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. A covered crate is one of the nine Phase D crates listed in REQ-RUN-0002: sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty. A public function is a function or method that a covered crate exports in its public API. Public-reachable code is every non-test function body in a covered crate's `src` directory that a public function of that crate calls directly or indirectly. A crate-originated error is an error that the code of a covered crate itself detects. A crate result type is `Result<T, E>` where `E` is the one public typed error enum defined by the same covered crate. `[]` indexing is an `[]` index or range expression on a slice, `Vec`, string or map. A service function is a function that implements an operation and that the REST handler, the MCP tool and the CLI command all call. An OpError envelope is the `sc-command` JSON response envelope whose `ok` is `false` and whose `error` is an `OpError` object with a stable `code` and the keys `kind`, `code`, `message`, `details` and `suggested_action`. `CallToolResult` is the rmcp tool result type, whose content carries the response envelope. An opaque error type is an error type whose variants a caller cannot match, such as `anyhow::Error` or `Box<dyn std::error::Error>`.
 
 This item is the single owner of the error rule and the panic rule for the public API of every covered crate. Each crate's own non-functional requirement references this item and adds only strictness specific to that crate. The decision is recorded in [ADR-RUN-0006](architecture.md); the 2026-10-25 amendment added `sc-runtime-db-sqlite` and `sc-cron`.
 
@@ -5100,7 +5100,7 @@ Recorded exception: a signature dictated by a third-party trait or macro keeps t
 
 **MUST statements:**
 
-- Each public function that can return a crate-originated error MUST return its crate result type, unless the error type of that function is fixed by a third-party trait or macro signature, by the shared `Storage<T>` contract or by the `sc-command` `OpError` contract of REQ-CRNC-0001.
+- Unless a third-party trait or macro signature, the shared `Storage<T>` contract or the `sc-command` `OpError` contract of REQ-CRNC-0001 fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
 - Each covered crate MUST define at most one public error enum.
 - When a service function returns an error, the stdout of the CLI command run with `--json` for the operation that the service function implements MUST be an OpError envelope.
 - When a service function returns an error, the content of the `CallToolResult` returned by the MCP tool that called it MUST be an OpError envelope.
