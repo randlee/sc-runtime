@@ -302,10 +302,10 @@ Source: sc-runtime design, 2026-09-19, section "API surface"; applies [ADR-RUN-0
 
 ### Context
 
-Every REST handler and every MCP tool in a generated daemon must answer with
-the response envelope `Envelope<T>` (JSON keys `version`, `ok`, `data`,
-`error`). Service functions return `Result<T, OpError>`. Something has to
-turn that result into an axum response and into an rmcp tool result.
+Problem: how does `sc-command` turn a service function's `Result<T, OpError>`
+into an axum response and into an rmcp tool result, each carrying the response
+envelope `Envelope<T>` (JSON keys `version`, `ok`, `data`, `error`), which every
+REST handler and every MCP tool in a generated daemon must return?
 
 A framework could do this by supplying its own handler type, extractor,
 middleware layer or attribute macro that produces envelopes. The governing principle of this
@@ -358,14 +358,21 @@ no longer describe the project's code.
 
 ### Consequences
 
-A generated handler body is one line,
-`service::create_widget(&s, input).await.into()`, and a tool body is
-`service::create_widget(&self.stores, input).await.into_mcp()`. A project
-that wants a different response shape on one route does not call the
-conversion and returns any axum response it likes; nothing in `sc-command`
-or `sc-runtime` notices. Because nothing is applied automatically, a handler
-that forgets `.into()` and returns a bare type is not caught by this crate;
-keeping the three surfaces in step is left to lint tooling.
+Positive:
+
+- A generated handler body is one line,
+  `service::create_widget(&s, input).await.into()`, and a generated tool body
+  is one line, `service::create_widget(&self.stores, input).await.into_mcp()`.
+- A project that wants a different response shape on one route omits the
+  conversion and returns any axum response; `sc-command` and `sc-runtime`
+  impose nothing on that route.
+
+Negative:
+
+- `sc-command` applies no conversion automatically, so a handler that omits
+  `.into()` and returns a bare type is not caught by `sc-command`.
+- Keeping the REST, MCP and CLI views of one operation in step is not
+  enforced by `sc-command`; sc-lint owns that enforcement.
 
 ### Alternatives Considered
 
