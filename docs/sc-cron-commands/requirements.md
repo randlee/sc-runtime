@@ -154,7 +154,7 @@ No consumer-product migration or automatic job start is implied.
 - The standard executor MUST apply scope propagation to every request that passes standard validation.
 - A request with an unsupported Monty target MUST be a refused request.
 - In a selected project, a `cron.start` request sent through the CLI MUST reach the shared executor.
-- In a selected project, a `cron.end` request sent through the CLI MUST reach the shared executor.
+- In a selected project, the output of the CLI command for a `cron.end` request MUST be the result the shared executor returned for that request.
 - In a selected project, a `cron.list` request sent through the CLI MUST reach the shared executor.
 - In a selected project, each cron command request sent through HTTP MUST reach the shared executor.
 - When MCP is enabled, each cron command request sent through MCP in a selected project MUST reach the shared executor.
