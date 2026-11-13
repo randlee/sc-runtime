@@ -842,7 +842,7 @@ error code and remediation types are defined there
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. ENVELOPE.SERIALIZATION is the stable error-code string identifying envelope serialization failure. T is the value type being serialized by the conversion. `into_response` converts an `Envelope<T>` to an HTTP response; `into_mcp` converts a result to an MCP tool result. `Serialize` is the serde serialization trait. `McpError` is rmcp's `ErrorData`.
+Definitions: HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. MCP means Model Context Protocol, implemented by the crate rmcp. API means application programming interface. `Envelope<T>` is the four-key response envelope with JSON keys `version`, `ok`, `data` and `error` defined by REQ-CMD-0001. ADR means architecture decision record. ENVELOPE.SERIALIZATION is the stable error-code string identifying envelope serialization failure. T is the value type being serialized by the conversion. `into_response` converts an `Envelope<T>` to an HTTP response; `into_mcp` converts a result to an MCP tool result. `Serialize` is the serde serialization trait. `McpError` is rmcp's `ErrorData`. An envelope serialization error is an error returned while `into_response` or `into_mcp` serializes an `Envelope<T>` to JSON, including an error returned by the `Serialize` implementation of `T`. The error code of an HTTP response is the `error.code` field of the JSON envelope in the response body. The `noop` expect is the single `expect` on `ServiceName::new("noop")` in `crates/sc-command/src/observability.rs` that ADR-RUN-0017 allows. A banned construct is any `unwrap`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, `[]` indexing on a slice, `Vec` or map, or `expect` other than the `noop` expect. Non-test code is code in `crates/sc-command/src` outside `#[cfg(test)]` modules.
 
 2026-10-31 explicit exception: ADR-RUN-0017 allows only the fixed
 `ServiceName::new("noop")` invariant under exact inspected types 1.5.0,
@@ -877,13 +877,13 @@ The repository-wide rule is owned by [NFR-RUN-0009](../requirements.md) and appl
 
 **MUST statements:**
 
-- When `into_response` fails, including when the `Serialize` implementation of `T` returns an error, it MUST return an HTTP 500 response.
-- The error code of an HTTP 500 response returned on an `into_response` failure MUST be `ENVELOPE.SERIALIZATION`.
-- When `into_mcp` fails, including when the `Serialize` implementation of `T` returns an error, it MUST return `Err(McpError)`.
+- When `into_response` meets an envelope serialization error, `into_response` MUST return a response with HTTP status 500.
+- When `into_response` meets an envelope serialization error, the error code of the response returned by `into_response` MUST be `ENVELOPE.SERIALIZATION`.
+- When `into_mcp` meets an envelope serialization error, `into_mcp` MUST return `Err(McpError)`.
 
 **MUST NOT statements:**
 
-- A banned construct (a construct listed in the repository-wide rule above) MUST NOT appear in non-test code in `crates/sc-command/src` reachable from a public function.
+- Non-test code MUST NOT contain a banned construct.
 
 ### Rationale
 
