@@ -81,6 +81,12 @@ Only a materially new destination or payload outside that scope, or revocation,
 requires a new decision. Respect automatic approval review and report any actual
 rejection with the existing authorization reference; never bypass it.
 
+Plan-anchoring work (capture, gate triage, plan fixes, question tuning,
+drift review) follows the owner's guidelines in
+[.sc/plan-anchor/plan-anchor-repo-guidelines.md](.sc/plan-anchor/plan-anchor-repo-guidelines.md): tighten as
+asked, take the stricter reading, never limit consumer choice, and no open
+options as work items.
+
 ## Honest Work, No Ceremony (binding on agents and humans)
 
 Goal: working, deployable capability. Process serves it and never becomes the product.
