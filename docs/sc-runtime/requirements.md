@@ -471,60 +471,90 @@ versions change and this shape does not.
 
 ### Requirement Statement
 
-Definitions: The six-step sequence is the numbered shutdown sequence above. The crate-private trigger is the internal shutdown notification used by testing::DaemonFixture to stop its own daemon without sending a process signal.
+Definitions:
 
-Phase C target amendment: on Windows Ctrl-C and Ctrl-Break trigger the same sequence. Register and poll both listeners before instance lock/store setup/bind, retaining observed state.
+- `sc-runtime` is the Rust crate in `crates/sc-runtime` that assembles application daemons.
+- `run()` is the `DaemonBuilder::run` method defined in `crates/sc-runtime/src/builder.rs`; `run()` returns `Result<(), RuntimeError>` ([REQ-RT-0007](requirements.md)).
+- `run_with_cleanup` is the daemon builder's terminal method that runs like `run()` and then awaits the cleanup callback before returning.
+- The cleanup callback is the infallible asynchronous application cleanup passed to `run_with_cleanup`.
+- Cleanup completion is the moment the future returned by the cleanup callback resolves.
+- Serving is step 5 of `run()` in the crate architecture: the period in which `run()` serves the router on every bound listener.
+- The listener is the Unix-domain-socket or TCP listener that `run()` binds through `sc-transport`.
+- The socket file is the Unix domain socket file at the endpoint path selected for the listener.
+- The endpoint lock is the operating-system exclusive lock that the listener holds on the file named by appending `.lock` to the socket path ([ADR-TRN-0006](../sc-transport/architecture.md)).
+- The endpoint-lock file is the file on which the listener holds the endpoint lock.
+- The instance root is the per-application, per-user directory resolved by `sc-transport`, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+- `daemon.lock` is the file `<instance-root>/daemon.lock`.
+- The instance lock is the operating-system exclusive lock that `run()` holds on `daemon.lock` ([REQ-RT-0002](requirements.md)).
+- A shutdown request is SIGINT or SIGTERM received by the process, a Windows Ctrl-C or Ctrl-Break console event received by the process, or a firing of the crate-private trigger.
+- The crate-private trigger is the internal shutdown notification, visible only inside `sc-runtime`, that `testing::DaemonFixture` uses to stop its own daemon without a process signal ([REQ-RT-0006](requirements.md)).
+- An in-flight request is a request that the listener accepted before graceful shutdown began and whose response is not yet sent.
+- Graceful shutdown is the sequence of steps that the MUST statements below impose on `run()` after a shutdown request.
+- The request-handler timeout is the `REQUEST_TIMEOUT` constant in `crates/sc-runtime/src/router.rs`.
+- The drain timeout is the `DRAIN_TIMEOUT` constant in `crates/sc-runtime/src/shutdown.rs`.
+- The 503 error envelope is the existing HTTP 503 response whose JSON body carries a stable error code.
+- The empty cleanup callback is a cleanup callback whose future resolves without doing any work.
+- Ctrl-C is the Windows `CTRL_C_EVENT` console control event; Ctrl-Break is the Windows `CTRL_BREAK_EVENT` console control event.
+- The request-timeout middleware is the `with_request_timeout` layer in `crates/sc-runtime/src/router.rs` that applies the request-handler timeout and the drain timeout.
+- A handler future is the future that runs a route handler for one request.
+- The stores closure is the project-supplied asynchronous `.stores(...)` closure that opens stores and returns the project's `Stores` value.
+- A startup closure is the stores closure, routes closure or MCP closure passed to the daemon builder.
+- A startup error is a `RuntimeError` that startup returns after `run_with_cleanup` holds the instance lock.
+- A serve error is the `RuntimeError::ServeFailed` value that `run()` returns when serving the router ends with an error.
 
-1. Stop accepting new connections.
-2. Let requests already in flight run to completion and send their responses.
-3. Stop serving on the listener while retaining its UDS endpoint ownership.
-4. Before returning, if the endpoint is a Unix domain socket, remove the
-   selected socket file while the listener still holds its endpoint lock,
-   then release that endpoint lock (decided in this document and
-   ADR-TRN-0006). Do not delete the endpoint-lock file.
-5. When using `run_with_cleanup`, await application cleanup after listener
-   disposal while retaining successful stores and the instance lock, including
-   on startup errors. Drop any unused startup closure before this callback.
-   Before returning, release the lock on `<instance-root>/daemon.lock`.
-6. Return `Ok(())` (decided in this document, following from the
-   `Result<(), RuntimeError>` return type in [REQ-RT-0007](requirements.md)).
-
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
-
-Steps 1 to 5 happen in that order. Endpoint cleanup must precede release of
-endpoint ownership; the instance-root lock is released afterwards.
-
-`run_with_cleanup` preserves this sequence and all existing runtime errors; its infallible callback does not replace a primary startup/serve error. `run()` uses empty cleanup by default.
-
-The request-handler timeout and shutdown drain timeout are each 30 seconds.
-When the handler deadline wins, the middleware returns the existing 503
-envelope with code `RUNTIME.REQUEST_TIMEOUT`. When shutdown's drain deadline
-wins first, it returns the existing 503 envelope with code
-`RUNTIME.DRAIN_TIMEOUT`. In both cases the handler future is dropped, the
-shutdown sequence continues, and a signal-initiated `run()` still returns
-`Ok(())` after listener/endpoint/instance-lock cleanup. These constants and
-wire outcomes are existing runtime behavior; Phase B observability reports
-them but does not change them.
+Statements that name Windows are Phase C targets. Phase B observability reports the timeouts and 503 error envelopes but does not change them.
 
 **MUST statements:**
 
-- While serving (step 5 of `run()`), `sc-runtime` MUST begin graceful shutdown when the process receives SIGINT or SIGTERM.
-- On shutdown `run()` MUST:
-- Callers MUST await the run future to completion: dropping it or panicking cannot perform asynchronous cleanup.
-- The same six-step sequence MUST run when shutdown is started by the crate-private trigger that `testing::DaemonFixture` uses to stop its own daemon ([REQ-RT-0006](requirements.md)).
+- While serving, `run()` MUST begin graceful shutdown when the process receives SIGINT.
+- While serving, `run()` MUST begin graceful shutdown when the process receives SIGTERM.
+- On Windows, while serving, `run()` MUST begin graceful shutdown on a `CTRL_C_EVENT` console control event.
+- On Windows, while serving, `run()` MUST begin graceful shutdown on a `CTRL_BREAK_EVENT` console control event.
+- On Windows, in the source of `run()`, the call that registers the Ctrl-C console handler MUST precede the call that takes the instance lock.
+- On Windows, in the source of `run()`, the call that registers the Ctrl-Break console handler MUST precede the call that takes the instance lock.
+- On Windows, when Ctrl-C reaches the console handler of `run()` between console handler registration and the start of serving, `run()` MUST return `Ok(())`.
+- On Windows, when Ctrl-Break reaches the console handler of `run()` between console handler registration and the start of serving, `run()` MUST return `Ok(())`.
+- `run()` MUST begin graceful shutdown when the crate-private trigger fires.
+- After graceful shutdown begins, the listener MUST refuse each new connection attempt.
+- When the handler of an in-flight request finishes within the drain timeout, the client MUST receive the complete response of the handler.
+- While an in-flight request has no response, `run()` MUST keep serving the in-flight request on the listener.
+- Before the call that releases the endpoint lock, the source of `run()` MUST remove the socket file.
+- For a Unix domain socket endpoint, `run()` MUST remove the socket file before `run()` returns.
+- After the call that stops serving on the listener, the source of `run_with_cleanup` MUST call the cleanup callback.
+- When a startup error occurs, `run_with_cleanup` MUST run the cleanup callback.
+- Before the call to the cleanup callback, the source of `run_with_cleanup` MUST drop every startup closure that `run_with_cleanup` did not call.
+- While the cleanup callback of `run_with_cleanup` runs, `run()` of a second daemon on the same instance root MUST return `RuntimeError::LockHeld`.
+- After cleanup completion, the source of `run_with_cleanup` MUST drop the `Stores` value that the stores closure returned.
+- After the call that releases the endpoint lock, the source of `run()` MUST release the instance lock.
+- After graceful shutdown completes, `run()` MUST return `Ok(())`.
+- After a startup error and cleanup completion, `run_with_cleanup` MUST return the startup error.
+- After the cleanup completion that follows a serve error, `run_with_cleanup` MUST return `RuntimeError::ServeFailed`.
+- In the source of `run()`, `run()` MUST call `run_with_cleanup` with the empty cleanup callback.
+- The request-handler timeout MUST equal 30 seconds.
+- The drain timeout MUST equal 30 seconds.
+- When a handler runs longer than the request-handler timeout, `sc-runtime` MUST answer the request with the `RUNTIME.REQUEST_TIMEOUT` 503 error envelope.
+- When an in-flight request's handler runs past the drain timeout, `run()` MUST answer the in-flight request with the 503 error envelope whose code is `RUNTIME.DRAIN_TIMEOUT`.
+- The request-handler timeout branch in the source of the request-timeout middleware MUST drop the handler future.
+- The drain timeout branch in the source of the request-timeout middleware MUST drop the handler future.
+- When the drain timeout expires during graceful shutdown, `run()` MUST return `Ok(())`.
+- For a Unix domain socket endpoint, after `run()` returns, the endpoint-lock file MUST still exist.
+- Every call site of `run()` MUST await the future returned by `run()` to completion.
 
 **MUST NOT statements:**
 
-- `run()` MUST NOT delete `daemon.lock`; releasing the lock is sufficient.
-- That trigger MUST NOT be public.
+- The source of `sc-runtime` MUST NOT contain code that deletes `daemon.lock`.
+- After `run()` returns, `run()` of a new daemon on the same instance root MUST NOT return `RuntimeError::LockHeld`.
+- After a request receives the 503 error envelope with code `RUNTIME.REQUEST_TIMEOUT`, `sc-runtime` MUST NOT send another response to the request.
+- The public API of `sc-runtime` MUST NOT expose the crate-private trigger.
 
 ### Rationale
 
 Daemons are restarted by people, by service managers and by tests. A restart
 must not drop a request that was already accepted, and must not leave a
 socket file behind that the next start or a client would trip over.
+Dropping the run future or panicking cannot perform asynchronous cleanup, so
+callers await the run future. Releasing `daemon.lock` is sufficient; the
+operating system frees the lock even when the file stays on disk.
 ### Success Criteria
 
 Criteria that start a daemon in a child process run only on an isolated
