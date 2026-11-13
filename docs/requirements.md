@@ -104,6 +104,8 @@ each waits until a project asks for it.
 
 ### Requirement Statement
 
+Definitions: A workspace member is a Cargo package selected by the root `Cargo.toml` workspace members list. The member table is the table headed `Member path | Crate name | Purpose`. The path table is the separate table headed `Path | Contents`; it lists repository support paths, not member packages.
+
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
@@ -113,13 +115,16 @@ The workspace members MUST be exactly these library crates. Amended 2026-10-25 (
 |---|---|---|
 | `crates/sc-config` | `sc-config` | JSON config files with environment overrides |
 | `crates/sc-transport` | `sc-transport` | UDS/TCP listener and client connector |
-| `crates/sc-command` | `sc-command` | response envelope, `OpError`, REST and MCP conversions |
+| `crates/sc-command` | `sc-command` | response envelope, `OpError`, REST/MCP conversions and shared storage command helpers |
 | `crates/sc-runtime` | `sc-runtime` | daemon assembly: `Daemon::builder()`, `daemon.lock`, `DaemonFixture` |
 | `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
-| `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
-| `crates/sc-cron-commands` (Phase C target) | `sc-cron-commands` | optional standard cron DTOs and scheduler adapter; ADR-RUN-0019 |
+| `crates/sc-cron` | `sc-cron` | optional cron policy over `Storage<CronRow>` in the application database |
+| `crates/sc-cron-commands` | `sc-cron-commands` | optional standard cron DTOs and scheduler adapter; ADR-RUN-0019 |
+| `crates/sc-storage` | `sc-storage` | standard-library-only asynchronous typed storage contract |
+| `crates/sc-monty` | `sc-monty` | single Monty interpreter implementation shared by cron and command transforms |
 
-Phase C amendment: the new adapter member is planned, not yet implemented.
+The Phase D member set is the nine public packages in REQ-RUN-0002.
+The cron-command adapter remains optional for consumers.
 Its default DTO graph and optional scheduler edge are defined by
 REQ-RUN-0332 and NFR-CRNC-0001; no reverse core command/runtime edge is allowed.
 
@@ -142,7 +147,7 @@ owns that rule; items about the wizard or the driver refer to it.
 Decided in this document: ADRs live in the architecture files (`docs/architecture.md` and `docs/<crate>/architecture.md`).
 
 `examples/spike` is an excluded standalone package while it exists. It is not
-a fifth workspace member and it is not a Cargo example. Root `Cargo.toml`
+an additional workspace member and it is not a Cargo example. Root `Cargo.toml`
 `exclude` names `examples/spike`. The workspace member list is exactly the
 library crates in the table above. Sprint a-5 deleted `crates/sc-command/lint-edge/`
 when `crates/sc-runtime` landed. `sc-observability` and `sc-observability-otlp`
@@ -177,14 +182,10 @@ are not valid Rust until rendered.
 ### Success Criteria
 
 1. Inspect the root `Cargo.toml`: `[workspace] members` is the glob `crates/*`.
-   A missing directory is not a member. At the close of sprint `b-1` the glob
-   resolves to `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
-   `crates/sc-runtime`, and `crates/sc-runtime-db-sqlite`. Sprint `b-3` adds
-   `crates/sc-cron` and does not edit `Cargo.toml`. The member set is then
-   the six crates in the table above.
+   A missing directory is not a member. The resolved Phase D member set is
+   exactly the nine library packages in the member table and REQ-RUN-0002.
    `cargo metadata --no-deps --format-version 1` lists those packages and
-   lists no package whose manifest path is under `template/`. Amended
-   2026-10-25.
+   no package whose manifest is under a path-table entry.
 2. `cargo build --workspace` run at the repository root exits 0 and compiles
    no file under `template/`.
 3. Each path in the second table exists at the repository root (with
