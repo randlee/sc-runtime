@@ -576,7 +576,7 @@ the two crates must stay independent so either can be used alone
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. An endpoint is the resolved Unix domain socket path or TCP socket address represented by `Endpoint` and passed to `Client::new` (REQ-TRN-0001 and REQ-TRN-0005).
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. An endpoint is the resolved Unix domain socket path or TCP socket address represented by `Endpoint` and passed to `Client::new` (REQ-TRN-0001 and REQ-TRN-0005). A connection failure is any one of three results of opening a connection to the endpoint: the UDS socket file does not exist; the UDS socket file exists and the connection is refused because nothing is listening; the TCP connection is refused. The connection error of a connection failure is the underlying error that prevented opening the endpoint. A connection attempt is one try to open a connection to the endpoint. The deserialisation error is the error returned when a response body fails to deserialise into the requested type. The body preview of a response body is its first 512 bytes, or the whole body when shorter, decoded as lossy UTF-8. The `Client` is the HTTP client of [REQ-TRN-0005](requirements.md), constructed by `Client::new` and called through `get` and `post`.
 
 2. `code()` returns `DAEMON.NOT_RUNNING`. The variant has no `suggested_action`, no `AppName`, no `sc_observability_types::ErrorCode`, and no `Remediation`. This crate does not name `daemon start`. a-6 maps the string to `ErrorCode` and owns `suggested_action` for every `TransportError`.
 3. Phase A's generated CLI is report-only. Deferred [REQ-RUN-0206](../requirements.md) preserves a possible later optional auto-start layer outside this transport boundary.
@@ -596,18 +596,22 @@ records the same table as the decision for `DaemonNotRunning`.
 **MUST statements:**
 
 - The error enum `TransportError` of the crate `sc-transport` MUST have a variant `DaemonNotRunning`.
-- The client ([REQ-TRN-0005](requirements.md): `Client::new`, `get`, `post`) MUST return `TransportError::DaemonNotRunning` from the first `get` or `post` when it cannot open a connection to the endpoint for one of these reasons: the UDS socket file does not exist; the UDS socket file exists but nothing is listening (connection refused); the TCP connection is refused.
-- `DaemonNotRunning` MUST carry a `code` field of type `&'static str`.
-- The `DaemonNotRunning.code` value MUST be exactly `DAEMON.NOT_RUNNING`.
-- `DaemonNotRunning` MUST carry an `endpoint` field identifying the same resolved Unix domain socket path or TCP socket address passed to `Client::new`.
-- `DaemonNotRunning` MUST carry the cause (the underlying connection error that prevented opening the endpoint).
-- A response body that cannot be deserialised into the requested type MUST produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`), which carries the HTTP status, the cause, and `body_preview` (a lossy UTF-8 prefix of at most 512 bytes of the body).
+- A `get` or `post` call on the `Client` that meets a connection failure MUST return `Err(TransportError::DaemonNotRunning)`.
+- The type of the field `DaemonNotRunning.code` declared in `crates/sc-transport/src` MUST be `&'static str`.
+- When a `get` or `post` call returns `DaemonNotRunning`, `DaemonNotRunning.code` MUST equal `DAEMON.NOT_RUNNING`.
+- When a `get` or `post` call returns `DaemonNotRunning`, `DaemonNotRunning.endpoint` MUST equal the endpoint value passed to `Client::new`.
+- When a `get` or `post` call returns `DaemonNotRunning`, `DaemonNotRunning.cause` MUST hold the connection error of the connection failure.
+- A `get` or `post` call whose response body cannot be deserialised into the requested type MUST return `Err(TransportError::ResponseDecode)`.
+- When a `get` or `post` call returns `ResponseDecode`, `ResponseDecode.code()` MUST return `TRANSPORT.RESPONSE_DECODE`.
+- When a `get` or `post` call returns `ResponseDecode`, `ResponseDecode.status` MUST equal the HTTP status of the response.
+- When a `get` or `post` call returns `ResponseDecode`, `ResponseDecode.cause` MUST hold the deserialisation error.
+- When a `get` or `post` call returns `ResponseDecode`, `ResponseDecode.body_preview` MUST equal the body preview of the response body.
 
 **MUST NOT statements:**
 
 - The `Client` MUST NOT start the daemon.
 - The `Client` MUST NOT spawn any process.
-- The `Client` MUST NOT retry in order to wait for a daemon.
+- A `get` or `post` call MUST NOT make another connection attempt after a connection failure.
 
 ### Rationale
 
