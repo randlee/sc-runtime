@@ -766,9 +766,7 @@ upper bound (REQ-RUN-0002, ANC-037). The historical 0.1.1 release used a
 temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin does not govern
 Phase D.
 
-2026-10-31 amendment: the standalone envelope build remains a sibling-free leaf; its
-additional contract dependent is temporarily cron for the observability port with
-defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
+2026-10-31 amendment: cron is temporarily an additional contract dependent for the observability port with defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
 transitive identities for every production feature, not just direct normal edges.
 
 These rules apply to every feature combination, including `server`.
@@ -781,7 +779,7 @@ member, so `forbidden_edges` does not name `sc-observability` or
 `sc-runtime-db-sqlite` are workspace members, so
 `boundaries/sc-command/sc-command.toml` lists those edges under
 `forbidden_edges` ([REQ-RUN-0005](../requirements.md)). Workspace membership follows the public package set in REQ-RUN-0002. Cargo.toml inspection and
-`cargo tree` still enforce the sibling edges. `allowed_dependents` includes `sc-runtime`, `sc-cron` under ADR-RUN-0017, and `sc-cron-commands`. The non-default `storage` feature enables the shared storage command helpers and their optional `sc-storage` dependency under ADR-RUN-0021. The standalone envelope build is `sc-command` selected with `--no-default-features` and no features; it has no workspace dependency. Neither the default feature set nor `server` alone enables `storage`. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
+`cargo tree` still enforce the sibling edges. `allowed_dependents` includes `sc-runtime`, `sc-cron` under ADR-RUN-0017, and `sc-cron-commands`. The shared storage command helpers consume `sc-storage` under ADR-RUN-0021. OPEN for owner decision: which feature selection carries that edge and which selection, if any, provides the envelope without a workspace dependency. REQ-RUN-0301 requires the generated service to depend on `sc-command` with default features; this record does not decide how the service obtains the shared storage helpers. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
 landed. The third-party crates
 `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
 `sc-lint lint sc-boundary` checks inter-crate edges and the public facade
@@ -792,8 +790,6 @@ The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc
 
 **MUST statements:**
 
-- `sc-command` MUST expose the shared storage command helpers through the non-default `storage` feature.
-- The `storage` feature MUST enable the optional `sc-storage` dependency.
 - `sc-command` MUST depend on the published crate `sc-observability-types` with the registry requirement `">=1.5.0"`.
 
 **MUST NOT statements:**
@@ -830,8 +826,7 @@ error code and remediation types are defined there
    `sc-observability-types `.
 3. `cargo tree -p sc-command -e normal --prefix none --features server`
    gives the same result as criterion 2.
-4. `cargo tree -p sc-command --no-default-features -e normal --prefix none` prints no line beginning with a workspace crate name other than `sc-command`; the same command with `--features storage` prints a line beginning with `sc-storage `. With `--features server` alone it prints no `sc-storage ` line. Inspect `Cargo.toml` to confirm that `storage` is non-default and enables the optional `sc-storage` dependency and that the helpers are gated by `storage`.
-5. This sprint's boundary check is `sc-lint lint sc-boundary --root .` on
+4. This sprint's boundary check is `sc-lint lint sc-boundary --root .` on
    `boundaries/sc-command/sc-command.toml`. Root `just lint` checks all public-package boundary manifests under REQ-RUN-0005.
 
 ---
