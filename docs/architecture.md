@@ -1447,8 +1447,8 @@ Shared standard components reduce repeated code across consuming projects.
 ### Consequences
 
 Benefits: projects reuse documented library APIs and maintain less repeated
-application code; command paths are not hand-written, because default direct
-conversion requires no custom transform; the framework avoids owning duplicate surface-snapshot
+application code; default direct conversion requires no custom transform on
+the command path; the framework avoids owning duplicate surface-snapshot
 tooling, a render engine or a logging facade. Registry, portable raw-SQL
 layer and extra wrapper omissions are Phase D scope under NFR-RUN-0003,
 not prohibitions on later consumer choices. The shared command path and
@@ -1460,7 +1460,9 @@ not save consuming projects code under point 1. The Phase D implementation uses 
 libraries directly, so projects learn those APIs rather than an extra
 framework facade. Required storage engines still implement `Storage<T>`.
 These admission constraints leave consumer-side generation open without
-creating work to implement it in Phase D.
+creating work to implement it in Phase D. Until a consumer-side generator
+exists, hand-written commands between the CLI and storage are the interim
+stand-in; no requirement or ADR says the command path must be hand-written.
 
 ### Alternatives Considered
 
