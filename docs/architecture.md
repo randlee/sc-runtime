@@ -4392,13 +4392,13 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 28. Schedule writes MUST reject Monty source that sc-monty cannot compile.
 
-29. sc-cron MUST capture the compiled hook-session blob immediately after compilation and before any hook runs.
+29. When sc-cron saves a compiled hook-session blob, sc-cron MUST capture that blob immediately after compilation and before any hook runs.
 
-30. sc-cron MUST key each compiled-session blob by sc-sha SHA-256 of the source and the Monty dump version.
+30. When sc-cron saves a compiled-session blob, sc-cron MUST key that blob by sc-sha SHA-256 of the source and the Monty dump version.
 
-31. sc-cron MUST use a cached blob only when its key matches the authoritative source stored in the schedule row.
+31. When sc-cron saves compiled-session blobs, sc-cron MUST use a cached blob only when its key matches the authoritative source stored in the schedule row.
 
-32. A missing, stale, corrupt or unreadable-version blob, or a loaded session missing cron_stop or cron_tick, MUST cause recompilation from source and replacement of the cached pre-run blob.
+32. When sc-cron saves compiled-session blobs, a missing, stale, corrupt or unreadable-version blob, or a loaded session missing cron_stop or cron_tick, MUST cause recompilation from source and replacement of the cached pre-run blob.
 
 33. sc-cron MUST NOT persist hook run state in compiled-session blobs.
 
@@ -4412,7 +4412,7 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 ### Rationale
 
-Typed rows and one atomic operation let application and cron policies use each engine without carrying SQL across backends. A single SQLite writer preserves serialized write ownership and reply-after-commit behavior while asynchronous callers remain nonblocking.
+Typed rows and one atomic operation let application and cron policies use each engine without carrying SQL across backends. A single SQLite writer preserves serialized write ownership and reply-after-commit behavior while asynchronous callers remain nonblocking. Saving compiled-session blobs is permitted, not required: PRD-MONTY-5 says sc-cron can save a compiled Monty binary and leaves that design open to refinement, so points 29–32 apply only when sc-cron saves compiled-session blobs (REQ-CRON-0004).
 
 ### Consequences
 
