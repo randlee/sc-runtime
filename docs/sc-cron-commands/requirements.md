@@ -104,12 +104,12 @@ Phase C target, planned and unimplemented.
 **Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces.
+Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces. The adapter is the `sc-cron-commands` crate. `CronExecutor` is the object-safe executor trait exported by the adapter with default features. `StandardCronExecutor` is the executor provided under its non-default scheduler feature; the standard executor and standard implementation mean it. `CronOperations` is sc-cron's native operations port ([REQ-CRON-0021](../sc-cron/requirements.md)).
 
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
@@ -168,8 +168,12 @@ No consumer-product migration or automatic job start is implied.
 
 **MUST NOT statements:**
 
-- The standard executor MUST NOT introduce a separate timeout or ownership policy.
-- A recommended example, DTO-only library or production success/unsupported stub MUST NOT satisfy selected generation.
+- The standard executor MUST NOT introduce a separate timeout policy.
+- The standard executor MUST NOT introduce a separate ownership policy.
+- A recommended example MUST NOT satisfy selected generation.
+- A DTO-only library MUST NOT satisfy selected generation.
+- A production success stub MUST NOT satisfy selected generation.
+- A production unsupported stub MUST NOT satisfy selected generation.
 - Selecting cron_commands MUST NOT enable MCP when MCP is disabled.
 
 ### Rationale
