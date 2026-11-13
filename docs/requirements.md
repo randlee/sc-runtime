@@ -5146,6 +5146,8 @@ Definitions:
 - The signal-test job is the dedicated `ubuntu-latest` GitHub-hosted job that runs the Phase B generated SIGINT/SIGTERM tests.
 - The isolation variables are the three environment variable values `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`, `GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`.
 - The isolation check passes when all three isolation variables are set to those values, and fails otherwise.
+- A process-spawning call is a call that starts an operating-system process.
+- An isolation guard is a statement that returns from the test when the isolation check fails.
 - A test runner is a GitHub Actions workflow job or a `just` recipe.
 - Production daemon code is the source compiled into the daemon binary, including `crates/sc-runtime/src`.
 - A test variant of the daemon is a crate, binary target, cargo feature, `cfg` flag or build configuration whose purpose is the daemon for tests: a daemon-like executable, a stub daemon or a daemon with parts switched off.
@@ -5167,7 +5169,6 @@ Scope:
 
 - A test MUST start a daemon only through the production `Daemon::builder()` path.
 - The definition of every test runner that runs a daemon-process test MUST target an isolated machine.
-- When its isolation check fails, a daemon-process test MUST return before its first process-spawning call.
 - When no isolated machine is available to `just test`, `just test` MUST print a line stating that the daemon-process tests were not run.
 - The template's example test MUST place its database files under the temporary `<instance-root>` of its `DaemonFixture`.
 - The signal-test job MUST be the only test runner that sets `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`.
@@ -5176,7 +5177,8 @@ Scope:
 
 - The workspace MUST NOT contain a test variant of the daemon.
 - Production daemon code MUST NOT contain a test-only switch.
-- When no isolated machine is available to `just test`, `just test` MUST NOT execute a daemon-process test on the host.
+- The source of a daemon-process test MUST NOT contain a process-spawning call that is not preceded by its isolation guard.
+- The `just test` recipe MUST NOT contain a command that runs a daemon-process test on the host.
 - Production daemon code MUST NOT weaken the `daemon.lock` singleton.
 
 ### Rationale
