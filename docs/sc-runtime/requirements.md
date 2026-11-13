@@ -507,6 +507,9 @@ Definitions:
 - SIGINT is the Unix interrupt signal, and SIGTERM is the Unix termination signal.
 - The request-handler timeout is the `REQUEST_TIMEOUT` constant in `crates/sc-runtime/src/router.rs`.
 - The drain timeout is the `DRAIN_TIMEOUT` constant in `crates/sc-runtime/src/shutdown.rs`.
+- The request-handler deadline of a request is the moment the request-handler timeout expires for that request's handler.
+- The drain deadline is the moment the drain timeout expires after graceful shutdown begins.
+- Shutdown cleanup is the listener, endpoint and instance-lock cleanup that graceful shutdown performs.
 - The 503 error envelope is the existing HTTP 503 response whose JSON body carries a stable error code.
 - The empty cleanup callback is a cleanup callback whose future resolves without doing any work.
 - Ctrl-C is the Windows `CTRL_C_EVENT` console control event; Ctrl-Break is the Windows `CTRL_BREAK_EVENT` console control event.
@@ -531,8 +534,10 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - When the Windows process receives Ctrl-Break after `run()` starts listening for Ctrl-Break and before serving starts, `run()` MUST return `Ok(())`.
 - `run()` MUST begin graceful shutdown when the crate-private trigger fires.
 - After graceful shutdown begins, the listener MUST refuse each new connection attempt.
-- When the handler of an in-flight request finishes within the drain timeout, the client MUST receive the complete response of the handler.
+- If the handler of an in-flight request completes before both its request-handler deadline and the drain deadline, the client MUST receive the complete response of the handler.
 - While an in-flight request has no response, `run()` MUST keep serving the in-flight request on the listener.
+- During graceful shutdown, the socket file MUST still exist when `run()` stops serving on the listener.
+- During graceful shutdown, the endpoint lock MUST remain held until removal of the socket file completes.
 - The source of `run()` MUST place the call that removes the socket file before the call that releases the endpoint lock.
 - For a Unix domain socket endpoint, the socket file MUST no longer exist when `run()` returns.
 - After the call that stops serving on the listener, the source of `run_with_cleanup` MUST call the cleanup callback.
@@ -549,8 +554,10 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - In the source of `run()`, `run()` MUST call `run_with_cleanup` with the empty cleanup callback.
 - The request-handler timeout MUST equal 30 seconds.
 - The drain timeout MUST equal 30 seconds.
-- When a handler runs longer than the request-handler timeout, `sc-runtime` MUST answer the request with the `RUNTIME.REQUEST_TIMEOUT` 503 error envelope.
-- When an in-flight request's handler runs past the drain timeout, `run()` MUST answer the in-flight request with the 503 error envelope whose code is `RUNTIME.DRAIN_TIMEOUT`.
+- If a request's request-handler deadline passes before its handler completes and before any drain deadline, `sc-runtime` MUST answer the request with the `RUNTIME.REQUEST_TIMEOUT` 503 error envelope.
+- If the drain deadline passes before an in-flight request's handler completes and before that request's request-handler deadline, `run()` MUST answer the in-flight request with the 503 error envelope whose code is `RUNTIME.DRAIN_TIMEOUT`.
+- After a request receives the 503 error envelope with code `RUNTIME.REQUEST_TIMEOUT` or `RUNTIME.DRAIN_TIMEOUT`, `sc-runtime` MUST drop the handler future of that request.
+- When the drain deadline passes during graceful shutdown, `run()` MUST complete shutdown cleanup before returning `Ok(())`.
 - In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the request-handler timeout expires MUST drop the handler future.
 - In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the drain timeout expires MUST drop the handler future.
 - When the drain timeout expires during graceful shutdown, `run()` MUST return `Ok(())`.
@@ -598,10 +605,11 @@ machine, never on a developer's host
    in-flight drain/cancel, cleanup, clean exit and restart. Keep existing
    private in-process fixture trigger private; do not signal the test host.
 7. An in-process coordinated test proves a handler exceeding 30 seconds gets
-   the 503 `RUNTIME.REQUEST_TIMEOUT` envelope and that no later terminal
-   response is emitted for that request.
+   the 503 `RUNTIME.REQUEST_TIMEOUT` envelope, that its handler future is
+   dropped, and that no later terminal response is emitted for that request.
 8. A separate coordinated shutdown test proves an in-flight handler exceeding
-   the 30-second drain gets the 503 `RUNTIME.DRAIN_TIMEOUT` envelope, after
+   the 30-second drain gets the 503 `RUNTIME.DRAIN_TIMEOUT` envelope and its
+   handler future is dropped, after
    which endpoint and instance-lock cleanup complete and `run()` returns
    `Ok(())`.
 ### Implementation Notes
