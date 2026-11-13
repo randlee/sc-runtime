@@ -3545,7 +3545,7 @@ sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)). The em
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-27  
-**Last Updated:** 2026-10-28  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-10-27  
 
@@ -3559,7 +3559,9 @@ sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)). The em
 - [sprint-b-11-benchmark-monty-reports.md](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) — Source: Owner, 2026-10-27. Sprint plan: [sprint-b-11-benchmark-monty-reports.md](plans/phase-b/sprint-b-11-benchmark-monty-reports.md).
 ### Context
 
-Monty and sc-cron performance campaigns produce HTML and JSON under `site/reports/benchmark-<subsystem>/`. Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority ([NFR-RUN-0005](requirements.md)).
+**Problem.** Monty and sc-cron performance campaigns produce HTML and JSON under `site/reports/benchmark-<subsystem>/`. A release needs timings that can be trusted as regression evidence, and publish preflight has to check that evidence.
+
+**Constraints.** Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority ([NFR-RUN-0005](requirements.md)). Hosted preflight does not SSH to the controlled host.
 ### Decision
 
 1. Benchmarks are **automated procedures**: agents follow `.claude/skills/benchmark-run/SKILL.md` (the `/benchmark-run` skill), which drives `scripts/benchmark/` recipes (`just --justfile scripts/benchmark/justfile …`) and subsystem `campaign.py` runners. This is repeatable automation, not ad-hoc manual timing.
