@@ -762,7 +762,10 @@ Standard crates used the documented way mean less code to own and review.
 | `sc-command` | library crate of this workspace |
 | `sc-runtime` | library crate of this workspace |
 | `sc-runtime-db-sqlite` | rusqlite write actor |
-| `sc-cron` | SQLite-backed cron |
+| `sc-cron` | cron policy over application storage |
+| `sc-cron-commands` | standard cron command adapter |
+| `sc-storage` | shared typed storage contract |
+| `sc-monty` | shared Monty interpreter |
 | `sc-observability` | the SC logging and telemetry crate |
 | `sc-observability-otlp` | its OpenTelemetry export crate |
 | `sc-observability-types` | its error-code crate |
@@ -777,10 +780,11 @@ the workspace and from the cargo resolve
 `sc-runtime-db-sqlite`, so `boundaries/sc-transport/sc-transport.toml` lists
 `sc-transport -> sc-runtime-db-sqlite`. Other workspace-member edges from the
 table above are listed when those targets are members of the lint tree.
-`sc-cron` is not a member during sprint `b-1`, so it is not a
-`forbidden_edges` entry yet. Crates.io names stay on the `cargo tree` check:
+Historically, `sc-cron` was absent during sprint `b-1`; Phase D membership
+follows REQ-RUN-0002, including the three shared/adapter packages above. Crates.io names stay on the `cargo tree` check:
 no line begins with `sc-config `, `sc-command `, `sc-runtime `,
-`sc-runtime-db-sqlite `, `sc-cron `, `sc-observability `,
+`sc-runtime-db-sqlite `, `sc-cron `, `sc-cron-commands `,
+`sc-storage `, `sc-monty `, `sc-observability `,
 `sc-observability-types `, or `sc-observability-otlp ` (each name followed
 by a space).
 
@@ -795,7 +799,7 @@ feature key; [NFR-TRN-0001](requirements.md) checks it with `cargo tree`.
 
 **MUST statements:**
 
-- The list is owned by [REQ-RUN-0005](../requirements.md), which states the workspace-internal and forbidden edges of all four crates; this item applies it to `sc-transport` and MUST stay identical to it.
+- The list is owned by [REQ-RUN-0005](../requirements.md), which states the workspace-internal and forbidden edges of the public package set in REQ-RUN-0002; this item applies it to `sc-transport` and MUST stay identical to it.
 
 **MUST NOT statements:**
 
@@ -803,12 +807,11 @@ feature key; [NFR-TRN-0001](requirements.md) checks it with `cargo tree`.
 
 ### Rationale
 
-Each of the four crates must build and test on its own and be usable without
-the other three or the template ([REQ-RUN-0002](../requirements.md)), so any
-of them can be used by programs that are not sc-runtime daemons or move to
-its own repository later. The three standalone crates `sc-config`,
-`sc-transport` and `sc-command` have no dependency edges among them; only
-`sc-runtime` knows the others ([ADR-RUN-0003](../architecture.md)).
+Each public crate must build and test when selected on its own. `sc-transport`
+remains usable without the other SDK crates or the template
+([REQ-RUN-0002](../requirements.md)), so programs that are not sc-runtime
+daemons can use it and it can move to its own repository later. The three standalone crates `sc-config`,
+`sc-transport` and `sc-command` have no dependency edges among them; the required assembly and shared-storage edges are owned by REQ-RUN-0005 ([ADR-RUN-0003](../architecture.md)).
 `sc-observability` is forbidden because observability is not wrapped: a
 project's `main.rs` initialises it directly and no library crate of this
 workspace depends on it ([ADR-RUN-0004](../architecture.md)).
@@ -818,7 +821,7 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 1. `cargo tree -p sc-transport -e normal --prefix none` and the same command
    with `--features server` each print no line beginning with `sc-config `,
    `sc-command `, `sc-runtime `, `sc-runtime-db-sqlite `, `sc-cron `,
-   `sc-observability `, `sc-observability-types `, or
+   `sc-cron-commands `, `sc-storage `, `sc-monty `, `sc-observability `, `sc-observability-types `, or
    `sc-observability-otlp ` (each name followed by a space).
 2. Inspection of `crates/sc-transport/Cargo.toml` finds none of those names
    as a key in `[dependencies]`, `[dev-dependencies]`,
@@ -827,12 +830,13 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
    `forbidden_edges` list records the workspace-member edges
    [REQ-RUN-0005](../requirements.md) requires for `sc-transport` that are
    members of the lint tree, including `sc-transport -> sc-runtime-db-sqlite`.
-   `sc-cron` is omitted until it is a workspace member, because sc-lint 0.8.0
-   exits 3 for a target absent from the workspace. Its `allowed_dependents`
+   All other public-package workspace targets are included when present in
+   the lint tree; historical incomplete trees omit absent targets because
+   sc-lint 0.8.0 exits 3 for a target absent from the workspace. Its `allowed_dependents`
    list is `sc-runtime`. Its `allowed_dependencies` are `tokio`, `reqwest`,
    `serde`, and `serde_json`.
 4. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0. Root
-   `just lint` across all four manifests stays with a-5.
+   `just lint` checks the public-package manifests under REQ-RUN-0005.
 5. `cargo test -p sc-transport` passes from a clean checkout.
 
 ---

@@ -441,7 +441,7 @@ test. Routing CI through the same recipes means a green local `just lint` and
 ### Requirement Statement
 
 2026-10-31 amendment: ADR-RUN-0017 permits exactly cron -> command
-(defaults off/no features). All five SDK normal/build
+(defaults off/no features). All public-package (REQ-RUN-0002) normal/build
 closures must exclude full logger/OTLP by resolved identity, including aliases
 and transitive edges. Direct-depth normal-only checks below are historical
 minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
@@ -459,8 +459,8 @@ state it.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | `sc-storage` when providing the shared storage command helpers (ADR-RUN-0021); the standalone envelope build has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
@@ -493,7 +493,7 @@ must print no direct `sc-observability ` or `sc-observability-otlp ` line.
    |---|---|
    | inter-crate edges and forbidden edges; public facade list | `sc-lint-boundary`, run by `just lint` |
    | dependencies allowed only behind the `server` cargo feature (`axum` in `sc-transport`; `axum` and `rmcp` in `sc-command`) | the `cargo tree` criteria of [NFR-TRN-0001](sc-transport/requirements.md), [NFR-CMD-0001](sc-command/requirements.md) and [NFR-RUN-0001](requirements.md) |
-   | `sc-runtime` wraps no `axum` or `rmcp` type ([NFR-RT-0001](sc-runtime/requirements.md)) | architecture review of the pull request |
+   | Phase D assembly facade adds no library-hiding wrapper ([NFR-RT-0001](sc-runtime/requirements.md)) | architecture review of the pull request |
 
 The manifest file name is `boundaries/<crate>/<crate>.toml`.
 
@@ -1758,7 +1758,7 @@ example keeps the template thin and leaves little to delete.
    and `widget_get`. With `mcp` on and the general surface on, `tools/list`
    also returns the [REQ-RUN-0331](requirements.md) commands, including
    `delete row`. 4. `grep -rn 'ops/' crates/` in the `randlee/sc-runtime` repository (the
-   four library crates) finds no match outside tests and documentation.
+   public package set in REQ-RUN-0002) finds no match outside tests and documentation.
 5. In a project generated with `mcp` equal to `true`, a test sends an MCP
    `tools/call` of `widget_create` to `/mcp` with no prior `initialize`
    request and no session header, and it succeeds.

@@ -543,7 +543,7 @@ crate's exported items a visible manifest change for that review.
 
 Amended: 2026-10-24 (sprint a-7), points 7–9, the publish and release contract
 
-- [REQ-RUN-0001](requirements.md): one repository, one workspace, four crates, `template/`
+- [REQ-RUN-0001](requirements.md): one repository, one workspace, the public package set, `template/`
   outside the workspace.
 - [REQ-RUN-0002](requirements.md): each crate builds, tests and publishes on its own.
 - [REQ-RUN-0003](requirements.md): generated projects name the crates by version, never by
@@ -562,6 +562,8 @@ dependencies whose source was copied into each generated project, to be
 extracted into published crates in a later phase. Copied source has no upgrade
 path: every fix would have to be re-applied by hand in every project.
 ### Decision
+
+Phase D applies the package rules to the full public package set in REQ-RUN-0002, released together at 0.3.0. Point 1 records the original first-commit packages; later members are those in the current set. The Phase C release description below is historical and does not keep the Phase D SQLite package private.
 
 1. `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` MUST be separate
    crates under `crates/` from the first commit, each a member of the root
@@ -600,7 +602,7 @@ path: every fix would have to be re-applied by hand in every project.
    `ubuntu-latest`, `tar.gz`). `release_binaries` stays empty. Phase A ships
    no release binaries.
 
-Phase C shared-version release policy (owner correction, 2026-11-04):
+Historical Phase C shared-version release policy (owner correction, 2026-11-04):
 
 The owner stated: "I expect we will release all crates every release". Every
 public crate therefore participates in the same versioned release. Phase C
@@ -633,7 +635,7 @@ Release workflow files stay kit output.
 **Neutral:**
 
 - OPEN: point 3's same-commit testing needs a generated project to resolve
-  the four crates from the checked-out `crates/` directory and not from
+  the selected public packages from the checked-out `crates/` directory and not from
   crates.io. Who writes the `[patch.crates-io]` entry that does this (a template
   option, the driver `scripts/new_project.py`, or the CI workflow) is undecided
   ([REQ-RUN-0003](requirements.md)). The release run of the fixture matrix
@@ -672,7 +674,7 @@ One repository per crate from day one.
 Rejected because a change that touches a crate and the template together could no longer be made and tested in one commit.
 ### Implementation
 
-Enforced by: `req-qa` on [REQ-RUN-0001](requirements.md) (points 1 and 3: four crates
+Enforced by: `req-qa` on [REQ-RUN-0001](requirements.md) (points 1 and 3: the public package set
 under `crates/` in one workspace, `template/` outside it); `req-qa` on
 [REQ-RUN-0002](requirements.md) (point 2: each crate builds, tests and publishes on its
 own); `req-qa` on [REQ-RUN-0003](requirements.md) (points 4 and 5: rendered `Cargo.toml`
@@ -712,7 +714,7 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 - [ADR-RUN-0303](architecture.md): the crate graph of a generated project.
 ### Context
 
-The edges in this ADR describe the code as it is and stay enforced until the code changes. Implementing PRD v2.0 changes them ([code-alignment.md](prd/code-alignment.md)). The `sc-config` Tokio exclusion is a Phase D deliverable constraint and does not forbid a later async configuration option (PRD-ENG-5/6).
+The table mirrors the current Phase D package graph in REQ-RUN-0005 and the public set in REQ-RUN-0002. Boundary migrations land with their corresponding code changes ([code-alignment.md](prd/code-alignment.md)); historical sprint graph snapshots do not prohibit the required shared-storage and interpreter edges. The `sc-config` Tokio exclusion is a Phase D deliverable constraint and does not forbid a later async configuration option (PRD-ENG-5/6).
 
 Two properties pull against each other. Each of `sc-config`, `sc-transport`
 and `sc-command` must be usable alone by programs that are not sc-runtime
@@ -731,11 +733,14 @@ as its own selection.
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+   | `sc-command` | `sc-storage` when providing the shared storage command helpers (ADR-RUN-0021); the standalone envelope build has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | `sc-storage`; optional `sc-monty` for interpreter execution; temporary defaults-off/no-features `sc-command` for the contract (ADR-RUN-0017). Canonical event values use registry `sc-observability-types` | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron-commands` | defaults-off `sc-command`; `sc-storage` for the shared command storage adapter; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+| `sc-storage` | none; Rust standard library only | every other workspace crate and every external crate |
+| `sc-monty` | none; production dependencies limited to pydantic Monty crates | every `sc-*` production dependency, Tokio and serde_json |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
@@ -744,17 +749,12 @@ list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
 cannot fail a crates.io edge, so direct-depth cargo-tree checks prove that
 `sc-runtime` and `sc-cron` contain the types crate but not the full runtime.
-`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
-`sc-transport`, and temporarily `sc-runtime` plus `sc-cron` for `sc-command`
-under ADR-RUN-0017. The
-edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
-entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
+`allowed_dependents` records the reverse workspace edges of the table for the supported features. Thus sc-storage admits the listed command, SQLite and cron consumers; sc-monty admits cron when its interpreter feature is selected; command admits runtime, cron and the cron-command adapter. External consumer applications are not workspace dependents. The absent runtime -> config edge remains forbidden. Historical sprint a-1/a-5 evidence records the earlier graph, not a restriction on these Phase D edges.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
-   another, because each must be usable without the others. `sc-runtime` MUST
-   be the only assembly crate depending on the other three; the sole temporary
-   exception is cron -> command under ADR-RUN-0017.
+   another, preserving their standalone capabilities. Other public-package
+   dependencies MUST follow the table above, including the shared-storage
+   edges and the temporary cron -> command contract edge under ADR-RUN-0017.
 3. The allowed third-party dependencies of each crate are owned by that
    crate's NFR and are not restated here:
    [NFR-CFG-0002](sc-config/requirements.md) for `sc-config`,
@@ -777,7 +777,7 @@ entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 7. Feature-gated code MUST be tested both with and without
    `--features server` (decided in this document). The `just test` recipe of
    [REQ-RUN-0004](requirements.md) runs `cargo test -p <crate>` with default features for
-   each of the four crates, and `cargo test -p sc-transport --features server`
+   each crate in the public package set, and `cargo test -p sc-transport --features server`
    and `cargo test -p sc-command --features server`.
 8. The property "a CLI links none of axum, rmcp or sqlx" is defined for a CLI
    built as its own selection, `cargo build -p <project>-cli`
@@ -816,7 +816,7 @@ types.
 
 `sc-lint-boundary` cannot express "axum only with `server`": its manifest
 format has no cargo-feature key. Feature-conditional dependencies are checked
-with `cargo tree`, and wrapper-type rules by `arch-qa` review.
+with `cargo tree`, and Phase D facade scope by `arch-qa` review.
 ### Alternatives Considered
 
 #### Alternative 1: Splitting each of the two crates into a `-client` and a `-server` crate
@@ -1163,7 +1163,7 @@ Enforced by: [NFR-RUN-0006](requirements.md), checked by inspecting the contents
 
 `sc-config` has a stated base requirement: every public method returns a
 discriminated union (in Rust, `Result<T, ConfigError>` with a typed error
-enum) and nothing panics. The same reasoning applies to all four crates: they
+enum) and nothing panics. The same reasoning applies to the public package set in REQ-RUN-0002: those crates
 run inside long-lived daemons, where a panic is an outage, and inside CLIs
 driven by agents, where a panic is a failure no caller can parse.
 
@@ -1177,22 +1177,24 @@ conversion cannot fail.
 The owner of the error rule and of the panic rule is
 [NFR-RUN-0009](requirements.md); this ADR records the decision behind it.
 
-1. Every fallible public function in `sc-config`, `sc-transport`, `sc-command`
-   and `sc-runtime` MUST return `Result<T, E>` for the errors the crate itself
+1. Every fallible public function in the public package set (REQ-RUN-0002) MUST return `Result<T, E>` for the errors the crate itself
    originates, where `E` is that crate's one typed error enum: `ConfigError`
    in `sc-config`, `TransportError` in `sc-transport`, `RuntimeError` in
-   `sc-runtime`. The design states this for `sc-config`; for the other crates
-   it is decided in this document.
+   `sc-runtime`. The design originally stated this for `sc-config`; the public-package
+   scope and named contract exceptions are owned by NFR-RUN-0009.
 2. Recorded exception: `sc_command::IntoMcp::into_mcp` returns
    `Result<CallToolResult, McpError>`, where `McpError` is rmcp's error type,
    and the `sc-command` conversion of `Envelope<T>` into an axum response
    (`IntoResponse`) is infallible. Those signatures are dictated by rmcp and
-   axum. Point 1 does not apply to them.
+   axum. Point 1 does not apply to those dictated signatures. The named
+   `CanonicalLog::emit`/`EventError` exception in ADR-RUN-0017 and the shared
+   `Storage<T>`/`StorageError` contract in NFR-RUN-0009 also remain applicable.
 3. No public function in those crates may panic on caller input or on
    environment state. None of `unwrap`, `expect`, `panic!`, `unreachable!`,
    `todo!`, `unimplemented!`, panicking `[]` indexing may be reachable from a
    public function. There is no allowance for an exception justified by a
-   code comment.
+   code comment. The sole fixed Noop literal-invariant exception expressly
+   recorded in ADR-RUN-0017 remains bounded as written there.
 4. Public APIs MUST NOT return opaque errors such as `anyhow::Error` or
    `Box<dyn Error>`.
 5. An error returned by a service function that crosses a process boundary
@@ -1218,9 +1220,9 @@ error enum and a test per variant.
 
 **Neutral:**
 
-- OPEN: whether `sc-command` needs an error enum of its own, and its name if
-  so, is undecided. Its only fallible public function known today is
-  `into_mcp`, which is covered by point 2.
+- The earlier envelope-only design left the sc-command enum question open.
+  The shared command path now requires typed `StorageCommandError` failures
+  under ADR-RUN-0021; the named imported-error exceptions remain those above.
 - OPEN: whether a response the framework produces before or outside a
   service function is an envelope is undecided: an axum response for an unknown
   route, an axum rejection of a request body, an rmcp protocol error. The owner
