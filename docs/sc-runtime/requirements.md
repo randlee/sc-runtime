@@ -554,89 +554,91 @@ contract. Ctrl-Break is selected for Phase C; implementation is planned.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-24  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. API means application programming interface. The stores closure is the application-supplied async function passed to Daemon::builder().stores(...) that opens and returns its Stores value.
+Definitions: CLI means command-line interface.
+MCP means Model Context Protocol.
+HTTP means Hypertext Transfer Protocol.
+API means application programming interface.
+OS means operating system.
+TCP means Transmission Control Protocol.
+A fixture is a sc_runtime::testing::DaemonFixture value controlling one application daemon.
+A live fixture is a fixture whose daemon has started and has not completed shutdown.
+The instance root is the fixture-specific temporary directory containing daemon.lock and, on macOS and Linux, daemon.sock.
+The stores closure is the application-supplied asynchronous .stores(...) callback producing the application Stores value.
+The routes closure is the application-supplied .routes(...) callback producing the application router.
+The MCP closure is the optional application-supplied .mcp(...) callback producing the MCP service.
+Endpoint is the sc-transport value identifying the bound Unix-domain-socket path or TCP socket address.
+A real listener is an OS-bound Unix-domain-socket or TCP listener.
+Client is the sc_transport::Client HTTP client type.
+SC_ENDPOINT is the environment variable supplying an endpoint to the sc-transport resolver.
+fixture in a code expression denotes the started DaemonFixture under test.
+resolve_endpoint is the sc-transport function returning a parsed Endpoint; flag is the optional --endpoint value supplied to the function.
+--endpoint is the command-line option supplying an endpoint to the sc-transport resolver.
+A socket is a Unix-domain-socket endpoint.
+A port is a TCP listener port.
+A lock file is the instance-root daemon.lock file.
+A database file stores the application database.
+The shutdown trigger is the crate-private notification stopping only the fixture daemon.
+The production shutdown runner is the common runtime path implementing the REQ-RT-0005 shutdown sequence for fixture stop and process signals.
+The shutdown sequence is the production sequence in REQ-RT-0005: stop acceptance, drain requests, dispose the listener and selected socket in the specified endpoint-ownership order, await application cleanup while retaining successful stores and the instance lock, then release the instance lock.
+Cleanup completion means resolution of the future returned by the application cleanup closure.
+A started fixture is a DaemonFixture returned by a successful constructor call.
+The current user is the operating-system user running the test.
+A process signal is an operating-system signal delivered to a process.
+A fixed path is a location reused instead of selecting a fresh temporary directory for each fixture.
+Parallel fixture execution means overlapping live fixture lifetimes within one test binary under the default Rust test runner.
 
-The name is illustrative until the contract sprint pins it.
+The testing module uses the non-default `test-util` feature ([NFR-RT-0003](requirements.md)); `tempfile` is optional and enabled only by `test-util`.
 
-- The string is produced by the endpoint-to-string conversion that `sc-transport` provides ([REQ-TRN-0001](../sc-transport/requirements.md)); `sc-runtime` does not format it.
-- On Windows the caller supplies a distinct endpoint for each fixture. The fixture does not choose one.
+Constructors are `start(app, config, stores, routes)`, `start_with_mcp(app, config, stores, routes, mcp)` and additive `start_with_cleanup` with existing setup/routes inputs plus once-only asynchronous application cleanup. All are `DaemonFixture` methods. Accessors are `client()`, `endpoint()`, `endpoint_str()`, `instance_root()` and asynchronous `shutdown()`.
 
-`testing::DaemonFixture` sits behind the non-default cargo feature `test-util`
-([NFR-RT-0003](requirements.md)). The temporary directory is `tempfile`, an
-optional dependency of that feature only.
+Endpoint text uses sc-transport conversion ([REQ-TRN-0001](../sc-transport/requirements.md)): `uds:<path>` or `tcp:<socket-addr>`. The fixture neither formats endpoint text nor invents endpoints. Windows callers supply distinct endpoints through `endpoint_flag`, `transport.endpoint` or `transport.tcp_port`. The macOS/Linux default is a Unix domain socket. The parallelism test uses two fixtures; capability has no fixture-count limit. `/tmp/...` is an example of a fixed path.
 
-`DaemonFixture::start(app, config, stores, routes)` and
-`DaemonFixture::start_with_mcp(app, config, stores, routes, mcp)` call
-production `Daemon::builder`. The fixture always replaces
-`config.transport.instance_root` with a fresh temporary directory. Accessors
-are `client()`, `endpoint()`, `endpoint_str()`, `instance_root()`, and
-`shutdown()`. `endpoint_str()` is `Endpoint`'s `Display` (`uds:<path>` or
-`tcp:<socket-addr>`), which `sc-transport` owns
-([REQ-TRN-0001](../sc-transport/requirements.md)). The fixture does not format
-that string and does not invent an endpoint. On Windows the caller supplies
-`endpoint_flag`, `transport.endpoint`, or `transport.tcp_port` before
-`start`. The parallelism test runs two fixtures.
+Cleanup uses production `run_with_cleanup` through the common runner; ordinary start supplies empty cleanup. Normal stop and startup failure preserve the primary runtime error. Cleanup entry has no unused setup closures. Successful stores, logger and acquired instance lock remain owned until cleanup completion. Endpoint release preserves production ownership order. Shutdown/drop physically join the fixture thread. Tests cover blocked cleanup, contention, startup failure, parallel fixtures, endpoint closure and startup-timeout no-detachment. No alternate lifecycle or public fixture shutdown trigger is introduced.
 
-Phase C fixture cleanup target amendment:
-
-An additive `DaemonFixture::start_with_cleanup` accepts the existing fixture
-setup/routes plus a once-only asynchronous application cleanup closure and
-runs production `run_with_cleanup` through the same internal runner. Ordinary
-start delegates with empty cleanup. On normal stop and startup errors, preserve
-primary runtime error, drop unused setup closures before cleanup, retain
-successful stores/logger/instance lock until cleanup finishes, release endpoint
-in existing order, and physically join the fixture thread on shutdown/drop.
-Tests coordinate blocked cleanup, lock contention, startup failure, parallel
-fixtures, endpoint closure and startup-timeout no-detachment. No new public
-shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
-
-The existing transport/runtime binds port zero once and reports the actual
-bound endpoint while retaining its listener. Cleanup fixtures preserve that
-continuous ownership and public endpoint accessor; reserve/drop/rebind is
-forbidden, as are retry/sleep/timeout workarounds for the port race. Add
-ready-state `run_with_cleanup_and_bound(on_bound,cleanup)` for production
-real-signal child tests: one callback after successful bind reports the actual
-Endpoint while the listener remains owned; no callback on pre-bind failure.
-The recipient confirms health before signaling. Ordinary run/run_with_cleanup
-delegate with a no-op callback; existing error/cleanup/ownership order remains.
-This extends REQ-RT-0001's public ready-state surface without a transport API
-change or exposing the private fixture shutdown trigger.
-
-A process signal would stop every fixture in the test binary (decided in this document).
-
-This lets a test point a plain HTTP or MCP client at the daemon and an isolated-machine test point the CLI binary at it (decided in this document).
+Port zero binds once with continuous listener ownership through actual-endpoint reporting. Reserve/drop/rebind and port-race retry/sleep/timeout workarounds are forbidden. Production real-signal child tests use `run_with_cleanup_and_bound(on_bound, cleanup)`: successful bind calls `on_bound` exactly once with the actual owned Endpoint; pre-bind failure calls no bound callback. The recipient confirms health before signaling. Ordinary `run` and `run_with_cleanup` delegate with a no-op bound callback. Existing startup/error/cleanup/ownership order remains binding. This extends [REQ-RT-0001](requirements.md) without changing the transport API.
 
 **MUST statements:**
 
-- `sc-runtime` MUST expose `sc_runtime::testing::DaemonFixture` for use in the tests of generated projects and of this workspace.
-- Starting a fixture MUST create a new temporary directory.
-- That temporary directory MUST be supplied to the daemon as its explicit instance-root path (the directory holding `daemon.lock` and, on macOS and Linux, `daemon.sock`).
-- The fixture MUST start the daemon through the same `Daemon::builder()` path as production.
-- The fixture MUST use the real `daemon.lock`.
-- The fixture MUST use the project's stores closure.
-- The fixture MUST use the project's routes closure.
-- The fixture MUST use the project's optional MCP closure.
-- The fixture MUST use a real listener bound through `sc-transport`.
-- The fixture MUST expose an `sc_transport::Client` already connected to that daemon's endpoint (decided in this document).
-- The fixture MUST expose its resolved endpoint in the string form accepted by `--endpoint` and `SC_ENDPOINT`.
-- The fixture MUST expose its instance-root path (decided in this document).
-- The fixture MUST stop its daemon through a crate-private trigger.
-- That trigger MUST run the same shutdown sequence a signal starts (stop accepting, drain in-flight requests, close the listener, remove the socket file, release the lock: REQ-RT-0005).
-- Dropping the fixture MUST stop the daemon.
-- The operation a test uses to stop the fixture (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the listener is closed.
-- For a Unix domain socket endpoint, that operation MUST return only after the socket file is removed (decided in this document).
-- On platforms whose default endpoint is a Unix domain socket (macOS and Linux), any number of fixtures MUST be able to run at the same time inside one test binary under the default parallel test runner, with no shared socket, port, lock file or database file.
+- The `sc-runtime` crate MUST export the public symbol `sc_runtime::testing::DaemonFixture`.
+- Each call to a `DaemonFixture` constructor MUST create a new temporary directory.
+- The fixture configuration code in `sc-runtime` MUST assign the new temporary-directory path to `config.transport.instance_root`.
+- Fixture startup in `sc-runtime` MUST call the production `Daemon::builder()` path.
+- Starting a fixture MUST acquire the OS lock on `<instance-root>/daemon.lock`.
+- The production builder used by the fixture MUST receive the application's stores closure through `.stores(...)`.
+- The production builder used by the fixture MUST receive the application's routes closure through `.routes(...)`.
+- Fixture startup with an MCP closure MUST invoke the supplied MCP closure through the production builder's `.mcp(...)` callback.
+- The fixture startup implementation in `sc-runtime` MUST call the `sc-transport` listener-binding API.
+- The return type of `DaemonFixture::client()` MUST be `&sc_transport::Client`.
+- The connection state of the client returned by `DaemonFixture::client()` MUST be connected to the fixture daemon endpoint.
+- The string returned by `DaemonFixture::endpoint_str()` MUST equal the resolved Endpoint's `Display` value.
+- The result of `sc_transport::resolve_endpoint` for the fixture endpoint string supplied through `--endpoint` MUST equal `Ok(fixture.endpoint().clone())`.
+- The sc-transport resolver MUST return the fixture endpoint for `SC_ENDPOINT=<value>` with `<value>` equal to `DaemonFixture::endpoint_str()`.
+- The path returned by `DaemonFixture::instance_root()` MUST equal the fixture's temporary instance-root path.
+- The fixture stop implementation in `sc-runtime` MUST invoke the crate-private shutdown trigger.
+- The fixture shutdown implementation in `sc-runtime` MUST call the production shutdown runner used by signal handling.
+- The fixture daemon MUST be stopped when fixture drop completes.
+- The fixture listener MUST be closed when fixture drop returns.
+- The fixture listener MUST be closed when the asynchronous `shutdown()` future resolves.
+- For a Unix-domain-socket fixture, the selected socket file MUST be absent when fixture drop returns.
+- For a Unix-domain-socket fixture, the selected socket file MUST be absent when the asynchronous `shutdown()` future resolves.
+- On macOS, `DaemonFixture` MUST support any number of concurrent live instances in one test binary under the default Rust test runner.
+- On Linux, `DaemonFixture` MUST support any number of concurrent live instances in one test binary under the default Rust test runner.
 
 **MUST NOT statements:**
 
-- There MUST NOT be a public builder method for the crate-private shutdown trigger.
-- The fixture MUST NOT send a process signal.
-- The fixture MUST NOT use a fixed path such as `/tmp/...` or a path under the user's home directory.
+- Within macOS/Linux parallel fixture execution, a fixture MUST NOT use another live fixture's socket.
+- Within macOS/Linux parallel fixture execution, a fixture MUST NOT use another live fixture's port.
+- Within macOS/Linux parallel fixture execution, a fixture MUST NOT use another live fixture's lock file.
+- Within macOS/Linux parallel fixture execution, a fixture MUST NOT use another live fixture's database file.
+- The public `DaemonBuilder` surface MUST NOT expose the fixture shutdown trigger.
+- The fixture shutdown implementation in `sc-runtime` MUST NOT call a process-signal sending API.
+- The fixture configuration code in `sc-runtime` MUST NOT assign a fixed instance-root path.
+- The instance-root path returned by `DaemonFixture::instance_root()` MUST NOT be inside the current user's home directory.
 
 ### Rationale
 
