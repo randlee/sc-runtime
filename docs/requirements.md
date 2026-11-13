@@ -235,7 +235,7 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate's `repository` in `cargo metadata --no-deps` output MUST be `https://github.com/randlee/sc-runtime`.
 - Each public crate's `readme` in `cargo metadata --no-deps` output MUST name that crate's README.
 - Each public crate MUST be independently publishable to crates.io.
-- The package license of every published crate MUST be `MIT`.
+- The `license` value that `cargo metadata` reports for every published crate MUST be `MIT`.
 - The repository LICENSE file MUST contain the MIT license text.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-config` MUST pass its own default-feature tests.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-transport` MUST build with its default features.
