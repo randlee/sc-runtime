@@ -164,74 +164,163 @@ sides agree on the shape at compile time.
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-11-12
-**Owner:** randlee
+**Owner:** randlee  
 
 ### Requirement Statement
 
-`sc-command` is the Rust crate in `crates/sc-command`, imported as `sc_command`. `OpError` is the operation-error value with `kind`, `code`, `message`, `details` and `suggested_action` fields. `ErrorKind` is the error-classification enum used by `OpError`. JSON means JavaScript Object Notation. An upper bound is a version requirement that excludes a later version, including an exact pin, a tilde requirement or an explicit upper limit.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006). A suggestion is the non-empty recovery text an `OpError` is built with. Default features are the Cargo features of `sc-command` that are on when a dependent gives no `features` or `default-features` key.
 
-Allowed remediation types (from the published Rust crate `sc-observability-types`):
+Dependency requirement: `sc-command` declares registry `sc-observability-types`
+with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002, ANC-037).
+An upper bound is any requirement that excludes a later version, including an
+exact `=` pin, a tilde requirement or an explicit `<` limit. The historical
+0.1.1 release used a temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin
+does not govern Phase D. OpError wire fields and serialization are unchanged.
 
-| Rust type |
-|---|
-| `sc_observability_types::Remediation` |
-| `sc_observability_types::RecoverableSteps` |
+`OpError` is the error half of the response envelope `Envelope<T>` ([REQ-CMD-0001](requirements.md)) and the error type service functions return in `Result<T, OpError>`. A generated project's `service` crate therefore uses `sc-command` with default features; the generated workspace's crate graph, including how `service` and `daemon` obtain `sc-command`, is owned by [REQ-RUN-0301](../requirements.md).
 
-Default Cargo features are those enabled when a dependent specifies neither `features` nor `default-features`.
+The keys `kind`, `code`, `message`, `details`, and `suggested_action` are always present. `details` and `suggested_action` are JSON `null` when the Rust field is empty. This item is the owner of which `OpError` keys are present on the wire; other items refer to "the keys defined by REQ-CMD-0002".
 
-A stored remediation value is remediation held by `OpError`. A construction-input remediation value is remediation supplied to construct `OpError`. The serialised error is the JSON value returned by serialising `OpError`. A suggestion is non-empty recovery text supplied when constructing `OpError`. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. The allowed remediation types are `sc_observability_types::Remediation` and `sc_observability_types::RecoverableSteps`.
+| Field | Meaning | Type |
+|---|---|---|
+| `kind` | coarse error category; the HTTP status is derived from it | `sc_command::ErrorKind`, a public enum exported from the crate root (the type name `ErrorKind` is decided in this document) |
+| `code` | stable machine-readable code that automation branches on, for example `DAEMON.NOT_RUNNING` | `sc_observability_types::ErrorCode` |
+| `message` | human-readable summary | `String` |
+| `details` | structured machine-readable context | `Option<serde_json::Value>`; JSON `null` when absent |
+| `suggested_action` | wire name for remediation | Rust field `remediation: Option<sc_observability_types::Remediation>`; on the wire a JSON string, or JSON `null` when absent |
 
-A suggestion-bearing wire value is the `suggested_action` value produced by serialising an `OpError` built with a suggestion. A details round trip is deserialising JSON into `OpError` and serialising that `OpError` back to JSON. Its input details and output details are the respective `details` values.
+`Display` for `OpError` is `{code}: {message}`. `Display` for `ErrorKind` is its wire spelling. There is no `From<anyhow::Error>` and no constructor from `Box<dyn Error>`. (The comparison traits are decided in this document; the round-trip tests need them, and `sc_observability_types::ErrorCode` already implements them. `Display` and `std::error::Error` let a consumer use `?` without a local wrapper.)
+
+`ErrorCode` is a newtype over a string and serialises as a JSON string, so `code` appears on the wire as, for example, `"DAEMON.NOT_RUNNING"`.
+
+(The design's only example shows a plain string.)
+
+Serialising `Remediation::NotRecoverable` is the one projection that inserts `justification` into the wire `details` value.
+
+`ErrorKind` variants and their wire spellings are `invalid_input`,
+`not_found`, `conflict`, `unavailable`, and `internal`. The enum is
+`#[non_exhaustive]`. An unrecognised `kind` string fails deserialization.
+HTTP status is 400, 404, 409, 503, and 500 in that order, and that mapping
+lives in `ErrorKind::http_status_code` only. `details` is
+`Option<serde_json::Value>` and is JSON `null` when absent. The Rust field
+behind wire `suggested_action` is
+`Option<sc_observability_types::Remediation>`. `None` serialises as JSON
+`null`. `Remediation::Recoverable` serialises as a JSON string equal to the
+first recovery step when that step is non-empty. Later steps are not on the
+wire. An empty step list, an empty first step, and
+`Remediation::NotRecoverable` serialise `suggested_action` as JSON `null`,
+never as `""`. A not-recoverable justification is copied into wire `details`
+under `justification` and is not an instruction on `suggested_action`.
+Deserialising a non-empty string builds a one-step `Recoverable`.
+Deserialising `null` or `""` builds `None`. Multi-step lists and
+`NotRecoverable` do not round-trip as the same Rust value. The tagged
+`Remediation` object is not the wire form. `OpError` does not convert to or
+from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
+`sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
+or `suggested_action`.
+
+`OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
+`cause`, and `suggested_action` into this type without a dependency on
+`sc-transport`. The code `DAEMON.NOT_RUNNING` selects
+`ErrorKind::Unavailable` and the message `the daemon is not running`. Any
+other code selects `ErrorKind::Internal` and the message
+`transport failure {code} at {endpoint}: {cause}`. `suggested_action` is the
+caller's already-rendered recovery text. `None`, or text that is empty after
+trimming, leaves remediation unset. The crate does not emit a placeholder
+application name. `endpoint` and `cause` are stored in `details`.
+
+The CLI parses errors it receives from the daemon. REQ-CMD-0006 depends on details returning arbitrary JSON unchanged.
+
+Example: an `OpError` built with the suggestion `run my-app daemon start` serialises with `"suggested_action": "run my-app daemon start"`.
+
+The tested minimum is 1.5.0.
 
 **MUST statements:**
 
-- The Rust declaration of `OpError` in `crates/sc-command/src/` MUST make the type public.
-- The public crate-root exports declared in `crates/sc-command/src/lib.rs` MUST include `OpError`.
-- With default Cargo features, a dependent crate MUST be able to name `OpError` as `sc_command::OpError`.
-- The serialised error MUST be a JSON object.
-- The serialised error MUST contain the `kind` key.
-- The serialised error MUST contain the `code` key.
-- The serialised error MUST contain the `message` key.
-- The serialised error MUST contain the `details` key.
-- The serialised error MUST contain the `suggested_action` key.
-- The serialised error MUST contain no key outside the five wire keys.
-- The Rust source under `crates/sc-command/src/` MUST provide a `serde::Serialize` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `serde::Deserialize` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `serde::Serialize` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `serde::Deserialize` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::fmt::Debug` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::clone::Clone` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::cmp::PartialEq` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::fmt::Display` implementation for `OpError`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::fmt::Debug` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::clone::Clone` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::cmp::PartialEq` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::fmt::Display` implementation for `ErrorKind`.
-- The Rust source under `crates/sc-command/src/` MUST provide a `std::error::Error` implementation for `OpError`.
-- The Rust declaration of the `OpError.code` field MUST use `sc_observability_types::ErrorCode` from the published crate `sc-observability-types`.
+- `OpError` MUST be a public type.
+- The crate `sc-command` MUST export `OpError` from its crate root.
+- `sc_command::OpError` MUST be available with default features.
+- `OpError` MUST serialise to a JSON object that has every one of the five wire keys.
+- `OpError` MUST serialise to a JSON object that has no key other than the five wire keys.
+- `OpError` MUST implement `serde::Serialize`.
+- `OpError` MUST implement `serde::Deserialize`.
+- `ErrorKind` MUST implement `serde::Serialize`.
+- `ErrorKind` MUST implement `serde::Deserialize`.
+- `OpError` MUST implement `Debug`.
+- `OpError` MUST implement `Clone`.
+- `OpError` MUST implement `PartialEq`.
+- `OpError` MUST implement `Display`.
+- `ErrorKind` MUST implement `Debug`.
+- `ErrorKind` MUST implement `Clone`.
+- `ErrorKind` MUST implement `PartialEq`.
+- `ErrorKind` MUST implement `Display`.
+- `OpError` MUST implement `std::error::Error`.
+- `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`.
 - `crates/sc-command/Cargo.toml` MUST declare a dependency on `sc-observability-types`.
-- In `crates/sc-command/Cargo.toml`, the registry version requirement for `sc-observability-types` MUST be `">=1.5.0"`.
-- When a wire value carries a suggestion, that wire value MUST have JSON type string.
-- When `OpError` contains a suggestion, the serialised error’s `suggested_action` value MUST equal the suggestion.
-- The declared Rust type of a stored remediation value MUST be a member of the allowed remediation types.
-- The declared Rust type of a construction-input remediation value MUST be a member of the allowed remediation types.
-- The Rust declaration of the `OpError.details` field MUST use `Option<serde_json::Value>`.
-- The output details of a details round trip MUST equal its input details under `serde_json::Value` equality.
+- In `crates/sc-command/Cargo.toml`, the registry version requirement of `sc-observability-types` MUST be `">=1.5.0"`.
+- When an `OpError` is built with a suggestion, `suggested_action` MUST serialise as a JSON string.
+- When an `OpError` is built with a suggestion, the JSON string value of `suggested_action` MUST equal the suggestion.
+- A remediation value that `OpError` holds or is built from MUST be of type `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
+- The Rust type of the `details` field MUST be `Option<serde_json::Value>`.
+- Serialising the `details` field after deserialising it as part of `OpError` MUST produce an equal JSON value.
 
 **MUST NOT statements:**
 
-- The Rust source under `crates/sc-command/src/` MUST NOT define an error-code type of its own.
-- The `suggested_action` wire field of `OpError` MUST NOT serialise as a JSON object.
-- The Rust source under `crates/sc-command/src/` MUST NOT define a type that duplicates the remediation representation supplied by `sc-observability-types`.
-- The `sc-observability-types` dependency requirement in `crates/sc-command/Cargo.toml` MUST NOT declare an upper bound.
+- `sc-command` MUST NOT define its own error-code type.
+- The `suggested_action` wire field MUST NOT serialise as a JSON object.
+- `sc-command` MUST NOT define a parallel remediation type.
+- The `sc-observability-types` requirement in `crates/sc-command/Cargo.toml` MUST NOT declare an upper bound.
 
 ### Rationale
 
-A shared error representation gives consumers consistent error data and recovery text. Reusing the published observability types avoids duplicate representations.
+`code` is what automation branches on. `suggested_action` is what lets an
+agent recover without a human. `kind` lets the REST edge pick an HTTP status
+without parsing codes. Taking the code type, and any structured remediation,
+from `sc-observability-types`, the crate the SC logging stack already uses
+for them, keeps an error code identical in an API response and in the log
+line about the same failure, with one definition to maintain.
+`suggested_action` is a plain string on the wire because that is the form
+the CLI's `DAEMON.NOT_RUNNING` error is specified in
+([REQ-RUN-0202](../requirements.md)) and the simplest form for an agent to
+act on.
 
 ### Success Criteria
 
-All numbered requirements above are satisfied.
+1. A unit test constructs an `OpError` with all five fields set (`details`
+   holding at least one entry, and the suggestion
+   `run my-app daemon start`), serialises it with `serde_json::to_value`,
+   and asserts the
+   object has exactly the keys `kind`, `code`, `message`, `details`,
+   `suggested_action`, and that `suggested_action` is the JSON string
+   `"run my-app daemon start"`.
+2. The same test asserts `code` serialises as a JSON string equal to the
+   code given at construction (use `DAEMON.NOT_RUNNING`) and `message` as a
+   JSON string.
+3. A round-trip test serialises that `OpError` to a string, deserialises it
+   as `OpError`, and asserts equality with the original.
+4. A compile-time check in a test assigns `err.code` (or the value returned
+   by its accessor) to a binding of type
+   `sc_observability_types::ErrorCode`.
+5. Inspection of `crates/sc-command/Cargo.toml`: `sc-observability-types`
+   is listed under `[dependencies]` with version requirement `">=1.5.0"`, has
+   no upper bound, and is not `optional`.
+6. Inspection of `crates/sc-command/src`: no type defined there duplicates
+   `ErrorCode`, `Remediation` or `RecoverableSteps`.
+7. A unit test constructs an `OpError` with no details and no suggestion,
+   serialises it, and asserts: the keys `kind`, `code` and `message` are
+   present; every key of the object is one of the five names; `details` is
+   JSON `null`; `suggested_action` is JSON `null`.
+8. A compile-time check in a test requires
+   `OpError: Debug + Clone + PartialEq + Display + std::error::Error` and
+   `ErrorKind: Debug + Clone + PartialEq + Display`.
+
+### Related Documents
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 amendment
+
+---
 
 ## REQ-CMD-0003: `From<Result<T, OpError>>` for `Envelope<T>`
 
