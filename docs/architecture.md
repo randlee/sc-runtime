@@ -182,7 +182,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 | Id | Title | Status |
 |---|---|---|
-| ADR-RUN-0001 | Framework instantiates, project wires; no command registry | Active — amended 2026-11-11 (PRD §3, §9) |
+| ADR-RUN-0001 | Framework instantiates, project wires; no command registry | Active |
 | ADR-RUN-0002 | Thin template; crates published and named by version | Active |
 | ADR-RUN-0003 | Crate dependency graph and the `server` cargo feature | Active |
 | ADR-RUN-0004 | `sc-observability` is initialised by the project, not wrapped | Active |
@@ -193,27 +193,27 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
 | ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
-| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Superseded in part by PRD v2.0 (2026-11-11) |
-| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active — point 3 amended 2026-11-11 (PRD §6) |
+| ADR-RUN-0012 | Dedicated SQLite writer batching | Active |
+| ADR-RUN-0013 | sc-cron is the SQLite cron crate | Active |
 | ADR-RUN-0014 | Optional embedder-supplied schedule row limit | Active |
 | ADR-RUN-0015 | Benchmark campaigns in a controlled environment | Active |
 | ADR-RUN-0016 | Explicit Python and Monty hook environments | Active |
-| ADR-RUN-0017 | Initial release observability shim | Active release amendment |
-| ADR-RUN-0018 | Cooperative cron operation and owned shutdown contract | Under review (2026-11-11) |
-| ADR-RUN-0019 | Optional standard cron command adapter and generated wiring | Approved Phase C target |
-| ADR-RUN-0020 | `Storage<T>`: one storage trait, three engines, atm-core SQLite writer | Proposed |
-| ADR-RUN-0021 | One command pattern for CLI, MCP and HTTP | Proposed |
+| ADR-RUN-0017 | Initial release observability shim | Active |
+| ADR-RUN-0018 | Cooperative cron operation and owned shutdown contract | Approved |
+| ADR-RUN-0019 | Optional standard cron command adapter and generated wiring | Approved |
+| ADR-RUN-0020 | Shared typed storage and atomic operations | Proposed |
+| ADR-RUN-0021 | Shared command transforms and one Monty implementation | Proposed |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
-| ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Deferred — post-core application layer |
-| ADR-RUN-0301 | One store crate per database backend | Superseded in part by PRD v2.0 (2026-11-11) |
+| ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Draft |
+| ADR-RUN-0301 | One store crate per database backend | Active |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
-| ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
-| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Deferred (PRD v2.0 §9, 2026-11-11) |
+| ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Draft |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Draft |
 | ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
-| ADR-RUN-0307 | write_rows upserts one row identity | Deferred (PRD v2.0 §9, 2026-11-11) |
+| ADR-RUN-0307 | write_rows upserts one row identity | Draft |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -284,9 +284,7 @@ The initial five-package `0.1.1` release may use actual registry observability
 1.5.0 without waiting for unpublished 1.5.1. One temporary
 `sc_command::observability` module owns `CanonicalLog`, `SharedCanonicalLog`,
 `NoopCanonicalLog` and non-default std-only `test-util` doubles. Command remains
-a leaf and gains no external dependency. It temporarily pins its existing
-types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify
-with it.
+a leaf and gains no external dependency. Published and template observability/types registry requirements use `>=1.5.0` with no upper bound (ANC-037). Phase D retains this neutral command port and the generated private inline `LoggerAdapter`. Normal builds and tests validate compatibility with the selected versions.
 
 Permit only cron's normal `sc-command` 0.2.0 Phase C edge (initial-release
 0.1.1 retained as historical evidence) with defaults disabled and no
@@ -300,13 +298,13 @@ ban; no REST/MCP handler, extractor, router, macro or framework abstraction is
 added. Canonical values/errors remain the actual published types identity.
 
 Generated application source owns a private inline `LoggerAdapter` around one
-real `Arc<v2::Logger>`; generated logger/types are pinned to `=1.5.0`.
+real `Arc<v2::Logger>`; generated logger/types use `>=1.5.0` with no upper bound.
 It forwards service identity and `try_log`, preserving native EventErrors,
 shared handle identity, best-effort outcomes and existing lifecycle precedence.
 
 Two explicit panic-policy changes apply. Preserve the existing infallible
 Noop fallback with an invariant exception **only** for the fixed `"noop"`
-ServiceName literal validated against exact types 1.5.0, never caller or
+ServiceName literal validated by ordinary tests against the selected types, never caller or
 environment data. Generated adapter code catches unwind around **only** real
 `try_log`, returning fixed value-free `EventError::Routing` code
 `DAEMON.OBSERVABILITY_ADMISSION_PANIC`, cause `Logging admission panicked.`
@@ -325,23 +323,13 @@ registry-generated proof follows all five publications and uses the same source
 commit as the `v0.1.1` tag. Authorization, credentials, release preflight,
 qualified kit/inventory and controlled-host benchmarks remain required.
 
-Removal and compatibility:
-
-Track upstream cleanup separately from the initial release epic. Refresh actual
-registry availability at each readiness run, independently of the old lock;
-indeterminate discovery fails release closed. A published matching 1.5.1 pair
-must pass an isolated registry signature/direct `Arc<Logger>` to upstream
-SharedCanonicalLog probe. Published incompatibility blocks release for
-remediation; working capability makes shim mode fail until cleanup removes the
-local trait, inline adapter, exact pins and cron-command edge and restores the
-original boundary. A version number alone never proves capability.
+Normal build/tests replace registry-availability refresh, the isolated signature/direct `Arc<Logger>` probe and the forced shim-mode-fail cleanup gate. No new cleanup work follows merely from an upstream release becoming available. Future cleanup remains separate work; the retained shim is the Phase D contract.
 
 The local and upstream traits are nominally different. Retain a command source
-path re-export only if representative current-consumer/custom-impl and new
-upstream probes prove the supported selection and an explicit version strategy
+path re-export only if representative current-consumer/custom-impl and ordinary
+compatibility tests prove the supported selection and an explicit version strategy
 requires it. No old/new SDK identity promise follows from a re-export. Choose
-a coordinated breaking SDK minor if compatibility requires it; no permanent
-adapter, second contract or cron edge may remain. The bounded owned paths,
+a coordinated breaking SDK minor if compatibility requires it; the compatibility strategy for later cleanup must not imply nominal identity from a re-export. Phase D retains the existing shim and cron edge. The bounded owned paths,
 commands and proof order are in the [implementation plan](plans/phase-b/initial-release-observability-shim.md).
 This documentation amendment claims no implementation, QA or publication pass.
 
@@ -351,9 +339,13 @@ This small composition-only orphan-rule bridge is justified against ADR-RUN-0002
 
 ### Consequences
 
+**Positive:**
+
+- Consumers can resolve newer registry observability/types versions without an exact SDK/template pin.
+
 **Negative:**
 
-- This exact-pin exception bounds the inspected validator and type identity but prevents resolution with consumer requirements for newer types.
+- The retained neutral port and private inline LoggerAdapter require maintenance and ordinary compatibility tests as upstream observability versions change.
 
 ### Alternatives Considered
 
@@ -1121,14 +1113,20 @@ Enforced by: [NFR-RUN-0006](requirements.md), checked by inspecting the contents
 `req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.6 consumer install); `req-qa` on
 [REQ-RUN-0005](requirements.md) for point 6.
 
-## ADR-RUN-0006: Library errors are typed values; no public panics
+# Decision: Library errors are typed values; no public panics
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
+
+---
+
+## ADR-RUN-0006: Library errors are typed values; no public panics
+
+**Status:** Active  
 
 ### Related Documents
 
@@ -1149,6 +1147,7 @@ Enforced by: [NFR-RUN-0006](requirements.md), checked by inspecting the contents
 **Architecture Decisions:**
 
 - ADR-RUN-0017 — 2026-10-31 bounded amendment: records the fixed-literal Noop invariant, foreign EventError signature and application-only try_log unwind dispositions; all other panic/error rules below apply.
+
 ### Context
 
 `sc-config` has a stated base requirement: every public method returns a
@@ -1161,6 +1160,7 @@ Two public signatures in `sc-command` are dictated by third-party libraries
 and cannot name an sc-runtime error enum: an rmcp `#[tool]` function must
 return `Result<CallToolResult, McpError>`, and axum's `IntoResponse`
 conversion cannot fail.
+
 ### Decision
 
 The owner of the error rule and of the panic rule is
@@ -1191,15 +1191,21 @@ The owner of the error rule and of the panic rule is
    as `DAEMON.NOT_RUNNING`. The exact JSON keys, and whether an empty
    `details` or `suggested_action` is written as `null` or omitted, are
    defined by [REQ-CMD-0002](sc-command/requirements.md).
+
 ### Rationale
 
 sc-runtime design, 2026-09-19: stated by the owner for `sc-config` only. Extending the rule to `sc-transport`, `sc-command` and `sc-runtime`, the one-enum-per-crate rule and the banned-construct list are decided in this document
+
 ### Consequences
 
 Callers can branch on error variants. The generated `daemon/src/main.rs`
 returns `ExitCode` and turns config and runtime errors into exit codes and
 messages. `sc-config`, `sc-transport` and `sc-runtime` each carry a small
 error enum and a test per variant.
+
+**Negative:**
+
+- The cost is maintaining each small error enum and its test per variant.
 
 **Neutral:**
 
@@ -1211,6 +1217,7 @@ error enum and a test per variant.
   route, an axum rejection of a request body, an rmcp protocol error. The owner
   of this question is [REQ-RUN-0203](requirements.md). Point 5 makes no claim about those
   responses.
+
 ### Alternatives Considered
 
 #### Alternative 1: `anyhow`-style opaque errors in public APIs
@@ -1242,14 +1249,13 @@ Wrapping rmcp's `McpError` in an `sc-command` enum returned by `into_mcp`.
 **Why Rejected:**
 
 Rejected because an rmcp `#[tool]` function must itself return `Result<CallToolResult, McpError>`, so every tool would have to convert back.
+
 ### Implementation
 
 Enforced by: `req-qa` on [NFR-RUN-0009](requirements.md), which owns the rule and its
 criteria; the per-crate NFRs listed below, which reference it and add only
 crate-specific strictness; `rust-best-practices-agent` review for the banned
 constructs of point 3 reachable from public functions.
-
----
 
 # Decision: Async end to end on Tokio; `sc-config` is synchronous
 
@@ -1440,6 +1446,8 @@ a command registry, surface-snapshot tooling, a render engine, a logging
 facade. The SQLite write actor is `sc-runtime-db-sqlite`, added by
 [ADR-RUN-0012](architecture.md). A reviewer may reject an
 addition solely because it fails point 1.
+
+The benefit is less repeated code across consuming projects. The cost is reviewing every new or changed requirement and sprint plan to state what code it saves a project from writing.
 
 ### Alternatives Considered
 
@@ -2097,14 +2105,20 @@ Acceptance: made Active, or amended, by sprint a-1
 
 ---
 
-## ADR-RUN-0204: The CLI auto-starts the daemon, launched as launchd would
+# Decision: The CLI auto-starts the daemon, launched as launchd would
 
-**Status:** Proposed  
+**Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-09-21  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Decision Date:** 2026-09-20  
+
+---
+
+## ADR-RUN-0204: The CLI auto-starts the daemon, launched as launchd would
+
+**Status:** Draft  
 
 ### Related Documents
 
@@ -2118,7 +2132,10 @@ Acceptance: made Active, or amended, by sprint a-1
 **Architecture Decisions:**
 
 - ADR-RUN-0201 — amended by this ADR: point 6 (the CLI never starts the daemon)
+
 ### Context
+
+This decision is deferred and does not govern Phase D. The following decision text describes the deferred design, not a current Phase D obligation.
 
 Every CLI command needs a running daemon
 ([ADR-RUN-0201](architecture.md)). Under report-only behaviour a person or an
@@ -2133,6 +2150,7 @@ daemon restarts.
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
+
 ### Decision
 
 1. The generated CLI MUST auto-start the daemon by default when it finds the
@@ -2174,9 +2192,11 @@ with: the daemon inherits no working directory, terminal, standard streams or
 session from the CLI.
 
 [REQ-RUN-0206](requirements.md) owns the behaviour and these questions.
+
 ### Rationale
 
 decided by the owner on 2026-09-20. The sc-runtime design, 2026-09-19, records report-only as the default and lists auto-start as undecided; this ADR replaces that default
+
 ### Consequences
 
 A first command works with no set-up. The daemon a CLI starts is
@@ -2209,6 +2229,7 @@ coordination code.
   ([REQ-TRN-0006](sc-transport/requirements.md)); a new library crate requires
   amending the four-crate rule ([REQ-RUN-0001](requirements.md),
   [ADR-RUN-0002](architecture.md), [ADR-RUN-0003](architecture.md)).
+
 ### Alternatives Considered
 
 #### Alternative 1: Report-only, the design's recorded default: the CLI prints `DAEMON.NOT_RUNNING` and the user starts the daemon
@@ -2240,6 +2261,7 @@ Auto-start with a filtered copy of the CLI's environment (an allow-list or deny-
 **Why Rejected:**
 
 Rejected because the result still depends on the caller, and a list of variables is never complete; the requirement is equality with the launchd launch, not a cleaned-up caller environment.
+
 ### Implementation
 
 Enforced by: the success criteria of [REQ-RUN-0206](requirements.md), in
@@ -2258,25 +2280,30 @@ application layer. The decision text below remains design history and future
 input; it does not amend ADR-RUN-0201 for Phase A and is not a Phase A closure
 gate.
 
+# Decision: One store crate per database backend
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+**Decision Date:** 2026-09-19  
+
 ---
 
 ## ADR-RUN-0301: One store crate per database backend
 
 **Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-09-19  
-**Last Updated:** 2026-10-27  
-**Owner:** randlee  
-**Decision Date:** 2026-09-19  
 
 ### Related Documents
 
-- [REQ-RUN-0308](requirements.md): the generated `store-sqlite` crate.
+- [ADR-RUN-0020](architecture.md): the shared Storage<T> contract and dedicated SQLite writer.
 - [REQ-RUN-0201](requirements.md): all three surfaces reach SQL through one service
   function.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
 - [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
+
 ### Context
 
 Withdrawn: the `store-sqlite` column of point 1 (sqlx `sqlite` driver, two sqlx pools, per-table `query!` functions) and point 2's rule that there is no shared, published store trait. Still standing: `store-postgres` and `store-mysql` use sqlx, one crate per engine.
@@ -2289,6 +2316,7 @@ checked queries. Its `sqlx.toml` lets each crate name its own database URL
 variable, so two such crates can build in one workspace.
 
 The problem is that one store crate cannot hold checked queries for both SQLite and Postgres under sqlx 0.9, yet SC projects need both backends in one workspace.
+
 ### Decision
 
 1. A store MUST be one crate in the generated project bound to exactly one
@@ -2345,9 +2373,11 @@ The problem is that one store crate cannot hold checked queries for both SQLite 
    v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
    in that requirement. SQL Server is out of scope because sqlx has no driver
    for it. Amended 2026-10-25.
+
 ### Rationale
 
 sc-runtime design, 2026-09-19: one code path to SQL and the SQLite-plus-Postgres pairing stated by the owner; one crate per backend is a design recommendation forced by sqlx 0.9
+
 ### Consequences
 
 Both backends can build in one workspace. Each service function uses
@@ -2363,6 +2393,7 @@ measures write contention; it is not part of v0.1.
 **Neutral:**
 
 - OPEN: the value of N for the SQLite read pool is undecided.
+
 ### Alternatives Considered
 
 #### Alternative 1: A portable query layer that runs one query on several backends
@@ -2394,6 +2425,7 @@ The atm-core batched write actor as the SQLite default.
 **Why Rejected:**
 
 Rejected for v0.1 because it is custom code; the standard read-pool plus write-connection arrangement needs none.
+
 ### Implementation
 
 Enforced by: the generated workspace's dependency edges, inspected with
@@ -2403,16 +2435,20 @@ rows it moves and `service` depends on the adaptor; a one-store layout has no
 adaptor and `service` depends on that store; `arch-qa` review for points 4 to 6.
 Amended 2026-10-25.
 
+# Decision: write_rows upserts one row identity
+
+**Status:** Draft  
+**Version:** 1.0.0  
+**Created:** 2026-10-27  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+**Decision Date:** 2026-10-27  
+
 ---
 
 ## ADR-RUN-0307: write_rows upserts one row identity
 
 **Status:** Draft  
-**Version:** 1.0.0  
-**Created:** 2026-10-27  
-**Last Updated:** 2026-10-27  
-**Owner:** randlee  
-**Decision Date:** 2026-10-27  
 
 ### Related Documents
 
@@ -2421,7 +2457,10 @@ Amended 2026-10-25.
 **Architecture Decisions:**
 
 - ADR-RUN-0301 — amended by this ADR: point 2
+
 ### Context
+
+The problem is that ADR-RUN-0301 point 2 describes table replacement, while the generated stores upsert one row identity without clearing the table; recording that contract requires a later ADR naming the decision it amends.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -2432,6 +2471,7 @@ table: it clears the rows, then inserts the batch, so a second copy does not
 return `Conflict`. The generated stores upsert one row identity and do not
 clear the table. Writing that contract into the Active sentence of point 2
 is not how an ADR changes. A later ADR names the decision it amends.
+
 ### Decision
 
 1. `write_rows` upserts one row identity and does not clear the table.
@@ -2442,9 +2482,11 @@ is not how an ADR changes. A later ADR names the decision it amends.
    [ADR-RUN-0301](architecture.md) point 2. The rest of that point stays as
    written, including optional `EngineStore`, `StoreTarget`, `StoreCode`, and
    `TableName`.
+
 ### Rationale
 
 arch-qa ARCH-002, 2026-10-27. The upsert contract is recorded here so the earlier sentence stays intact.
+
 ### Consequences
 
 Distinct identities stay in the destination table. A second write of the same
@@ -2454,15 +2496,18 @@ stores follow this contract. They do not clear the table before the write.
 **Negative:**
 
 - Identities absent from a batch stay in the destination table; a write does not remove them.
+
 ### Alternatives Considered
 
 #### Alternative 1: Clear the table, then insert the batch
 
-**Description:** `write_rows` replaces the named table: it clears the rows, then inserts the batch, as the `write_rows` sentence of ADR-RUN-0301 point 2 states.
+**Description:**
 
-**Why Rejected:** Clearing the table drops a distinct identity such as `abc` when a later call writes `ABC`.
+`write_rows` replaces the named table: it clears the rows, then inserts the batch, as the `write_rows` sentence of ADR-RUN-0301 point 2 states.
 
----
+**Why Rejected:**
+
+Clearing the table drops a distinct identity such as `abc` when a later call writes `ABC`.
 
 # Decision: SQLite and Postgres meet in a generated consumer adaptor
 
@@ -2786,14 +2831,20 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 
 ---
 
-## ADR-RUN-0304: CLI commands are two pure functions, tested without a daemon
+# Decision: CLI commands are two pure functions, tested without a daemon
 
-**Status:** Proposed  
+**Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-09-21  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Decision Date:** 2026-09-20  
+
+---
+
+## ADR-RUN-0304: CLI commands are two pure functions, tested without a daemon
+
+**Status:** Draft  
 
 ### Related Documents
 
@@ -2804,7 +2855,10 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 - [ADR-RUN-0009](architecture.md): no test daemon; isolated machine as the escape path
 - [ADR-RUN-0204](architecture.md): the CLI auto-starts the daemon
 - [ADR-RUN-0302](architecture.md): one `api-types` struct shared by all surfaces
+
 ### Context
+
+This decision is deferred and does not govern Phase D. The following decision text describes the deferred design, not a current Phase D obligation.
 
 A generated CLI command is thin: it builds an `api-types` request from its
 arguments, sends it over HTTP with `sc_transport::Client`, and prints the
@@ -2814,6 +2868,7 @@ developer's machine it collides with the daemon in use. Since the CLI
 auto-starts a daemon by default ([ADR-RUN-0204](architecture.md)), a test
 whose daemon is unreachable would make the CLI start a real, detached daemon
 on the developer's machine ([ADR-RUN-0009](architecture.md)).
+
 ### Decision
 
 1. Each generated CLI command is two pure functions, request construction
@@ -2836,9 +2891,11 @@ on the developer's machine ([ADR-RUN-0009](architecture.md)).
    point, between the two functions, never inside either of them. The
    rendering function sees `DaemonNotRunning` only when auto-start is
    disabled or failed.
+
 ### Rationale
 
 direction given by the owner on 2026-09-20 (reduce the complexity of testing a CLI that posts and gets over HTTP; generated code with generated tests can be proven in a unit test without a daemon); the two-function shape is decided in this document and is pending the owner's confirmation
+
 ### Consequences
 
 A command's behaviour is proven in milliseconds, in every project, from the
@@ -2854,6 +2911,7 @@ compiler does not check, which is why it is recorded as OPEN.
 - OPEN: how the route path is kept the same in the CLI and the daemon (a
   shared constant, or reliance on the tests of points 3 and 5) is undecided;
   [REQ-RUN-0312](requirements.md) owns the question.
+
 ### Alternatives Considered
 
 #### Alternative 1: Test the CLI by running its binary against a `DaemonFixture` daemon on the host
@@ -2885,6 +2943,7 @@ Test the CLI only end to end on an isolated machine.
 **Why Rejected:**
 
 Rejected as the only test: it leaves a developer with no fast check of a command on the host.
+
 ### Implementation
 
 Enforced by: the success criteria of [REQ-RUN-0312](requirements.md)
@@ -2904,8 +2963,6 @@ Disposition: The pending two-function shape is not part of Phase A. The
 post-core direction is attribute-generated CLI testing, to be evaluated using
 the completed runtime and minimal generated application. The text below is
 preserved as rejected-for-Phase-A design history and is not binding on Phase A.
-
----
 
 ## ADR-RUN-0401: Generation pipeline and the `answers.schema.json` contract
 
@@ -3332,9 +3389,11 @@ Rejected. It flags locks that are dropped before `.await` and misses a guard tha
 
 - [ADR-RUN-0301](architecture.md) points 1–7.
 - [ADR-RUN-0011](architecture.md).
-- [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md), [REQ-RUN-0308](requirements.md).
+- [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md), [ADR-RUN-0020](architecture.md).
 
 ### Context
+
+The problem is how to amortize SQLite transaction overhead while preserving existing write semantics through savepoints and replies after commit.
 
 The SQLite writer batches channel-admitted writes on one dedicated thread. Its batching and typed-error behavior remain applicable when the public input becomes the asynchronous Storage<T> implementation defined by ADR-RUN-0020.
 
@@ -3353,6 +3412,8 @@ The SQLite writer batches channel-admitted writes on one dedicated thread. Its b
 6. The writer MUST NOT hold a std::sync::Mutex guard across await.
 
 7. The SQLite crate MUST expose its typed error enum rather than Box<dyn Error> or an observability ErrorCode.
+
+8. sc-runtime, sc-config, sc-transport and sc-command MUST NOT depend on the SQLite writer crate.
 
 ### Rationale
 
@@ -3376,7 +3437,7 @@ The builder takes a storage backend and passes it to plugins.
 
 **Why Rejected:**
 
-Under [ADR-RUN-0301](architecture.md) point 5, `sc-runtime` only calls the project's stores closure and does not inspect its result. A project that wants the actor depends on this crate itself.
+Under [ADR-RUN-0301](architecture.md) point 5, `sc-runtime` only calls the project's stores closure and does not inspect its result. The facade therefore does not accept or inspect a storage backend.
 
 ## ADR-RUN-0013: sc-cron is the SQLite cron crate
 
@@ -3548,20 +3609,27 @@ Operators time subsystem performance by hand, with no shared skill, recipes or c
 
 It is not repeatable. Benchmarks are automated procedures driven by the `/benchmark-run` skill and `scripts/benchmark/` recipes.
 
-## ADR-RUN-0016: Explicit Python and Monty hook environments
+# Decision: Explicit Python and Monty hook environments
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-28  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Decision Date:** 2026-10-28  
+
+---
+
+## ADR-RUN-0016: Explicit Python and Monty hook environments
+
+**Status:** Active  
 
 ### Related Documents
 
 - [ADR-RUN-0013](architecture.md).
 - [sprint b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md).
 - [REQ-CRON-0019](sc-cron/requirements.md), [NFR-CRON-0002](sc-cron/requirements.md).
+
 ### Context
 
 The Python hook currently inherits the complete daemon environment. Monty
@@ -3578,6 +3646,7 @@ daemon-wide inherited values, explicit schedule values, references resolved
 by an application secret provider, or values loaded from an authorized
 absolute `.env` file. The library must support those choices without silently
 capturing host values.
+
 ### Decision
 
 1. `HookEnvironment` is one schedule-level contract for Python and Monty.
@@ -3654,12 +3723,14 @@ capturing host values.
    environment model itself. The
    canonical JSON ordering and required first-release SQLite structure are
    tested as persistence behavior.
+
 ### Rationale
 
 Owner, 2026-10-28. A daemon's ambient identity/team is not the
 invoking agent's context. Daemon-scope API keys may be exposed by name, while
 each schedule must be able to set or clear its own environment and resolve
 authorized secret references or absolute `.env` files.
+
 ### Consequences
 
 Sprint b-17 implements [REQ-CRON-0019](sc-cron/requirements.md) and
@@ -3671,6 +3742,11 @@ write-through `os.environ` mutation remains unsupported until Monty exposes
 set/unset OS calls; sc-cron never mutates the daemon process environment.
 Exact-value redaction mitigates accidental propagation, not transformation or
 exfiltration by trusted hook code.
+
+**Negative:**
+
+- Applications must authorize agent-to-file access and provide reference resolvers because sc-cron implements no secret backend. Exact-value redaction does not prevent transformation or exfiltration by trusted hook code.
+
 ### Alternatives Considered
 
 #### Alternative 1: Separate Python and Monty environment policies
@@ -3970,119 +4046,29 @@ reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
 
-## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
+# Decision: Cooperative cron operation and owned shutdown contract
 
+**Status:** Approved  
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Decision Date:** 2026-11-02  
+
+---
+
+## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
+
 **Status:** Approved  
 
 ### Context
 
 This contract is built on `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned against PRD v2.0.
 
-Phase C's default command intake completes this same pre-submission admission
+Phase C closes adoption gaps left after Phase b: existing cron Rust/Python/Monty registration remains usable through a public nominal logging facade and cooperative owned store/shutdown/query protocol. Cron is already ported; no new job kind or re-port is planned.
 
-contract with finite per-Scheduler capacity (default64, validated finite
+The problem is keeping the cron command request path nonblocking under NFR-RUN-0002 while a transport timeout or a dropped waiter could otherwise detach a blocking store mutation from the shutdown that is meant to bound it.
 
-pre-start override), immediate typed refusal rather than an unbounded wait
-
-queue, and permits retained until physical completion after waiter cancellation.
-
-Stop/cleanup remain independent; public commands cannot use private internal
-
-paths to bypass capacity. Existing row-limit and
-
-scheduled-job concurrency decisions are unchanged; custom operation/executor
-
-providers retain responsibility for their explicitly documented overload policy.
-
-REQ-CRON-0020/0021
-
-and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
-
-public receiver facade, legacy-safe store admission, directly mutable real
-
-monotonic budgets, tracked public CRUD/query, restricted generation-fenced
-
-cleanup, typed expiry and actual physical ownership. This extends ADR-RUN-0013
-
-without changing the bundled schema, existing Rust/Python/Monty targets or environment
-
-policy in ADR-RUN-0016. It preserves ADR-RUN-0017's temporary nominal command
-
-logging port rather than claiming upstream observability cleanup.
-
-Caller absolute G/K permits equality. T=0 cancels immediately with no hidden
-
-cleanup allowance or instantaneous-join promise. The shared real stop clock
-
-is independent of schedule ManualClock; test-only forced expiry proves
-
-propagation, while real-clock tests prove elapsed bounds. Unsupported stores
-
-cannot enter cooperative mode, and provider overruns cannot become successful
-
-bounded completion by dropping a waiter or emitting early status.
-
-The framework charter retains custom ScheduleStore/schema and caller-owned
-
-legacy integrations. The cooperative guarantees here apply to the standard
-
-path and any custom provider explicitly implementing that capability. SQLite
-
-hooks/TLS/interrupt are bundled-provider mechanisms, not requirements to use
-
-SQLite in every application. Custom providers forward the live scope and
-
-truthfully declare support or remain on the documented legacy path. C-5 proves
-
-one application-field store example without changing shared Schedule/DTOs.
-
-Human-approved commit clarification: G/K cut off new commit admission, not
-
-universal physical commit/fsync completion. An owned commit_hook decision
-
-briefly serializes stop/real-time/class/generation eligibility then releases
-
-the controller lock before COMMIT. Admitted transactions may finish later and
-
-remain physically owned. Report confirmed committed-late, explicit rollback
-
-or indeterminate truthfully; expiry/Drop is not rollback evidence. No uncertain
-
-mutation replay, expired-budget reconciliation or effects after physical
-
-release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
-
-the actual admission race and persisted state after join, c-4 proves packaged
-
-behavior. This changes the prior strict physical-cutoff interpretation by the
-
-explicit human decision, not a finding waiver or implementation PASS.
-### Rationale
-
-NFR-RUN-0002 and the existing service-hardening checklist section 7 motivate this operational bound.
-### Consequences
-
-C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves the actual admission race and persisted state after join, c-4 proves packaged behavior. This changes the prior strict physical-cutoff interpretation by the explicit human decision, not a finding waiver or implementation PASS.
-
-**Negative:**
-
-- When all command slots are taken, public commands are refused with `command_capacity_exhausted`, and callers reduce concurrency or retry later.
-- Shutdown does not guarantee physical completion by G/K. An admitted commit may complete late or end Indeterminate, and callers reconcile it through a separately authorized readback.
-### Alternatives Considered
-
-#### Alternative 1: Unbounded capacity-wait queue
-
-**Description:** Public commands that arrive when intake is full wait in a queue until a slot frees, with no capacity limit.
-
-**Why Rejected:** NFR-RUN-0002 requires a nonblocking request path. REQ-CRON-0021 instead specifies immediate fixed typed unavailable refusal when full, with no hidden capacity-wait queue, waiter registry or sleep/retry loop. The default capacity is 64, not unlimited.
-### Implementation
-
-Status as recorded: Approved Phase C target; implementation planned.
 ### Decision
 
 Phase C's default command intake completes this same pre-submission admission
@@ -4129,6 +4115,35 @@ release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
 the actual admission race and persisted state after join, c-4 proves packaged
 behavior. This changes the prior strict physical-cutoff interpretation by the
 explicit human decision, not a finding waiver or implementation PASS.
+
+### Rationale
+
+NFR-RUN-0002 and the existing service-hardening checklist section 7 motivate this operational bound.
+
+### Consequences
+
+C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves the actual admission race and persisted state after join, c-4 proves packaged behavior. This changes the prior strict physical-cutoff interpretation by the explicit human decision, not a finding waiver or implementation PASS.
+
+**Negative:**
+
+- When all command slots are taken, public commands are refused with `command_capacity_exhausted`, and callers reduce concurrency or retry later.
+- Shutdown does not guarantee physical completion by G/K. An admitted commit may complete late or end Indeterminate, and callers reconcile it through a separately authorized readback.
+
+### Alternatives Considered
+
+#### Alternative 1: Unbounded capacity-wait queue
+
+**Description:**
+
+Public commands that arrive when intake is full wait in a queue until a slot frees, with no capacity limit.
+
+**Why Rejected:**
+
+NFR-RUN-0002 requires a nonblocking request path. REQ-CRON-0021 instead specifies immediate fixed typed unavailable refusal when full, with no hidden capacity-wait queue, waiter registry or sleep/retry loop. The default capacity is 64, not unlimited.
+
+### Implementation
+
+Status as recorded: Approved Phase C target; implementation planned.
 
 ## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
 
@@ -4198,7 +4213,7 @@ Status as recorded: Approved Phase C target; implementation planned.
 **Created:** 2026-11-11  
 **Last Updated:** 2026-11-12  
 **Owner:** sc-runtime maintainers  
-**Decision Date:** 2026-11-11  
+**Decision Date:** 2026-11-12  
 
 ---
 
@@ -4313,6 +4328,8 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 38. Phase D MUST retain table-neutral Postgres and MySQL engine implementations in the generated template rather than introduce additional published engine crates.
 
+39. CronStorage MUST NOT expose a public raw-write supertrait or method that bypasses active-name admission, schedule-row limits or generation fencing.
+
 ### Rationale
 
 Typed rows and one atomic operation let application and cron policies use each engine without carrying SQL across backends. A single SQLite writer preserves serialized write ownership and reply-after-commit behavior while asynchronous callers remain nonblocking.
@@ -4378,7 +4395,7 @@ It does not provide one interchangeable typed storage contract or the required S
 **Created:** 2026-11-11  
 **Last Updated:** 2026-11-12  
 **Owner:** sc-runtime maintainers  
-**Decision Date:** 2026-11-11  
+**Decision Date:** 2026-11-12  
 
 ---
 
@@ -4430,7 +4447,7 @@ CLI, HTTP and MCP must share the same application command behavior. The common p
 
 9. The command seam MUST permit later addition of a second transform input, a typed Ok outcome that writes nothing distinct from Err, and a transform within an atomic transaction without breaking consumers.
 
-10. Phase D MUST NOT implement those three deferred command-seam behaviors.
+10. Those three deferred command-seam behaviors are outside Phase D implementation scope; this does not prohibit later addition.
 
 11. The Phase D interpreter transform MUST complete before the storage transaction begins.
 
@@ -4472,11 +4489,15 @@ CLI, HTTP and MCP must share the same application command behavior. The common p
 
 30. cron.list MUST use storage_read.
 
-31. No user cron command MAY bypass the shared command path.
+31. The Phase D user commands cron.start, cron.end and cron.list MUST use the shared command path.
 
 32. cron.start MUST allow the configured application transform to modify or append user JSON before schedule persistence.
 
 33. Command-path requirements MUST NOT mandate hand-written code or prohibit a later consumer-side generator against the delivered framework.
+
+34. storage_read and storage_write MUST own conversion, transform invocation and error composition so applications do not duplicate that pipeline.
+
+35. Only cron command storage MUST use the library policy adapter; ordinary application commands use the default store path without an additional application-written storage action.
 
 ### Rationale
 

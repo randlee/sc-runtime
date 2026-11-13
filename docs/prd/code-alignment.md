@@ -45,7 +45,7 @@ Unchanged in `sc-cron`: Monty (`src/monty_run.rs`, `monty_host.rs`, `monty_compo
 | TPL-5 | Replace the sqlx SQLite store with the SQLite `Storage<T>` implementation (PRD-STO-3) | `template/crates/store-sqlite/`: `src/lib.rs` 24, 41–42, 78, 91, 104, 179–185; `sqlx.toml`; `.sqlx/`; `migrations/` | STO-5, O3 | the generated SQLite app has no `sqlx` SQLite driver in `cargo tree` |
 | TPL-6 | Remove `EngineStore` and `RowRecord` | `template/crates/schema/src/lib.rs` 369, 486 | TPL-5, O6 | neither name exists |
 | TPL-7 | Store the widget example through `Storage<WidgetRow>` | `template/crates/service/src/layouts/*.rs` (8 files); per-table functions in the three store crates | STO-5 to STO-7 | `insert_widget` and `get_widget` are gone from the store crates |
-| TPL-8 | Descriptive docs for generated projects | `docs/getting-started.md`, `docs/generation.md`, REQ-RUN-0301, REQ-RUN-0302, REQ-RUN-0308 bodies | TPL-5, TPL-7 | the documents describe the generated tree as it is |
+| TPL-8 | Descriptive docs for generated projects | `docs/getting-started.md`, `docs/generation.md`, REQ-RUN-0301, REQ-RUN-0302, ADR-RUN-0020 bodies | TPL-5, TPL-7 | the documents describe the generated tree as it is |
 
 ## 4. Command path (PRD §3)
 

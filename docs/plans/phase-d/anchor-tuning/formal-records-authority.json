@@ -260,7 +260,8 @@
         "statement": "The SQLite writer MUST batch admitted writes and send successful replies only after the outer transaction commits.",
         "authority": [
           "ADR-RUN-0012",
-          "ADR-RUN-0020 existing contract3"
+          "ADR-RUN-0020 existing contract3",
+          "ANC-025"
         ]
       },
       {
@@ -274,7 +275,7 @@
         "point": 19,
         "statement": "Only the dedicated SQLite writer thread MAY drive Runtime::block_on; reader workers MUST receive with blocking_recv without a runtime.",
         "authority": [
-          "ANC-025",
+          "ADR-RUN-0011",
           "ADR-RUN-0011"
         ]
       },
@@ -505,7 +506,7 @@
       },
       {
         "point": 10,
-        "statement": "Phase D MUST NOT implement those three deferred command-seam behaviors.",
+        "statement": "Those three deferred command-seam behaviors are outside Phase D implementation scope; this does not prohibit later addition.",
         "authority": [
           "owner requirement4",
           "PRD-ENG-6"
@@ -666,7 +667,7 @@
       },
       {
         "point": 31,
-        "statement": "No user cron command MAY bypass the shared command path.",
+        "statement": "The Phase D user commands cron.start, cron.end and cron.list MUST use the shared command path.",
         "authority": [
           "ANC-054"
         ]
@@ -696,5 +697,281 @@
   },
   "quality_status": "NOT CLAIMED; run-lead runs judge-jev across all176 records after push",
   "plan_and_anchor_changes": "none",
-  "status_handling": "Raptor has no Deferred status. Deferred non-binding records use Draft and explicit non-applicability to PhaseD; partially superseded ADRs preserve the remaining active scope."
+  "status_handling": "Raptor has no Deferred status. Deferred non-binding records use Draft and explicit non-applicability to PhaseD; partially superseded ADRs preserve the remaining active scope.",
+  "judge_jev_fix_pass": {
+    "consumer": "run-lead final whole-corpus quality and independent drift review",
+    "feature": "PR135 record-quality merge gate",
+    "observed_defect": "Compound requirements, undefined terms, missing ADR problem/cost sections and normalization losses",
+    "deletion_condition": "After merge, ordinary record and Git history suffice; live run files remain quality evidence",
+    "base": "ba3bcb4",
+    "authorization": "6a89800: approved record payloads through TypeSafe Jev; no source-code export",
+    "mode": "One live run per edited variant; owner override discontinued proposer rounds",
+    "schema": {
+      "records": 175,
+      "diagnostics": 0,
+      "deleted": "REQ-RUN-0308; Superseded and nonbinding, live references point to ADR-RUN-0020"
+    },
+    "passing_current_records": [
+      {
+        "id": "ADR-RUN-0017",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "a33cefe968436514e412e518a96cbb9ad55572ab6ad03974ee5ca487392ce43a"
+      },
+      {
+        "id": "ADR-RUN-0006",
+        "verdict": "yes",
+        "run": "adrs-r1.json",
+        "record_sha256": "d6b46a37642e7b3450359afdaffd9eb35f7d48693a4521b4404ad47349b93ca1"
+      },
+      {
+        "id": "ADR-RUN-0008",
+        "verdict": "yes",
+        "run": "adrs-r1.json",
+        "record_sha256": "6d91b1714a1eb81fc5ce4fe95cae9de0debcf6520ff693a4a22d69aa47248eb2"
+      },
+      {
+        "id": "ADR-RUN-0204",
+        "verdict": "yes",
+        "run": "drift-r1.json",
+        "record_sha256": "7f2b983d3f09e23e4095518dda528bd16e2970b4803ad7cb30f051016cd8c669"
+      },
+      {
+        "id": "ADR-RUN-0301",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "72876d2abf7a544089f7abc6358644badfdfa323415c0d05644ba60db45ee44b"
+      },
+      {
+        "id": "ADR-RUN-0307",
+        "verdict": "yes",
+        "run": "adrs-r1.json",
+        "record_sha256": "b0beec8a3726792006ef48a545b18eb238ce647d257ceffa936d6edbfef2e39a"
+      },
+      {
+        "id": "ADR-RUN-0304",
+        "verdict": "yes",
+        "run": "drift-r1.json",
+        "record_sha256": "83d2f5c5485f8389a5bbca8c15d9aab7dd5a1407559d74192212c541dbc45c64"
+      },
+      {
+        "id": "ADR-RUN-0012",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "b47d7ae4c67b1c0510d1ab2a4d69bde1e7367733ad6140cd78aecd0d5e9ed2c5"
+      },
+      {
+        "id": "ADR-RUN-0016",
+        "verdict": "yes",
+        "run": "adrs-r1.json",
+        "record_sha256": "0c57677aaf81b2b506afed1b50db032d5b645019dc7de4f511f4bb70323c63ca"
+      },
+      {
+        "id": "ADR-RUN-0018",
+        "verdict": "yes",
+        "run": "adrs-r1.json",
+        "record_sha256": "b4410781749f3f3df9f1982f5a185182d9e477a88e43f93deadbba7ccf551c37"
+      },
+      {
+        "id": "ADR-RUN-0020",
+        "verdict": "yes",
+        "run": "drift-r1.json",
+        "record_sha256": "0056b93041ece06a1bb98e8ff6cdc812dc88cdaac3f095b5aa76bf23bb5416fb"
+      },
+      {
+        "id": "ADR-RUN-0021",
+        "verdict": "yes",
+        "run": "drift-r1.json",
+        "record_sha256": "76a79d0314f091aec8d162e67a25c3dde89390bcf38e61512c6ca001a5b9ee08"
+      },
+      {
+        "id": "REQ-RUN-0001",
+        "verdict": "yes",
+        "run": "nfr-r1.json",
+        "record_sha256": "6f624242267a4be4fc36707cfeb1c4bae3d0f195d491354397999aef8f14848e"
+      },
+      {
+        "id": "REQ-RUN-0002",
+        "verdict": "yes",
+        "run": "req-r4.json",
+        "record_sha256": "26ec48b7bf30ea40569abfdfb6e5d341b986075cf83945030e5d4a59fcffcfa2"
+      },
+      {
+        "id": "REQ-RUN-0004",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "4d243bde6af7d9c8166676a8d48ef548db6c5e201dc25f57e7301dbdf8e07756"
+      },
+      {
+        "id": "REQ-RUN-0005",
+        "verdict": "yes",
+        "run": "req0005-preserved.json",
+        "record_sha256": "336fe4e66d15bed6e342d00bb8b8e42f0353ef656a0c54046a8078e6f481ab88"
+      },
+      {
+        "id": "REQ-RUN-0101",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "2cac39c61426a5824e38e29e51c96e07c73a3edf51d78a559612405c841f3859"
+      },
+      {
+        "id": "REQ-RUN-0102",
+        "verdict": "yes",
+        "run": "req-r5.json",
+        "record_sha256": "b3a48955c90559b2a38214ebcea82418b73eb67b34c63ad661ff3b9bc8ddaa89"
+      },
+      {
+        "id": "REQ-RUN-0201",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "f51ca202e191c6def57fbdb6cb92b65ef9336fc88355b053989ee32b1dc35542"
+      },
+      {
+        "id": "REQ-RUN-0202",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "8db4f4227fc2d75f9af4405b3133221146039dcc17697d5f90cd1bb27c627488"
+      },
+      {
+        "id": "REQ-RUN-0203",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "2acd81514e1f977a318126f4e3457fc18cb9fdadac3f3eea07bf039ab502e980"
+      },
+      {
+        "id": "REQ-RUN-0205",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "c44754d485f30745c53135afd2257c1633c7459c3f3ee5f0a660a4910bb66271"
+      },
+      {
+        "id": "REQ-RUN-0206",
+        "verdict": "yes",
+        "run": "req-r5.json",
+        "record_sha256": "a87f0d31b1e352229289c18c14b581fc28c61505b0db8d88b1d9f904603eb8ac"
+      },
+      {
+        "id": "REQ-RUN-0301",
+        "verdict": "yes",
+        "run": "req-r4.json",
+        "record_sha256": "8425ca1555bcd49c219195d6aef4d4c60d24035812918d72e12aef0c3d0aa7f2"
+      },
+      {
+        "id": "REQ-RUN-0302",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "ca9897332fab8a2108342219a14db6c254b772a20b7868b16357dc776fe843a6"
+      },
+      {
+        "id": "REQ-RUN-0305",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "fe418c95310e576616d9aa3b6924bca42f4f41fc02c71250e2e406126d43ea6b"
+      },
+      {
+        "id": "REQ-RUN-0306",
+        "verdict": "yes",
+        "run": "req0306-final.json",
+        "record_sha256": "bfe942682bbf7a5eb5a5ceee8f153dedcecee171412c3f500cf0513abfb75e66"
+      },
+      {
+        "id": "REQ-RUN-0309",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "d77b96f00f1ed7731f9d0023639920be6b6fb675220f14cbdb80ef5f580333f5"
+      },
+      {
+        "id": "REQ-RUN-0310",
+        "verdict": "yes",
+        "run": "req-r2.json",
+        "record_sha256": "e157717f57d75890d520e0e0e6c74cb11ea3919377e483dd5db8e99f4f504b1c"
+      },
+      {
+        "id": "REQ-RUN-0311",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "a7fdd15145fa3148e453db4d1ff2ff230159ce5ffd5577de42ab7b8631f1c958"
+      },
+      {
+        "id": "REQ-RUN-0312",
+        "verdict": "yes",
+        "run": "req-r3.json",
+        "record_sha256": "886e4ac270e63bf9f3a8f8859033b13e3a32aaacd002da9954a162835547eab0"
+      },
+      {
+        "id": "NFR-RUN-0001",
+        "verdict": "yes",
+        "run": "nfr-r2.json",
+        "record_sha256": "f96ad493c6b4889e2d831c96496816db5388197911f48d2d2de41d22eabe95ba"
+      },
+      {
+        "id": "NFR-RUN-0002",
+        "verdict": "yes",
+        "run": "nfr-r2.json",
+        "record_sha256": "476312f5b8e6b765a7d8fd760338fad522326b1acfe2d7a0ab4f0371e7a8a884"
+      },
+      {
+        "id": "NFR-RUN-0003",
+        "verdict": "yes",
+        "run": "req-r5.json",
+        "record_sha256": "4d27afd38bcef0aa65e8ac5319e9419835b23d8eaa619fbf8083161d7228064a"
+      },
+      {
+        "id": "NFR-RUN-0004",
+        "verdict": "yes",
+        "run": "nfr-r1.json",
+        "record_sha256": "6e805008b3469d2d01016e234b428e6a253cd03a7894c26efb4c276ca4c2fdc7"
+      },
+      {
+        "id": "NFR-RUN-0005",
+        "verdict": "yes",
+        "run": "nfr-r1.json",
+        "record_sha256": "a5189a83e78485f6ac6172fcf2130d8ae21455d45ae6b0de5829c0859eb15c02"
+      },
+      {
+        "id": "NFR-RUN-0007",
+        "verdict": "yes",
+        "run": "nfr-closure.json",
+        "record_sha256": "f2b3b219130bb0b3939cf99e1ad8556d1b8dab5e3c35a855d8bdfd0995e5d766"
+      },
+      {
+        "id": "NFR-RUN-0008",
+        "verdict": "yes",
+        "run": "nfr-r1.json",
+        "record_sha256": "9c07a2708b2dd5a29b6c1ea0b1e4e93bbcfacccd38abb3d02c0b8650887cdb0a"
+      },
+      {
+        "id": "NFR-RUN-0009",
+        "verdict": "yes",
+        "run": "nfr-r2.json",
+        "record_sha256": "8e7ccec88583e72883e157061907f9f8e45f4f6fd2c16d6d6edc7fbac9fb79c9"
+      },
+      {
+        "id": "NFR-RUN-0010",
+        "verdict": "yes",
+        "run": "nfr-closure.json",
+        "record_sha256": "010125c22d8aa28503a80dc3b954f3c79011e9cc8dee9d1be57880debda68c50"
+      }
+    ],
+    "remaining": [],
+    "authority": {
+      "ADR-RUN-0017": "M33, ANC-037 and aa6f328 Phase D amendment: >=1.5.0, retained shim and normal tests replace pins/probes/forced cleanup",
+      "ADR-RUN-0012": "m43: four named SDK crates remain independent of SQLite writer; shared Storage<T> supersedes prior template restriction",
+      "ADR-RUN-0020": "M34: restore prohibition on public raw-write bypass of CronStorage policy",
+      "ADR-RUN-0021": "m36/m37/m38: deferred scope permits future addition; Phase D cron command scope; helper pipeline ownership and cron-only policy adapter",
+      "ADR-RUN-0020/0021 dates": "Owner 01M795YKF36R4A3F16PY0C341X: Decision Date 2026-11-12, Proposed; quality pass is not ratification",
+      "REQ-RUN-0002": "m44, aa6f328 criteria: separate publication, doctests, metadata fields and supported-feature dependency checks",
+      "NFR-RUN-0003": "Lead 01M796Q13FBJ1H4QN8NQW1PMRX: chosen-crate table/docs/prohibited list remain binding; standard/widely-used preference goes to Rationale",
+      "NFR-RUN-0007": "ANC-037 and lead 01M796AG54HJCZKP2B0514PXAV: tested floor, no minor-series cap",
+      "REQ-RUN-0301": "ADR-RUN-0021 Decision26 and locked owner independent-Monty direction; ADR remains Proposed",
+      "REQ-RUN-0309": "ANC-037 and restored ADR-RUN-0017: floor >=1.5.0 and retained shim",
+      "REQ-RUN-0308": "Lead 01M796HQN351G2Z25NQ4FB3CB8, PRD-ENG-4: delete Superseded record after confirming ADR-RUN-0020 carries live contract",
+      "NFR-RUN-0010": "m42: remove unconfirmed-owner attribution and repair dangling scope references without changing conditional fixture allowance",
+      "ADR-RUN-0204/0304": "m47: Draft plus explicit Phase D non-applicability, deferred decision retained",
+      "references": "m39/m48/m49: consistent index/status/order; batch cites ANC-025, writer-thread exception cites ADR-RUN-0011"
+    },
+    "drift_check": "Author read diffs and reviewed token losses: dates; removed duplicated ADR0018 Context/Decision text; deliberate superseded pin/cap/scope clauses per authority above; superseded 0308 references. No question/tree/threshold edits. Final independent review remains with run-lead.",
+    "normalization_recovery": "REQ-RUN-0005 had duplicate Requirement Statement headings. Restored the omitted normal/build full-logger/OTLP closure exclusion and code-alignment scope into the rendered record. Retained ADR0012 prohibition on four SDK crates depending on writer.",
+    "validation_limit": "Docs-only change. git diff --check flags template-generated two-space Markdown hard breaks; no product tests or code claims."
+  }
 }
