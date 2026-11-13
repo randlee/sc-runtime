@@ -3756,7 +3756,7 @@ and only asserts that it was not called.
 
 ### Requirement Statement
 
-Definitions: The driver is the Python script `scripts/new_project.py`. The base driver is the driver at the template milestone, before the wizard extension of [REQ-RUN-0602](requirements.md). `<dest>` is the directory where the new project is created. Wizard answer acquisition is obtaining the answers object from the wizard instead of from `--var-file` ([REQ-RUN-0602](requirements.md)). An answers object is the generation-options JSON object validated by wizard/answers.schema.json. The six-step pipeline is the ordered table below.
+Definitions: The driver is the Python script `scripts/new_project.py`. The base driver is the driver at the template milestone, before the wizard extension of [REQ-RUN-0602](requirements.md). `<dest>` is the directory where the new project is created. Wizard answer acquisition is obtaining the answers object from the wizard instead of from `--var-file` ([REQ-RUN-0602](requirements.md)). An answers object is the generation-options JSON object validated by wizard/answers.schema.json. The six-step pipeline is the ordered table below. A failed step is a pipeline step that does not complete the action in its table row; for steps 3 to 6 this includes its command exiting with a non-zero status.
 
 The driver and `scripts/run_wizard.py` live under `scripts/`, outside `template/`, so they are never copied into a generated project; the repository layout that guarantees this is owned by [REQ-RUN-0001](requirements.md).
 
@@ -3788,7 +3788,7 @@ the rule that the driver stops at the first failure are unchanged.
 - The base driver MUST obtain one complete answers JSON object from the file given with `--var-file`.
 - After obtaining the answers object, the base driver MUST run the steps of the six-step pipeline in their listed order.
 - The driver MUST stop at the first step that fails.
-- At the first failed step the driver MUST exit with a non-zero status.
+- If any step fails, the driver exit status MUST be non-zero.
 - At the first failed step the driver MUST write a message to stderr identifying which of the six steps failed.
 - When every step succeeds the driver MUST exit with status 0.
 - When the answers object comes from wizard answer acquisition, the driver MUST run the same validation and six-step pipeline on that answers object.
