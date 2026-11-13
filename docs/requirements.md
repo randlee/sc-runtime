@@ -1242,7 +1242,7 @@ not removed the hand-assembly they exist to remove.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. The daemon is a process assembled with `sc_runtime::Daemon::builder()`. The daemon router is the `axum::Router` that the builder assembles. A listener is the Unix domain socket, or the TCP address and port, that `run()` binds.
 
 This item states the end-to-end property; what the `sc-runtime` crate merges and mounts to achieve it is [REQ-RT-0004](sc-runtime/requirements.md).
 
@@ -1266,12 +1266,13 @@ status 200, and the body is the `sc_command` success envelope from
 
 **MUST statements:**
 
-- A daemon assembled with `sc_runtime::Daemon::builder()` MUST use one `axum::Router` in one process.
-- That router MUST be served unchanged on every listener `run()` binds (a Unix domain socket, or a TCP address and port).
-- That router MUST serve the project's own routes from its `.routes(...)` closure, as specified in the table above.
-- That router MUST serve the OpenAPI document generated from the same `OpenApiRouter`, as specified in the table above.
-- That router MUST serve the health route added by `sc-runtime`, as specified in the table above.
-- That router MUST serve the optional MCP endpoint at `/mcp` from the `.mcp(...)` closure, as specified in the table above.
+- The daemon MUST assemble exactly one daemon router.
+- The daemon MUST serve the daemon router from one process.
+- `run()` MUST serve the daemon router unchanged on every listener.
+- The daemon router MUST serve the project's own routes from its `.routes(...)` closure, as specified in the table above.
+- The daemon router MUST serve the OpenAPI document generated from the same `OpenApiRouter`, as specified in the table above.
+- The daemon router MUST serve the health route added by `sc-runtime`, as specified in the table above.
+- The daemon router MUST serve the optional MCP endpoint at `/mcp` from the `.mcp(...)` closure, as specified in the table above.
 - When the project gives no `.mcp(...)` closure, the project routes MUST still be served.
 - When the project gives no `.mcp(...)` closure, the OpenAPI document MUST still be served.
 - When the project gives no `.mcp(...)` closure, the health route MUST still be served.
@@ -1280,7 +1281,7 @@ status 200, and the body is the `sc_command` success envelope from
 
 - MCP MUST NOT run in a separate process.
 - MCP MUST NOT run in a separate binary.
-- MCP MUST NOT run in a separate port.
+- The MCP endpoint MUST NOT be served on a listener other than the one that serves the project routes.
 - When the project gives no `.mcp(...)` closure, `/mcp` MUST NOT be served.
 
 ### Rationale
