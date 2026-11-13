@@ -942,7 +942,7 @@ the template's example operation `widget.create`.
 - An operation's REST handler MUST NOT contain code other than pass-through code.
 - An operation's MCP tool MUST NOT contain code other than pass-through code.
 - An operation's CLI command MUST NOT contain code other than CLI client code.
-- In the generated project, `cargo tree -i sqlx --depth 1` output MUST NOT name any generated crate that is not a store crate.
+- When `cargo tree -i sqlx --depth 1` runs in the generated project, its output MUST NOT name any generated crate that is not a store crate.
 
 - REST handlers MUST NOT contain SQL.
 - REST handlers MUST NOT call `sqlx`.
