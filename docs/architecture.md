@@ -531,6 +531,9 @@ Amended: 2026-10-24 (sprint a-7), points 7–9, the publish and release contract
 - [REQ-RUN-0702](requirements.md): the `v0.1.0` release publishes the crates.
 ### Context
 
+Problem: projects generated from `sc-runtime` need a way to receive fixes to
+the reusable code after generation.
+
 `sc-runtime` delivers reusable code to projects in two ways: as a
 `cargo-generate` template rendered once into a new project, and as library
 crates the project depends on. Code rendered from a template belongs to the
@@ -604,15 +607,25 @@ authorization remain binding; no hand-written workflow bypass is allowed.
 sc-runtime design, 2026-09-19: independent crates stated by the owner; one repository with crates.io versions is a design recommendation accepted for sprint planning. Replaces an earlier scaffold plan of path dependencies extracted later. The review check in point 6 is decided in this document. Points 7–9 are decided in sprint a-7
 ### Consequences
 
-Generated projects pick up fixes with `cargo update`. The template stays
-small, which keeps the fixture matrix (one generated project per answers
-fixture) cheap to run. Publishing becomes part of every release, and each
-crate's public API is a semver contract from `v0.1.0`. Any crate can move to
-its own repository later without an API change. The `v0.1.0` GitHub Release
-carries the workspace source archive from point 9 and no release binaries.
-Release workflow files stay kit output.
+**Positive:**
+
+- Generated projects pick up crate fixes with `cargo update`.
+- The template stays small, which keeps the fixture matrix (one generated
+  project per answers fixture) cheap to run.
+- Any crate can move to its own repository later without an API change.
+
+**Negative:**
+
+- Cost: every release must publish the crates to crates.io.
+- Cost: from `v0.1.0`, each crate's public API is a semver contract, so a
+  breaking API change requires a semver-incompatible version.
+- Cost: a release workflow change requires rerunning `install.py`, because
+  release workflow files are kit output and are not hand-edited.
 
 **Neutral:**
+
+- The `v0.1.0` GitHub Release carries the workspace source archive from
+  point 9 and no release binaries.
 
 - OPEN: point 3's same-commit testing needs a generated project to resolve
   the selected public packages from the checked-out `crates/` directory and not from
