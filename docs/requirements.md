@@ -685,7 +685,7 @@ four crates and a template are built on the assumption.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository.
+Definitions: MCP means Model Context Protocol. ADR means architecture decision record. Sprint a-1 is the spike sprint. An evidence row is a row of the first table below, named by its Row id (V1 to V4b). The surface snapshot fact is the former fifth verification fact: how to dump MCP `tools/list` for surface snapshots. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository. To record the exact version used for a crate means to write the `major.minor.patch` version the spike built with into `docs/architecture.md`.
 
 The sc-runtime design relies on four facts it has not verified.
 
