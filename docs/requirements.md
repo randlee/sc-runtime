@@ -4207,7 +4207,6 @@ as [ADR-RUN-0401](architecture.md).
 - When `WYVERN_BIN` is set, wizard code MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
 - When `WYVERN_BIN` is unset or does not supply Wyvern, wizard code MUST look for Wyvern as `wyvern` on `PATH`.
 - When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit with a non-zero status.
-- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit before it runs `cargo generate`.
 - If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
 - If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
 - If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
@@ -4215,6 +4214,7 @@ as [ADR-RUN-0401](architecture.md).
 
 **MUST NOT statements:**
 
+- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST NOT run `cargo generate`.
 - The driver MUST NOT support any mode of obtaining the answers object other than interactive, prefill and non-interactive.
 - When the wizard ends without the person finishing it, the driver MUST NOT run `cargo generate`.
 

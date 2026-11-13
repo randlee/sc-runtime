@@ -560,6 +560,10 @@ Decided in this document, stricter than NFR-RUN-0009: `assert!`, `assert_eq!` an
 - Reachable code MUST read every element of an indexable value by checked access.
 - Reachable code that reads the process environment MUST call `std::env::vars_os()`.
 - When called with any input, a public function MUST return without panicking.
+- When called with any input, a `Display` implementation that `sc-config` provides on a public type MUST return without panicking.
+- When called with any input, a `Debug` implementation that `sc-config` provides on a public type MUST return without panicking.
+- When called with any input, a `std::error::Error` implementation that `sc-config` provides on a public type MUST return without panicking.
+- When called with any input, a `From` implementation that `sc-config` provides on a public type MUST return without panicking.
 
 **MUST NOT statements:**
 
@@ -568,10 +572,6 @@ Decided in this document, stricter than NFR-RUN-0009: `assert!`, `assert_eq!` an
 - Reachable code MUST NOT report a failure by printing or logging.
 - Reachable code MUST NOT use a panicking construct.
 - Non-test code MUST NOT call `std::env::vars()`.
-- A `Display` implementation that `sc-config` provides on a public type MUST NOT panic for any input.
-- A `Debug` implementation that `sc-config` provides on a public type MUST NOT panic for any input.
-- A `std::error::Error` implementation that `sc-config` provides on a public type MUST NOT panic for any input.
-- A `From` implementation that `sc-config` provides on a public type MUST NOT panic for any input.
 
 ### Rationale
 
