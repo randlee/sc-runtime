@@ -1499,7 +1499,7 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
-This layout is the interim application wiring form. Phase D uses `sc-runtime-db-sqlite` for SQLite storage and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. The adaptor directory, its dependency rows and its checks below describe the deferred store-to-store synchronization design, not a Phase D implementation or validation obligation (PRD §9).
+This layout is the interim application wiring form. Phase D uses `sc-runtime-db-sqlite` for SQLite storage and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. Synchronization between stores is deferred (PRD §9). Whether a consumer uses an adaptor, and how `service` reaches the stores of a two-store layout, are not bound here; no implementation or validation of a synchronization mechanism is required.
 
 Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `<project>-<role>` ([REQ-RUN-0329](requirements.md)). "v0.1" means the first release, in which the only database option was SQLite and the package names were the role names below. 
 
@@ -1512,7 +1512,6 @@ Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `
     store-sqlite/             # SQLite application wiring over sc-runtime-db-sqlite
     store-postgres/           # when the layout's engine is Postgres
     store-mysql/              # when the layout's engine is MySQL
-    store-adaptor/            # when the layout has two stores
     service/                  # always
     daemon/                   # always; src/main.rs, src/routes.rs, src/mcp.rs
     cli/                      # always
@@ -1525,9 +1524,9 @@ Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `
   .github/workflows/ci.yml
 ```
 
-A no-database layout renders no `schema` crate, no `store-*` crate, and no
-adaptor. A one-store layout renders that store and no adaptor. A two-store
-layout renders SQLite, that layout's one sqlx engine, and the adaptor.
+A no-database layout renders no `schema` crate and no `store-*` crate.
+A one-store layout renders that store. A two-store layout renders SQLite
+and that layout's one sqlx engine; it does not imply a synchronization mechanism.
 
 2. The store directories a layout renders are [REQ-RUN-0326](requirements.md).
    v0.1 rendered `crates/store-sqlite` only. 3. `config/local.json` is the developer's local override file.
@@ -1542,20 +1541,19 @@ layout renders SQLite, that layout's one sqlx engine, and the adaptor.
    | `<project>-schema`, when the layout has a store | no SQL crate | row structs |
    | `<project>-store-sqlite`, when rendered | `sc-runtime-db-sqlite` | application wiring over the shared SQLite writer |
    | `<project>-store-postgres` or `<project>-store-mysql`, when rendered | `sqlx` with that engine's feature | remote-engine storage remains separate from the SQLite writer |
-   | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and the store crates whose rows it moves | moves rows between those stores |
-   | `<project>-service` | `<project>-types`; the adaptor on a two-store layout, or that one store on a one-store layout; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
+   | `<project>-service` | `<project>-types`; `sc-command` with default features; the store on a one-store layout | the single code path to SQL, called by REST handlers and MCP tools |
    | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron`; optional `sc-monty` behind generated feature `monty` | owns the wiring and the full-observability composition root; optional cron is embedding policy |
    | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
 
-   A one-store layout has no adaptor row. A no-database
-   layout has no schema row, no store row, and no adaptor row, and `service`
-   depends on `<project>-types` and `sc-command` only.
+   A no-database layout has no schema row or store row, and `service`
+   depends on `<project>-types` and `sc-command` only. Two-store service
+   wiring and any synchronization adaptor are outside this table's obligations.
 
    The sc-runtime design's dependency table omits three of these edges. They
    follow from its own code: service functions return `OpError`, which is
    defined in `sc-command`; `daemon` handlers name `Envelope<T>`, call
    `into_mcp()`, and take `api-types` structs as input.
-6. Service functions take `&Stores`. A two-store layout's adaptor depends on the store crates whose rows it moves, and `service` depends on the adaptor. A one-store layout has no adaptor, and `service` depends on that store. `daemon` and `cli` do not depend on a store crate.
+6. Service functions take `&Stores`. On a one-store layout, `service` depends on that store. `daemon` and `cli` do not depend on a store crate.
 
 The forbidden dependency edges are enumerated in the MUST NOT statements below.
 9. TCP ports come from project configuration. Port ranges are allocated per
@@ -1580,8 +1578,8 @@ configuration and does not depend on the daemon crate for that type.
 - When rendered, `<project>-schema` MUST satisfy its no-SQL-crate dependency row in the table.
 - When rendered, `<project>-store-sqlite` MUST use the writer dependency in its table row.
 - When rendered, each remote-engine store MUST satisfy its engine-specific dependency row in the table.
-- On a two-store layout, `<project>-store-adaptor` MUST satisfy its dependency row in the table.
-- `<project>-service` MUST satisfy its layout-specific dependency row in the table.
+- `<project>-service` MUST depend on `<project>-types`.
+- On a one-store layout, `<project>-service` MUST depend on that store.
 - `<project>-daemon` MUST satisfy its dependency row in the table.
 - `<project>-cli` MUST satisfy its dependency row in the table.
 - The project's `Stores` struct MUST be defined in the `service` crate.
@@ -1605,7 +1603,9 @@ configuration and does not depend on the daemon crate for that type.
 - `cli` MUST NOT depend on `rmcp` as a normal (non-dev) dependency, directly or transitively.
 - `api-types` MUST NOT depend on another crate of the generated workspace.
 - A generated crate other than a `store-*` crate MUST NOT depend directly on `sqlx`.
-- A generated crate other than the adaptor, or `service` on a one-store layout, MUST NOT depend on a `store-*` crate.
+- `daemon` MUST NOT depend on a `store-*` crate.
+- `cli` MUST NOT depend on a `store-*` crate.
+- `api-types` MUST NOT depend on a `store-*` crate.
 - `store-sqlite` MUST NOT depend on `service`.
 - `store-sqlite` MUST NOT depend on `daemon`.
 - `store-sqlite` MUST NOT depend on `cli`.
@@ -1623,18 +1623,18 @@ REST and MCP have exactly one place to call.
 
 1. For each answers file in `wizard/fixtures/`, render the project with the
    driver (`just new <dest> --var-file <fixture>`) and assert
-   the paths that layout includes exist, and that the store and adaptor
+   the paths that layout includes exist, and that the store
    directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
    present exactly when the fixture's `mcp` is `true`. 2. In each rendered project, `cargo metadata --format-version 1` shows the
-   package names `<project>-<role>` for the crates that layout renders:
-   `types`, `schema`, each store, the adaptor when the layout has two stores,
-   `service`, `daemon`, and `cli`, and no others. 3. In each rendered project,
+   package names `<project>-<role>` for the non-synchronization roles that
+   layout renders: `types`, `schema`, each store, `service`, `daemon` and
+   `cli`. This criterion makes no assertion about the presence or absence
+   of a consumer synchronization/adaptor package. 3. In each rendered project,
    `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
    `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
    `<project>-daemon ` (the name followed by a space). 4. In each rendered project, `sqlx` appears under `[dependencies]` only in
    remote-engine store `Cargo.toml` files; the SQLite wiring crate depends on
-   `sc-runtime-db-sqlite` instead. A two-store layout's adaptor depends on those
-   stores. A one-store layout's `service` depends on that store. 5. The rendered `.gitignore` contains the line `config/local.json`.
+   `sc-runtime-db-sqlite` instead. A one-store layout's `service` depends on that store. 5. The rendered `.gitignore` contains the line `config/local.json`.
 6. The rendered project contains no file ending in `.j2` and no file from
    `wizard/` or `scripts/`.
 7. `grep -rn 'struct Stores' crates/` in a rendered project matches only
