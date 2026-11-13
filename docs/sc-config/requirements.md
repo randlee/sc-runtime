@@ -575,45 +575,29 @@ directory and an in-memory environment.
 
 ### Requirement Statement
 
-This item binds all code under `crates/sc-config/src`.
+Scope: all code under `crates/sc-config/src`. This item applies the panic rule and error rule of [NFR-RUN-0009](../requirements.md) to `sc-config` and adds stricter `sc-config` entries. No commented exception is allowed.
 
-The panic rule for the four library crates of this repository is owned by [NFR-RUN-0009](../requirements.md). There is no allowance for a commented exception. Test code is exempt. This item applies that rule to `sc-config` and adds the crate-specific entries 5 and 6.
+Definitions: A public function is a `pub fn` or `pub` method of `sc-config` callable from outside the crate; implementations of `Display`, `Debug`, `std::error::Error` and `From` on public types are not public functions. The fallible functions are `AppName::new`, `Loader::load`, `load` and every other public function that validates a caller argument, reads a file or reads the environment; `Loader::new` is not a fallible function. `ConfigError` is the public typed error enum of `sc-config` ([REQ-CFG-0004](requirements.md)). Test code is code inside a `#[cfg(test)]` module or under `crates/sc-config/tests/`. Non-test code is code in `crates/sc-config/src` that is not test code. Reachable code is non-test code that a public function or a `Display`, `Debug`, `std::error::Error` or `From` implementation on a public type can execute. An indexable value is a slice, string, `Vec` or `serde_json::Value`. Checked access is reading an element of an indexable value with `get`, a pattern match or an iterator. An opaque error type is `Box<dyn Error>` or `anyhow::Error`. An output macro is `print!`, `println!`, `eprint!`, `eprintln!`, `dbg!` or a logging macro. A panicking construct is any of `.unwrap()`, `.expect(`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, `assert!`, `assert_eq!`, `assert_ne!` or a `[` index expression on an indexable value. Any input means any app name, any directory path, any file content and any environment content, including environment variables that are not valid Unicode.
 
-1. In Rust this is the discriminated union the design calls for: the caller receives either the value or a typed error and must handle both.
-2. No public function or method may return `Option` to signal failure, return
-   a boxed or opaque error (`Box<dyn Error>`, `anyhow::Error`), or report
-   failure by printing or logging.
-3. No code path reachable from a public function or method may panic, for any
-   input: any app name, any directory path, any file content, any environment
-   content including variables that are not valid Unicode.
-7. Implementations of standard traits on public types (`Display`, `Debug`,
-   `std::error::Error`, `From`) are not "public methods" for entry 1, but
-   entries 3, 4 and 5 apply to them.
-8. Code inside `#[cfg(test)]` modules and under `crates/sc-config/tests/` is
-   exempt from entries 4 and 5.
-
-Decided: Only an operation that can fail returns `Result<T, ConfigError>`.
-`Loader::new` stores a validated `AppName` plus the caller's directory and
-environment, so it returns `Loader`. `AppName::new` can fail and returns
-`Result<AppName, ConfigError>`. [NFR-RUN-0009](../requirements.md) requires
-`Result` of operations that can fail.
+Decided in this document, stricter than NFR-RUN-0009: `assert!`, `assert_eq!` and `assert_ne!` are panicking constructs, and calling `std::env::vars()` is banned.
 
 **MUST statements:**
 
-- Every public function and public method of `sc-config` that can fail MUST return `Result<T, ConfigError>`, where `ConfigError` is the crate's public typed error enum ([REQ-CFG-0004](requirements.md)).
-- Where a slice, string, `Vec` or `serde_json::Value` is accessed, the code MUST use `get`, pattern matching or iterators.
-- It MUST use `std::env::vars_os()`.
+- The return type of every fallible function MUST be `Result<T, ConfigError>`.
+- `Loader::new` MUST have the return type `Loader`.
+- `AppName::new` MUST have the return type `Result<AppName, ConfigError>`.
+- Reachable code MUST read every element of an indexable value by checked access.
+- Reachable code that reads the process environment MUST call `std::env::vars_os()`.
+- When called with any input, a public function MUST return without panicking.
 
 **MUST NOT statements:**
 
-- That rule is: code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing.
-- Code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing ([NFR-RUN-0009](../requirements.md)).
-- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert!`.
+- A public function MUST NOT have a return type of `Option` for reporting failure.
+- A public function MUST NOT have a return type containing an opaque error type.
+- Reachable code MUST NOT call an output macro.
+- Reachable code MUST NOT use a panicking construct.
+- Non-test code MUST NOT call `std::env::vars()`.
 
-- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert_eq!`.
-
-- Stricter than the repository rule, decided in this document: code reachable from a public function MUST NOT use `assert_ne!`.
-- Stricter than the repository rule, decided in this document: non-test code MUST NOT call `std::env::vars()`, which panics on a variable that is not valid Unicode.
 ### Rationale
 
 The design states this directly for `sc-config`: every method returns a
