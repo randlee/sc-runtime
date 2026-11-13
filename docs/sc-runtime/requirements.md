@@ -840,7 +840,7 @@ payload lets the caller print the failure detail.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. A value reaches `run()` inside `DaemonConfig` when `run()` reads it from the `DaemonConfig` passed to `Daemon::builder` and from no other source. A build of `sc-transport` with default features is one with no `--features`, `--all-features` or `--no-default-features` flag. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. The explicit instance root is `DaemonConfig.transport.instance_root` when it is set. Code is feature-gated when a `#[cfg(...)]` or `#[cfg_attr(...)]` attribute that names a Cargo feature guards it. The daemon is the process that calls `run()`. To bind an endpoint is to listen on it for connections. To parse the command line is to read `std::env::args` or `std::env::args_os`, directly or through a parser such as `clap`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources. Calling an `sc-transport` function is not endpoint logic.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that
@@ -888,18 +888,18 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - `run()`'s call to the `sc-transport` instance-root function MUST pass the explicit instance root when one is set.
 - `run()` MUST obtain the bind endpoint only by calling the `sc-transport` endpoint resolver.
 - `run()`'s call to the `sc-transport` endpoint resolver MUST pass the instance root returned by `run()`'s call to the `sc-transport` instance-root function.
-- The `--endpoint` flag value MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-- The configured endpoint MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-- The explicit instance root MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-- When `SC_ENDPOINT` is set and the `DaemonConfig` carries no `--endpoint` flag value, the daemon MUST bind the endpoint that `SC_ENDPOINT` names.
+- `run()` MUST read the `--endpoint` flag value only from the `DaemonConfig` passed to `Daemon::builder`.
+- `run()` MUST read the configured endpoint only from the `DaemonConfig` passed to `Daemon::builder`.
+- `run()` MUST read the explicit instance root only from the `DaemonConfig` passed to `Daemon::builder`.
+- When the `SC_ENDPOINT` environment variable is set and `DaemonConfig.endpoint_flag` is `None`, the daemon MUST bind the endpoint that `SC_ENDPOINT` names.
 - `DaemonConfig.transport` MUST have the type `sc_transport::TransportConfig`.
-- In a build of `sc-transport` with default features, `sc_transport::TransportConfig` MUST implement `serde::Deserialize`.
+- `crates/sc-transport/src/config.rs` MUST implement `serde::Deserialize` for `TransportConfig`.
 
 **MUST NOT statements:**
 
 - The generated `daemon/src/main.rs` MUST NOT need to call the instance-root function.
 - The generated `daemon/src/main.rs` MUST NOT need to call the endpoint resolver.
-- `sc-runtime` MUST NOT contain endpoint logic of its own.
+- `sc-runtime` MUST NOT contain endpoint logic.
 - `sc-runtime` MUST NOT compute a socket path.
 - `sc-runtime` MUST NOT choose a default address.
 - `sc-runtime` MUST NOT choose a default port.
@@ -908,6 +908,7 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - The builder MUST NOT have a method for instance-root resolution.
 - The builder MUST NOT have a method for endpoint resolution.
 - `sc-runtime` MUST NOT parse the command line.
+- The `serde::Deserialize` implementation for `TransportConfig` MUST NOT be feature-gated.
 
 ### Rationale
 
