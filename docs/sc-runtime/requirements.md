@@ -531,6 +531,8 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - The source of `run()` MUST place the call that removes the socket file before the call that releases the endpoint lock.
 - For a Unix domain socket endpoint, the socket file MUST no longer exist when `run()` returns.
 - After the call that stops serving on the listener, the source of `run_with_cleanup` MUST call the cleanup callback.
+- The source of `run_with_cleanup` MUST place the call that removes the socket file before the call to the cleanup callback.
+- The source of `run_with_cleanup` MUST place the call that releases the endpoint lock before the call to the cleanup callback.
 - When a startup error occurs, the cleanup callback passed to `run_with_cleanup` MUST run.
 - When a startup closure is not called, the source of `run_with_cleanup` MUST drop that startup closure before the call to the cleanup callback.
 - While the cleanup callback of `run_with_cleanup` runs, `run()` of a second daemon on the same instance root MUST return `RuntimeError::LockHeld`.
@@ -571,10 +573,14 @@ Criteria that start a daemon in a child process run only on an isolated
 machine, never on a developer's host
 ([NFR-RUN-0010](../requirements.md)).
 
-1. A `#[cfg(unix)]` test starts a daemon in a child process with a route that
-   sleeps before replying, sends a request, sends SIGTERM to the child while
-   the request is in flight, and asserts the client receives the complete
-   successful response.
+1. A `#[cfg(unix)]` test starts a daemon in a child process whose handler
+   acknowledges admission of the request and then awaits an explicit release
+   signal. The test waits for the admission acknowledgement, sends SIGTERM to
+   the child, observes that shutdown has stopped admitting new connections,
+   releases the handler, and asserts the client receives the complete
+   successful response and that cleanup completes. Ordering is driven by
+   acknowledgements, not by sleeps; timeout checks use controlled time and
+   explicit coordination rather than elapsed sleeps.
 2. The same test asserts the child then exits, that a new connection attempt
    after the signal fails, and that the socket file no longer exists.
 3. The same scenario with SIGINT passes the same assertions.
