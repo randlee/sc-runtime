@@ -2012,35 +2012,50 @@ the set of fixtures CI already generates and tests.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: sc-compose is the tool that validates frontmatter and renders the Jinja agent-document templates. The sc-ai-cli agent-document templates are the AGENTS.md.j2 and CLAUDE.md.j2 templates named below. JSON means JavaScript Object Notation. ADR means architecture decision record. sc-ai-cli is the source project whose AGENTS.md.j2 and CLAUDE.md.j2 agent-document forms this template matches.
-
-2. `exclude` makes `cargo-generate` copy a file into the generated project byte-for-byte without Liquid rendering. That behaviour is recorded in [ADR-RUN-0402](architecture.md), which sprint a-1 made Active.
-5. This failure behaviour is decided in this document.
-6. This item owns the `sc-compose` step and the removal of the `.j2` files;
-   the driver pipeline requirement refers to it.
+Definitions:
+sc-compose is the external command-line tool that validates and renders Jinja templates that begin with frontmatter.
+Frontmatter is the block delimited by `---` lines at the start of a template file.
+The sc-ai-cli agent-document form is a Jinja file that begins with frontmatter and that `sc-compose validate --mode file --file <path>` accepts with exit status 0, as the sc-ai-cli project's `AGENTS.md.j2` and `CLAUDE.md.j2` do.
+Liquid is the template language that `cargo-generate` renders.
+Liquid syntax intended for cargo-generate is markup that `cargo-generate` substitutes during `cargo generate`, such as the `{{project-name}}` placeholder or a `{% elsif %}` tag.
+`exclude` is the list in `template/cargo-generate.toml` whose files `cargo-generate` copies byte-for-byte without Liquid rendering, as [ADR-RUN-0402](architecture.md) records.
+The driver is the generation script `scripts/new_project.py` that `just new` runs.
+`<dest>` is the destination directory of a driver run, into which `cargo generate` writes the generated project.
+A driver test is a test in `tests/integration/generation/test_driver.py` that runs the driver.
+A stub sc-compose is an executable that a driver test names in the `SC_COMPOSE` environment variable so that the driver runs it in place of sc-compose.
+The answers JSON is the answers file that the driver passes to `cargo generate`.
+JSON means JavaScript Object Notation.
+ADR means architecture decision record.
+This record owns the driver's sc-compose step, the failure behaviour of that step and the removal of the `.j2` files.
 
 **MUST statements:**
 
-- The template MUST contain `template/AGENTS.md.j2`.
-- The template MUST contain `template/CLAUDE.md.j2`.
-- `template/AGENTS.md.j2` MUST be a Jinja template with frontmatter in the form that `sc-compose` validates and renders.
-- `template/AGENTS.md.j2` MUST match the agent-document templates of the sc-ai-cli project.
-- `template/CLAUDE.md.j2` MUST be a Jinja template with frontmatter in the form that `sc-compose` validates and renders.
-- `template/CLAUDE.md.j2` MUST match the agent-document templates of the sc-ai-cli project.
-- Both files MUST be listed under `exclude` in `template/cargo-generate.toml`.
-- After `cargo generate` finishes, the generation driver `scripts/new_project.py` MUST run `sc-compose` on the two copied `.j2` files, giving it the same answers JSON that drove `cargo generate`, to produce `AGENTS.md` and `CLAUDE.md` at the root of the generated project.
-- The driver MUST then delete `AGENTS.md.j2` from the generated project.
-- The driver MUST then delete `CLAUDE.md.j2` from the generated project.
-- If `sc-compose` fails, the driver MUST fail the run and name the `sc-compose` step.
+- The file `template/AGENTS.md.j2` MUST exist.
+- The file `template/CLAUDE.md.j2` MUST exist.
+- `sc-compose validate --mode file --file template/AGENTS.md.j2` MUST exit with status 0.
+- `sc-compose validate --mode file --file template/CLAUDE.md.j2` MUST exit with status 0.
+- `template/AGENTS.md.j2` MUST have the sc-ai-cli agent-document form.
+- `template/CLAUDE.md.j2` MUST have the sc-ai-cli agent-document form.
+- The `exclude` list in `template/cargo-generate.toml` MUST contain `AGENTS.md.j2`.
+- The `exclude` list in `template/cargo-generate.toml` MUST contain `CLAUDE.md.j2`.
+- In `scripts/new_project.py`, every `sc-compose render` call MUST come after the call that waits for the `cargo generate` process to exit.
+- In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/AGENTS.md.j2 --output <dest>/AGENTS.md`.
+- In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/CLAUDE.md.j2 --output <dest>/CLAUDE.md`.
+- In `scripts/new_project.py`, every `sc-compose render` command line MUST pass the answers JSON as `--var-file`.
+- In a driver test whose stub sc-compose exits with status 1, the driver MUST exit with a non-zero status.
+- In a driver test whose stub sc-compose exits with status 1, the driver's standard error output MUST name `sc-compose` as the failed step.
 
 **MUST NOT statements:**
 
-- These two files MUST NOT contain Liquid syntax intended for `cargo-generate`.
+- `template/AGENTS.md.j2` MUST NOT contain Liquid syntax intended for cargo-generate.
+- `template/CLAUDE.md.j2` MUST NOT contain Liquid syntax intended for cargo-generate.
+- After a `just new <dest>` command exits with status 0, `test -e <dest>/AGENTS.md.j2` MUST NOT exit with status 0.
+- After a `just new <dest>` command exits with status 0, `test -e <dest>/CLAUDE.md.j2` MUST NOT exit with status 0.
 
 ### Rationale
 
