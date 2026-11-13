@@ -696,12 +696,30 @@ spawns a test helper, never the generated CLI binary
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-`RuntimeError` is a public non-generic enum in `sc-runtime`. Public signatures contain no `Box<dyn Error>`. The variants are pinned. The inventory (failure mode, stable code, cause payload, recovery text) is in [the crate architecture](architecture.md#runtime-error-inventory).
+Definitions: `RuntimeError` is the error enum defined in `crates/sc-runtime/src/error.rs`.
+`run()` is the `DaemonBuilder::run` method defined in `crates/sc-runtime/src/builder.rs`.
+A variant is one case of the `RuntimeError` enum.
+The variant table is the table below that names each variant and the failure for which `run()` returns that variant.
+The runtime error inventory is the table in [the crate architecture](architecture.md#runtime-error-inventory) that gives each variant's failure mode, stable code, cause payload and recovery text.
+A cause payload is the plain-text failure detail that a variant carries.
+The stores closure is the application function passed to `DaemonBuilder::stores` that opens the application's stores.
+A store error is an error value whose type the application defines outside `sc-runtime`.
+An observability type is a type defined in the `sc-observability-types` crate.
+A downstream test is an integration test in `crates/sc-runtime/tests/`; Cargo compiles each such test as a separate crate that sees only the public API of `sc-runtime`.
+A per-variant match is a `match` expression on `RuntimeError` that has a separate arm for each of the seven variants.
+A source file names a type when its Rust code refers to that type by path.
+A trait-bound assertion is a function in a downstream test that compiles only when `RuntimeError` implements the named trait.
+A public function signature is the parameter and return types of a `pub` function or method reachable from the `sc-runtime` crate root.
+`Box<dyn Error>` is a heap-allocated `std::error::Error` trait object.
+`sc_transport::AppName` is the validated application-name type defined in `sc-transport`.
+The instance root is the per-application, per-user directory resolved by `sc-transport`, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+`daemon.lock` is the lock file `<instance-root>/daemon.lock`.
+Lock contention is another process holding the lock on `daemon.lock`.
 
 | Variant | Returned when |
 |---|---|
@@ -713,52 +731,57 @@ spawns a test helper, never the generated CLI binary
 | `ServeFailed` | serving the router ended with an error |
 | `RouteConflict` | the project's router already defines `GET /health`, `GET /openapi.json`, or `/mcp` |
 
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
-
-- That `run()` does not panic is [NFR-RT-0004](requirements.md).
-- A failure in resolving the instance root or in opening `daemon.lock` is `InstanceFailed`, not `LockHeld`. A failure to parse or resolve the endpoint is `EndpointFailed`, not `BindFailed`.
-- `StoresFailed` is non-generic. Its `code` is `&'static str`. Its `message`,
-  `remediation`, and optional `cause` are `String`. The application maps its
-  store error into those fields inside the stores closure. `sc-runtime` does
-  not name the foreign error type, does not implement `source()` for a
-  downcast. Its store-error representation does not use observability types;
-  the direct `sc-observability-types` dependency is permitted for injected
-  logging under REQ-RUN-0309. There is no `AppName` variant and no
-  `APP.INVALID_NAME` row. `run` does not construct `sc_transport::AppName`
-  and does not use `unreachable!`.
-
-The project's `main` maps the result to a process exit code.
+Out of scope: the project's `main` maps the result of `run()` to a process exit code. That `run()` does not panic is [NFR-RT-0004](requirements.md). The direct `sc-observability-types` dependency of `sc-runtime` is permitted for injected logging under REQ-RUN-0309.
 
 **MUST statements:**
 
-- `run()` MUST return `Result<(), RuntimeError>`.
-- Each variant MUST carry the underlying error so the caller can print it.
-- `RuntimeError` MUST implement `std::error::Error`.
-- `RuntimeError` MUST implement `Debug`.
-- `RuntimeError` MUST implement `Display`.
-- A caller MUST be able to distinguish the variants with a `match`, including "daemon already running" (`LockHeld`) versus "cannot bind" (`BindFailed`).
-- Every failure of `run()` MUST be returned as an `Err(RuntimeError)`.
+- `run()` MUST have the return type `Result<(), RuntimeError>`.
+- `RuntimeError` MUST be declared `pub` in `sc-runtime`.
+- The declaration of `RuntimeError` in `crates/sc-runtime/src/error.rs` MUST have no generic type parameters.
+- The variants declared for `RuntimeError` in `crates/sc-runtime/src/error.rs` MUST be exactly the seven variants named in the variant table.
+- The `cause` field of each variant MUST hold the cause payload that the runtime error inventory lists for that variant.
+- A downstream test MUST compile a trait-bound assertion for `std::error::Error`.
+- A downstream test MUST compile a trait-bound assertion for `std::fmt::Debug`.
+- A downstream test MUST compile a trait-bound assertion for `std::fmt::Display`.
+- A downstream test MUST compile a per-variant match.
+- When `run()` fails, the `Err` value returned by `run()` in a downstream test MUST hold the variant that the variant table names for the failure.
+- When the instance root cannot be resolved, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::InstanceFailed`.
+- When opening `daemon.lock` fails for a reason other than lock contention, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::InstanceFailed`.
+- When the endpoint cannot be parsed, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::EndpointFailed`.
+- When the endpoint cannot be resolved, the `Err` value returned by `run()` in a downstream test MUST hold `RuntimeError::EndpointFailed`.
+- In `crates/sc-runtime/src/error.rs`, the `code` field of `RuntimeError::StoresFailed` MUST be declared with type `&'static str`.
+- In `crates/sc-runtime/src/error.rs`, the `message` field of `RuntimeError::StoresFailed` MUST be declared with type `String`.
+- In `crates/sc-runtime/src/error.rs`, the `remediation` field of `RuntimeError::StoresFailed` MUST be declared with type `String`.
+- In `crates/sc-runtime/src/error.rs`, the `cause` field of `RuntimeError::StoresFailed` MUST be declared with type `Option<String>`.
+- The signature of `DaemonBuilder::stores` in `crates/sc-runtime/src/builder.rs` MUST require a stores closure whose future outputs `Result<S, RuntimeError>`.
 
 **MUST NOT statements:**
 
 - `run()` MUST NOT call `std::process::exit`.
+- A public function signature in `sc-runtime` MUST NOT contain `Box<dyn Error>`.
+- The source files under `crates/sc-runtime/src/` MUST NOT name the type of a store error.
+- When a downstream test calls `RuntimeError::source()` on a `RuntimeError::StoresFailed` value, `RuntimeError::source()` MUST NOT return `Some`.
+- A field of `RuntimeError::StoresFailed` MUST NOT have an observability type.
+- `RuntimeError` MUST NOT have an `AppName` variant.
+- The runtime error inventory MUST NOT contain an `APP.INVALID_NAME` row.
+- `run()` MUST NOT construct `sc_transport::AppName`.
+- `run()` MUST NOT invoke the `unreachable!` macro.
 
 ### Rationale
 
 The generated `main.rs` turns the result into an exit code and a message for
 a person or an agent. "A daemon is already running" calls for a different
 action from "the port is taken" or "the database would not open", so the
-caller needs a variant to branch on and not a string to parse.
+caller needs a variant to branch on and not a string to parse. The cause
+payload lets the caller print the failure detail.
 ### Success Criteria
 
 1. A test holds the lock, calls `run()`, and matches the result against the
    `LockHeld` variant.
 2. A test whose stores closure returns an error matches the result against
-   `StoresFailed` and reads `code` as `&'static str` and `message`,
-   `remediation`, and `cause` as `String`. The test does not call `source()`
-   and does not downcast.
+   `StoresFailed`, reads `code` as `&'static str`, reads `message` and
+   `remediation` as `String`, and reads the optional `cause` text. The test
+   does not call `source()` and does not downcast.
 3. A test that makes the bind fail (TCP port already in use) matches the
    result against `BindFailed`.
 4. A test covers `ServeFailed`, or, if no deterministic trigger exists, an
