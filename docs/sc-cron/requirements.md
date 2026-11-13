@@ -275,33 +275,26 @@ The row limit is application configuration rather than stored table state; indep
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: StoreErrorKind is the non-exhaustive discriminator inside CronError::Store, including Cancelled, DeadlineExceeded and Indeterminate. DeadlineExceeded is an elapsed operation deadline; confirmed committed-late evidence means the transaction is confirmed persisted after its admission cutoff. Provider prose is text from an application callback or storage provider, rather than the documented typed library error value.
+Definitions: A fallible sc-cron function is a `pub fn` exported by the `sc_cron` crate whose return type is a `Result`; trait methods that the application implements, such as `EnvironmentReferenceResolver::resolve`, are excluded. `Captured` is the child-output type in crates/sc-cron/src/process.rs. The CronError table is the variant-to-code table below. StoreErrorKind is the `#[non_exhaustive]` discriminator inside `CronError::Store`, defined in crates/sc-cron/src/error.rs. A cooperative operation is a schedule-store operation run under a `StoreOperationContext` (REQ-CRON-0020). The matching non-cooperative operation is the same schedule-store method called without a `StoreOperationContext`. Call arguments are the values passed to the store method. A cooperative operation failure is a `CronError` returned by a cooperative operation. Schedule-row contents are the stored field values of one schedule row. Provider prose is text produced by an application callback or a storage provider. A Monty feed is one run of a schedule row's Monty hook with feature `monty`. The condition table is the condition-to-code table below. A host adapter is an sc-cron component that answers a Monty host call, such as the CLI adapters `sc_compose_run` and `atm_run`. A host-deadline expiration is a Monty feed that exceeds its row deadline, as in the last two rows of the condition table. A code token is a code listed in the CronError table or in the condition table. To automatically retry is for sc-cron to run a failed operation again without a new call from the application. SQL text is the text of an SQL statement. In a `Failed` detail of the form `CODE: message; recovery`, message is the failure text and recovery is the row's operator recovery text. A `TransactionOutcome` is the persistence report returned by `StoreError::transaction_outcome()`.
 
-Phase C planned amendment: cooperative operation failures remain CronError::Store
-with non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and
-Indeterminate, and optional typed TransactionOutcome accessor. No second error
-enum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry
-confirmed committed-late evidence and must not trigger automatic retry;
-Indeterminate never asserts rollback/not-persisted. Existing legacy variants,
-stable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and
-ADR-RUN-0018 govern the exact admission/persistence report policy.
+`DeadlineExceeded` may carry confirmed committed-late evidence. `StoreError::transaction_outcome()` is optional. REQ-CRON-0020 and ADR-RUN-0018 govern the admission and persistence report policy. Application callbacks keep their own result types: `EnvironmentReferenceResolver::resolve` fails with the value-free `EnvironmentReferenceError::{Denied, Unavailable}`. `RunOutcome::failure_parts` in crates/sc-cron/src/run_failure.rs parses a `Failed` detail. Reading crates/sc-cron checks statements about types, signatures and enum variants. Unit tests in crates/sc-cron check the other statements by calling the named function or operation and reading the returned error, the recorded `RunOutcome` or the stored schedule row.
 
-Fallible library entry points return `CronError`, including both
-`process::supervise` and `process::supervise_with_logger`, which return
-`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.
+| CronError variant | Code |
+|---|---|
+| `BadExpression` | `BAD_EXPRESSION` |
+| `InvalidSpec` | `INVALID_SPEC` |
+| `AlreadyActive` | `ALREADY_ACTIVE` |
+| `NotFound` | `NOT_FOUND` |
+| `HookFailed` | `HOOK_FAILED` |
+| `Store` | `STORE_FAILED` |
+| `Fenced` | `FENCED` |
 
-Application-implemented callback protocols retain their documented results.
-`EnvironmentReferenceResolver::resolve` returns the value-free
-`EnvironmentReferenceError::{Denied, Unavailable}` protocol; sc-cron maps
-those failures or a missing reference to fixed `ENV_REFERENCE` outcomes.
-Provider prose is never a second public library error channel.
-
-With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):
+The condition table matches [architecture.md](architecture.md):
 
 | Condition | Code | `RunOutcome` | Operator recovery |
 |---|---|---|---|
@@ -328,28 +321,36 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 | After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |
 
-Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.
-
 **MUST statements:**
 
-- Fallible library entry points MUST return the `CronError` variants and stable codes listed above.
-- `process::supervise` MUST return `Result<Captured, CronError>`.
-- `process::supervise_with_logger` MUST return `Result<Captured, CronError>`.
-- Cooperative operation failures MUST remain `CronError::Store` with the non-exhaustive StoreErrorKind additions described above.
-- The cooperative amendment MUST preserve legacy variants.
-- The cooperative amendment MUST preserve stable top-level codes.
-- The cooperative amendment MUST preserve row outcomes.
-- `sc-cron` MUST map missing or failed environment references to fixed `ENV_REFERENCE` outcomes.
-- Monty host failures MUST use the condition-to-code and outcome inventory above.
-- Host-deadline paths MUST record bare `RunOutcome::TimedOut` without a stored code token.
+- Every fallible sc-cron function MUST declare `CronError` as the error type of its `Result`.
+- The `CronError` enum in crates/sc-cron/src/error.rs MUST define exactly the variants in the CronError table.
+- `CronError::code()` MUST map each variant to its code in the CronError table.
+- `process::supervise` in crates/sc-cron/src/process.rs MUST return `Result<Captured, CronError>`.
+- `process::supervise_with_logger` in crates/sc-cron/src/process.rs MUST return `Result<Captured, CronError>`.
+- Every failure of a schedule-store method called with a `StoreOperationContext` MUST be a `CronError::Store` value.
+- StoreErrorKind MUST carry the `#[non_exhaustive]` attribute.
+- StoreErrorKind MUST include the variant `Cancelled`.
+- StoreErrorKind MUST include the variant `DeadlineExceeded`.
+- StoreErrorKind MUST include the variant `Indeterminate`.
+- For equal call arguments and equal stored schedule rows before the call, a schedule-store method called with a `StoreOperationContext` MUST leave the same schedule-row contents as the same schedule-store method called without a `StoreOperationContext`.
+- When a schedule's environment reference is missing, the Monty feed's recorded detail MUST start with `ENV_REFERENCE:`.
+- When `EnvironmentReferenceResolver::resolve` returns an error, the Monty feed's recorded detail MUST start with `ENV_REFERENCE:`.
+- For each row of the condition table, a Monty feed that meets the row's condition MUST record the row's `RunOutcome`.
+- For each row of the condition table that lists a code, the recorded `RunOutcome::Failed` detail MUST have the form `CODE: message; recovery` with the row's code as `CODE`.
+- For a host-deadline expiration, the Monty feed MUST record `RunOutcome::TimedOut`.
 
 **MUST NOT statements:**
 
-- DeadlineExceeded MUST NOT trigger automatic retry.
-- Indeterminate MUST NOT assert rollback.
-- Indeterminate MUST NOT assert not-persisted.
-- Provider prose MUST NOT become a second public library error channel.
-- Host adapter errors MUST NOT add a public `CronError` variant.
+- The `RunOutcome::TimedOut` stored for a host-deadline expiration MUST NOT contain a code token.
+- The `to_string()` output of a cooperative operation failure MUST NOT contain SQL text.
+- The `to_string()` output of a cooperative operation failure MUST NOT contain provider prose.
+- sc-cron MUST NOT automatically retry an operation that failed with `StoreErrorKind::DeadlineExceeded`.
+- A `StoreError` of kind `Indeterminate` MUST NOT carry a `TransactionOutcome` whose persistence is `RolledBack`.
+- A `StoreError` of kind `Indeterminate` MUST NOT carry a `TransactionOutcome` whose persistence is `NoMutationAttempted`.
+- The `to_string()` output of a `StoreError` of kind `Indeterminate` MUST NOT state that its transaction was not persisted.
+- A public error type in crates/sc-cron MUST NOT carry provider prose as its error value.
+- The `CronError` enum in crates/sc-cron/src/error.rs MUST NOT contain a variant for host-adapter errors.
 
 ### Rationale
 
