@@ -1834,9 +1834,24 @@ defines them, or `/mcp` when `.mcp(...)` was called, makes `run()` return
 sc-runtime design, 2026-09-19: MCP inside the daemon over HTTP, same binary and same port, stated by the owner; rmcp over `mcpkit-axum`, stateless mode, `utoipa` with `utoipa-axum`, and the rmcp minor pin are design recommendations accepted for sprint planning. The two facts the design marks as unverified are held separately in ADR-RUN-0203. The manifest grep in Enforced by is decided in this document
 ### Consequences
 
-Stateless mode means the template carries no MCP session store, and
-`sc-runtime` adds no session state of its own. MCP clients that only speak
-stdio are out of scope for v0.1.
+Benefits:
+
+- REST clients and MCP clients reach the same service functions through one
+  binary on one port.
+- One `routes!` registration yields both the router and the `openapi.json`
+  document.
+- The template carries no MCP session store, and `sc-runtime` adds no session
+  state of its own.
+
+Costs:
+
+- MCP clients that speak only stdio cannot reach an sc-runtime daemon in v0.1.
+- The MCP service keeps no session state between requests.
+- A project router cannot define `GET /openapi.json`, `GET /health` or `/mcp`;
+  defining one makes `run()` return `RUNTIME.ROUTE_CONFLICT`.
+- `axum`, `utoipa-axum` and `rmcp` are released independently, so a version
+  bump of any one can break the build; every rmcp bump is a minor-pin
+  change checked by the fixture matrix.
 
 Other Active ADRs and requirements may depend on this shape: the builder
 takes an ordinary `OpenApiRouter` and an ordinary rmcp service
