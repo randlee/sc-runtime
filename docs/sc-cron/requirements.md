@@ -238,15 +238,18 @@ sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. 
 - When the number of schedule rows has reached the schedule-row limit, CronStorage MUST reject a new schedule row with CronError::InvalidSpec.
 - Every schedule writer MUST apply the embedding application's ScheduleLimits.
 - A schedule write whose source sc-monty cannot compile MUST be rejected at the write, before that schedule's first tick.
-- A compiled session's blob MUST be captured immediately after compilation, before any hook of that session runs.
+- The `MontyBlobRow` written for a compiled session MUST contain the session as compiled.
 - Compiled-session blobs MUST use sc-sha SHA-256 of the exact source plus Monty dump version as their key.
 - The schedule-row source MUST remain authoritative for matching a cached blob.
 - A cache entry that is missing, stale, corrupt, of an unreadable version or missing a hook MUST trigger recompilation from the schedule-row source.
-- After that recompilation, the new pre-run blob MUST replace the cache entry.
+- Recompilation MUST write a new `MontyBlobRow`.
+- After that recompilation, the new `MontyBlobRow` MUST replace the cache entry for subsequent use.
 - Cache rows MUST use sc-cron-owned generic row schemas.
 - Cache rows MUST use sc-cron-owned migrations.
 
 **MUST NOT statements:**
+
+- A `MontyBlobRow` MUST NOT be modified after it is written.
 
 - sc-cron MUST NOT create a separate cron database.
 - sc-cron MUST NOT persist hook run state in compiled-session blobs.
