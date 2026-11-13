@@ -4205,7 +4205,7 @@ as [ADR-RUN-0401](architecture.md).
 
 **MUST NOT statements:**
 
-- `scripts/new_project.py` MUST NOT contain code for any mode of obtaining the answers object other than interactive, prefill and non-interactive.
+- The driver MUST NOT support any mode of obtaining the answers object other than interactive, prefill and non-interactive.
 - When the wizard ends without the person finishing it, the driver MUST NOT run `cargo generate`.
 
 ### Rationale
