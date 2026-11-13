@@ -3901,10 +3901,10 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 
 **MUST NOT statements:**
 
-- When sc-compose is missing, `just new <dest>` MUST NOT start `cargo generate`.
+- When sc-compose is missing, the driver MUST NOT start `cargo generate`.
 - `scripts/new_project.py` MUST NOT contain code that reads standard input.
 - When `--var-file` is given, `just new <dest>` MUST NOT write a prompt.
-- When `--var-file` is given, `just new <dest>` MUST NOT start the wizard.
+- When `--var-file` is given, the driver MUST NOT start `scripts/run_wizard.py`.
 - `scripts/new_project.py` MUST NOT contain code that searches for the `wyvern` executable.
 - On a machine with no `wyvern` executable, `just new <dest> --var-file <answers file>` MUST NOT exit with a non-zero status because `wyvern` is absent.
 - `scripts/new_project.py` MUST NOT contain an absolute path to `sc-compose`.
