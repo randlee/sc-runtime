@@ -3559,37 +3559,39 @@ sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)). The em
 - [sprint-b-11-benchmark-monty-reports.md](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) — Source: Owner, 2026-10-27. Sprint plan: [sprint-b-11-benchmark-monty-reports.md](plans/phase-b/sprint-b-11-benchmark-monty-reports.md).
 ### Context
 
-**Problem.** Monty and sc-cron performance campaigns produce HTML and JSON under `site/reports/benchmark-<subsystem>/`. A release needs timings that can be trusted as regression evidence, and publish preflight has to check that evidence.
+Monty and sc-cron campaigns write HTML and JSON to `site/reports/benchmark-<subsystem>/`. Release preflight needs trustworthy regression evidence. Timing comparisons require a stable host; GitHub Actions runners are not authoritative benchmark environments ([NFR-RUN-0005](requirements.md)). Hosted preflight cannot rely on SSH to the benchmark host.
 
-**Constraints.** Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority ([NFR-RUN-0005](requirements.md)). Hosted preflight does not SSH to the controlled host.
 ### Decision
 
-1. Benchmarks are **automated procedures**: agents follow `.claude/skills/benchmark-run/SKILL.md` (the `/benchmark-run` skill), which drives `scripts/benchmark/` recipes (`just --justfile scripts/benchmark/justfile …`) and subsystem `campaign.py` runners. This is repeatable automation, not ad-hoc manual timing.
-2. **Authoritative timings** come only from a **controlled benchmark environment**. The primary reference host is **`atmbench@rand-m5`** (SSH). Campaign JSON records git SHA, `rustc` version, subsystem, cases, and a **host label** (`SC_BENCH_HOST_LABEL` or hostname). Baselines in `baselines.json` belong to that environment class.
-3. **Default PR CI and root `just test`** do not run benchmark campaigns or `benchmark-gate`. CI may compile ignored bench tests; it does not produce benchmark regressions.
-4. **Publish preflight** verifies committed controlled-host benchmark evidence using `scripts/benchmark/check_release_evidence.py` ([sprint b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md)). A developer first runs the fresh workspace campaign on `atmbench@rand-m5`, commits JSON/HTML and the regenerated index under `site/reports/`, and quality manager reviews the results and measured build. Hosted preflight does not SSH to the controlled host. It fails closed on missing or invalid evidence, skipped cases, baseline failures, or release source differing from the measured source beyond added campaign reports/index updates. Identical source after a squash merge remains eligible. First-release measurement requires neither a published SDK nor an installed prerelease archive; registry-only consumer proof remains separate. Existing release-candidate tag policy is unchanged.
-5. The platform layout is multi-subsystem: `scripts/benchmark/<subsystem>/` and `site/reports/benchmark-<subsystem>/`. The first subsystem is `monty`.
+1. Agents run automated campaigns using `.claude/skills/benchmark-run/SKILL.md`. The skill drives `scripts/benchmark/` recipes through `just --justfile scripts/benchmark/justfile …` and subsystem `campaign.py` runners.
+2. Authoritative timing comes only from a controlled benchmark environment. The primary reference host is `atmbench@rand-m5` over SSH. Campaign JSON records the git SHA, `rustc` version, subsystem, cases and host label from `SC_BENCH_HOST_LABEL` or hostname. `baselines.json` is scoped to that environment class.
+3. Default pull-request CI and root `just test` run neither campaigns nor `benchmark-gate`. CI may compile ignored benchmark tests, but does not produce regression results.
+4. Publish preflight verifies committed controlled-host evidence with `scripts/benchmark/check_release_evidence.py` ([sprint b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md)). A developer runs a fresh workspace campaign on `atmbench@rand-m5` and commits its JSON, HTML and regenerated index under `site/reports/`. The quality manager reviews the results and measured build. Hosted preflight does not SSH to the host. Preflight fails on missing or invalid evidence, skipped cases, baseline failures, or release source differing from measured source except for added campaign reports and index updates. Identical source after a squash merge remains eligible. First-release measurement needs neither a published SDK nor an installed prerelease archive. Registry-only consumer proof is separate. Existing release-candidate tag policy remains unchanged.
+5. Recipes use `scripts/benchmark/<subsystem>/`; reports use `site/reports/benchmark-<subsystem>/`. The first subsystem is `monty`.
+
 ### Rationale
 
-Owner, 2026-10-27. Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority (NFR-RUN-0005).
+The owner selected a stable host for meaningful timing evidence on 2026-10-27. GitHub Actions runners are not regression authority ([NFR-RUN-0005](requirements.md)).
+
 ### Consequences
 
-Sprint `b-11` implements the skill, layout, `benchmark-gate`, and the `benchmark-pass` entry in publish preflight. Operators coordinate access to the `atmbench` account; agents run the documented procedure.
+Sprint `b-11` implements the skill, layout, `benchmark-gate` and publish preflight's `benchmark-pass` entry. Operators coordinate access to the `atmbench` account; agents run the documented procedure. Controlled-host measurements provide comparable regression evidence to release preflight.
 
 **Negative:**
 
-- A release whose tracked source differs from the measured source beyond added campaign reports and index updates requires another campaign on `atmbench@rand-m5` before publish preflight passes.
+- If tracked release source differs from measured source beyond added campaign reports and index updates, another campaign on `atmbench@rand-m5` is required for publish preflight to pass.
+
 ### Alternatives Considered
 
 #### Alternative 1: Ad-hoc manual timing
 
 **Description:**
 
-Operators time subsystem performance by hand, with no shared skill, recipes or campaign runner.
+Operators manually time subsystem performance without the shared skill, recipes or campaign runner.
 
 **Why Rejected:**
 
-It is not repeatable. Benchmarks are automated procedures driven by the `/benchmark-run` skill and `scripts/benchmark/` recipes.
+Manual timing is not repeatable. The selected approach uses the `/benchmark-run` skill and `scripts/benchmark/` recipes.
 
 ## ADR-RUN-0016: Explicit Python and Monty hook environments
 
