@@ -681,7 +681,7 @@ use axum and rmcp.
 - The exit status of `cargo build -p sc-command` MUST be 0.
 - In `crates/sc-command/Cargo.toml`, the set of non-optional third-party `[dependencies]` entries MUST equal {`serde`, `serde_json`, `sc-observability-types`}.
 - In `crates/sc-command/Cargo.toml`, `sc-observability-types` MUST be declared with the registry requirement `">=1.5.0"`.
-- In `crates/sc-command/Cargo.toml`, the set of optional third-party `[dependencies]` entries that the `server` feature enables MUST equal {`axum`, `rmcp`}.
+- In `crates/sc-command/Cargo.toml`, the set of crates named by `dep:` entries in the `server` feature list MUST equal {`axum`, `rmcp`}.
 - In `crates/sc-command/Cargo.toml`, `axum` MUST be declared with the registry requirement `">=0.8.9"`.
 - In `crates/sc-command/Cargo.toml`, `rmcp` MUST be declared with the registry requirement `">=3.9"`.
 - In `crates/sc-command/Cargo.toml`, `axum` MUST be declared with `default-features = false`.
