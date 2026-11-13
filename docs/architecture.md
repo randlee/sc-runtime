@@ -345,6 +345,19 @@ adapter, second contract or cron edge may remain. The bounded owned paths,
 commands and proof order are in the [implementation plan](plans/phase-b/initial-release-observability-shim.md).
 This documentation amendment claims no implementation, QA or publication pass.
 
+Phase D amendment: Phase D retains the command-owned neutral port, the
+cron-command contract edge and the private generated `LoggerAdapter`, but
+removes every exact pin. The `sc-command`, runtime, cron and generated
+`sc-observability-types` requirements and the generated `sc-observability`
+requirement are the tested floor `>=1.5.0` with no upper bound (REQ-RUN-0002,
+ANC-037); an exact `=` pin, a tilde requirement or an explicit `<` limit is an
+upper bound. The normal build and test suite checks compatibility at the
+selected versions, including the fixed `"noop"` ServiceName invariant, and the
+release lock records the versions tested. The registry-availability,
+signature and forced-cleanup probes above gate only the historical 0.1.1
+release and do not gate Phase D. The two panic-policy changes and the foreign
+EventError exception above apply unchanged in Phase D.
+
 ### Rationale
 
 This small composition-only orphan-rule bridge is justified against ADR-RUN-0002's placement rule: it wires a concrete application-owned logger to an SDK port, contains no reusable service behavior, and needs no sixth published crate.
@@ -353,7 +366,8 @@ This small composition-only orphan-rule bridge is justified against ADR-RUN-0002
 
 **Negative:**
 
-- This exact-pin exception bounds the inspected validator and type identity but prevents resolution with consumer requirements for newer types.
+- In the historical 0.1.1 release, the exact-pin exception bounded the inspected validator and type identity but prevented resolution with consumer requirements for newer types; the Phase D amendment removes that pin.
+- With open floors, a newer selected observability release can break the adapter; the normal test suite at the selected versions, not a pin, detects that.
 
 ### Alternatives Considered
 

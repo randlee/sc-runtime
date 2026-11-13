@@ -159,9 +159,12 @@ sides agree on the shape at compile time.
 
 Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation.
 
-2026-10-31 amendment: ADR-RUN-0017 temporarily replaces the caret-only
-types requirement below with exact registry `=1.5.0`. OpError wire fields and
-serialization remain unchanged; upstream cleanup removes the pin.
+Dependency requirement: `sc-command` declares registry `sc-observability-types`
+with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002, ANC-037).
+An upper bound is any requirement that excludes a later version, including an
+exact `=` pin, a tilde requirement or an explicit `<` limit. The historical
+0.1.1 release used a temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin
+does not govern Phase D. OpError wire fields and serialization are unchanged.
 
 `OpError` is the error half of the response envelope `Envelope<T>` ([REQ-CMD-0001](requirements.md)) and the error type service functions return in `Result<T, OpError>`. A generated project's `service` crate therefore uses `sc-command` with default features; the generated workspace's crate graph, including how `service` and `daemon` obtain `sc-command`, is owned by [REQ-RUN-0301](../requirements.md).
 
@@ -203,8 +206,7 @@ Deserialising `null` or `""` builds `None`. Multi-step lists and
 `Remediation` object is not the wire form. `OpError` does not convert to or
 from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
 `sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
-or `suggested_action`. The bridge dependency requirement is temporary exact `=1.5.0`
-under ADR-RUN-0017.
+or `suggested_action`.
 
 `OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
 `cause`, and `suggested_action` into this type without a dependency on
@@ -218,7 +220,7 @@ application name. `endpoint` and `cause` are stored in `details`.
 
 The CLI parses errors it receives from the daemon. REQ-CMD-0006 depends on details returning arbitrary JSON unchanged.
 
-The original tested minimum was caret 1.5.0.
+The tested minimum is 1.5.0.
 
 **MUST statements:**
 
@@ -239,7 +241,7 @@ The original tested minimum was caret 1.5.0.
 - `ErrorKind` MUST implement `Display`.
 - `OpError` MUST implement `std::error::Error`.
 - `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`.
-- During the ADR-RUN-0017 bridge, `sc-observability-types` MUST use temporary exact `=1.5.0`.
+- `crates/sc-command/Cargo.toml` MUST declare `sc-observability-types` with the registry requirement `">=1.5.0"`.
 - When a suggestion is supplied, `suggested_action` MUST serialise as a JSON string equal to the text supplied: an `OpError` built with the suggestion `run my-app daemon start` serialises with `"suggested_action": "run my-app daemon start"`.
 - If `OpError` carries, or is built from, structured remediation, that structure MUST be `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
 - The type chosen for `details` MUST be able to hold arbitrary JSON.
@@ -250,6 +252,7 @@ The original tested minimum was caret 1.5.0.
 - `sc-command` MUST NOT define its own error-code type.
 - It MUST NOT serialise as a JSON object.
 - `sc-command` MUST NOT define a parallel remediation type.
+- The `sc-observability-types` requirement in `crates/sc-command/Cargo.toml` MUST NOT declare an upper bound.
 
 ### Rationale
 
@@ -282,7 +285,8 @@ act on.
    by its accessor) to a binding of type
    `sc_observability_types::ErrorCode`.
 5. Inspection of `crates/sc-command/Cargo.toml`: `sc-observability-types`
-   is listed under `[dependencies]` and is not `optional`.
+   is listed under `[dependencies]` with version requirement `">=1.5.0"`, has
+   no upper bound, and is not `optional`.
 6. Inspection of `crates/sc-command/src`: no type defined there duplicates
    `ErrorCode`, `Remediation` or `RecoverableSteps`.
 7. A unit test constructs an `OpError` with no details and no suggestion,
@@ -620,14 +624,18 @@ envelope object or of the error object is rejected by
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions.
+Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
 
-Phase C frozen amendment: use only the `~3.8` RMCP
-minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
-alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
-matrix. All optional/server/defaults-off gating and remaining dependency,
-conversion and error restrictions remain binding; this does not permit
-server dependencies in a CLI's isolated normal graph.
+Phase D dependency requirements: every registry dependency of `sc-command`
+uses its tested floor with no upper bound (REQ-RUN-0002, ANC-037). The floors
+are `sc-observability-types >=1.5.0`, `axum >=0.8.9` and `rmcp >=3.9`. The
+Phase C `~3.8` rmcp allowlist, its frozen resolved identity 3.8.0 and the
+historical 0.1.1 exact `=1.5.0` types pin do not govern Phase D. The crate's
+own tests check compatibility at the selected versions. All
+optional/server/defaults-off gating and remaining dependency, conversion and
+error restrictions remain binding; this does not permit server dependencies in
+a CLI's isolated normal graph. REQ-CMD-0005's nominal identity amendment still
+applies.
 
 The same c-1 contract also adds independent optional
 `schema = ["dep:schemars", "dep:utoipa"]`, with compatible identities frozen
@@ -644,8 +652,8 @@ impls or duplicate error models. REQ-CMD-0001/0002 wire behavior is unchanged.
 
 2026-10-31 amendment: ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
-only std. Neither activates server/axum/rmcp. The exact types pin is temporary;
-no third-party dependency is added.
+only std. Neither activates server/axum/rmcp, and no third-party dependency is
+added.
 
 `serde_json` is required because `details` holds arbitrary JSON.
 
@@ -668,8 +676,11 @@ use axum and rmcp.
 - With default features `sc-command` MUST provide `OpError`.
 - With default features `sc-command` MUST provide `ErrorKind`.
 - With default features `sc-command` MUST provide `From<Result<T, OpError>> for Envelope<T>`.
-- With default features the crate's direct non-dev dependencies MUST be `serde`, `serde_json`, and `sc-observability-types` at temporary exact `=1.5.0` (ADR-RUN-0017).
-- With `--features server` the direct non-dev dependencies MUST be those plus `axum` 0.8.9 and `rmcp` `~3.8` (frozen resolved identity 3.8.0), and nothing else.
+- With default features the crate's direct non-dev dependencies MUST be exactly `serde`, `serde_json`, and `sc-observability-types`.
+- `sc-observability-types` MUST be declared with the registry requirement `">=1.5.0"`.
+- With `--features server` the direct non-dev dependencies MUST be exactly the default-feature dependencies plus `axum` and `rmcp`.
+- `axum` MUST be declared with the registry requirement `">=0.8.9"`.
+- `rmcp` MUST be declared with the registry requirement `">=3.9"`.
 - `axum` MUST be declared with `default-features = false`.
 - With `--features server`, sc-command MUST additionally provide `impl IntoResponse for Envelope<T>`.
 - With `--features server`, sc-command MUST additionally provide the `IntoMcp::into_mcp` conversion.
@@ -678,6 +689,9 @@ use axum and rmcp.
 **MUST NOT statements:**
 
 - The `server` feature MUST NOT be in the `default` feature list.
+- The `sc-observability-types` requirement MUST NOT declare an upper bound.
+- The `axum` requirement MUST NOT declare an upper bound.
+- The `rmcp` requirement MUST NOT declare an upper bound.
 
 ### Rationale
 
@@ -706,10 +720,13 @@ daemon and the CLI share one crate.
    features) prints, below the `sc-command` root line, exactly one line
    beginning with `serde `, one beginning with `serde_json `, and one
    beginning with `sc-observability-types `, and no other line. The
-   `sc-observability-types ` line is version 1.5.0.
+   `sc-observability-types ` line is version 1.5.0 or later.
 8. The same command with `--features server` prints the lines of criterion
    7 plus exactly one line beginning with `axum ` and one beginning with
    `rmcp `, and no other line.
+9. Inspection of `crates/sc-command/Cargo.toml`: the requirements are
+   `sc-observability-types = ">=1.5.0"`, `axum = ">=0.8.9"` and
+   `rmcp = ">=3.9"`, and none of them has an `=`, `~`, `<` or `<=` bound.
 
 ### Related Documents
 
@@ -735,7 +752,12 @@ daemon and the CLI share one crate.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The ADR-RUN-0017 bridge is the temporary command-crate canonical logging contract used until the actual upstream capability is consumed.
+Definitions: ADR means architecture decision record. The ADR-RUN-0017 bridge is the command-crate canonical logging contract retained in Phase D. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
+
+The `sc-observability-types` requirement is the tested floor `>=1.5.0` with no
+upper bound (REQ-RUN-0002, ANC-037). The historical 0.1.1 release used a
+temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin does not govern
+Phase D.
 
 2026-10-31 amendment: command remains a sibling-free leaf; its sole
 additional dependent is temporarily cron for the observability port with
@@ -765,13 +787,13 @@ The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc
 
 **MUST statements:**
 
-- During the ADR-RUN-0017 bridge, `sc-command` MUST depend on the published crate `sc-observability-types` at exact `=1.5.0`.
-- When the actual upstream capability is consumed, the temporary pin MUST be removed.
+- `sc-command` MUST depend on the published crate `sc-observability-types` with the registry requirement `">=1.5.0"`.
 
 **MUST NOT statements:**
 
 - `sc-command` MUST NOT depend on any other crate of this workspace.
 - `sc-command` MUST NOT depend, directly or transitively, on the crate `sc-observability` (the logging runtime) or on its OTel export crate `sc-observability-otlp`.
+- The `sc-observability-types` requirement of `sc-command` MUST NOT declare an upper bound.
 
 ### Rationale
 
@@ -792,7 +814,8 @@ error code and remediation types are defined there
    `sc-transport`, `sc-runtime`, `sc-observability`,
    `sc-observability-otlp` appears in `[dependencies]`,
    `[dev-dependencies]` or `[build-dependencies]`;
-   `sc-observability-types` appears in `[dependencies]`.
+   `sc-observability-types` appears in `[dependencies]` with requirement
+   `">=1.5.0"` and no `=`, `~`, `<` or `<=` bound.
 2. `cargo tree -p sc-command -e normal --prefix none` (default features)
    prints no line beginning with `sc-config `, `sc-transport `,
    `sc-runtime `, `sc-observability ` or `sc-observability-otlp ` (each name

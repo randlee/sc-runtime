@@ -2330,7 +2330,10 @@ This applies to `crates/daemon` of a project rendered from `template/`.
 1. `crates/daemon/Cargo.toml` MUST use registry requirements
    `sc-observability = ">=1.5.0"` and
    `sc-observability-types = ">=1.5.0"`, with no upper bound (ANC-037).
-   Phase D retains the command-owned neutral port and private generated
+   An upper bound is any requirement that excludes a later version, including
+   an exact `=` pin, a tilde requirement or an explicit `<` limit. The
+   historical 0.1.1 release used exact `=1.5.0` pins; those pins do not govern
+   Phase D. Phase D retains the command-owned neutral port and private generated
    LoggerAdapter. Normal build/tests check compatibility at the selected
    versions; no registry-availability, signature or forced-cleanup probe gates
    the release. ADR-RUN-0017's Phase D amendment governs panic/error behavior.
@@ -2403,14 +2406,16 @@ Root/generated lock evidence proves matching registry identity.
 
 **MUST statements:**
 
-- For the initial 0.1.1 release, `crates/daemon/Cargo.toml` MUST use real registry `sc-observability = "=1.5.0"`.
-- For the initial 0.1.1 release, `crates/daemon/Cargo.toml` MUST use real registry `sc-observability-types = "=1.5.0"`.
+- `crates/daemon/Cargo.toml` MUST declare the registry requirement `sc-observability = ">=1.5.0"`.
+- `crates/daemon/Cargo.toml` MUST declare the registry requirement `sc-observability-types = ">=1.5.0"`.
 - `crates/daemon/src/main.rs` MUST first load the project's configuration with `sc-config` into the project's own config struct; on error it reports the error and returns a failure exit code without panicking.
 - After configuration loads, `crates/daemon/src/main.rs` MUST initialise `sc-observability` directly with plain values from the loaded logging config; any returned guard remains bound until `main` returns.
 - After observability initialises, `crates/daemon/src/main.rs` MUST assemble and run the daemon with `sc_runtime::Daemon::builder(...)`.
 
 **MUST NOT statements:**
 
+- The `sc-observability` requirement in `crates/daemon/Cargo.toml` MUST NOT declare an upper bound.
+- The `sc-observability-types` requirement in `crates/daemon/Cargo.toml` MUST NOT declare an upper bound.
 - The template MUST NOT add OpenTelemetry export.
 - The template MUST NOT contain a bridge from the `tracing` crate into `sc-observability`.
 
