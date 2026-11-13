@@ -1066,7 +1066,7 @@ Definitions:
 - The dependency tree of `sc-runtime` is every package that `cargo tree -p sc-runtime -e normal --prefix none` prints.
 - `sc-observability` is the logging runtime crate; `sc-observability-otlp` is its OpenTelemetry export crate; `sc-observability-types` is the types-only crate of the same family.
 - Runtime source is the Rust code under `crates/sc-runtime/src`, excluding `#[cfg(test)]` code.
-- Initialising logging means constructing, flushing or shutting down a logger or a log sink.
+- Initialising logging means constructing a logger or a log sink.
 - Loading configuration means building a configuration value by reading a config file, by reading an environment variable or by calling `sc_config::load`.
 - A config file is a file whose contents supply configuration values to the daemon.
 
