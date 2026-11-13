@@ -96,6 +96,8 @@ An independently packaged scheduler can be embedded without the generated templa
 
 ### Requirement Statement
 
+Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of exactly five whitespace-separated fields in standard crontab order, minute first, with no seconds field.
+
 A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
 
 **MUST statements:**
