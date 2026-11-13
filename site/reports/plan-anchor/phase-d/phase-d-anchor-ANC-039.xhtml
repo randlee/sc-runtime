@@ -1,0 +1,213 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-039">
+  <div class="section-head">
+    <h2>ANC-039 <span class="status status-locked">locked</span> <span class="small">bead run-yaji</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-yaji&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;plan items that create or change the sc-monty crate or its Cargo.toml&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;locked&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    },
+    {
+      &quot;after&quot;: &quot;prohibition&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;kind&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;quote&quot;
+    },
+    {
+      &quot;after&quot;: &quot;cargo tree -p sc-monty -e normal,build --all-features shows no sc-*, tokio or serde_json crate&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-monty&#x27;s Cargo.toml lists only the pydantic Monty crates as normal dependencies.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-monty adds tokio and serde_json so it can run hook ticks and parse JSON.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-3&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-9&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-10&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-11&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    }
+  ],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:09+00:00&quot;,
+      &quot;detail&quot;: &quot;status: locked&quot;,
+      &quot;event&quot;: &quot;created&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:10+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:31+00:00&quot;,
+      &quot;detail&quot;: &quot;beads: {\&quot;anchor\&quot;: \&quot;run-yaji\&quot;, \&quot;plan_questions\&quot;: \&quot;run-yaji.1\&quot;, \&quot;dev_questions\&quot;: \&quot;run-yaji.2\&quot;}&quot;,
+      &quot;event&quot;: &quot;beads_set&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-3; reason: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-9; reason: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-039&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;absent&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;-&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-039 (absent v- -&gt; locked v2)
+Statement: The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.
+Quote: Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;&#x27; -&gt; &#x27;The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.&#x27;
+Changed scope: &#x27;&#x27; -&gt; &#x27;plan items that create or change the sc-monty crate or its Cargo.toml&#x27;
+Changed status: &#x27;&#x27; -&gt; &#x27;locked&#x27;
+Changed kind: &#x27;&#x27; -&gt; &#x27;prohibition&#x27;
+Changed quote: &#x27;&#x27; -&gt; &#x27;Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json&#x27;
+Changed deterministic_check: &#x27;&#x27; -&gt; &#x27;cargo tree -p sc-monty -e normal,build --all-features shows no sc-*, tokio or serde_json crate&#x27;
+Changed fixture pass: &#x27;&#x27; -&gt; &quot;sc-monty&#x27;s Cargo.toml lists only the pydantic Monty crates as normal dependencies.&quot;
+Changed fixture fail: &#x27;&#x27; -&gt; &#x27;sc-monty adds tokio and serde_json so it can run hook ticks and parse JSON.&#x27;
+Excluded for run-d-3: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.
+Excluded for run-d-9: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.
+Excluded for run-d-10: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded for run-d-11: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+2026-11-12T22:42:09+00:00 created: status: locked
+2026-11-12T22:42:10+00:00 updated: fields: [&quot;fixtures&quot;]
+2026-11-12T22:42:31+00:00 beads_set: beads: {&quot;anchor&quot;: &quot;run-yaji&quot;, &quot;plan_questions&quot;: &quot;run-yaji.1&quot;, &quot;dev_questions&quot;: &quot;run-yaji.2&quot;}
+2026-11-12T23:02:27+00:00 excluded: item: run-d-3; reason: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-9; reason: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.</p>
+  <p class="quote">&#x201C;Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>absent</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>-</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><ins>The sc-monty crate MUST NOT have a normal or build dependency on any sc-* crate, tokio or serde_json.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><ins>plan items that create or change the sc-monty crate or its Cargo.toml</ins></div>
+  <p><b>status</b></p>
+  <div class="diff"><ins>locked</ins></div>
+  <p><b>kind</b></p>
+  <div class="diff"><ins>prohibition</ins></div>
+  <p><b>quote</b></p>
+  <div class="diff"><ins>Depends on the pydantic Monty crates only. No sc-* crates, no tokio, no serde_json</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><ins>cargo tree -p sc-monty -e normal,build --all-features shows no sc-*, tokio or serde_json crate</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><ins>sc-monty&#x27;s Cargo.toml lists only the pydantic Monty crates as normal dependencies.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><ins>sc-monty adds tokio and serde_json so it can run hook ticks and parse JSON.</ins></div>
+
+  <details>
+    <summary>History since the baseline (7)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T22:42:09+00:00</td><td>created</td><td>status: locked</td></tr>
+        <tr><td>2026-11-12T22:42:10+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
+        <tr><td>2026-11-12T22:42:31+00:00</td><td>beads_set</td><td>beads: {&quot;anchor&quot;: &quot;run-yaji&quot;, &quot;plan_questions&quot;: &quot;run-yaji.1&quot;, &quot;dev_questions&quot;: &quot;run-yaji.2&quot;}</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-3; reason: Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-9; reason: This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details open="open">
+    <summary>Exclusions (4)</summary>
+    <table>
+      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">run-d-3</th><td>Dependency/source qualification changes neither sc-monty nor Monty command hosting or command-path REQ/ADRs; those are owned by d-5/d-10.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-9</th><td>This sprint ports cron adapters onto the already-delivered sc-monty API; it does not change that crate/public types, define command transforms/signatures/widgets or amend command-path REQ/ADRs, which d-5/d-10 own.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-10</th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-11</th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>added</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>

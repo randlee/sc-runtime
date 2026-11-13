@@ -1,0 +1,232 @@
+{
+ "schema_version": "2.0.0",
+ "operation": "tune",
+ "template": {
+  "id": "anchor-tuning-tune-request",
+  "version": "0.4.1",
+  "sha256": "d8d6796121bb8155af53277053b25fe9cf99ead86ba55f51b19df8962b441ed3"
+ },
+ "correlation_id": "sc-runtime-phase-d-anc-054-planning-tune-r2",
+ "runtime": {
+  "agent": "anchor-tuning",
+  "contract_script": ".claude/skills/plan-anchoring/scripts/anchor_tuning_contract.py",
+  "contract_sha256": "357b58b6de3b438d8945b5e087ea13eb265af22871e2b6032394786a66930e62",
+  "harness": "claude",
+  "model": "opus",
+  "script": ".claude/skills/plan-anchoring/scripts/jev_judge.py",
+  "sha256": "906335de770b6393c6b0922aff177e579d1c216ed20d13b80f198cab7ed8ed0a",
+  "version": "0.11.0",
+  "workspace": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d"
+ },
+ "authority": {
+  "intent": {
+   "id": "phase-d-human-intent",
+   "version": "a2c0e20",
+   "sha256": "a019d07a71cc7ad67ab7a39e213c5085092ec5dff0fa0e0645cf5b03c233f2f6",
+   "content": "# Phase D intent\n\n[PRD v2.0](../../prd/sc-runtime-prd.md) is the product intent and top authority.\nIts storage and writer requirements (PRD-STO-1–5), cron requirements\n(PRD-CRON-1–5), command pattern, engineering rules (including PRD-ENG-5/6)\nand deferred decisions apply directly. This document adds only the Phase D\ndelta; it does not restate or override those requirements.\n\nThe executable plan is Beads epic `run-phase-d`, indexed by\n[phase-d.jsonl](../phase-d.jsonl). [Anchors](anchors.md) retain approved\nconstraints and their verbatim provenance. The earlier Markdown plan and the\nthree-sprint/eight-anchor status are historical.\n\n## Phase D delta\n\n**Adoption.** Unblock beads-cache's SQLite security upgrade and make the fixed\nSDK usable from the registry. Acceptance includes the actual upstream migration\nPR open with CI green at a recorded revision against the published release,\nwithout local path, patch or Git SDK substitutes. Generated application\nacceptance follows the PRD and live sprint criteria; the superseded vulnerable\nSQLx-SQLite configuration is not an accepted Phase D outcome (PRD-STO-2/3;\nPRD-CRON-3).\n\n**Dependency choice and recommendations.** Published/template registry requirements\nuse tested floors with no upper bound (ANC-037). Consumers may pin what they want.\nThe template ships a recommended Cargo.lock at the newest tested combination;\n.sc-runtime/tested-dependencies.json records those versions for reference and\nfuture revert/upgrade tools (ANC-038). The normal build and test suites check the selected versions.\n\n**Release.** The recorded owner decision is coordinated **0.3.0** across nine\ncrates: `sc-storage`, `sc-runtime-db-sqlite`, `sc-config`, `sc-transport`,\n`sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands` and `sc-monty` (owner\n2026-11-12 requirement change item 1 adds the ninth crate; original version message\n01M76S6D7T58E4CMKHJRCXFJ1J; `run-phase-d` release metadata). This supersedes\nthe earlier 0.2.1 target. The live plan owns package, advisory, integration and\nconsumer proof; this document claims no implementation or publication pass.\n\n## Planning handover provenance\n\nThe user stated on 2026-11-11:\n\n> The intention of phase-d is to make sc-runtime easy for consumers to use.\n> today beads-cache is blocked because of the security warning on rusqlite.\n> we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.\n\nFinal owner approval uses the HTML diff after independent review. Historical\ncalibration packets and run evidence retain their original inputs.\n"
+  },
+  "anchors": {
+   "sha256": "82efe436f5eeb6ab7ddad7b98501c045b8f269cc293159397354dc265a145770",
+   "records": [
+    {
+     "id": "ANC-054",
+     "version": 2,
+     "statement": "The sprint text MUST state a reason for each cron command that does not go through the shared command path.",
+     "kind": "directive",
+     "scope": "plan items that change cron commands, sc-cron-commands or the shared command path",
+     "fixtures": {
+      "pass": [
+       "Cron run-now does not use the shared path because it writes no schedule row; the sprint says so."
+      ],
+      "fail": [
+       "Cron stop is handled outside the shared path with no reason given."
+      ]
+     },
+     "quote": "Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text.",
+     "summary": "reason stated for cron commands off the path",
+     "source_type": "ANC",
+     "deterministic_check": "each cron command listed off the shared path has a reason in the sprint text",
+     "context": "owner requirement changes against plan/phase-d 5cffe24, 2026-11-12",
+     "state": "locked",
+     "check": "each cron command listed off the shared path has a reason in the sprint text"
+    }
+   ]
+  }
+ },
+ "gate": "planning",
+ "current_questions": {
+  "relevant": {
+   "type": "choice",
+   "instructions": "The state holds one planning item (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge whether the item obeys the anchor.",
+   "criteria": {
+    "yes": "The item plans, changes, or depends on the thing the anchor statement is about, directly or as a clear prerequisite.",
+    "no": "The item is about a different part of the system or a different activity, and completing it would neither follow nor break the anchor.",
+    "unclear": "The item text is too vague to tell what part of the system it touches."
+   }
+  },
+  "addressed": {
+   "type": "choice",
+   "instructions": "Does `item.text` explicitly carry out, preserve, or plan for the directive given in `anchor.statement`? Look for the directive's specific content being present in the item: the same starting point, the same method, the same constraint, or an explicit step that does what the statement asks. A generic mention of the topic without the directive's specific content does not count. Judge presence of the directive only, not whether the item conflicts with it.",
+   "criteria": {
+    "yes": "The item text contains the directive's specific content, in its own words or the user's, as a step, constraint, or stated starting point.",
+    "no": "The item text is silent about the directive: it neither includes the directive's specific content nor references it.",
+    "unclear": "The item text alludes to the directive's topic but it is not possible to tell whether the directive itself is included."
+   }
+  },
+  "contradicted": {
+   "type": "choice",
+   "instructions": "Does `item.text` propose doing something that `anchor.statement` rules out, or propose a different approach than the one `anchor.statement` requires? Examples of contradiction: the anchor says to start from an existing implementation and the item plans a fresh implementation; the anchor forbids a dependency and the item adds it; the anchor fixes an order of work and the item reverses it. Silence about the directive is not a contradiction. Judge conflict only.",
+   "criteria": {
+    "yes": "The item text states a plan, approach, or decision that cannot be reconciled with the directive in the anchor statement.",
+    "no": "Nothing in the item text conflicts with the directive, whether or not the directive is mentioned.",
+    "unclear": "The item text is ambiguous enough that it might or might not conflict with the directive."
+   }
+  }
+ },
+ "candidate_minimum": 3,
+ "repeat_count": 2,
+ "tournament_protocol_version": "plan-anchor/question-tournament/2.0.0",
+ "production_confidence_threshold": 0.6,
+ "confidence_reference_threshold": 0.8,
+ "tuning_history": {
+  "schema": "plan-anchor/tuning-history/2",
+  "history_id": "phase-d-ANC-054-planning",
+  "events": [
+   {
+    "event_index": 1,
+    "previous_event_sha256": null,
+    "event": "question_set_rejected",
+    "protocol_version": "plan-anchor/question-tournament/2.0.0",
+    "authority": {
+     "intent_id": "phase-d-human-intent",
+     "intent_version": "a2c0e20",
+     "intent_sha256": "a019d07a71cc7ad67ab7a39e213c5085092ec5dff0fa0e0645cf5b03c233f2f6",
+     "anchor_id": "ANC-054",
+     "anchor_version": 2,
+     "anchor_record_sha256": "3ceba2dfdd5ec7a14481064518ba488019a87194ad4653713810909a8594070a"
+    },
+    "oracle": {
+     "sha256": "a2c157171d96f8f45ea3149a102f1bf2289f301675233b99e4c84890912c1632",
+     "case_ids": [
+      "fx-pass-1",
+      "fx-fail-1",
+      "compliant-all-on-path",
+      "compliant-mixed-with-reason",
+      "bad-offpath-silent-reason",
+      "bad-partial-reasons",
+      "exception-scheduler-tick",
+      "conflict-no-reason-policy",
+      "silent-cron-change",
+      "topical-only",
+      "irrelevant-release-notes"
+     ],
+     "case_count": 11,
+     "repeat_count": 2
+    },
+    "candidate": {
+     "candidate_id": "b-r1-a4-k3",
+     "question_sha256": "f4cf26c2d2d39059853398d72bdeba4fdf2108812af76993c9ff0c1b66ecea6c"
+    },
+    "evidence": {
+     "canonical_request_sha256": [
+      "6365bf1a17e5d864917de258df4ec384b77beaf87c5ab0198af272f6f3447052",
+      "6365bf1a17e5d864917de258df4ec384b77beaf87c5ab0198af272f6f3447052",
+      "2d3093205b8b74fa7e7d4da1dc36fbce77b9509a92a72dd2ad5349533119f031",
+      "2d3093205b8b74fa7e7d4da1dc36fbce77b9509a92a72dd2ad5349533119f031",
+      "1ea647754e1cdf994479dd37e35043020ecc2b9f3de08ae1c1e326111b6e6fb7",
+      "1ea647754e1cdf994479dd37e35043020ecc2b9f3de08ae1c1e326111b6e6fb7",
+      "9107ec57d85e2871d6563ce9db9976b85210f2651c936dc4b63b74ca9b70df75",
+      "9107ec57d85e2871d6563ce9db9976b85210f2651c936dc4b63b74ca9b70df75",
+      "f34a61b3f2debfe635f08d1e5d22920110cab7341e838bc2c7b132eeafe9db0b",
+      "f34a61b3f2debfe635f08d1e5d22920110cab7341e838bc2c7b132eeafe9db0b",
+      "7daa4d4c70599e39a64fa6a20a16c3b20af30ebefe86bab66ff9cfee6a31c3c5",
+      "7daa4d4c70599e39a64fa6a20a16c3b20af30ebefe86bab66ff9cfee6a31c3c5",
+      "fa46877bf0aeb09d2451a58d11b01e939a32a54de5ef1376a7a40dcb8a84197e",
+      "fa46877bf0aeb09d2451a58d11b01e939a32a54de5ef1376a7a40dcb8a84197e",
+      "4034030b6304f2ac61abaadd2f12b11048cca9a8e986b772db6a7397ac92cf7a",
+      "4034030b6304f2ac61abaadd2f12b11048cca9a8e986b772db6a7397ac92cf7a",
+      "7c6f423aeddd5da6fac30397a53559bdd7260366a4a81970fb6763ee974e3152",
+      "7c6f423aeddd5da6fac30397a53559bdd7260366a4a81970fb6763ee974e3152",
+      "f499bbeecdab9932379a1f364cd048c06b691db3ff8d8e3d3c54f6565a1b43e3",
+      "f499bbeecdab9932379a1f364cd048c06b691db3ff8d8e3d3c54f6565a1b43e3",
+      "e0dfbf720ed6eb4e73a29ba405f8bbfcbf7fe549b565d627bfc35b6ff99f3b13",
+      "e0dfbf720ed6eb4e73a29ba405f8bbfcbf7fe549b565d627bfc35b6ff99f3b13"
+     ],
+     "raw_response_sha256": [
+      "1b915fe59522a7874a3174ae836906331234b5346fbcdb030ced295b8cfe3c59",
+      "1b915fe59522a7874a3174ae836906331234b5346fbcdb030ced295b8cfe3c59",
+      "122f0699c1f7ad8aff48356ddf8f0022990dd30570752d813b027223703c3745",
+      "122f0699c1f7ad8aff48356ddf8f0022990dd30570752d813b027223703c3745",
+      "2865ef0b72bf3f770ea08432747d18b74c88995f3965852e5c6b87c799848fb8",
+      "54b47cf2ffc1e9657538a3ae02defd5af187b838758537fe588f9c574aecd6c4",
+      "0ff4d9dc761d3fd8c2f826dda0f624fe3c25f86acf45d155f88e04c6fd507f85",
+      "0ff4d9dc761d3fd8c2f826dda0f624fe3c25f86acf45d155f88e04c6fd507f85",
+      "92413a0b007bcd77f6ad4e24628e21341c5a829574df7653c0de2e050f227561",
+      "cbfa96ff64ce43796582b51850ebf3c08ac3e1ece97b803bd6ef5111f837ac7e",
+      "43b60b6f2e84b83ffde2b9217b2cc7149dff79974ce1409389ddc7af404635ae",
+      "888d1eab4d6c969519105c52824de38b4e3be96e9a6a56e2b0b1606156c1e052",
+      "a4bc5e474455bef2a6a6cc0702304ea353b5bcdfdf5e9611d9634e94f1b7b943",
+      "a4bc5e474455bef2a6a6cc0702304ea353b5bcdfdf5e9611d9634e94f1b7b943",
+      "7c77db003e1fa996bacdeafafa3b58f2c7a9e480f60d3040b48ca9588c4a6e62",
+      "7c77db003e1fa996bacdeafafa3b58f2c7a9e480f60d3040b48ca9588c4a6e62",
+      "28af482c86a81d20160d4c1ce5e5b31fe806436d8b883f4de7d44c82f547c6f8",
+      "aa6f4584db462416cfff0cc4368d91e93bcdc4da87fb5ae01d08226a297b6eb5",
+      "50e2c7cc4323d7b15e5fbd3f6244c218cb3f93e391089dc1b1836ccbdfdcc584",
+      "1e3055d56a2632818026b6ba20a959a27b9956593bd26fb1dfb8548c123d51e2",
+      "dae56f69eb97d6b5828d11ba34af953b3a5904c8e45752938616b004c7e2606a",
+      "581a13fe8eea6a93110ae3cc5acf8f08619f5ffc05a51e9a79c542305c154f57"
+     ],
+     "run_ids": [
+      "4fa2d073b2d9b788",
+      "b1c290a13908819b",
+      "f1fe38cf81272fe7",
+      "d22dd5f71bbd8f52",
+      "770c4b06ad0c1f3a",
+      "a7e862368b2b5d46",
+      "11fe38338b710906",
+      "08d14a4b9a20b591",
+      "ef3723ab12ce4e9c",
+      "98635392d13bcf5f",
+      "43849a7e97b27734",
+      "7688e7f3e32e8859",
+      "b26fffa623f57b39",
+      "de5fc896f49e03bf",
+      "5d9185e823e32800",
+      "236499aab913ea51",
+      "76f62ead0ccb9058",
+      "0a67da8904441667",
+      "4f7349679371555e",
+      "7be51201d897b28c",
+      "8aceb811cce99d09",
+      "3e4baf8bbe83676d"
+     ]
+    },
+    "score": {
+     "exact_role_cells": 63,
+     "total_role_cells": 66,
+     "exact_semantic_verdicts": 20,
+     "total_semantic_verdicts": 22,
+     "stable_cases": 10,
+     "total_cases": 11,
+     "regressions": 0,
+     "confidence": {
+      "threshold": 0.8,
+      "cells_at_or_above_threshold": 59,
+      "total_cells": 66,
+      "minimum": 0.38,
+      "p10": 0.79,
+      "median": 0.98,
+      "mean": 0.9264
+     }
+    },
+    "decision": {
+     "status": "unstable",
+     "question_set_sha256": null,
+     "reason_code": "TOURNAMENT.UNSTABLE"
+    },
+    "supersedes": null
+   }
+  ]
+ },
+ "diagnostic_plan": null
+}

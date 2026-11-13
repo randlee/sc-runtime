@@ -1,0 +1,23 @@
+# d-3: dependency-qualification
+
+## Description
+
+### Deliverables
+1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: replace exact/tilde pins, bare versions and carets with >= tested floors and no upper bound, update rmcp to patched >=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/037.
+2. Update sc-config/sc-transport/sc-runtime READMEs alongside changed API/dependency behavior; preserve documented test-util helper and synchronous sc-config scope — REQ-RUN-0702; NFR-CFG-0002; NFR-RT-0001.
+
+3. Own pin removal in crates/sc-command/Cargo.toml and crates/sc-runtime/Cargo.toml (normal/dev lines), template/crates/daemon/Cargo*.toml and tests/contracts/phase-c/application-control/Cargo.toml: rmcp >=3.9, utoipa >=6.0.0, utoipa-axum >=0.3.0. Preserve the unpublished compile-fail fixture crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml with incompatible utoipa-axum ^0.2.0; it is test input, not a published SDK or template dependency. Preserve feature flags and its negative assertion — ANC-037.
+
+4. Implement the one check_dependency_manifests(paths) and its unit tests in tests/unit/generation/test_runtime_ecosystem_upgrade.py: SDK-owned registry defaults use >= tested floors with no upper bound (ANC-037). Inputs are explicit manifest paths; d-11 supplies generated manifests and d-12 unpacked archives. Keep this interim under ADR-RUN-0005 until equivalent sc-lint#936 enforcement is shipped and adopted.
+
+### Boundaries and handoffs
+No storage engine, cron implementation, generated wiring or registry release is closed here. d-5 owns shared root Cargo/version/lock/boundary edits, d-6 backend dependencies, d-9 cron dependencies; d-3 owns the command manifest together with compiled server/schema compatibility; d-10 consumes that code and adds storage helpers after it. Qualified source is consumed by d-12; d-11 independently tests generated integration.
+In the complete command manifest convert every registry requirement, including dev/optional entries, to open floors: rmcp >=3.9, utoipa >=6.0.0, schemars >=1.2.3, sc-observability-types >=1.5.0, axum >=0.8.9 and serde/serde_json/tokio >=1. Preserve features. This lands with the normal server/schema conversions and typed public error/envelope ABI compiled against those identities; d-10 consumes that code before adding storage helpers (ANC-037).
+
+## Acceptance criteria
+
+req:REQ-RUN-0002/compatibility — Every registry requirement written in owned published/template manifests is >= its tested floor with no upper bound (ANC-037). Preserve optional features and existing unpublished negative compile fixtures. Consumers may pin their own manifests and lockfiles; run the normal test suite.
+req:REQ-RUN-0005/source — rmcp>=3.9 builds/tests with existing command/server/schema paths; selected Windows/Monty jobs run on the supported toolchains. No sc-compose or ATM production dependency. Public0.3.0 docs describe actual crate behavior and unchanged sc-config sync API. Phase D retains the existing sc_command::observability shim; normal observability tests cover the fixed noop ServiceName literal with the selected types, without an exact pin or registry-availability/signature probe (ADR-RUN-0017; REQ-RUN-0309).
+Required commands: just lint; just test; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml. Document ordinary commands/prerequisites in docs/development/dependency-upgrades.md. No separate dependency endpoint CI or probes; no registry publication or full storage feature claimed.
+Cargo workspace build and normal tests pass in this sprint own branch at closure; no unowned manifest change is assumed. Root source/dependency compatibility behavior is req:REQ-RUN-0002/source-ranges; registry/publication behavior only d-12. Cargo.lock is not native-identity evidence.
+req:REQ-RUN-0002/manifest-policy — The one checker tests accepted open-floor and rejected restrictive SDK defaults, checks this sprint's owned manifests and is called by generation/release consumers. Consumer-owned pins are outside this rule (ANC-037).

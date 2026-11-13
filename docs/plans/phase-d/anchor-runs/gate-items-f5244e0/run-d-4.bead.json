@@ -1,0 +1,133 @@
+[
+  {
+    "id": "run-d-4",
+    "title": "d-4: generation-tooling",
+    "description": "Keep consumers free to select a compatible generation CLI independently of the\nrepository CI pin. This sprint owns the whole existing rust-build-cache action,\nincluding its installation logic; d-3 calls its unchanged public inputs and\nmakes no edit to that file. No new shared workflow or Cargo change is needed.\n\n## Deliverables\n\n1. Declare CLI minimum \u003e=1.8.0, qualify selected GitHub Release archive installation and preserve action input contract — REQ-RUN-0005; ANC-005/020\n2. Verify SC_COMPOSE before PATH and real generation with compatible1.8.0, independently of CI's chosen version — REQ-RUN-0305/0501/0502; ANC-003\n3. In .claude/skills/plan-anchoring/scripts/change_report.py, .codex/skills/plan-anchoring/scripts/change_report.py and .cursor/skills/plan-anchoring/scripts/change_report.py, enforce the sc-compose minimum as a lower-bound comparison, accepting equal/newer versions and rejecting older/malformed versions; keep the three copies aligned and run controlled comparison tests — REQ-RUN-0703; ANC-015\n\n## This sprint does not close\nDependency ranges and shared workflow edits are d-3; READMEs are owned beside each implemented surface; released\nconsumer security/upgrade proof is d-12. d-11 consumes the checked CLI action and\nexecutable-selection behavior for kit generated-consumer preflight, so that\nartifact joins its final-wave inputs. No additional serial wave is added.",
+    "design": "Source: docs/plans/phase-d/sprint-d-4-generation-tooling.md@a6cc949bafa9e7f1817f4514a19328c3021ffc42 (Markdown retained as history). Tooling remains an independent selected-B sibling; source Markdown is history.\n\nNo new storage public interface is implemented by this tooling sprint; it preserves the existing generation/action/version-check contract.\n\n\n\n## Exact owned paths\n.sc/generation-tools.json\n.github/actions/rust-build-cache/action.yml\nscripts/new_project.py\n.claude/skills/plan-anchoring/scripts/change_report.py\n.codex/skills/plan-anchoring/scripts/change_report.py\n.cursor/skills/plan-anchoring/scripts/change_report.py\ntests/unit/generation/test_generation_tool*.py\ndocs/development/generation-tools.md\n\nPaths to delete: \n\nDependency rationale: Owns only generator tooling, its action and dedicated new tests. d-3 alone owns Justfile and workflow files; existing action install-generation/compose-version inputs are preserved.\n\nSupported-configuration facts are owned once by run-phase-d design. Tooling and README fences remain disjoint from all dependency files.\nClosure note: integration applies to this complete independent feature, even in the first wave; its actual API/toolchain interactions and executable acceptance close here, not an unimplemented contract.",
+    "acceptance_criteria": "1. **req:REQ-RUN-0005/install** — The selected CLI comes from GitHub Release\n   archives with checksum and exact selected-version verification. The declared\n   minimum is at least1.8.0. Preserve existing Rust cache/toolchain behavior and\n   action inputs. Existing workflow callers need no edit to use this action.\n2. **req:REQ-RUN-0502/selection** — A real generation run succeeds on compatible\n   sc-compose1.8.0; SC_COMPOSE selects an independent executable ahead of PATH\n   without changing the CI pin. Preserve fail-before-generation on missing tools.\n3. **req:REQ-RUN-0703/floor** — Controlled inputs prove equal/newer versions\n   accepted and older/malformed versions rejected; real generation and report\n   rendering prove the commands actually execute. No timing/sleep assertions.\n4. Run `python3 -m unittest discover -s tests/unit/generation -p 'test_generation_tool*.py'`\n   and the real generator/report smoke procedures documented in the owned tool\n   guide. Run `git diff --check`. Do not present stub executables as live proof.",
+    "notes": "imported from docs/plans/phase-d/sprint-d-4-generation-tooling.md@a6cc949bafa9e7f1817f4514a19328c3021ffc42",
+    "status": "open",
+    "priority": 2,
+    "issue_type": "task",
+    "created_at": "2026-11-12T02:03:03Z",
+    "updated_at": "2026-11-12T09:31:34Z",
+    "metadata": {
+      "adrs": [
+        "ADR-RUN-0002",
+        "ADR-RUN-0401",
+        "ADR-RUN-0402"
+      ],
+      "branch": "sprint/d-4-generation-tooling",
+      "closure_type": "integration",
+      "difficulty": "fast",
+      "layer": 2,
+      "model_class": "",
+      "owned_paths": [
+        ".sc/generation-tools.json",
+        ".github/actions/rust-build-cache/action.yml",
+        "scripts/new_project.py",
+        ".claude/skills/plan-anchoring/scripts/change_report.py",
+        ".codex/skills/plan-anchoring/scripts/change_report.py",
+        ".cursor/skills/plan-anchoring/scripts/change_report.py",
+        "tests/unit/generation/test_generation_tool*.py",
+        "docs/development/generation-tools.md"
+      ],
+      "phase": "d",
+      "pr_target": "integrate/phase-d",
+      "relation": "parallel_safe",
+      "release_train": "",
+      "requirements": [
+        "NFR-RUN-0005",
+        "REQ-RUN-0005",
+        "REQ-RUN-0305",
+        "REQ-RUN-0501",
+        "REQ-RUN-0502",
+        "REQ-RUN-0703"
+      ],
+      "sprint": "d-4",
+      "stack": "phase-d",
+      "target_boundary": "runtime-ecosystem-generation-tooling",
+      "vertical_rationale": "Independent tooling feature integrates CLI archive installation, executable selection and real generator/report commands; no storage composition dependency.",
+      "worktree": "/Users/randlee/github/sc-runtime-worktrees/sprint/d-4-generation-tooling"
+    },
+    "labels": [
+      "phase-d",
+      "stack:phase-d",
+      "stage:sprint"
+    ],
+    "dependencies": [
+      {
+        "id": "run-phase-d",
+        "title": "Phase D: shared app storage, channel writer and published consumer migration",
+        "description": "Phase D makes the SDK easy to adopt and lets consumers choose dependency upgrades. Product intent is PRD v2.0; the release is the owner-selected eight public crates at0.3.0. Generic backends contain no consumer table code. Sprint metadata.owned_paths is the authoritative full file fence; summaries below are navigation only.\n\n| Sprint | Wave | Boundary | Consumed artifacts |\n|---|---|---|---|\n| d-3 | 1 | dependency/source compatibility | none; owns the one manifest checker |\n| d-4 | 1 | generation tooling | none |\n| d-5 | 1 | storage/atomic/row contract | none; owner ratification and Active ADR0020/0021 before consumers |\n| d-6 | 2 | SQLite backend | d-5 production contract |\n| d-7 | 2 | Postgres backend | d-5 production contract |\n| d-8 | 2 | MySQL backend | d-5 production contract |\n| d-9 | 2 | cron domain adapter | d-5 production contract and additive legacy build |\n| d-10 | 2 | common commands/transforms | d-3 compiled command server/schema/error ABI, d-5 Storage/row contract |\n| d-11 | 3 | generated composition | d-3 checker, d-4 tools, d-6/7/8/9/10 code |\n| d-12 | 3 | registry migration/release/recommendations | d-3 source/checker, d-4 tools, d-6/9/10 code; d-11 completion checked before upload |\n\nTen sprints; critical path3, width6. No dependency exists solely because two sprints edit the same manifest. The release and generated-integration sprints prepare in parallel; upload waits for completed generated integration. No implementation dispatch before plan approval.\n",
+        "design": "PRD v2.0 governs product scope. sc-storage is std-only; storage/atomic/row traits are the shared contract, with only transaction name/mode properties. SQLite uses one async queue and one writer thread exclusively owning its sole write-mode connection, queued writes commit together, and replies follow commit. Only the writer runtime uses Runtime::block_on. Readers use blocking_recv without a runtime; async callers never block or use spawn_blocking to submit writes. Consumer rows/schema/migrations stay above generic engines. sc-cron implements its policy once over generic atomic Storage\u003cCronRow\u003e and keeps raw backend mutation out of the CronStore public facade.\n\nD-5 owns contract types, shared registry/boundary definitions, required REQ/ADR amendments and the minimal legacy compatibility build. Its layer-file handoffs are additive contract/legacy artifacts on existing dependencies, not simultaneous same-wave edits. d-9 owns the0.3.0 removal of ScheduleStore/SqliteScheduleStore and obsolete SQLite files after those artifacts compile. Root Cargo.toml passes directly from d-5 registrations to d-12 release-version conversion; d-6 reads it. d-3 owns the command manifest with its rmcp3.9 server/schema compatibility code; d-10 consumes that compiled artifact and later adds storage helpers. Specific crate facade boundaries pass from d-5 to their implementation owner on the existing must-follow edges.\n\nD-5 owner ratification is pending and gates its closure; ADR0020/0021 must be Active before d-6..d-12 start. The actual no-panic rule sc-lint#931 and transaction-safe analyzer remain required for affected owner-sprint closure and are rechecked before publication. Lead owns the external analyzer request; missing delivery is a real blocker, not a waiver.\n\nD-3 owns the sole interim SDK manifest checker; d-11 invokes it on generated outputs and d-12 on exact archives/upload. Remove it after equivalent sc-lint#936 release/adoption. Published/template registry requirements are open tested floors (ANC-037); normal tests check the selected versions, with no dedicated min/latest jobs. Consumers may pin what they want. D-12 alone produces the final newest-tested Cargo.lock recommendation and matching .sc-runtime/tested-dependencies.json (ANC-038).\n\nEight published packages at0.3.0: sc-storage, sc-runtime-db-sqlite, sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands. Postgres/MySQL generic engines remain generated this phase under that approved packaging scope; their implementation fixes need template updates/regeneration, explicitly recorded in ADR0020. They do not acquire an invented library-upgrade guarantee. D-12 derives publication order from actual manifests, sc-storage first, rehearses exact archives, then proves actual upstream beads-cache PR open/CI green against registry crates. Its independent preparation does not upload until d-11 sanity is closed and completed composition merged, with ratification and actual safety rules passing. Missing release predicates leave publication open.\n\nThe phase is one append-only stack with one writer. Metadata layer is planned presentation order; actual link order follows completion. pr_target is the consumed lower bound, not false sibling serialization. Canonical root Cargo.lock is d-12-owned. Historical probe facts remain in Git/review evidence, not a second live scope document.\n\n\n## Boundary map and generated targets\nRead existing boundaries/\u003ccrate\u003e/\u003ccrate\u003e.toml. sc-config dependencies serde/serde_json unchanged; sc-transport tokio/reqwest/serde-\u003esc-runtime unchanged; sc-command gains sc-storage, consumers sc-cron/sc-cron-commands/sc-runtime; sc-runtime composes transport/command, no storage trait placement there; sc-cron loses direct SQLite backend, depends on sc-storage/sc-command; sc-cron-commands adapts scheduler. Generic writer dependencies sc-storage/rusqlite/Tokio only, NEVER sc-cron/ATM/sc-compose; no consumer SQL/schema. New boundaries/sc-storage/sc-storage.toml has no sc-* dependency. Generated store/service boundaries are emitted by template/boundaries/render.py at boundaries/\u003cprefixed-package\u003e/\u003cprefixed-package\u003e.toml with existing Store/Stores facades; no invented static template boundaries. Application row descriptors/migrations are supplied at open, engine applies them before exposing store.\n",
+        "acceptance_criteria": "1. d-11 closes actual generated SQLite app/cron shared database/channel writer, real typed transforms/CRUD and all selected engines/mixed layouts; no vulnerable SQLx SQLite or separate cron.db default, no fake engine proof.\n2. d-12 closes actual upstream migration PR open/CI-green at exact SHA against eight published0.3.0 crates; no path/patch/Git SDK substitute. All source/package/API/docs and normal test suites pass.\n3. Generic backends contain no consumer table code; named owned retryable atomic API and static+runtime safety checks actually operate. Public changed storage APIs return typed errors/no panic; writer panic fails every waiting caller. External rule and ratification blockers stay explicit until met.\n4. All existing workspace/lint/test/boundary/publishing-kit/controlled-host benchmark gates pass; publication waits for closed d-11 sanity and owner ratification, after exact archive rehearsal. Required coverage and independent plan/development gates are separate from schema validation.",
+        "notes": "2026-11-11 user handed Phase D planning to Codex; start with intent.md. Authoritative user outcome: easy adoption/builds and non-breaking dependency upgrades; beads-cache blocked by rusqlite advisory. Intent revision tracked in run-ajx.1. Existing sprint/anchor reconciliation remains pending, including complete sweep ownership, mandatory low/latest CI, rusqlite endpoint consistency, and release gating on both dependency sprints. PR135 also has Codex/Claude change_report.py missing repo_root argument (reviewed 921a09c); not repaired by intent-only revision.\nPhase D planning aligned on PR135 at7e084a6: three disjoint sprint owners, compatible dependency policy, all8anchors covered by live Jev gates without exclusions; scoped guidelines recheck passed. HTML approval report committed/pushed. Final human HTML approval and normal plan hardening/QA remain prerequisites to implementation; no release capability claimed.\nSource Markdown and old .cursor/.sprints planning projections are historical, not a second dispatch authority. The authored JSONL/phase config plus Beads containers govern. ANC021-032 and lead messages01M76R3BG6EAJ7WBVASC9DZN3B/01M76R7AEBTJ1R5FD8ZSEH0DKV are incorporated; reader-pool ruling settled by user message01M76S6D7T58E4CMKHJRCXFJ1J: blocking_recv, no runtime or exception; coordinated release0.3.0 approved. Earlier notes above are historical results, not a current B-plan gate PASS.",
+        "status": "open",
+        "priority": 1,
+        "issue_type": "epic",
+        "owner": "rand.lee@radiantvs.com",
+        "created_at": "2026-11-11T18:30:35Z",
+        "created_by": "Rand",
+        "updated_at": "2026-11-12T09:31:38Z",
+        "metadata": {
+          "adr_ratification": "pending_randlee",
+          "backend_consumer_code": "forbidden",
+          "candidate_group": "run-phase-d.plan-notes",
+          "contract_crate": "sc-storage",
+          "critical_path": 3,
+          "index": "docs/plans/phase-d.jsonl",
+          "integration_branch": "integrate/phase-d",
+          "phase": "d",
+          "plan_authority": "beads",
+          "plan_scope": "epic",
+          "public_crates": 8,
+          "reader_thread_policy": "blocking_recv_no_runtime",
+          "reader_thread_ruling_pending": false,
+          "release_version": "0.3.0",
+          "scope_decision_pending": false,
+          "selected_option": "b",
+          "sprint_count": 10,
+          "transaction_prototype_status": "not_yet_prototyped",
+          "version_decision_pending": false,
+          "version_proposal": "coordinated0.3.0",
+          "wave_count": 3,
+          "width": 6,
+          "working_option": "b",
+          "writer_runtime_policy": "only_dedicated_writer_thread"
+        },
+        "labels": [
+          "phase-d",
+          "scope:epic"
+        ],
+        "dependency_type": "parent-child"
+      },
+      {
+        "id": "run-phase-d-plan-qa",
+        "title": "phase-d: plan review",
+        "description": "Review selected B plan at exact pushed revision: Storage/CronStorage contract,8public crates/shared app channel writer, ten sprint fences/waves, version proposal and live registry consumer migration. Includes carried CRIT001/005/006 B resolutions. No implementation dispatch until the normal plan gate passes.",
+        "notes": "FAIL round 1: 36 blocking, 26 important, 9 minor findings\nFAIL round 2: 2 findings (PLAN-SCOPE-004, EXT-002)",
+        "status": "closed",
+        "priority": 2,
+        "issue_type": "task",
+        "owner": "randlee@users.noreply.github.com",
+        "created_at": "2026-11-12T02:03:49Z",
+        "created_by": "runs",
+        "updated_at": "2026-11-12T10:09:31Z",
+        "started_at": "2026-11-12T08:34:48Z",
+        "closed_at": "2026-11-12T10:09:31Z",
+        "close_reason": "plan review PASS round 2 by lead ruling: 64/66 carried fixed; PLAN-SCOPE-004 and EXT-002 rejected with authority (share/run/plan-qa-r2.md)",
+        "labels": [
+          "phase-d",
+          "stage:plan-review"
+        ],
+        "dependency_type": "blocks"
+      }
+    ],
+    "parent": "run-phase-d",
+    "dependent_count": 3,
+    "dependency_count": 2,
+    "comment_count": 0,
+    "revision": "-5122210877379059227"
+  }
+]

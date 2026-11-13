@@ -9,7 +9,7 @@ worktree_base: "../sc-runtime-worktrees"
 test_command: "just test"
 lint_command: "just lint"
 integration_branch_pattern: "integrate/phase-{phase}"
-plans_dir: "docs/plan"
+plans_dir: "docs/plans"
 requirements_globs: ["docs/requirements.md","docs/*/requirements.md"]
 adr_globs: ["docs/architecture.md","docs/*/architecture.md"]
 policy_path: ".claude/project/quality-policy.md"

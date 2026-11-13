@@ -1,0 +1,366 @@
+{
+  "consumer": "run-lead independent gate/drift review and owner HTML review",
+  "gate": "m6 owner decision applied consistently",
+  "observed_defect": "Explicit rusqlite ceiling and caret-only checker prevent consumer selection of future security fixes",
+  "retirement": "Archive with final Phase D review after implementation closes",
+  "before_revision": "3de805a",
+  "fix_rows": [
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "sentence": "one rusqlite0.41 baseline",
+      "action": "replace",
+      "replacement": "one rusqlite >=0.41 requirement with no upper bound",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "one rusqlite0.41 baseline",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "acceptance_criteria",
+      "sentence": "The converted carets and rusqlite ^0.41 registration allow newer compatible releases",
+      "action": "replace",
+      "replacement": "The converted carets allow newer compatible releases; the owner-directed rusqlite >=0.41 registration has no upper bound and allows later releases",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "The converted carets and rusqlite ^0.41 registration allow newer compatible releases",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "design",
+      "sentence": "Root rusqlite0.41 baseline is shared with retained cron legacy",
+      "action": "replace",
+      "replacement": "Root rusqlite >=0.41 with no upper bound is shared with retained cron legacy",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "Root rusqlite0.41 baseline is shared with retained cron legacy",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "design",
+      "sentence": "after d-5 registers workspace rusqlite ^0.41, d-6 alone owns that range line",
+      "action": "replace",
+      "replacement": "after d-5 registers workspace rusqlite >=0.41 with no upper bound, d-6 alone owns qualification of that range line",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "after d-5 registers workspace rusqlite ^0.41, d-6 alone owns that range line",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "description",
+      "sentence": "4. Run the required rusqlite0.42 qualification. If its API, native-link and toolchain tests pass, write the shared root requirement \">=0.41, <0.43\"; this admits all0.41.x and additionally0.42.x. If a demonstrated0.42 break is found, write the plain caret \"0.41\" (^0.41) with an adjacent comment naming the break and evidence; this still admits every patch in0.41.x. The0.42 line is a separate Cargo compatibility line, not a patch upgrade within0.41.x. Thin generated SQLite storage consumes the generic backend and application-owned schema and removes SQLx SQLite/cache/config — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.",
+      "action": "replace",
+      "replacement": "4. Write the shared root rusqlite requirement \">=0.41\" with no upper bound, as directed by the owner. Run the required0.42 API, native-link and toolchain qualification plus minimum/latest allowed selection tests; do not restore a ceiling or caret fallback as a qualification outcome. Thin generated SQLite storage consumes the generic backend and application-owned schema and removes SQLx SQLite/cache/config — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "4. Run the required rusqlite0.42 qualification. If its API, native-link and toolchain tests pass, write the shared root requirement \">=0.41, <0.43\"; this admits all0.41.x and additionally0.42.x. If a demonstrated0.42 break is found, write the plain caret \"0.41\" (^0.41) with an adjacent comment naming the break and evidence; this still admits every patch in0.41.x. The0.42 line is a separate Cargo compatibility line, not a patch upgrade within0.41.x. Thin generated SQLite storage consumes the generic backend and application-owned schema and removes SQLx SQLite/cache/config — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "acceptance_criteria",
+      "sentence": "boundary:sc-runtime-db-sqlite/dependencies — Run real SQLite/atomic tests at the tested0.41 minimum and latest0.41.x, plus the required0.42 qualification at its minimum/latest selections. Neither outcome removes any0.41.x patch from the consumer requirement. cargo tree -i libsqlite3-sys shows one selected version>=0.39; cargo tree -i sqlx-sqlite selects no package. Check the resolved graph, not Cargo.lock. No ATM/sc-compose release dependencies.",
+      "action": "replace",
+      "replacement": "boundary:sc-runtime-db-sqlite/dependencies — Run real SQLite/atomic tests at the tested0.41 minimum and latest allowed rusqlite >=0.41 selection, plus the required0.42 qualification at its minimum/latest selections. The consumer requirement has no upper bound and does not prevent selecting a later security fix. cargo tree -i libsqlite3-sys shows one selected version>=0.39; cargo tree -i sqlx-sqlite selects no package. Check the resolved graph, not Cargo.lock. No ATM/sc-compose release dependencies.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "boundary:sc-runtime-db-sqlite/dependencies — Run real SQLite/atomic tests at the tested0.41 minimum and latest0.41.x, plus the required0.42 qualification at its minimum/latest selections. Neither outcome removes any0.41.x patch from the consumer requirement. cargo tree -i libsqlite3-sys shows one selected version>=0.39; cargo tree -i sqlx-sqlite selects no package. Check the resolved graph, not Cargo.lock. No ATM/sc-compose release dependencies.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "acceptance_criteria",
+      "sentence": "boundary:sc-runtime-db-sqlite/qualified-range — The tested minimum's Cargo-compatible line is0.41.x: both the plain caret \"0.41\" and qualified \">=0.41, <0.43\" admit0.41.0 and every later0.41.x patch. Only the latter additionally supports the independently qualified0.42.x line. Writer and legacy cron inherit that one root rusqlite requirement with workspace=true; no crate adds its own rusqlite/libsqlite3-sys range. libsqlite3-sys>=0.39 is a selected transitive identity, not a direct pin. SDK requirements sc-storage and sc-runtime-db-sqlite use normal ^0.2.0 during development and ^0.3.0 after release conversion, admitting all patches in their respective SDK line. Store-sqlite schema uses its adopted-version path caret; tokio/serde_json inherit ^1, futures-util uses ^0.3.31 and tempfile ^3; writer Tokio uses a normal caret from its tested1.x floor. None adds an extra ceiling within its compatible line. Remove the SQLx SQLite requirement (ANC-016/017/019).",
+      "action": "replace",
+      "replacement": "boundary:sc-runtime-db-sqlite/qualified-range — Root workspace rusqlite is \">=0.41\" with no upper bound: it admits0.41.x,0.42.x and later releases, rather than only Cargo-compatible patches of the minimum. Writer and legacy cron inherit that one root requirement with workspace=true; no crate adds its own rusqlite/libsqlite3-sys range. libsqlite3-sys>=0.39 is a selected transitive identity, not a direct pin. SDK requirements sc-storage and sc-runtime-db-sqlite use normal ^0.2.0 during development and ^0.3.0 after release conversion, admitting all patches in their respective SDK line. Store-sqlite schema uses its adopted-version path caret; tokio/serde_json inherit ^1, futures-util uses ^0.3.31 and tempfile ^3; writer Tokio uses a normal caret from its tested1.x floor. Remove the SQLx SQLite requirement (owner m6 decision; ANC-016/017/019).",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "boundary:sc-runtime-db-sqlite/qualified-range — The tested minimum's Cargo-compatible line is0.41.x: both the plain caret \"0.41\" and qualified \">=0.41, <0.43\" admit0.41.0 and every later0.41.x patch. Only the latter additionally supports the independently qualified0.42.x line. Writer and legacy cron inherit that one root rusqlite requirement with workspace=true; no crate adds its own rusqlite/libsqlite3-sys range. libsqlite3-sys>=0.39 is a selected transitive identity, not a direct pin. SDK requirements sc-storage and sc-runtime-db-sqlite use normal ^0.2.0 during development and ^0.3.0 after release conversion, admitting all patches in their respective SDK line. Store-sqlite schema uses its adopted-version path caret; tokio/serde_json inherit ^1, futures-util uses ^0.3.31 and tempfile ^3; writer Tokio uses a normal caret from its tested1.x floor. None adds an extra ceiling within its compatible line. Remove the SQLx SQLite requirement (ANC-016/017/019).",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "acceptance_criteria",
+      "sentence": "This applies to every extra bound, not only the documented0.42 fallback.",
+      "action": "replace",
+      "replacement": "This applies to every extra bound in scope; rusqlite >=0.41 has no upper bound and needs no upper-bound justification.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "This applies to every extra bound, not only the documented0.42 fallback.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "design",
+      "sentence": "d-5 writes workspace rusqlite ^0.41; after its sanity closes d-6 alone changes that same line to the qualified shared range in qualified-range above",
+      "action": "replace",
+      "replacement": "d-5 writes workspace rusqlite >=0.41 without an upper bound; after its sanity closes d-6 alone qualifies that same uncapped range as specified in qualified-range above",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "d-5 writes workspace rusqlite ^0.41; after its sanity closes d-6 alone changes that same line to the qualified shared range in qualified-range above",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "acceptance_criteria",
+      "sentence": "Every other requirement is a normal caret that admits newer compatible releases (ANC-016/019).",
+      "action": "replace",
+      "replacement": "Accept normal carets and lower-bound-only requirements, including owner-directed rusqlite >=0.41 with no upper bound. The checker must not demand a break comment or invent a ceiling for a lower-bound-only requirement. Test that >=0.41 passes and an uncommented extra upper bound fails (owner m6 decision; ANC-016/019).",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "Every other requirement is a normal caret that admits newer compatible releases (ANC-016/019).",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "sentence": "preserves normal caret-compatible updates (ANC-016/019).",
+      "action": "replace",
+      "replacement": "accepts normal carets and lower-bound-only requirements, including owner-directed rusqlite >=0.41 with no upper bound or upper-bound comment obligation (owner m6 decision; ANC-016/019).",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "preserves normal caret-compatible updates (ANC-016/019).",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "sentence": "a normal caret case passes.",
+      "action": "replace",
+      "replacement": "normal caret and rusqlite >=0.41 lower-bound-only cases each pass.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "a normal caret case passes.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "design",
+      "sentence": "Direct rusqlite uses the d-6-qualified compatible envelope and required bundled/hooks/functions/trace features; d-6's rusqlite range (0.42 included unless a demonstrated break is recorded) is what d-12 releases.",
+      "action": "replace",
+      "replacement": "Direct rusqlite uses the owner-directed >=0.41 requirement with no upper bound and required bundled/hooks/functions/trace features; d-12 releases that d-6-qualified uncapped range, without a capped qualification fallback.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "Direct rusqlite uses the d-6-qualified compatible envelope and required bundled/hooks/functions/trace features; d-6's rusqlite range (0.42 included unless a demonstrated break is recorded) is what d-12 releases.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "design",
+      "sentence": "one rusqlite0.41 requirement in d-5",
+      "action": "replace",
+      "replacement": "one rusqlite >=0.41 requirement with no upper bound in d-5",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "one rusqlite0.41 requirement in d-5",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "design",
+      "sentence": "Direct rusqlite0.41>=patchedlibsqlite3-sys0.39;0.42 separately qualifies.",
+      "action": "replace",
+      "replacement": "The owner-directed workspace rusqlite requirement is >=0.41 without an upper bound, so consumers can select later security fixes. Minimum/latest and0.42 qualification remain required; no capped fallback is planned. Rusqlite0.41 selects patchedlibsqlite3-sys>=0.39.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "Direct rusqlite0.41>=patchedlibsqlite3-sys0.39;0.42 separately qualifies.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "acceptance_criteria",
+      "sentence": "The manifest regression test resolves at latest compatible versions",
+      "action": "replace",
+      "replacement": "The manifest regression test resolves at latest allowed versions",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "The manifest regression test resolves at latest compatible versions",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "sentence": "Every other changed registry requirement is a normal tested-floor caret under the same rule, with no extra ceiling within that line unless a demonstrated API/links/toolchain break is documented beside it.",
+      "action": "replace",
+      "replacement": "Other changed registry requirements use tested-floor carets or lower-bound-only ranges; rusqlite >=0.41 has no upper bound. Any added restriction needs the adjacent demonstrated API/links/toolchain break comment.",
+      "authority": {
+        "decision": "Remove upper bound",
+        "rationale": "If a security patch is tommorrow I won't be able to use it",
+        "decision_message": "01M77BANH2F0TE8X6169NPXVB4",
+        "rationale_message": "01M77BBAABHXAQNVQV7RX52W1E",
+        "source_revision": "3de805a",
+        "source": "docs/plans/phase-d/anchor-tuning/drift-review-2026-11-12.json finding m6 owner_decision"
+      },
+      "why": {
+        "source": "independent drift finding m6 plus new owner ruling",
+        "run_question_answer_confidence": "Not a new Jev failed cell; no question answer or confidence fabricated. All gates passed before this owner-directed change.",
+        "weak_sentence": "Every other changed registry requirement is a normal tested-floor caret under the same rule, with no extra ceiling within that line unless a demonstrated API/links/toolchain break is documented beside it.",
+        "diagnosis": "The capped qualification branch and caret-only checker would block the owner-directed uncapped requirement and future consumer-selected security fixes."
+      }
+    }
+  ]
+}

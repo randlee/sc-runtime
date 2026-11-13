@@ -1,5 +1,7 @@
 # Project plan
 
+**2026-11-11.** [PRD v2.0](prd/sc-runtime-prd.md) now governs this repository. This plan has not been re-planned against it; the changes it implies are listed in [prd/code-alignment.md](prd/code-alignment.md).
+
 Phase A follows the original five milestones: compatibility spike, reusable
 core crates, minimal JSON-driven SQLite template, core release, and wizard.
 Sprints a-1 through a-8 are merged on `integrate/phase-a`.
@@ -126,3 +128,18 @@ Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under 
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | complete | `sprint/c-4-runtime-ecosystem-release` |
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
 | c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |
+
+Phase d makes the framework easier to adopt and maintain: the rusqlite advisory
+fix ([#132](https://github.com/randlee/sc-runtime/issues/132)), tested compatible
+dependency ranges ([#133](https://github.com/randlee/sc-runtime/issues/133)),
+consumer documentation, and a qualified **0.2.1** release. Merged
+[PR #131](https://github.com/randlee/sc-runtime/pull/131)'s public test helper is
+documented by d-2 and verified on the published SDK by d-3. See the
+[Phase d plan](plans/phase-d/phase-d-plan.md).
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| d-1 dependency compatibility | [d-1](plans/phase-d/sprint-d-1-dependency-compatibility.md) | planned | `sprint/d-1-dependency-compatibility` |
+| d-2 consumer documentation | [d-2](plans/phase-d/sprint-d-2-consumer-docs.md) | planned | `sprint/d-2-consumer-docs` |
+| d-3 published consumer closure | [d-3](plans/phase-d/sprint-d-3-release.md) | planned | `sprint/d-3-release` |
+| d-4 generation tooling | [d-4](plans/phase-d/sprint-d-4-generation-tooling.md) | planned | `sprint/d-4-generation-tooling` |

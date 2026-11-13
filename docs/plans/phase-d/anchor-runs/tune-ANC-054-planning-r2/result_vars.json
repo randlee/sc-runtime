@@ -1,0 +1,1864 @@
+{
+  "success": true,
+  "canceled": false,
+  "aborted_by": null,
+  "data": {
+    "operation": "tune",
+    "gate": "planning",
+    "accepted": true,
+    "tournament_protocol_version": "plan-anchor/question-tournament/2.0.0",
+    "production_confidence_threshold": 0.6,
+    "confidence_reference_threshold": 0.8,
+    "semantic_score": {
+      "exact_role_cells": 66,
+      "total_role_cells": 66,
+      "exact_semantic_verdicts": 22,
+      "total_semantic_verdicts": 22,
+      "stable_cases": 11,
+      "total_cases": 11,
+      "regressions": 0
+    },
+    "confidence_diagnostics": {
+      "threshold": 0.8,
+      "cells_at_or_above_threshold": 64,
+      "total_cells": 66,
+      "minimum": 0.73,
+      "p10": 0.855,
+      "median": 1.0,
+      "mean": 0.9568
+    },
+    "tuning_history_before_sha256": "9e8fb23154e06bb24a4d0aec0f746aa00bf7b75c5290591a60bf9a1a9b1e7284",
+    "tuning_history_after": {
+      "schema": "plan-anchor/tuning-history/2",
+      "history_id": "phase-d-ANC-054-planning",
+      "events": [
+        {
+          "event_index": 1,
+          "previous_event_sha256": null,
+          "event": "question_set_rejected",
+          "protocol_version": "plan-anchor/question-tournament/2.0.0",
+          "authority": {
+            "intent_id": "phase-d-human-intent",
+            "intent_version": "a2c0e20",
+            "intent_sha256": "a019d07a71cc7ad67ab7a39e213c5085092ec5dff0fa0e0645cf5b03c233f2f6",
+            "anchor_id": "ANC-054",
+            "anchor_version": 2,
+            "anchor_record_sha256": "3ceba2dfdd5ec7a14481064518ba488019a87194ad4653713810909a8594070a"
+          },
+          "oracle": {
+            "sha256": "a2c157171d96f8f45ea3149a102f1bf2289f301675233b99e4c84890912c1632",
+            "case_ids": [
+              "fx-pass-1",
+              "fx-fail-1",
+              "compliant-all-on-path",
+              "compliant-mixed-with-reason",
+              "bad-offpath-silent-reason",
+              "bad-partial-reasons",
+              "exception-scheduler-tick",
+              "conflict-no-reason-policy",
+              "silent-cron-change",
+              "topical-only",
+              "irrelevant-release-notes"
+            ],
+            "case_count": 11,
+            "repeat_count": 2
+          },
+          "candidate": {
+            "candidate_id": "b-r1-a4-k3",
+            "question_sha256": "f4cf26c2d2d39059853398d72bdeba4fdf2108812af76993c9ff0c1b66ecea6c"
+          },
+          "evidence": {
+            "canonical_request_sha256": [
+              "6365bf1a17e5d864917de258df4ec384b77beaf87c5ab0198af272f6f3447052",
+              "6365bf1a17e5d864917de258df4ec384b77beaf87c5ab0198af272f6f3447052",
+              "2d3093205b8b74fa7e7d4da1dc36fbce77b9509a92a72dd2ad5349533119f031",
+              "2d3093205b8b74fa7e7d4da1dc36fbce77b9509a92a72dd2ad5349533119f031",
+              "1ea647754e1cdf994479dd37e35043020ecc2b9f3de08ae1c1e326111b6e6fb7",
+              "1ea647754e1cdf994479dd37e35043020ecc2b9f3de08ae1c1e326111b6e6fb7",
+              "9107ec57d85e2871d6563ce9db9976b85210f2651c936dc4b63b74ca9b70df75",
+              "9107ec57d85e2871d6563ce9db9976b85210f2651c936dc4b63b74ca9b70df75",
+              "f34a61b3f2debfe635f08d1e5d22920110cab7341e838bc2c7b132eeafe9db0b",
+              "f34a61b3f2debfe635f08d1e5d22920110cab7341e838bc2c7b132eeafe9db0b",
+              "7daa4d4c70599e39a64fa6a20a16c3b20af30ebefe86bab66ff9cfee6a31c3c5",
+              "7daa4d4c70599e39a64fa6a20a16c3b20af30ebefe86bab66ff9cfee6a31c3c5",
+              "fa46877bf0aeb09d2451a58d11b01e939a32a54de5ef1376a7a40dcb8a84197e",
+              "fa46877bf0aeb09d2451a58d11b01e939a32a54de5ef1376a7a40dcb8a84197e",
+              "4034030b6304f2ac61abaadd2f12b11048cca9a8e986b772db6a7397ac92cf7a",
+              "4034030b6304f2ac61abaadd2f12b11048cca9a8e986b772db6a7397ac92cf7a",
+              "7c6f423aeddd5da6fac30397a53559bdd7260366a4a81970fb6763ee974e3152",
+              "7c6f423aeddd5da6fac30397a53559bdd7260366a4a81970fb6763ee974e3152",
+              "f499bbeecdab9932379a1f364cd048c06b691db3ff8d8e3d3c54f6565a1b43e3",
+              "f499bbeecdab9932379a1f364cd048c06b691db3ff8d8e3d3c54f6565a1b43e3",
+              "e0dfbf720ed6eb4e73a29ba405f8bbfcbf7fe549b565d627bfc35b6ff99f3b13",
+              "e0dfbf720ed6eb4e73a29ba405f8bbfcbf7fe549b565d627bfc35b6ff99f3b13"
+            ],
+            "raw_response_sha256": [
+              "1b915fe59522a7874a3174ae836906331234b5346fbcdb030ced295b8cfe3c59",
+              "1b915fe59522a7874a3174ae836906331234b5346fbcdb030ced295b8cfe3c59",
+              "122f0699c1f7ad8aff48356ddf8f0022990dd30570752d813b027223703c3745",
+              "122f0699c1f7ad8aff48356ddf8f0022990dd30570752d813b027223703c3745",
+              "2865ef0b72bf3f770ea08432747d18b74c88995f3965852e5c6b87c799848fb8",
+              "54b47cf2ffc1e9657538a3ae02defd5af187b838758537fe588f9c574aecd6c4",
+              "0ff4d9dc761d3fd8c2f826dda0f624fe3c25f86acf45d155f88e04c6fd507f85",
+              "0ff4d9dc761d3fd8c2f826dda0f624fe3c25f86acf45d155f88e04c6fd507f85",
+              "92413a0b007bcd77f6ad4e24628e21341c5a829574df7653c0de2e050f227561",
+              "cbfa96ff64ce43796582b51850ebf3c08ac3e1ece97b803bd6ef5111f837ac7e",
+              "43b60b6f2e84b83ffde2b9217b2cc7149dff79974ce1409389ddc7af404635ae",
+              "888d1eab4d6c969519105c52824de38b4e3be96e9a6a56e2b0b1606156c1e052",
+              "a4bc5e474455bef2a6a6cc0702304ea353b5bcdfdf5e9611d9634e94f1b7b943",
+              "a4bc5e474455bef2a6a6cc0702304ea353b5bcdfdf5e9611d9634e94f1b7b943",
+              "7c77db003e1fa996bacdeafafa3b58f2c7a9e480f60d3040b48ca9588c4a6e62",
+              "7c77db003e1fa996bacdeafafa3b58f2c7a9e480f60d3040b48ca9588c4a6e62",
+              "28af482c86a81d20160d4c1ce5e5b31fe806436d8b883f4de7d44c82f547c6f8",
+              "aa6f4584db462416cfff0cc4368d91e93bcdc4da87fb5ae01d08226a297b6eb5",
+              "50e2c7cc4323d7b15e5fbd3f6244c218cb3f93e391089dc1b1836ccbdfdcc584",
+              "1e3055d56a2632818026b6ba20a959a27b9956593bd26fb1dfb8548c123d51e2",
+              "dae56f69eb97d6b5828d11ba34af953b3a5904c8e45752938616b004c7e2606a",
+              "581a13fe8eea6a93110ae3cc5acf8f08619f5ffc05a51e9a79c542305c154f57"
+            ],
+            "run_ids": [
+              "4fa2d073b2d9b788",
+              "b1c290a13908819b",
+              "f1fe38cf81272fe7",
+              "d22dd5f71bbd8f52",
+              "770c4b06ad0c1f3a",
+              "a7e862368b2b5d46",
+              "11fe38338b710906",
+              "08d14a4b9a20b591",
+              "ef3723ab12ce4e9c",
+              "98635392d13bcf5f",
+              "43849a7e97b27734",
+              "7688e7f3e32e8859",
+              "b26fffa623f57b39",
+              "de5fc896f49e03bf",
+              "5d9185e823e32800",
+              "236499aab913ea51",
+              "76f62ead0ccb9058",
+              "0a67da8904441667",
+              "4f7349679371555e",
+              "7be51201d897b28c",
+              "8aceb811cce99d09",
+              "3e4baf8bbe83676d"
+            ]
+          },
+          "score": {
+            "exact_role_cells": 63,
+            "total_role_cells": 66,
+            "exact_semantic_verdicts": 20,
+            "total_semantic_verdicts": 22,
+            "stable_cases": 10,
+            "total_cases": 11,
+            "regressions": 0,
+            "confidence": {
+              "threshold": 0.8,
+              "cells_at_or_above_threshold": 59,
+              "total_cells": 66,
+              "minimum": 0.38,
+              "p10": 0.79,
+              "median": 0.98,
+              "mean": 0.9264
+            }
+          },
+          "decision": {
+            "status": "unstable",
+            "question_set_sha256": null,
+            "reason_code": "TOURNAMENT.UNSTABLE"
+          },
+          "supersedes": null
+        },
+        {
+          "event_index": 2,
+          "previous_event_sha256": "3830293aa65a88d484e656813eb048aa10ee666448b1d13977e1f54538a2feae",
+          "event": "question_set_sealed",
+          "protocol_version": "plan-anchor/question-tournament/2.0.0",
+          "authority": {
+            "intent_id": "phase-d-human-intent",
+            "intent_version": "a2c0e20",
+            "intent_sha256": "a019d07a71cc7ad67ab7a39e213c5085092ec5dff0fa0e0645cf5b03c233f2f6",
+            "anchor_id": "ANC-054",
+            "anchor_version": 2,
+            "anchor_record_sha256": "3ceba2dfdd5ec7a14481064518ba488019a87194ad4653713810909a8594070a"
+          },
+          "oracle": {
+            "sha256": "a2c157171d96f8f45ea3149a102f1bf2289f301675233b99e4c84890912c1632",
+            "case_ids": [
+              "fx-pass-1",
+              "fx-fail-1",
+              "compliant-all-on-path",
+              "compliant-mixed-with-reason",
+              "bad-offpath-silent-reason",
+              "bad-partial-reasons",
+              "exception-scheduler-tick",
+              "conflict-no-reason-policy",
+              "silent-cron-change",
+              "topical-only",
+              "irrelevant-release-notes"
+            ],
+            "case_count": 11,
+            "repeat_count": 2
+          },
+          "candidate": {
+            "candidate_id": "r2-r1-a7-k4",
+            "question_sha256": "ceda3e733394d58314bc2d73c34cebb79a83777b5e8f31cbc8fad8abd78719c8"
+          },
+          "evidence": {
+            "canonical_request_sha256": [
+              "094404685d33b6f444363cb64c831f278616f9b6407f1fd7e33d3ff0a4eb09fa",
+              "094404685d33b6f444363cb64c831f278616f9b6407f1fd7e33d3ff0a4eb09fa",
+              "2fa5948d937a70e4eaa4fccfd26f0d14b06fc8bbf9f5555da648db9c2e4d808f",
+              "2fa5948d937a70e4eaa4fccfd26f0d14b06fc8bbf9f5555da648db9c2e4d808f",
+              "5a9f46f500422ccc090e8e6f1bcb6c0f8f9af46f34e1d99f56ad91f26e0211cc",
+              "5a9f46f500422ccc090e8e6f1bcb6c0f8f9af46f34e1d99f56ad91f26e0211cc",
+              "f58f8fafa3d2b94daa93caa962d7989c8840284cc0bc33dd533610be86ab4b7a",
+              "f58f8fafa3d2b94daa93caa962d7989c8840284cc0bc33dd533610be86ab4b7a",
+              "87a3d7e06b115754dd9176624fc47c7ea090b120212518375a37435dba70c31f",
+              "87a3d7e06b115754dd9176624fc47c7ea090b120212518375a37435dba70c31f",
+              "01fe8d2102d34c5c71624d25708a3769b09544d9f9b313983d02940fb535fa1e",
+              "01fe8d2102d34c5c71624d25708a3769b09544d9f9b313983d02940fb535fa1e",
+              "1e66a39e1402fe87ed33d3575284d17ba981d92c33a3981d80356136e97192a6",
+              "1e66a39e1402fe87ed33d3575284d17ba981d92c33a3981d80356136e97192a6",
+              "9904b50478b62cd482394386cba85206217975e54658be402e2ebc954d6ad502",
+              "9904b50478b62cd482394386cba85206217975e54658be402e2ebc954d6ad502",
+              "17a949e7fea6fb966b7ad3d2a65caa3fddfef575b9dac6f94a4c131736f1fc6f",
+              "17a949e7fea6fb966b7ad3d2a65caa3fddfef575b9dac6f94a4c131736f1fc6f",
+              "4db93ead6860471eebe70fa9a03af0255117d0879ad337335a12ad5280ebc644",
+              "4db93ead6860471eebe70fa9a03af0255117d0879ad337335a12ad5280ebc644",
+              "c0f90097c2a2fbff3ed0d69f84f23dbbda62643d935ecf4c94e8d9a7604315bb",
+              "c0f90097c2a2fbff3ed0d69f84f23dbbda62643d935ecf4c94e8d9a7604315bb"
+            ],
+            "raw_response_sha256": [
+              "32b38e1653e4626b84fc227770e2543a309245c219f4d9fe06306e630e2fedbb",
+              "a002b417802a84375c9bcfe10c81a2181d855fe6a6800103ad393e08fa27eadb",
+              "2b0e45c0f5d7d83b5b45166563cbfa4d91bcc386159609606a2b835694b763e4",
+              "2b0e45c0f5d7d83b5b45166563cbfa4d91bcc386159609606a2b835694b763e4",
+              "39e9e9d58d9349b5b2277b0d26013e01af6513b7770a0c232feda4a7ac7befee",
+              "3c734aa9d887a07e3e3fbaf7612e5c26f2a7f2609a8430bf3c5034decec66608",
+              "b78dada6095a67a72b42dae72aafd1a591c919041a4ae8022b3fb75c7280e7d1",
+              "2387b6ef03735e6571b40c0c838a5644d3237af0ab6a6b175e926562e37abdf1",
+              "c57e197a11157d67e38522a81bab0f6cb89a8681bc42dd7f556c62d7410099d7",
+              "c57e197a11157d67e38522a81bab0f6cb89a8681bc42dd7f556c62d7410099d7",
+              "672268ccdf03d796f4814e4c5ab7aee53b148103a28623840d426fe38d3a48fa",
+              "672268ccdf03d796f4814e4c5ab7aee53b148103a28623840d426fe38d3a48fa",
+              "f7a8bf6a871ddaddaea9e18404d3517faf6ee5cce2a855ce86bc2e89b7d7cdf1",
+              "9b20220cffb43ae6809f9b0ba34444b199bd14a7c1cfd69003eb1c118582abc9",
+              "f14da3e9c948d34e62a8cd4f43112dcc6aad8d2454ca3a87827aded5d291fd2b",
+              "f14da3e9c948d34e62a8cd4f43112dcc6aad8d2454ca3a87827aded5d291fd2b",
+              "8e3c9a5830abca904213d0d0d06f0003f03ee1c3b820dd621805002342c8845f",
+              "92939bcec0208e91c6d084563db48d6cf83ac6d3394212c629f6e00790e75f6a",
+              "6b2b5fede8dbbab17cd02ba43ac2d2638943ae1af072621e5a197af9f9327c09",
+              "b1a241332432deef0e9a8de2aedaf37bb0065466d13549c55cf18651a243df9f",
+              "7bee784e2ef3d164a9c7211dd954a40d78a69e38af06b63e904c5221ddec1923",
+              "f8b06439e3230a166c718a73e195fe580662b915193d35105226572e212ca69e"
+            ],
+            "run_ids": [
+              "2fe1d6ed96a144a7",
+              "aa81f8b44417ada6",
+              "0d391f9481acfd94",
+              "20405efba35f0d80",
+              "f454c97b802f3787",
+              "22f92a285e4c787a",
+              "8ecf184d5f88beca",
+              "9eab1f5dd5ad09a0",
+              "29b11d93b5017a8c",
+              "537541baf0002ccc",
+              "f8822810d00ad367",
+              "9af9d3ef23d1c6cd",
+              "890b0c6c90bae6a4",
+              "77bd3003b37b874b",
+              "fb84226dfa2d0284",
+              "38b63a56a9f61fa6",
+              "1d6cc66281e1278f",
+              "79f6dea6b54aeae2",
+              "a0004292ca96d4ce",
+              "26f7676e0936fc10",
+              "e1204bb1facc6ded",
+              "99d80fcd795d26b4"
+            ]
+          },
+          "score": {
+            "exact_role_cells": 66,
+            "total_role_cells": 66,
+            "exact_semantic_verdicts": 22,
+            "total_semantic_verdicts": 22,
+            "stable_cases": 11,
+            "total_cases": 11,
+            "regressions": 0,
+            "confidence": {
+              "threshold": 0.8,
+              "cells_at_or_above_threshold": 64,
+              "total_cells": 66,
+              "minimum": 0.73,
+              "p10": 0.855,
+              "median": 1.0,
+              "mean": 0.9568
+            }
+          },
+          "decision": {
+            "status": "sealed",
+            "question_set_sha256": "ceda3e733394d58314bc2d73c34cebb79a83777b5e8f31cbc8fad8abd78719c8",
+            "reason_code": "TOURNAMENT.SEALED"
+          },
+          "supersedes": {
+            "protocol_version": "plan-anchor/question-tournament/2.0.0",
+            "decision_sha256": "c0d6ed0772c0483664670fbb7299a7611b8828afd2b0c9939973b17bf2ecb6d2"
+          }
+        }
+      ]
+    },
+    "tuning_history_after_sha256": "3ff99e60a373ac162c70f5634bdab9b0e3cde7b099914198665000945c6204d5",
+    "production_semantics_unchanged": true,
+    "authority_citations": [
+      "owner 2026-11-12 requirement change, item 5 (owner-reqs-5cffe24.md): 'Name which cron commands go through the shared path; for any that do not, state the reason in the sprint text.'",
+      "ANC-054 v2 statement, quote, scope, deterministic_check ('each cron command listed off the shared path has a reason in the sprint text') and locked fixtures"
+    ],
+    "oracle_sha256": "a2c157171d96f8f45ea3149a102f1bf2289f301675233b99e4c84890912c1632",
+    "sealed_question_set": {
+      "digest": "ceda3e733394d58314bc2d73c34cebb79a83777b5e8f31cbc8fad8abd78719c8",
+      "questions": {
+        "addressed": {
+          "type": "choice",
+          "instructions": "An item satisfies this anchor in one of two ways: (A) it says every cron command goes through the shared command path, so none is off it and no reason is required; or (B) for every cron command it keeps off the shared path, it gives that command's reason. Does `item.text` do (A) or (B)? Check each off-path cron command on its own: a reason given for one command does not cover a different command unless the text applies it to that command, and saying how a command stays off the path (for example that it calls storage itself) is not a reason why. A general mention of cron and the shared path does neither. Judge presence only.",
+          "criteria": {
+            "yes": "The item does (A), or does (B) for every off-path cron command it names.",
+            "no": "The item does neither: it is silent about cron routing, only mentions the topic, or names at least one off-path cron command without its own reason.",
+            "unclear": "The item says something about cron routing but it cannot be told whether it does (A) or (B)."
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "instructions": "Does `item.text` place at least one cron command outside the shared command path (it bypasses the path, keeps its own storage call, is handled outside it, or calls a backend directly) without a reason for that particular command, or state that off-path cron commands need no reason? Check each off-path cron command on its own: a reason given for one command does not cover a different command unless the text applies it to that command, and saying how a command stays off the path (for example that it calls storage itself) is not a reason why. An item that puts every cron command on the shared path is not a conflict. Silence about cron routing is not a conflict. Judge conflict only.",
+          "criteria": {
+            "yes": "Some cron command is stated to be off the shared path and no reason for that command appears in the item, or the item says reasons are not needed.",
+            "no": "Every cron command the item places off the shared path has its own reason, or the item places none off it, or the item is silent about cron routing.",
+            "unclear": "The item may leave an off-path cron command without its own reason, but the wording does not settle it."
+          }
+        },
+        "relevant": {
+          "type": "choice",
+          "instructions": "Does `item.text` plan or change cron commands (such as cron.start, cron.end, cron.list, or the sc-cron-commands crate), plan or change the shared command path (Transform, storage_read, storage_write), or state which cron commands use that path? Judge subject overlap only; do not judge compliance.",
+          "criteria": {
+            "yes": "The item plans or changes a cron command, sc-cron-commands, or the shared command path, or states how cron commands are routed.",
+            "no": "The item concerns something else, such as another crate's release notes, docs, CI or non-cron storage work, and touches no cron command and not the shared command path.",
+            "unclear": "The item text is too vague to tell whether it touches a cron command or the shared command path."
+          }
+        }
+      }
+    },
+    "candidate_rankings": [
+      {
+        "rank": 1,
+        "bundle_id": "r2-r1-a7-k4",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k4"
+        },
+        "question_sha256": "b39c14a00cad3007bba4866822241a2ab8e984cc18f2eb6ee5bddd354686be19",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 64,
+          "total_cells": 66,
+          "minimum": 0.73,
+          "p10": 0.855,
+          "median": 1.0,
+          "mean": 0.9568
+        },
+        "complexity_bytes": 2991,
+        "selected": true,
+        "co_leader": false,
+        "reason": "Selected: top lexicographic rank among semantically accepted bundles.",
+        "mismatches": []
+      },
+      {
+        "rank": 2,
+        "bundle_id": "r2-r1-a7-k6",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k6"
+        },
+        "question_sha256": "a3549055505f247e2d46760ac70531ee96e11c500910c641f434ceda6ba12d00",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 62,
+          "total_cells": 66,
+          "minimum": 0.55,
+          "p10": 0.835,
+          "median": 0.98,
+          "mean": 0.9421
+        },
+        "complexity_bytes": 2880,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 3,
+        "bundle_id": "r2-r1-a5-k6",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k6"
+        },
+        "question_sha256": "8558061207299cd141f074d151ec5d046479e88e907dcca01abff4ddafcc41a9",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 62,
+          "total_cells": 66,
+          "minimum": 0.46,
+          "p10": 0.82,
+          "median": 0.99,
+          "mean": 0.9358
+        },
+        "complexity_bytes": 3224,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 4,
+        "bundle_id": "r2-r1-a7-k5",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k5"
+        },
+        "question_sha256": "0758a6dde0854786cb47efbc7805387c907c542987f1fee5d5a9224ab1f324c9",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 60,
+          "total_cells": 66,
+          "minimum": 0.7,
+          "p10": 0.865,
+          "median": 0.98,
+          "mean": 0.9526
+        },
+        "complexity_bytes": 2816,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 5,
+        "bundle_id": "r2-r1-a5-k4",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k4"
+        },
+        "question_sha256": "a535da47198a5e8aca759eefb899adc743bf8ccfc361d2c0ac09728fa0b414be",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 60,
+          "total_cells": 66,
+          "minimum": 0.56,
+          "p10": 0.8,
+          "median": 1.0,
+          "mean": 0.9405
+        },
+        "complexity_bytes": 3335,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 6,
+        "bundle_id": "r2-r1-a6-k4",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k4"
+        },
+        "question_sha256": "46538beec50d27a114c4cbcd263e5d7ec4668864efce1f6cbd670a6b8826169e",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 60,
+          "total_cells": 66,
+          "minimum": 0.33,
+          "p10": 0.82,
+          "median": 1.0,
+          "mean": 0.928
+        },
+        "complexity_bytes": 2891,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 7,
+        "bundle_id": "r2-r1-a5-k5",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k5"
+        },
+        "question_sha256": "79693675e99a482c77c5a5952b690d158c774b2f72ac3f65c12fb125b377422e",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 58,
+          "total_cells": 66,
+          "minimum": 0.38,
+          "p10": 0.77,
+          "median": 1.0,
+          "mean": 0.9332
+        },
+        "complexity_bytes": 3160,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 8,
+        "bundle_id": "r2-r1-a6-k6",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k6"
+        },
+        "question_sha256": "1ecf6dfd8fba9583366d8b77936ac087fdc9e6b84ca505fb9891249c383cd924",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 57,
+          "total_cells": 66,
+          "minimum": 0.4,
+          "p10": 0.77,
+          "median": 0.98,
+          "mean": 0.9211
+        },
+        "complexity_bytes": 2780,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 9,
+        "bundle_id": "r2-r1-a6-k5",
+        "roles": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k5"
+        },
+        "question_sha256": "acaf89e673e8dabebf29aa54ca08442d7ab950534c96aeb9ce593c894e8d07b1",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 66,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 22,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 57,
+          "total_cells": 66,
+          "minimum": 0.22,
+          "p10": 0.77,
+          "median": 0.98,
+          "mean": 0.9241
+        },
+        "complexity_bytes": 2716,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2-r1-a7-k4 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 10,
+        "bundle_id": "baseline",
+        "roles": {
+          "addressed": "current",
+          "contradicted": "current",
+          "relevant": "current"
+        },
+        "question_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+        "semantic_accepted": false,
+        "complete": true,
+        "exact_role_cells": 58,
+        "total_role_cells": 66,
+        "exact_semantic_verdicts": 16,
+        "total_semantic_verdicts": 22,
+        "stable_cases": 11,
+        "total_cases": 11,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 52,
+          "total_cells": 66,
+          "minimum": 0.31,
+          "p10": 0.67,
+          "median": 0.98,
+          "mean": 0.8952
+        },
+        "complexity_bytes": 2554,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Rejected: bad-offpath-silent-reason: contradicted no, expected yes; bad-offpath-silent-reason: verdict not_addressed, expected contradicted; bad-partial-reasons: addressed yes, expected no; bad-partial-reasons: contradicted no, expected yes; bad-partial-reasons: verdict satisfied, expected contradicted; silent-cron-change: relevant no, expected yes; silent-cron-change: verdict not_applicable, expected not_addressed.",
+        "mismatches": [
+          "bad-offpath-silent-reason: contradicted no, expected yes",
+          "bad-offpath-silent-reason: verdict not_addressed, expected contradicted",
+          "bad-partial-reasons: addressed yes, expected no",
+          "bad-partial-reasons: contradicted no, expected yes",
+          "bad-partial-reasons: verdict satisfied, expected contradicted",
+          "silent-cron-change: relevant no, expected yes",
+          "silent-cron-change: verdict not_applicable, expected not_addressed"
+        ]
+      }
+    ],
+    "acceptance_table": [
+      {
+        "case_id": "fx-pass-1",
+        "probe": "fixture_pass",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.97,
+            "contradicted": 0.83,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.96,
+            "contradicted": 0.85,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Locked fixtures.pass[0]: the one off-path command has a stated reason."
+      },
+      {
+        "case_id": "fx-fail-1",
+        "probe": "fixture_fail",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Locked fixtures.fail[0]: an off-path cron command listed with no reason; deterministic_check fails for a listed off-path command without a reason, a stated state that breaks the rule."
+      },
+      {
+        "case_id": "compliant-all-on-path",
+        "probe": "compliant",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.89,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.83,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Owner item 5: name which go through; reasons only 'for any that do not'. The item closes the off-path set as empty, so every off-path command (none) has a reason; deterministic_check holds. Penalising full routing would invert the owner's goal ('Cron commands use the shared command path')."
+      },
+      {
+        "case_id": "compliant-mixed-with-reason",
+        "probe": "boundary",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.98,
+            "contradicted": 0.91,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.97,
+            "contradicted": 0.92,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Mixed set: the single off-path command has a stated reason."
+      },
+      {
+        "case_id": "bad-offpath-silent-reason",
+        "probe": "boundary",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": false,
+        "regression": false,
+        "rationale": "Known-bad: cron.list is stated to be off the path and no reason appears anywhere; deterministic_check fails for a listed off-path command."
+      },
+      {
+        "case_id": "bad-partial-reasons",
+        "probe": "boundary",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.97,
+            "contradicted": 0.94,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.97,
+            "contradicted": 0.94,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": false,
+        "regression": false,
+        "rationale": "Two off-path commands, only cron.end has a reason; cron.list has none, so 'a reason for each' is unmet and the check fails."
+      },
+      {
+        "case_id": "exception-scheduler-tick",
+        "probe": "exception",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.94,
+            "contradicted": 0.88,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.88,
+            "contradicted": 0.86,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "The anchor's allowed exception: an off-path command is acceptable when its reason is stated."
+      },
+      {
+        "case_id": "conflict-no-reason-policy",
+        "probe": "conflicting",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.98,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.98,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Explicitly rejects the reason obligation for off-path commands."
+      },
+      {
+        "case_id": "silent-cron-change",
+        "probe": "silent",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "no"
+        },
+        "expected_verdict": "not_addressed",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.97,
+            "contradicted": 1.0,
+            "relevant": 0.98
+          },
+          {
+            "addressed": 0.97,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "not_addressed",
+          "not_addressed"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_addressed",
+          "not_addressed"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": false,
+        "regression": false,
+        "rationale": "In scope (changes a cron command) but says nothing about which cron commands are on or off the shared path or why; silence is omission, not conflict."
+      },
+      {
+        "case_id": "topical-only",
+        "probe": "topical_only",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "no"
+        },
+        "expected_verdict": "not_addressed",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.92,
+            "contradicted": 0.82,
+            "relevant": 0.94
+          },
+          {
+            "addressed": 0.92,
+            "contradicted": 0.8,
+            "relevant": 0.89
+          }
+        ],
+        "semantic_verdicts": [
+          "not_addressed",
+          "not_addressed"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_addressed",
+          "not_addressed"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Mentions the topic but neither identifies which cron commands are off the path nor gives reasons nor states that none is off."
+      },
+      {
+        "case_id": "irrelevant-release-notes",
+        "probe": "irrelevant",
+        "expected_roles": {
+          "relevant": "no",
+          "addressed": "no",
+          "contradicted": "no"
+        },
+        "expected_verdict": "not_applicable",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.73,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.76,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Outside scope: no cron command, sc-cron-commands or shared command path change."
+      }
+    ],
+    "evidence": {
+      "out_dir": "docs/plans/phase-d/anchor-runs/tune-ANC-054-planning-r2",
+      "results_path": "docs/plans/phase-d/anchor-runs/tune-ANC-054-planning-r2/results.jsonl",
+      "oracle_path": "docs/plans/phase-d/anchor-runs/tune-ANC-054-planning-r2/oracle.frozen.json",
+      "oracle_frozen_before_first_jev_call": true,
+      "calls": 220,
+      "failed_calls": [],
+      "missing_calls": [],
+      "retries": 0,
+      "max_parallel_evaluators": 4,
+      "repeat_requests_byte_identical": true,
+      "models_answered": [
+        "jev-1.14.0"
+      ],
+      "baseline_bundle": "baseline",
+      "bundles": {
+        "baseline": {
+          "addressed": "current",
+          "contradicted": "current",
+          "relevant": "current"
+        },
+        "r2-r1-a5-k4": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k4"
+        },
+        "r2-r1-a5-k5": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k5"
+        },
+        "r2-r1-a5-k6": {
+          "relevant": "r1",
+          "addressed": "a5",
+          "contradicted": "k6"
+        },
+        "r2-r1-a6-k4": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k4"
+        },
+        "r2-r1-a6-k5": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k5"
+        },
+        "r2-r1-a6-k6": {
+          "relevant": "r1",
+          "addressed": "a6",
+          "contradicted": "k6"
+        },
+        "r2-r1-a7-k4": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k4"
+        },
+        "r2-r1-a7-k5": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k5"
+        },
+        "r2-r1-a7-k6": {
+          "relevant": "r1",
+          "addressed": "a7",
+          "contradicted": "k6"
+        }
+      },
+      "role_rankings": {
+        "addressed": [
+          {
+            "candidate_id": "a5",
+            "bundles": [
+              "r2-r1-a5-k4",
+              "r2-r1-a5-k5",
+              "r2-r1-a5-k6"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "a6",
+            "bundles": [
+              "r2-r1-a6-k4",
+              "r2-r1-a6-k5",
+              "r2-r1-a6-k6"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "a7",
+            "bundles": [
+              "r2-r1-a7-k4",
+              "r2-r1-a7-k5",
+              "r2-r1-a7-k6"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 20,
+            "total_cells": 22,
+            "stable_cases": 11,
+            "total_cases": 11
+          }
+        ],
+        "contradicted": [
+          {
+            "candidate_id": "k4",
+            "bundles": [
+              "r2-r1-a5-k4",
+              "r2-r1-a6-k4",
+              "r2-r1-a7-k4"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "k5",
+            "bundles": [
+              "r2-r1-a5-k5",
+              "r2-r1-a6-k5",
+              "r2-r1-a7-k5"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "k6",
+            "bundles": [
+              "r2-r1-a5-k6",
+              "r2-r1-a6-k6",
+              "r2-r1-a7-k6"
+            ],
+            "exact_cells": 66,
+            "total_cells": 66,
+            "stable_cases": 33,
+            "total_cases": 33
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 18,
+            "total_cells": 22,
+            "stable_cases": 11,
+            "total_cases": 11
+          }
+        ],
+        "relevant": [
+          {
+            "candidate_id": "r1",
+            "bundles": [
+              "r2-r1-a5-k4",
+              "r2-r1-a5-k5",
+              "r2-r1-a5-k6",
+              "r2-r1-a6-k4",
+              "r2-r1-a6-k5",
+              "r2-r1-a6-k6",
+              "r2-r1-a7-k4",
+              "r2-r1-a7-k5",
+              "r2-r1-a7-k6"
+            ],
+            "exact_cells": 198,
+            "total_cells": 198,
+            "stable_cases": 99,
+            "total_cases": 99
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 20,
+            "total_cells": 22,
+            "stable_cases": 11,
+            "total_cases": 11
+          }
+        ]
+      },
+      "ranking_order": "semantic acceptance, exact role cells, exact semantic verdicts, stable cases, fewest regressions, cells at or above the confidence reference, then minimum, p10, median and mean confidence, fewest question bytes, bundle id",
+      "run_ids_all": [
+        "00703880a6d70182",
+        "00e8e435be3ad9ec",
+        "0149238abdbf9b19",
+        "01703e99cf9c8739",
+        "023723516cb193aa",
+        "03dd0d3808910cd7",
+        "05e69e2a846f8439",
+        "0667c7a4001ba3ac",
+        "0696db5ec2e53944",
+        "06b4ee6c7e3dd3ce",
+        "07010c5e3c122b01",
+        "0a93afdefd4aacc9",
+        "0b8924ea6a76bdf0",
+        "0b9e58b1ff2a4f6f",
+        "0d391f9481acfd94",
+        "0dd03227fd224942",
+        "134db8e425ed7a68",
+        "135d63c224eaa0e0",
+        "147ab9e564149358",
+        "166a9b72efda7e91",
+        "1681b7b227b9d83f",
+        "18250254b73b9c63",
+        "18f63273150e4393",
+        "1a4053a8396e6a66",
+        "1c28fffb2f1e3768",
+        "1c5ed3ccda41c1e5",
+        "1d6cc66281e1278f",
+        "1db38abe6edd8e80",
+        "1fce988391922118",
+        "2015a3efbff903c0",
+        "20405efba35f0d80",
+        "22f92a285e4c787a",
+        "259c34da9a5cf22d",
+        "2659692c9e02228a",
+        "26f7676e0936fc10",
+        "287f6bd871e34e01",
+        "28d6f6d6f9223fbc",
+        "2991751d5b8f7ee8",
+        "29b11d93b5017a8c",
+        "2b45ec2a4332c083",
+        "2c2911c06bac05cd",
+        "2ce0864ccaf94150",
+        "2da420e4d0746435",
+        "2eb83157996fa63a",
+        "2f94f0bf7ae9b44e",
+        "2fe1d6ed96a144a7",
+        "336b437388cf8668",
+        "337187cd9af904b7",
+        "33aaae62f26c335c",
+        "351c742aa9202b4f",
+        "360f49e3002f24eb",
+        "3789737a0bbdf0d3",
+        "38b63a56a9f61fa6",
+        "390a57fe2136848e",
+        "3a469e279b77822f",
+        "3b1f8cc19c29e184",
+        "3ecc856ebf9baa8c",
+        "3f0cae823e0d1f0b",
+        "3fae6773eadc3c30",
+        "40b992e7ff4246e0",
+        "420b709aceeef94f",
+        "422b4c2b67ae3383",
+        "427eeabdedb7127d",
+        "42cf0cfe9ef4f54d",
+        "42cf443661085470",
+        "44d0fa3554d0e86a",
+        "497665a4e93fc1ca",
+        "49a421eb56ab2dc2",
+        "4d04afba35f1afef",
+        "4d634d37a0913586",
+        "4da770296e749489",
+        "4e2d2d190ce91fc6",
+        "4e73c5e5fb5b7438",
+        "5070b425a0d64907",
+        "511d6b9b55934db2",
+        "52ad18dc4a859bc9",
+        "537541baf0002ccc",
+        "53cb2231ed90b657",
+        "53f9c265b5e2639a",
+        "552b9c184c2ff9bf",
+        "57822d0404c07689",
+        "583006afedd81ac2",
+        "5b4c55166121ab19",
+        "5b654081f1dff2b6",
+        "5c3f78782facba55",
+        "5c659c910f7d9dcf",
+        "5d97db9790ebf92c",
+        "5fa9b89e471dfa09",
+        "605194317df2aedc",
+        "612e5b7c5f4da79b",
+        "62df3cc11aba6192",
+        "639778800a108261",
+        "649f4eadd5cc62b9",
+        "6561c75b9be0cf62",
+        "67b85d44b3f68fa6",
+        "68e6437a1d192a42",
+        "697cc3ecf3119637",
+        "6b0bef991dd21199",
+        "6c2ea05411e82d63",
+        "6d39925594bfd070",
+        "6d8fcc068b9ae192",
+        "6e6f84953bf326e5",
+        "6f0b52d16b560a43",
+        "72c3e2ec6d587866",
+        "7469dd121f4dc401",
+        "7531324dba3d6188",
+        "75a127530195da24",
+        "774983587d7b8fcd",
+        "77bd3003b37b874b",
+        "77fd202b6925171d",
+        "7896621b1f25df34",
+        "792058e78f31eb60",
+        "799398e80e1804d2",
+        "79f6dea6b54aeae2",
+        "7bfb7764e2b7fce8",
+        "7c5c58301a962450",
+        "7cf7ec65e8522dc9",
+        "7e1f22cbe46fcc16",
+        "7eeca7e941dc6f5a",
+        "7f7d3f51c0aeb8fd",
+        "7ff4308cf15098ae",
+        "82b1461453274536",
+        "84c524be587c3ef0",
+        "8592cffa36ea42ab",
+        "85b72b53503b7ccf",
+        "85d578f328a61b86",
+        "87d59ca1f06b2f62",
+        "890b0c6c90bae6a4",
+        "89312ab5bf6f4aee",
+        "898ca2ff7c2c6821",
+        "8ba8d81fdc905772",
+        "8baaa2a5ee7a3b82",
+        "8c83e3a6cdc5a7c7",
+        "8ecf184d5f88beca",
+        "904e9ec485366d79",
+        "90780114ac518d83",
+        "9093a41aee76d3a7",
+        "90d78da79f2222bb",
+        "92062d8e1dc40e62",
+        "929e7e81341e19ab",
+        "936e5898ab401fec",
+        "9387fbeef170e465",
+        "94308ebbdbe7f08d",
+        "94bac62be4329479",
+        "94eeff20a93e1ec2",
+        "96e6cb6183cca826",
+        "97c2ac01d769deb8",
+        "98dd85bb1c7fca62",
+        "99b87692068d7d0f",
+        "99d80fcd795d26b4",
+        "9af9d3ef23d1c6cd",
+        "9eab1f5dd5ad09a0",
+        "9f342ba8c1f066dd",
+        "a0004292ca96d4ce",
+        "a093ec5e7b4b2b46",
+        "a0e8b96e1a4fe65f",
+        "a1c51023b8690096",
+        "a35d4a60812f760d",
+        "a3f9f792318876cd",
+        "a41037f2aa72f110",
+        "a4b404f4d64dfe25",
+        "a6c969e3e070d907",
+        "a735df4127b58233",
+        "a7701643b6f8ffb8",
+        "aa81f8b44417ada6",
+        "abfc12123bcdad02",
+        "ae62f8bb9414df17",
+        "af1b8fab7462d204",
+        "b11f9ead1424a7c8",
+        "b186636ec796b8ab",
+        "b1946a0d7c3866c4",
+        "b25e6f9ab6364a6a",
+        "b3bbe847bfbfe295",
+        "b711e764268f9152",
+        "b79353e973ca86e1",
+        "b843682e3d66242d",
+        "b8c8251c08e87691",
+        "b9f669d8e78ad716",
+        "bbc3c4445b347d04",
+        "bccb8e278ade4c0f",
+        "c13b00df276ade20",
+        "c18411496842fdeb",
+        "c272cfa6aeaf41a9",
+        "c76ef0ea361750ce",
+        "c818441b543c2685",
+        "c862a4aca177bb88",
+        "c9dacc68916f512b",
+        "ca2802c898db6530",
+        "caa12caaad9b3c8a",
+        "cb7eb2d328b5572c",
+        "ce86eec645500435",
+        "cec83ee0a5182b45",
+        "cf8bebccb3a3263f",
+        "d1ed2f1d49ec4b96",
+        "d299c21fa9055126",
+        "d72a91e0d12ddd8a",
+        "db109b67ad389ba3",
+        "dbc999cc99448e34",
+        "e06e35b226589c05",
+        "e1204bb1facc6ded",
+        "e1aac5cf58a9dbf7",
+        "e3cfb853223a2c71",
+        "e7f3b481f7955c8c",
+        "e88a40bf8ec426af",
+        "ea899f4381f7c5ba",
+        "ec3e3bf8706705e7",
+        "ee715f6f846ec6f9",
+        "f1677c0561c80055",
+        "f2a5d60d85cd00a0",
+        "f454c97b802f3787",
+        "f49737a84bdba256",
+        "f504ae7e51367756",
+        "f6e562f2e7b0c463",
+        "f8822810d00ad367",
+        "fa6bd261d2e4d2fe",
+        "fb84226dfa2d0284",
+        "fc4a31fb9bee0c7b",
+        "fdf9089b0fe36bc3",
+        "fe10d553f223cbea",
+        "ff54906c01b9ea1d"
+      ],
+      "tie": null
+    },
+    "explanation": "10 role-complete bundles (baseline included) x 11 frozen oracle cases x 2 repeats: 220 calls, 0 retries. Bundle r2-r1-a7-k4 is the top-ranked semantically accepted set: 66/66 role cells, 22/22 threshold-0 verdicts, 11/11 stable cases, zero regressions against the baseline. Confidence is diagnostic only; production review keeps the 0.6 threshold.",
+    "planner_action": "Write sealed_question_set.questions as the anchor's plan-questions override after validating this result; store tuning_history_after byte-identical. Do not use tournament confidence in production review.",
+    "question_action": null,
+    "sealed_question_set_digest_before": null,
+    "sealed_question_set_digest_after": "ceda3e733394d58314bc2d73c34cebb79a83777b5e8f31cbc8fad8abd78719c8",
+    "authority_recommendations": []
+  },
+  "error": null,
+  "metadata": {
+    "duration_ms": 5083,
+    "tool_calls": 220,
+    "retry_count": 0,
+    "correlation_id": "sc-runtime-phase-d-anc-054-planning-tune-r2",
+    "jev_run_ids": [
+      "00703880a6d70182",
+      "00e8e435be3ad9ec",
+      "0149238abdbf9b19",
+      "01703e99cf9c8739",
+      "023723516cb193aa",
+      "03dd0d3808910cd7",
+      "05e69e2a846f8439",
+      "0667c7a4001ba3ac",
+      "0696db5ec2e53944",
+      "06b4ee6c7e3dd3ce",
+      "07010c5e3c122b01",
+      "0a93afdefd4aacc9",
+      "0b8924ea6a76bdf0",
+      "0b9e58b1ff2a4f6f",
+      "0d391f9481acfd94",
+      "0dd03227fd224942",
+      "134db8e425ed7a68",
+      "135d63c224eaa0e0",
+      "147ab9e564149358",
+      "166a9b72efda7e91",
+      "1681b7b227b9d83f",
+      "18250254b73b9c63",
+      "18f63273150e4393",
+      "1a4053a8396e6a66",
+      "1c28fffb2f1e3768",
+      "1c5ed3ccda41c1e5",
+      "1d6cc66281e1278f",
+      "1db38abe6edd8e80",
+      "1fce988391922118",
+      "2015a3efbff903c0",
+      "20405efba35f0d80",
+      "22f92a285e4c787a",
+      "259c34da9a5cf22d",
+      "2659692c9e02228a",
+      "26f7676e0936fc10",
+      "287f6bd871e34e01",
+      "28d6f6d6f9223fbc",
+      "2991751d5b8f7ee8",
+      "29b11d93b5017a8c",
+      "2b45ec2a4332c083",
+      "2c2911c06bac05cd",
+      "2ce0864ccaf94150",
+      "2da420e4d0746435",
+      "2eb83157996fa63a",
+      "2f94f0bf7ae9b44e",
+      "2fe1d6ed96a144a7",
+      "336b437388cf8668",
+      "337187cd9af904b7",
+      "33aaae62f26c335c",
+      "351c742aa9202b4f",
+      "360f49e3002f24eb",
+      "3789737a0bbdf0d3",
+      "38b63a56a9f61fa6",
+      "390a57fe2136848e",
+      "3a469e279b77822f",
+      "3b1f8cc19c29e184",
+      "3ecc856ebf9baa8c",
+      "3f0cae823e0d1f0b",
+      "3fae6773eadc3c30",
+      "40b992e7ff4246e0",
+      "420b709aceeef94f",
+      "422b4c2b67ae3383",
+      "427eeabdedb7127d",
+      "42cf0cfe9ef4f54d",
+      "42cf443661085470",
+      "44d0fa3554d0e86a",
+      "497665a4e93fc1ca",
+      "49a421eb56ab2dc2",
+      "4d04afba35f1afef",
+      "4d634d37a0913586",
+      "4da770296e749489",
+      "4e2d2d190ce91fc6",
+      "4e73c5e5fb5b7438",
+      "5070b425a0d64907",
+      "511d6b9b55934db2",
+      "52ad18dc4a859bc9",
+      "537541baf0002ccc",
+      "53cb2231ed90b657",
+      "53f9c265b5e2639a",
+      "552b9c184c2ff9bf",
+      "57822d0404c07689",
+      "583006afedd81ac2",
+      "5b4c55166121ab19",
+      "5b654081f1dff2b6",
+      "5c3f78782facba55",
+      "5c659c910f7d9dcf",
+      "5d97db9790ebf92c",
+      "5fa9b89e471dfa09",
+      "605194317df2aedc",
+      "612e5b7c5f4da79b",
+      "62df3cc11aba6192",
+      "639778800a108261",
+      "649f4eadd5cc62b9",
+      "6561c75b9be0cf62",
+      "67b85d44b3f68fa6",
+      "68e6437a1d192a42",
+      "697cc3ecf3119637",
+      "6b0bef991dd21199",
+      "6c2ea05411e82d63",
+      "6d39925594bfd070",
+      "6d8fcc068b9ae192",
+      "6e6f84953bf326e5",
+      "6f0b52d16b560a43",
+      "72c3e2ec6d587866",
+      "7469dd121f4dc401",
+      "7531324dba3d6188",
+      "75a127530195da24",
+      "774983587d7b8fcd",
+      "77bd3003b37b874b",
+      "77fd202b6925171d",
+      "7896621b1f25df34",
+      "792058e78f31eb60",
+      "799398e80e1804d2",
+      "79f6dea6b54aeae2",
+      "7bfb7764e2b7fce8",
+      "7c5c58301a962450",
+      "7cf7ec65e8522dc9",
+      "7e1f22cbe46fcc16",
+      "7eeca7e941dc6f5a",
+      "7f7d3f51c0aeb8fd",
+      "7ff4308cf15098ae",
+      "82b1461453274536",
+      "84c524be587c3ef0",
+      "8592cffa36ea42ab",
+      "85b72b53503b7ccf",
+      "85d578f328a61b86",
+      "87d59ca1f06b2f62",
+      "890b0c6c90bae6a4",
+      "89312ab5bf6f4aee",
+      "898ca2ff7c2c6821",
+      "8ba8d81fdc905772",
+      "8baaa2a5ee7a3b82",
+      "8c83e3a6cdc5a7c7",
+      "8ecf184d5f88beca",
+      "904e9ec485366d79",
+      "90780114ac518d83",
+      "9093a41aee76d3a7",
+      "90d78da79f2222bb",
+      "92062d8e1dc40e62",
+      "929e7e81341e19ab",
+      "936e5898ab401fec",
+      "9387fbeef170e465",
+      "94308ebbdbe7f08d",
+      "94bac62be4329479",
+      "94eeff20a93e1ec2",
+      "96e6cb6183cca826",
+      "97c2ac01d769deb8",
+      "98dd85bb1c7fca62",
+      "99b87692068d7d0f",
+      "99d80fcd795d26b4",
+      "9af9d3ef23d1c6cd",
+      "9eab1f5dd5ad09a0",
+      "9f342ba8c1f066dd",
+      "a0004292ca96d4ce",
+      "a093ec5e7b4b2b46",
+      "a0e8b96e1a4fe65f",
+      "a1c51023b8690096",
+      "a35d4a60812f760d",
+      "a3f9f792318876cd",
+      "a41037f2aa72f110",
+      "a4b404f4d64dfe25",
+      "a6c969e3e070d907",
+      "a735df4127b58233",
+      "a7701643b6f8ffb8",
+      "aa81f8b44417ada6",
+      "abfc12123bcdad02",
+      "ae62f8bb9414df17",
+      "af1b8fab7462d204",
+      "b11f9ead1424a7c8",
+      "b186636ec796b8ab",
+      "b1946a0d7c3866c4",
+      "b25e6f9ab6364a6a",
+      "b3bbe847bfbfe295",
+      "b711e764268f9152",
+      "b79353e973ca86e1",
+      "b843682e3d66242d",
+      "b8c8251c08e87691",
+      "b9f669d8e78ad716",
+      "bbc3c4445b347d04",
+      "bccb8e278ade4c0f",
+      "c13b00df276ade20",
+      "c18411496842fdeb",
+      "c272cfa6aeaf41a9",
+      "c76ef0ea361750ce",
+      "c818441b543c2685",
+      "c862a4aca177bb88",
+      "c9dacc68916f512b",
+      "ca2802c898db6530",
+      "caa12caaad9b3c8a",
+      "cb7eb2d328b5572c",
+      "ce86eec645500435",
+      "cec83ee0a5182b45",
+      "cf8bebccb3a3263f",
+      "d1ed2f1d49ec4b96",
+      "d299c21fa9055126",
+      "d72a91e0d12ddd8a",
+      "db109b67ad389ba3",
+      "dbc999cc99448e34",
+      "e06e35b226589c05",
+      "e1204bb1facc6ded",
+      "e1aac5cf58a9dbf7",
+      "e3cfb853223a2c71",
+      "e7f3b481f7955c8c",
+      "e88a40bf8ec426af",
+      "ea899f4381f7c5ba",
+      "ec3e3bf8706705e7",
+      "ee715f6f846ec6f9",
+      "f1677c0561c80055",
+      "f2a5d60d85cd00a0",
+      "f454c97b802f3787",
+      "f49737a84bdba256",
+      "f504ae7e51367756",
+      "f6e562f2e7b0c463",
+      "f8822810d00ad367",
+      "fa6bd261d2e4d2fe",
+      "fb84226dfa2d0284",
+      "fc4a31fb9bee0c7b",
+      "fdf9089b0fe36bc3",
+      "fe10d553f223cbea",
+      "ff54906c01b9ea1d"
+    ],
+    "planner_observation_trust": null,
+    "authoritative_sources_unchanged": true
+  }
+}

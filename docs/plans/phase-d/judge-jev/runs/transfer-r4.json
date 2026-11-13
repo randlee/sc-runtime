@@ -1,0 +1,2375 @@
+{
+  "success": true,
+  "error": null,
+  "data": {
+    "dry_run": false,
+    "results": [
+      {
+        "record": {
+          "id": "REQ-RUN-0403",
+          "kind": "req",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-transfer-r4-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-req",
+          "sha256": "8eaaf148dec7279955af7fd39a82b7e96373407e6bd7d7bd63c86daac24e1525",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-req.json"
+        },
+        "verdict": "no",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "per": "statement",
+            "request_ids": [
+              "quality/REQ-RUN-0403.s1/wave-1/r1",
+              "quality/REQ-RUN-0403.s2/wave-1/r1",
+              "quality/REQ-RUN-0403.s3/wave-1/r1",
+              "quality/REQ-RUN-0403.s4/wave-1/r1",
+              "quality/REQ-RUN-0403.s5/wave-1/r1",
+              "quality/REQ-RUN-0403.s6/wave-1/r1",
+              "quality/REQ-RUN-0403.s7/wave-1/r1",
+              "quality/REQ-RUN-0403.s8/wave-1/r1",
+              "quality/REQ-RUN-0403.s9/wave-1/r1",
+              "quality/REQ-RUN-0403.s10/wave-1/r1"
+            ],
+            "reason": [
+              {
+                "statement": {
+                  "index": 1,
+                  "modal": "Must",
+                  "text": "The directory `wizard/fixtures/` MUST hold one answers JSON file per tested variant of the template."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.87
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.85
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.3
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.73
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 2,
+                  "modal": "Must",
+                  "text": "Every file matching `wizard/fixtures/*.json` MUST be a complete answers object."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.66
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.5
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.57
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 3,
+                  "modal": "Must",
+                  "text": "Every file matching `wizard/fixtures/*.json` MUST validate against `wizard/answers.schema.json`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.47
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.82
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.99
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 4,
+                  "modal": "Must",
+                  "text": "`wizard/fixtures/` MUST contain `sqlite-mcp.json`, the variant with `db = sqlite` and `mcp = true`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.35
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.65
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "undefined acronym",
+                    "criterion": "An acronym that is never expanded or defined. Fix: define the acronym.",
+                    "confidence": 0.39
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.86
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 5,
+                  "modal": "Must",
+                  "text": "`wizard/fixtures/` MUST contain a variant with `db = sqlite` and `mcp = false`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.77
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.76
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.54
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.8
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 6,
+                  "modal": "Must",
+                  "text": "`wizard/fixtures/` MUST contain a variant whose licence is not `MIT`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.94
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.5
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.8
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 7,
+                  "modal": "Must",
+                  "text": "Every fixture MUST state the licence explicitly, including the ones that use `MIT`, so that a fixture and the wizard's output for the same choices are equal JSON ([REQ-RUN-0603](requirements.md))."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.47
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "obligation+rationale",
+                    "criterion": "An obligation plus its reason or purpose. Fix: move the rationale to Rationale.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.31
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.52
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 8,
+                  "modal": "Must",
+                  "text": "The repository MUST hold schema-invalid answers files for refusal tests."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.79
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.85
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.59
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.85
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 9,
+                  "modal": "Must",
+                  "text": "The schema-invalid refusal-test answers files MUST be used only by unit tests."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.88
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.61
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.51
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.79
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 10,
+                  "modal": "Must",
+                  "text": "`tests/unit/` MUST contain tests that assert:"
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.35
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "and-list",
+                    "criterion": "A list of items joined by and or commas. Fix: split into one statement per item.",
+                    "confidence": 0.69
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.55
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.42
+                  }
+                ]
+              }
+            ],
+            "matched_statements": [
+              4
+            ],
+            "next": null,
+            "verdict": "no"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "REQ-CMD-0002",
+          "kind": "req",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-transfer-r4-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-req",
+          "sha256": "8eaaf148dec7279955af7fd39a82b7e96373407e6bd7d7bd63c86daac24e1525",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-req.json"
+        },
+        "verdict": "no",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "per": "statement",
+            "request_ids": [
+              "quality/REQ-CMD-0002.s1/wave-1/r1",
+              "quality/REQ-CMD-0002.s2/wave-1/r1",
+              "quality/REQ-CMD-0002.s3/wave-1/r1",
+              "quality/REQ-CMD-0002.s4/wave-1/r1",
+              "quality/REQ-CMD-0002.s5/wave-1/r1",
+              "quality/REQ-CMD-0002.s6/wave-1/r1",
+              "quality/REQ-CMD-0002.s7/wave-1/r1",
+              "quality/REQ-CMD-0002.s8/wave-1/r1",
+              "quality/REQ-CMD-0002.s9/wave-1/r1",
+              "quality/REQ-CMD-0002.s10/wave-1/r1",
+              "quality/REQ-CMD-0002.s11/wave-1/r1",
+              "quality/REQ-CMD-0002.s12/wave-1/r1",
+              "quality/REQ-CMD-0002.s13/wave-1/r1",
+              "quality/REQ-CMD-0002.s14/wave-1/r1",
+              "quality/REQ-CMD-0002.s15/wave-1/r1",
+              "quality/REQ-CMD-0002.s16/wave-1/r1",
+              "quality/REQ-CMD-0002.s17/wave-1/r1",
+              "quality/REQ-CMD-0002.s18/wave-1/r1",
+              "quality/REQ-CMD-0002.s19/wave-1/r1",
+              "quality/REQ-CMD-0002.s20/wave-1/r1",
+              "quality/REQ-CMD-0002.s21/wave-1/r1",
+              "quality/REQ-CMD-0002.s22/wave-1/r1",
+              "quality/REQ-CMD-0002.s23/wave-1/r1",
+              "quality/REQ-CMD-0002.s24/wave-1/r1",
+              "quality/REQ-CMD-0002.s25/wave-1/r1"
+            ],
+            "reason": [
+              {
+                "statement": {
+                  "index": 1,
+                  "modal": "Must",
+                  "text": "The crate `sc-command` MUST export a public type `sc_command::OpError` from its crate root, available with default features."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "3",
+                    "criterion": "Three independent obligations.",
+                    "confidence": 0.37
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.4
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.68
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.4
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 2,
+                  "modal": "Must",
+                  "text": "`OpError` MUST carry exactly these five wire keys. (see table above)"
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.87
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.84
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.37
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.92
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 3,
+                  "modal": "Must",
+                  "text": "It MUST serialise to a JSON object whose keys are drawn from exactly these five names and no others. (see table above)"
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.44
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.59
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.41
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.99
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 4,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `serde::Serialize`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.75
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.37
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 5,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `serde::Deserialize`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.75
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.57
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 6,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `serde::Serialize`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.97
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.86
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.49
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 7,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `serde::Deserialize`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.84
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.47
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 8,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `Debug`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.9
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.86
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 9,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `Clone`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.89
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.76
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 10,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `PartialEq`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.9
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.8
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 11,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `Display`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.86
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.71
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 12,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `Debug`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.89
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.73
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 13,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `Clone`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.95
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.66
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 14,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `PartialEq`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.94
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.64
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 15,
+                  "modal": "Must",
+                  "text": "`ErrorKind` MUST implement `Display`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.95
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.6
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 16,
+                  "modal": "Must",
+                  "text": "`OpError` MUST implement `std::error::Error`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.82
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.71
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 17,
+                  "modal": "Must",
+                  "text": "`code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.72
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.75
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.87
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 18,
+                  "modal": "Must",
+                  "text": "The `sc-observability-types` registry dependency requirement MUST be `>=1.5.0`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.79
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 1.0
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 19,
+                  "modal": "Must",
+                  "text": "When a suggestion is supplied, `suggested_action` MUST serialise as a JSON string equal to the text supplied: an `OpError` built with the suggestion `run my-app daemon start` serialises with `\"suggested_action\": \"run my-app daemon start\"`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.41
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.7
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 1.0
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 20,
+                  "modal": "Must",
+                  "text": "If `OpError` carries, or is built from, structured remediation, that structure MUST be `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.69
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.73
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.49
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.71
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 21,
+                  "modal": "Must",
+                  "text": "The type chosen for `details` MUST be able to hold arbitrary JSON."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.98
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "vague qualifier",
+                    "criterion": "A qualifier such as fast, clear or robust with no measure. Fix: replace it with a measure.",
+                    "confidence": 0.34
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.41
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 22,
+                  "modal": "Must",
+                  "text": "Re-serialising `details` MUST return its JSON unchanged ([REQ-CMD-0006](requirements.md) depends on this)."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.91
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "obligation+rationale",
+                    "criterion": "An obligation plus its reason or purpose. Fix: move the rationale to Rationale.",
+                    "confidence": 0.73
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.54
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 1.0
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 23,
+                  "modal": "MustNot",
+                  "text": "`sc-command` MUST NOT define its own error-code type."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.75
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.99
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 24,
+                  "modal": "MustNot",
+                  "text": "It MUST NOT serialise as a JSON object."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.98
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.66
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.8
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 25,
+                  "modal": "MustNot",
+                  "text": "`sc-command` MUST NOT define a parallel remediation type."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "project term defined nowhere",
+                    "criterion": "A project term defined neither here nor in a linked record. Fix: define it or link the record.",
+                    "confidence": 0.36
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.99
+                  }
+                ]
+              }
+            ],
+            "matched_statements": [
+              21,
+              25
+            ],
+            "next": null,
+            "verdict": "no"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "REQ-CMD-0005",
+          "kind": "req",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-transfer-r4-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-req",
+          "sha256": "8eaaf148dec7279955af7fd39a82b7e96373407e6bd7d7bd63c86daac24e1525",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-req.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "per": "statement",
+            "request_ids": [
+              "quality/REQ-CMD-0005.s1/wave-1/r1",
+              "quality/REQ-CMD-0005.s2/wave-1/r1",
+              "quality/REQ-CMD-0005.s3/wave-1/r1",
+              "quality/REQ-CMD-0005.s4/wave-1/r1",
+              "quality/REQ-CMD-0005.s5/wave-1/r1",
+              "quality/REQ-CMD-0005.s6/wave-1/r1",
+              "quality/REQ-CMD-0005.s7/wave-1/r1",
+              "quality/REQ-CMD-0005.s8/wave-1/r1"
+            ],
+            "reason": [
+              {
+                "statement": {
+                  "index": 1,
+                  "modal": "Must",
+                  "text": "When the cargo feature `server` of `sc-command` is enabled, the crate MUST export a public extension trait `sc_command::IntoMcp` with one method, implemented for `Result<T, OpError>` where `T: serde::Serialize`:"
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "4+",
+                    "criterion": "Four or more independent obligations.",
+                    "confidence": 0.25
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.84
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.25
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.59
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 2,
+                  "modal": "Must",
+                  "text": "`into_mcp()` MUST first form the same envelope that `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`, `error`; [REQ-CMD-0001](requirements.md) and [REQ-CMD-0003](requirements.md))."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.77
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.61
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.45
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.9
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 3,
+                  "modal": "Must",
+                  "text": "`into_mcp()` MUST place that envelope, as JSON, in the content of the returned `CallToolResult`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.51
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.85
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.32
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.99
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 4,
+                  "modal": "Must",
+                  "text": "The envelope JSON delivered through MCP MUST equal, as a JSON value, the body the axum conversion produces for the same `Result<T, OpError>` ([REQ-CMD-0004](requirements.md))."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.97
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.52
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.21
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 1.0
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 5,
+                  "modal": "MustNot",
+                  "text": "An `OpError` from the service MUST NOT be turned into `Err(McpError)`: an MCP protocol error would hide the envelope from the client."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.95
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "obligation+rationale",
+                    "criterion": "An obligation plus its reason or purpose. Fix: move the rationale to Rationale.",
+                    "confidence": 0.95
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.49
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.86
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 6,
+                  "modal": "MustNot",
+                  "text": "The function MUST NOT panic ([NFR-CMD-0003](requirements.md))."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.39
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.42
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.68
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 7,
+                  "modal": "MustNot",
+                  "text": "When the `server` feature is disabled the trait MUST NOT exist."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.65
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.75
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 8,
+                  "modal": "MustNot",
+                  "text": "When the `server` feature is disabled the crate MUST NOT reference rmcp."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.95
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.42
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.92
+                  }
+                ]
+              }
+            ],
+            "matched_statements": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "NFR-CMD-0001",
+          "kind": "nfr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-transfer-r4-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-nfr",
+          "sha256": "cdb637f0de66d333c7c169d94b340c763146bbaf985e65ff943bb6956ec6522d",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-nfr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "per": "statement",
+            "request_ids": [
+              "quality/NFR-CMD-0001.s1/wave-1/r1",
+              "quality/NFR-CMD-0001.s2/wave-1/r1",
+              "quality/NFR-CMD-0001.s3/wave-1/r1",
+              "quality/NFR-CMD-0001.s4/wave-1/r1",
+              "quality/NFR-CMD-0001.s5/wave-1/r1",
+              "quality/NFR-CMD-0001.s6/wave-1/r1",
+              "quality/NFR-CMD-0001.s7/wave-1/r1",
+              "quality/NFR-CMD-0001.s8/wave-1/r1",
+              "quality/NFR-CMD-0001.s9/wave-1/r1",
+              "quality/NFR-CMD-0001.s10/wave-1/r1",
+              "quality/NFR-CMD-0001.s11/wave-1/r1",
+              "quality/NFR-CMD-0001.s12/wave-1/r1",
+              "quality/NFR-CMD-0001.s13/wave-1/r1",
+              "quality/NFR-CMD-0001.s14/wave-1/r1",
+              "quality/NFR-CMD-0001.s15/wave-1/r1"
+            ],
+            "reason": [
+              {
+                "statement": {
+                  "index": 1,
+                  "modal": "Must",
+                  "text": "In `crates/sc-command/Cargo.toml`, dependency `axum` MUST be declared `optional = true`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.77
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.86
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.95
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 2,
+                  "modal": "Must",
+                  "text": "In `crates/sc-command/Cargo.toml`, dependency `rmcp` MUST be declared `optional = true`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.84
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.96
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 3,
+                  "modal": "Must",
+                  "text": "They MUST be enabled only by a cargo feature named `server`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.76
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.62
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.7
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.66
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 4,
+                  "modal": "Must",
+                  "text": "With default features `sc-command` MUST compile."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.97
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.84
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.82
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "CLI run",
+                    "criterion": "Running a command and reading its output or exit code.",
+                    "confidence": 0.94
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 5,
+                  "modal": "Must",
+                  "text": "With default features `sc-command` MUST provide `Envelope<T>`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.93
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.86
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.73
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.39
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 6,
+                  "modal": "Must",
+                  "text": "With default features `sc-command` MUST provide `OpError`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.91
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.75
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.37
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 7,
+                  "modal": "Must",
+                  "text": "With default features `sc-command` MUST provide `ErrorKind`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.96
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.91
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.81
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.35
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 8,
+                  "modal": "Must",
+                  "text": "With default features `sc-command` MUST provide `From<Result<T, OpError>> for Envelope<T>`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.77
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.59
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 9,
+                  "modal": "Must",
+                  "text": "With default features the crate's direct non-dev dependencies MUST be `serde`, `serde_json`, and `sc-observability-types` with requirement `>=1.5.0` and no upper bound (ADR-RUN-0017)."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "3",
+                    "criterion": "Three independent obligations.",
+                    "confidence": 0.19
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.52
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.56
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "CLI run",
+                    "criterion": "Running a command and reading its output or exit code.",
+                    "confidence": 0.55
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 10,
+                  "modal": "Must",
+                  "text": "With `--features server` the direct non-dev dependencies MUST be those plus `axum` with tested minimum 0.8.9 and `rmcp` with tested minimum 3.9, both without upper bounds, and nothing else."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "4+",
+                    "criterion": "Four or more independent obligations.",
+                    "confidence": 0.68
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.69
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.62
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "CLI run",
+                    "criterion": "Running a command and reading its output or exit code.",
+                    "confidence": 0.77
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 11,
+                  "modal": "Must",
+                  "text": "`axum` MUST be declared with `default-features = false`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 1.0
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.91
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.87
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.95
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 12,
+                  "modal": "Must",
+                  "text": "With `--features server`, sc-command MUST additionally provide `impl IntoResponse for Envelope<T>`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.98
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.68
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.42
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 13,
+                  "modal": "Must",
+                  "text": "With `--features server`, sc-command MUST additionally provide the `IntoMcp::into_mcp` conversion."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.91
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "condition+obligation",
+                    "criterion": "A condition (when, if, unless) plus one obligation. Acceptable: a condition is not a second obligation.",
+                    "confidence": 0.98
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.54
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "unit test",
+                    "criterion": "A unit or integration test.",
+                    "confidence": 0.36
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 14,
+                  "modal": "Must",
+                  "text": "Every `use`, type or function that names axum or rmcp MUST be inside code gated by `#[cfg(feature = \"server\")]`."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.65
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "and-list",
+                    "criterion": "A list of items joined by and or commas. Fix: split into one statement per item.",
+                    "confidence": 0.25
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.81
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.98
+                  }
+                ]
+              },
+              {
+                "statement": {
+                  "index": 15,
+                  "modal": "MustNot",
+                  "text": "The `server` feature MUST NOT be in the `default` feature list."
+                },
+                "answers": [
+                  {
+                    "id": "obligations",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. How many independent obligations does this statement impose?",
+                    "choice": "1",
+                    "criterion": "One obligation.",
+                    "confidence": 0.99
+                  },
+                  {
+                    "id": "joined_by",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What joins its obligations?",
+                    "choice": "none",
+                    "criterion": "One obligation; nothing is joined.",
+                    "confidence": 0.98
+                  },
+                  {
+                    "id": "term",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What kind of term in this statement is unclear?",
+                    "choice": "none",
+                    "criterion": "Every term is common usage or defined in the record.",
+                    "confidence": 0.92
+                  },
+                  {
+                    "id": "check",
+                    "text": "`item.text` is JSON: `statement` is one MUST or MUST NOT statement of the non-functional requirement record in `record`. Judge only `statement`; use `record` as context. What would check this statement?",
+                    "choice": "inspection or grep",
+                    "criterion": "Reading or searching files or output.",
+                    "confidence": 0.9
+                  }
+                ]
+              }
+            ],
+            "matched_statements": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      }
+    ],
+    "log": {
+      "run": "runs-transfer-r4",
+      "log_root": ".sc/judge-jev"
+    }
+  }
+}

@@ -1,0 +1,144 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-061">
+  <div class="section-head">
+    <h2>ANC-061 <span class="status status-locked">locked</span> <span class="small">bead run-sxwd</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-sxwd&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Changes normal/build dependency declarations or resolved production dependency graphs of published sc-runtime crates. Crates from the sc-compose repository include sc-compose, sc-composer, sc-composer-beads and sc-sha. ATM denotes the agent-team-mail workspace crates covered by ADR-RUN-0013, including agent-team-mail and atm-core. Dev-only test and benchmark references are excluded.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;locked&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    },
+    {
+      &quot;after&quot;: &quot;prohibition&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;kind&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;quote&quot;
+    },
+    {
+      &quot;after&quot;: &quot;cargo tree -e normal,build for each published crate and supported feature set shows no sc-compose, sc-composer, sc-composer-beads, agent-team-mail or atm-* crate; sc-sha may appear&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;sc-cron depends on sc-sha for the hook source hash and has no other sc-compose repository crate or ATM crate in its normal or build graph.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;A production release crate adds sc-composer as a normal dependency to render templates.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:14+00:00&quot;,
+      &quot;detail&quot;: &quot;status: locked&quot;,
+      &quot;event&quot;: &quot;created&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:14+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:43:12+00:00&quot;,
+      &quot;detail&quot;: &quot;beads: {\&quot;anchor\&quot;: \&quot;run-sxwd\&quot;, \&quot;plan_questions\&quot;: \&quot;run-sxwd.1\&quot;, \&quot;dev_questions\&quot;: \&quot;run-sxwd.2\&quot;}&quot;,
+      &quot;event&quot;: &quot;beads_set&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-061&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;absent&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;-&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-061 (absent v- -&gt; locked v2)
+Statement: Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.
+Quote: sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;&#x27; -&gt; &#x27;Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.&#x27;
+Changed scope: &#x27;&#x27; -&gt; &#x27;Changes normal/build dependency declarations or resolved production dependency graphs of published sc-runtime crates. Crates from the sc-compose repository include sc-compose, sc-composer, sc-composer-beads and sc-sha. ATM denotes the agent-team-mail workspace crates covered by ADR-RUN-0013, including agent-team-mail and atm-core. Dev-only test and benchmark references are excluded.&#x27;
+Changed status: &#x27;&#x27; -&gt; &#x27;locked&#x27;
+Changed kind: &#x27;&#x27; -&gt; &#x27;prohibition&#x27;
+Changed quote: &#x27;&#x27; -&gt; &#x27;sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.&#x27;
+Changed deterministic_check: &#x27;&#x27; -&gt; &#x27;cargo tree -e normal,build for each published crate and supported feature set shows no sc-compose, sc-composer, sc-composer-beads, agent-team-mail or atm-* crate; sc-sha may appear&#x27;
+Changed fixture pass: &#x27;&#x27; -&gt; &#x27;sc-cron depends on sc-sha for the hook source hash and has no other sc-compose repository crate or ATM crate in its normal or build graph.&#x27;
+Changed fixture fail: &#x27;&#x27; -&gt; &#x27;A production release crate adds sc-composer as a normal dependency to render templates.&#x27;
+2026-11-12T22:42:14+00:00 created: status: locked
+2026-11-12T22:42:14+00:00 updated: fields: [&quot;fixtures&quot;]
+2026-11-12T22:43:12+00:00 beads_set: beads: {&quot;anchor&quot;: &quot;run-sxwd&quot;, &quot;plan_questions&quot;: &quot;run-sxwd.1&quot;, &quot;dev_questions&quot;: &quot;run-sxwd.2&quot;}">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.</p>
+  <p class="quote">&#x201C;sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>absent</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>-</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><ins>Production release crates MUST NOT have a normal or build dependency on any crate from the sc-compose repository other than sc-sha, or on any ATM crate.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><ins>Changes normal/build dependency declarations or resolved production dependency graphs of published sc-runtime crates. Crates from the sc-compose repository include sc-compose, sc-composer, sc-composer-beads and sc-sha. ATM denotes the agent-team-mail workspace crates covered by ADR-RUN-0013, including agent-team-mail and atm-core. Dev-only test and benchmark references are excluded.</ins></div>
+  <p><b>status</b></p>
+  <div class="diff"><ins>locked</ins></div>
+  <p><b>kind</b></p>
+  <div class="diff"><ins>prohibition</ins></div>
+  <p><b>quote</b></p>
+  <div class="diff"><ins>sc-sha is published from the sc-compose repo. Owner ruling: sc-sha is permitted as a production dependency; ANC-012 covers the sc-compose composition crates and ATM crates.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><ins>cargo tree -e normal,build for each published crate and supported feature set shows no sc-compose, sc-composer, sc-composer-beads, agent-team-mail or atm-* crate; sc-sha may appear</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><ins>sc-cron depends on sc-sha for the hook source hash and has no other sc-compose repository crate or ATM crate in its normal or build graph.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><ins>A production release crate adds sc-composer as a normal dependency to render templates.</ins></div>
+
+  <details>
+    <summary>History since the baseline (3)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T22:42:14+00:00</td><td>created</td><td>status: locked</td></tr>
+        <tr><td>2026-11-12T22:42:14+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
+        <tr><td>2026-11-12T22:43:12+00:00</td><td>beads_set</td><td>beads: {&quot;anchor&quot;: &quot;run-sxwd&quot;, &quot;plan_questions&quot;: &quot;run-sxwd.1&quot;, &quot;dev_questions&quot;: &quot;run-sxwd.2&quot;}</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</section>

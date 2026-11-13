@@ -1,0 +1,2277 @@
+{
+  "success": true,
+  "canceled": false,
+  "aborted_by": null,
+  "data": {
+    "operation": "tune",
+    "gate": "planning",
+    "accepted": true,
+    "tournament_protocol_version": "plan-anchor/question-tournament/2.0.0",
+    "production_confidence_threshold": 0.6,
+    "confidence_reference_threshold": 0.8,
+    "semantic_score": {
+      "exact_role_cells": 120,
+      "total_role_cells": 120,
+      "exact_semantic_verdicts": 40,
+      "total_semantic_verdicts": 40,
+      "stable_cases": 20,
+      "total_cases": 20,
+      "regressions": 0
+    },
+    "confidence_diagnostics": {
+      "threshold": 0.8,
+      "cells_at_or_above_threshold": 120,
+      "total_cells": 120,
+      "minimum": 0.88,
+      "p10": 0.97,
+      "median": 1.0,
+      "mean": 0.9881
+    },
+    "tuning_history_before_sha256": "f7b69221866a830513312474aaff52c290ba99a05182192ad7459783ec41f6ef",
+    "tuning_history_after": {
+      "schema": "plan-anchor/tuning-history/2",
+      "history_id": "phase-d-ANC-035-planning-v3",
+      "events": [
+        {
+          "authority": {
+            "anchor_id": "ANC-035",
+            "anchor_record_sha256": "9db3a0417014f0874a779539cede878cf0f120d46b388539bacfa88713c707e5",
+            "anchor_version": 3,
+            "intent_id": "phase-d-human-intent",
+            "intent_sha256": "cac997d4dabb24f33f1cae64a80980d18a512beb51cc962e050877ed3d953698",
+            "intent_version": "1b0dabc"
+          },
+          "candidate": {
+            "candidate_id": "b3-rlist-acur-ccur",
+            "question_sha256": "e8d7b568353c20c2688502ac4e0acf4fd5c7dc1905111e3ee8fb05be2390677c"
+          },
+          "decision": {
+            "question_set_sha256": "e8d7b568353c20c2688502ac4e0acf4fd5c7dc1905111e3ee8fb05be2390677c",
+            "reason_code": "TOURNAMENT.SEALED",
+            "status": "sealed"
+          },
+          "event": "question_set_sealed",
+          "event_index": 1,
+          "evidence": {
+            "canonical_request_sha256": [
+              "f46012e8d16823cf6635737f219ecd98238eb75ea5f81cf384662ded31b24b46",
+              "f46012e8d16823cf6635737f219ecd98238eb75ea5f81cf384662ded31b24b46",
+              "e2e88ac096e436280465832fb02e8845533e2892b1a561e5b366b24098c62442",
+              "e2e88ac096e436280465832fb02e8845533e2892b1a561e5b366b24098c62442",
+              "9300d430fa1d4dd2a7b01b8cceeed3eb12a4179862d5fb6755a171fc08afbb4a",
+              "9300d430fa1d4dd2a7b01b8cceeed3eb12a4179862d5fb6755a171fc08afbb4a",
+              "98dc463f0993a262d2bbcf3c719db86fe9f7e2d9c7516a25ea17adf2db0445f6",
+              "98dc463f0993a262d2bbcf3c719db86fe9f7e2d9c7516a25ea17adf2db0445f6",
+              "964179a17225c70ed7ae598cbbd0ad20978cc9a53273e2685e0b5044f5d13b2b",
+              "964179a17225c70ed7ae598cbbd0ad20978cc9a53273e2685e0b5044f5d13b2b",
+              "a294b1f73bf886764351cc7cf47efbd8c8b1f96004bd1fb664de562d8f540b80",
+              "a294b1f73bf886764351cc7cf47efbd8c8b1f96004bd1fb664de562d8f540b80",
+              "4cc07730bbc1e18131c42f4f4087b75b827d3bac45fccd92cb5c095d03572441",
+              "4cc07730bbc1e18131c42f4f4087b75b827d3bac45fccd92cb5c095d03572441",
+              "391cb1430a91a25da086bdce6ccc025d80b36ec52587f9966bc4c6bcb5d02200",
+              "391cb1430a91a25da086bdce6ccc025d80b36ec52587f9966bc4c6bcb5d02200",
+              "3536bb443b3121bdbe01a9613d26a625dec08868c2db94615dacd4f298a22215",
+              "3536bb443b3121bdbe01a9613d26a625dec08868c2db94615dacd4f298a22215",
+              "f3c40859bc2ee497d3d48f62971086722521d390e9aabd727561f2f9587b3b50",
+              "f3c40859bc2ee497d3d48f62971086722521d390e9aabd727561f2f9587b3b50",
+              "05db0323877f6a07dfeaf68c780a02edb39bc2575860e430b513e820cd7a03db",
+              "05db0323877f6a07dfeaf68c780a02edb39bc2575860e430b513e820cd7a03db",
+              "fe92302810ad6f960dd49d8af258176c35808f555010dcfb20225dc627c7c91d",
+              "fe92302810ad6f960dd49d8af258176c35808f555010dcfb20225dc627c7c91d",
+              "d097bb1aefb631420d6b59e3dbafa5dfba8fc01365c8ab4ca9f3b6b580c7a1b4",
+              "d097bb1aefb631420d6b59e3dbafa5dfba8fc01365c8ab4ca9f3b6b580c7a1b4",
+              "14b41706a2677dc6ff9eaf7aad4e7dea2fae294a26f6fb214c59df220660c02c",
+              "14b41706a2677dc6ff9eaf7aad4e7dea2fae294a26f6fb214c59df220660c02c",
+              "42b4adb31a7d15e416f731e4acc9708977d2cd5de35594a4a485064564332269",
+              "42b4adb31a7d15e416f731e4acc9708977d2cd5de35594a4a485064564332269",
+              "4ca12b4a455726f5ad2e63e280e9f62dac333087dca3e185441724ad2c42f500",
+              "4ca12b4a455726f5ad2e63e280e9f62dac333087dca3e185441724ad2c42f500",
+              "9e839414bb56d328c150484590d7131a3713d512920c6c287bbb85f10f1799df",
+              "9e839414bb56d328c150484590d7131a3713d512920c6c287bbb85f10f1799df",
+              "9c3879cf854e5489cf8b8d1fc72f8b9d98f10284010b2cae87b39f2f04dedeab",
+              "9c3879cf854e5489cf8b8d1fc72f8b9d98f10284010b2cae87b39f2f04dedeab",
+              "b3e4059703625758edbccf57518160cc365bb20cfe85f1bbf4dcb556ba74ca66",
+              "b3e4059703625758edbccf57518160cc365bb20cfe85f1bbf4dcb556ba74ca66",
+              "f35951eeb9df60cafcd291364c468c95813697223542cf14f4bd9619c04eda7c",
+              "f35951eeb9df60cafcd291364c468c95813697223542cf14f4bd9619c04eda7c"
+            ],
+            "raw_response_sha256": [
+              "c892ffae922863e31b82a48700693ef93c7698ec5ad50398e0975825bab08d34",
+              "c892ffae922863e31b82a48700693ef93c7698ec5ad50398e0975825bab08d34",
+              "c7138b49cbf5632eecc6420a0e10d50279209ab843f605e249f6a51ede5c585a",
+              "855e31c8173169eeaf9135e45d0373c272cc35d8fda65c458319c6283bc81d86",
+              "04e9e346c368c1423dbe3bd8390e48d4d43f5dc970591236bc83a3b60b693c8f",
+              "04e9e346c368c1423dbe3bd8390e48d4d43f5dc970591236bc83a3b60b693c8f",
+              "962552cac03355a8d97baa43c24c2190773e84033f22a1601270fc0ca0272d68",
+              "962552cac03355a8d97baa43c24c2190773e84033f22a1601270fc0ca0272d68",
+              "bc17aa1224bf83b8e97fbb72d0f56e853a0ea10545d31dfc24e45bd0b4ca1965",
+              "bc17aa1224bf83b8e97fbb72d0f56e853a0ea10545d31dfc24e45bd0b4ca1965",
+              "eb44e4722390f9a9a547bb677735af955472702e347324852886071d8af86f40",
+              "eb44e4722390f9a9a547bb677735af955472702e347324852886071d8af86f40",
+              "a2f6185e4573c050c2e3afcf543c51bf07c75c81fee3382a3c96739aa2a2b4f8",
+              "0725c7aa4a49efbfa4802a6d3428ec85a0a6cb52c055176c1045e46094daafec",
+              "eb0fcabb620cba7665c6bd782825f0dc07f19b6c6356ed1ffa4225d3f2dd6dd8",
+              "dfd7ed9cafa7a11dc0db2496406c22f3a3b251d82e4245a8b2d0fa670d11d36d",
+              "f0bc867cf3551779cb29c6c303e4cbd149c5faaa4b435bfa0f79faa03918678d",
+              "616552920b45d53d16bb941ec78a5c93aac07ca81988018f919323a7e68db096",
+              "431abf9a3093c5c613ba57631eb24052b6241ebe0f4f548d1c028a2f547a966d",
+              "8e40a2f141abf807a897fde957915d540328c4a4b7f32282969ce0469d8407ed",
+              "73a67cdda8176e46a78071788cc23b93368c69330db7b7471ed60a58b76fda81",
+              "73a67cdda8176e46a78071788cc23b93368c69330db7b7471ed60a58b76fda81",
+              "c83f05933f9b7464f8dcfbffe8225e3cf6763d9f57f7ebd08471dd8943cddd91",
+              "c83f05933f9b7464f8dcfbffe8225e3cf6763d9f57f7ebd08471dd8943cddd91",
+              "8a60be4fe229b00bc3c6f0cd30f72e364e7823b5a3d8ab32fb38e4748d094dfe",
+              "b46577787c13b47b82707d5c5601bfe638e1bda96f0628144fef572293280406",
+              "c83f05933f9b7464f8dcfbffe8225e3cf6763d9f57f7ebd08471dd8943cddd91",
+              "c83f05933f9b7464f8dcfbffe8225e3cf6763d9f57f7ebd08471dd8943cddd91",
+              "dd26112aee61372a018534ebd9027f4f716d6defc7cfa346292c848bb39fd126",
+              "e38f07f8e6dd54d5aed7ba040481dd65b0ca1d15565aa6178f34bae1e453b099",
+              "c4dff31c506b727467880e6e81fb370b091c93b83de80c1953607a1e874c36ec",
+              "c4dff31c506b727467880e6e81fb370b091c93b83de80c1953607a1e874c36ec",
+              "dc528c425830080a24cbd38e62fa950778c4b6a61f2106e6174ce0284e8ffc9e",
+              "dc528c425830080a24cbd38e62fa950778c4b6a61f2106e6174ce0284e8ffc9e",
+              "bc6bfed177a5069602dd84dec7961a3d0082a9d0a9b2d05062679148469a1806",
+              "13ac6d12ffa226febdbeab05ebcb8826f2f78fef26c0f4dee015f1514cb7e721",
+              "e9bcf3a090ffdf8cdf672628fadcc68fbe807c9e77772934b191be16b1740c9b",
+              "e9bcf3a090ffdf8cdf672628fadcc68fbe807c9e77772934b191be16b1740c9b",
+              "c6d76969205ad0abf80f1693908e0ad30070d581b4a91d6ab643cdb0b60ecd8f",
+              "c6d76969205ad0abf80f1693908e0ad30070d581b4a91d6ab643cdb0b60ecd8f"
+            ],
+            "run_ids": [
+              "42012550da15ed37",
+              "bbd9c658a4bb4969",
+              "fe1630c4e8cedb28",
+              "92633fd79e040705",
+              "2c632f0d068bc876",
+              "cc66693c4477fbe1",
+              "d64361d364d7ce59",
+              "ccfc85affa2f8a1c",
+              "127283e0bece1f62",
+              "e99c6247442cae29",
+              "66b36c666a3629fc",
+              "b02dcd787654a3b1",
+              "0c7eb056091425ad",
+              "d565d223a38482ec",
+              "74b6c4b45bc58c44",
+              "1981868e8643b8e0",
+              "eac0d95131295e21",
+              "c9d3902b34c83c5f",
+              "1c2da841d1a80c6d",
+              "0910591bf8dbb452",
+              "d58f1146d63fecd6",
+              "055a91c06632ebbf",
+              "f3cfd513661f9372",
+              "ac5a69c95d8d27e9",
+              "e21e09628fd384bf",
+              "1fca586834f783b0",
+              "e5340d7b57b2d5b9",
+              "c9abd0487e7db6d7",
+              "30788a13b335b622",
+              "296f51315cd181ed",
+              "a20005e8163514e6",
+              "b1979300cdcef8a9",
+              "0e5e73e24d879216",
+              "cc638e45ebb21bc9",
+              "2a54fe8bed5aac70",
+              "e274da77595566c4",
+              "30d6a5c216589770",
+              "8f195226b6836b28",
+              "66c26d35c80fb48f",
+              "2e94229cdcf147b3"
+            ]
+          },
+          "oracle": {
+            "case_count": 20,
+            "case_ids": [
+              "fx-pass",
+              "fx-fail",
+              "compliant-delete-many",
+              "compliant-template-store",
+              "compliant-lints",
+              "silent-list-page",
+              "silent-busy-timeout",
+              "topical-error-messages",
+              "conflict-unreachable",
+              "conflict-writer-new",
+              "irrelevant-readme",
+              "irrelevant-ci",
+              "boundary-result-but-panics",
+              "boundary-non-storage-panic",
+              "exception-tests-unwrap",
+              "compliant-domain-store",
+              "silent-domain-store",
+              "conflict-domain-store",
+              "boundary-other-backend",
+              "boundary-domain-nonstorage"
+            ],
+            "repeat_count": 2,
+            "sha256": "18975d7240a54e7c459d938d07eb98f107fbe925413feee63031732ee6b5af30"
+          },
+          "previous_event_sha256": null,
+          "protocol_version": "plan-anchor/question-tournament/2.0.0",
+          "score": {
+            "confidence": {
+              "cells_at_or_above_threshold": 120,
+              "mean": 0.9823,
+              "median": 1.0,
+              "minimum": 0.8,
+              "p10": 0.938,
+              "threshold": 0.8,
+              "total_cells": 120
+            },
+            "exact_role_cells": 120,
+            "exact_semantic_verdicts": 40,
+            "regressions": 0,
+            "stable_cases": 20,
+            "total_cases": 20,
+            "total_role_cells": 120,
+            "total_semantic_verdicts": 40
+          },
+          "supersedes": null
+        },
+        {
+          "event_index": 2,
+          "previous_event_sha256": "75507482db2630c4e00236f5e4da5cbdae32ec87eeead2f9c1fd51fea23b3334",
+          "event": "question_set_sealed",
+          "protocol_version": "plan-anchor/question-tournament/2.0.0",
+          "authority": {
+            "intent_id": "phase-d-human-intent",
+            "intent_version": "1b0dabc",
+            "intent_sha256": "cac997d4dabb24f33f1cae64a80980d18a512beb51cc962e050877ed3d953698",
+            "anchor_id": "ANC-035",
+            "anchor_version": 3,
+            "anchor_record_sha256": "9db3a0417014f0874a779539cede878cf0f120d46b388539bacfa88713c707e5"
+          },
+          "oracle": {
+            "sha256": "18975d7240a54e7c459d938d07eb98f107fbe925413feee63031732ee6b5af30",
+            "case_ids": [
+              "fx-pass",
+              "fx-fail",
+              "compliant-delete-many",
+              "compliant-template-store",
+              "compliant-lints",
+              "silent-list-page",
+              "silent-busy-timeout",
+              "topical-error-messages",
+              "conflict-unreachable",
+              "conflict-writer-new",
+              "irrelevant-readme",
+              "irrelevant-ci",
+              "boundary-result-but-panics",
+              "boundary-non-storage-panic",
+              "exception-tests-unwrap",
+              "compliant-domain-store",
+              "silent-domain-store",
+              "conflict-domain-store",
+              "boundary-other-backend",
+              "boundary-domain-nonstorage"
+            ],
+            "case_count": 20,
+            "repeat_count": 2
+          },
+          "candidate": {
+            "candidate_id": "r2b3-rl2-acur-cl2",
+            "question_sha256": "1236291db483a542206b94a3239bb90545678b5f97821adeee409e329f65743a"
+          },
+          "evidence": {
+            "canonical_request_sha256": [
+              "ff1c50e2f46c7d392d2dec15e9b7f380b50989d39ab6ba4b6a51f32f4658a29d",
+              "ff1c50e2f46c7d392d2dec15e9b7f380b50989d39ab6ba4b6a51f32f4658a29d",
+              "5f41aa5433f066d9ca11da2c0185ebd7ef0ad92900b23a2c376328c3b8574c6a",
+              "5f41aa5433f066d9ca11da2c0185ebd7ef0ad92900b23a2c376328c3b8574c6a",
+              "26b232936c712dcbc39e7e7fd5f1d26b2672e0f6a79a7c326e4c367bbfcac31c",
+              "26b232936c712dcbc39e7e7fd5f1d26b2672e0f6a79a7c326e4c367bbfcac31c",
+              "eecfb8a8c0ed49ef881281b34a8e4e02c1c7156762f6135eb3fd760e7217b809",
+              "eecfb8a8c0ed49ef881281b34a8e4e02c1c7156762f6135eb3fd760e7217b809",
+              "aabbcf4d6ddfcb51253904a02bef0df845a19d710cbebb9c54907bfdc0cc699f",
+              "aabbcf4d6ddfcb51253904a02bef0df845a19d710cbebb9c54907bfdc0cc699f",
+              "b3c4c10b7a542dcfde5a5331fd7aa722be853d7e456eb674fc4b8258c762f9e0",
+              "b3c4c10b7a542dcfde5a5331fd7aa722be853d7e456eb674fc4b8258c762f9e0",
+              "b82cf00fa8e6455d89c02d7c49c2bdff678898b2184440cf05e89ac577a5af94",
+              "b82cf00fa8e6455d89c02d7c49c2bdff678898b2184440cf05e89ac577a5af94",
+              "8bdc022892dff09373368166cf639d16c707f5bc2ca52f4b323a99d7e9c298f3",
+              "8bdc022892dff09373368166cf639d16c707f5bc2ca52f4b323a99d7e9c298f3",
+              "368ff14c313b85f5efc802a9bdac259e0e2fad1811f42134070031e91080913d",
+              "368ff14c313b85f5efc802a9bdac259e0e2fad1811f42134070031e91080913d",
+              "a494fb7ac825b29114adc5687055ee2dd0a99de6b2ac37c2c66acfc1ac5bfa8b",
+              "a494fb7ac825b29114adc5687055ee2dd0a99de6b2ac37c2c66acfc1ac5bfa8b",
+              "1c30c62fad5f172a8aa7c418cc4989bb20658535d01b7903d25f1ac83bbb2796",
+              "1c30c62fad5f172a8aa7c418cc4989bb20658535d01b7903d25f1ac83bbb2796",
+              "47a82b69fda44e95842ebbdfb062f295047a0af0712146f300d789dae37e504e",
+              "47a82b69fda44e95842ebbdfb062f295047a0af0712146f300d789dae37e504e",
+              "a2f8f3139e28703791bd113950e49016a33b1f5b0cd5463e44d007d110149409",
+              "a2f8f3139e28703791bd113950e49016a33b1f5b0cd5463e44d007d110149409",
+              "cec00a22421c07fc9f2fa7c2e01ffdc764856944c1e2488ab93ee55ad8eed27c",
+              "cec00a22421c07fc9f2fa7c2e01ffdc764856944c1e2488ab93ee55ad8eed27c",
+              "b6fe0b0e52038e4075f4993a3e9cf461ca8defe19c507b1f0add943d0beca2ff",
+              "b6fe0b0e52038e4075f4993a3e9cf461ca8defe19c507b1f0add943d0beca2ff",
+              "b1ec49f2e7a413f3eaa5bd2a999c412f84062ca3fcce6c83b6ae87dbb014dc91",
+              "b1ec49f2e7a413f3eaa5bd2a999c412f84062ca3fcce6c83b6ae87dbb014dc91",
+              "1340558770b095540fc3279b5e579ef82e5ace07d546412ee1c667abe45df2ef",
+              "1340558770b095540fc3279b5e579ef82e5ace07d546412ee1c667abe45df2ef",
+              "970b428a3e5357c2931cc0f43fac515ffd6bd04eeb9a056162f3cf3be0fead87",
+              "970b428a3e5357c2931cc0f43fac515ffd6bd04eeb9a056162f3cf3be0fead87",
+              "b2140dab1dc930f8b0aba72bdb20328a4abeb6688ec9345a687f3e8274ae8fe2",
+              "b2140dab1dc930f8b0aba72bdb20328a4abeb6688ec9345a687f3e8274ae8fe2",
+              "8505b5f4e700549f3cec587c8294d5127a808641d72167821ecdffacf621893f",
+              "8505b5f4e700549f3cec587c8294d5127a808641d72167821ecdffacf621893f"
+            ],
+            "raw_response_sha256": [
+              "ef8d25ff62d294fcc88d2c591a1965da070aa28e1cc8b6f272c39f9f6d0a207e",
+              "b7f727323bf92d0bfb3608171a460f1fa745904469de2f99044fd11e8939fc29",
+              "561e759ae5b6b3b2d5aba5df33714b54aef42bac840858ea19e454c5c604f63b",
+              "561e759ae5b6b3b2d5aba5df33714b54aef42bac840858ea19e454c5c604f63b",
+              "27679ab14ea32cd25480515f21d26c1312af4b621bf740a6f92f3f6e49478933",
+              "bf4efce68e63d886170c9925448946eda3befb04b50e6159c6f4239ac11e4d70",
+              "62c96494877f4e6ad2d54db597168e6aa550426cb3d47b51046a8a01b5c1d6ec",
+              "62c96494877f4e6ad2d54db597168e6aa550426cb3d47b51046a8a01b5c1d6ec",
+              "7ad9f6666a8474b0574b182d41dd60c59ab290b9d150bcc695a734ae8cd0227f",
+              "d04b5117bd1a3d0c7db8d0f9b84038c1c7f041661a3719fc69b8fb91485bf9c4",
+              "3c2946476d104b959a9b7f51e6850fcc2c494d26f966eae3207784c591dbd55c",
+              "3c2946476d104b959a9b7f51e6850fcc2c494d26f966eae3207784c591dbd55c",
+              "5f18a079c0ae7ed8ad87474931a0e1df44a5dce89fc5afb6a6b58882a1130756",
+              "2a32ec287b708993caa9fe1a8fdd75304d34f3d40cd6b1bf9d68de3a1438495b",
+              "d90ca2fad91f08ab7f1e49e636f383e21e66022fecdcf35dfd65172cd987a785",
+              "52c1cc515c8dee48a896c026e73cb3c126c3f99214d4820b0801d72aba267a0a",
+              "af9349e1a3dd429a8a13686495dd96c66038ff6a4e4c00382320dabd90e7c3c7",
+              "af9349e1a3dd429a8a13686495dd96c66038ff6a4e4c00382320dabd90e7c3c7",
+              "af9349e1a3dd429a8a13686495dd96c66038ff6a4e4c00382320dabd90e7c3c7",
+              "af9349e1a3dd429a8a13686495dd96c66038ff6a4e4c00382320dabd90e7c3c7",
+              "b4dcabcc3b191ce1251df6607a8f6aa06cfb38f7ed4f8246acbd1027ae7634bb",
+              "b4dcabcc3b191ce1251df6607a8f6aa06cfb38f7ed4f8246acbd1027ae7634bb",
+              "2b8d718641ca44ec5e899c6a87a82082ca01a29cb56b6dbe42861878294c9889",
+              "2b8d718641ca44ec5e899c6a87a82082ca01a29cb56b6dbe42861878294c9889",
+              "29609ba1558f2dedd3d118230eada4d76f8ecfd4c0603e109b61999d575d8868",
+              "48e7503b8a9915c0f64257ed1907ca55f90aeafbd0d616a5f38597b8578e9a8e",
+              "2b8d718641ca44ec5e899c6a87a82082ca01a29cb56b6dbe42861878294c9889",
+              "2b8d718641ca44ec5e899c6a87a82082ca01a29cb56b6dbe42861878294c9889",
+              "18765ffe7b0298cce7a4f9318f709e7a74272abdbb14b8ed8eba49c1608b0cc5",
+              "1a5d18a250157df6b8c0015daac1502a907c0eb963f615384887d9586c1b5e04",
+              "b8d58d600fe45c28c122ce48ccedf5cc3fcbe305796d4fe1744ee5611445df22",
+              "b8d58d600fe45c28c122ce48ccedf5cc3fcbe305796d4fe1744ee5611445df22",
+              "b74afa23f0a36a7195f83d6a7a97f144a2004922244899d29cfaf380d0e21ab9",
+              "b74afa23f0a36a7195f83d6a7a97f144a2004922244899d29cfaf380d0e21ab9",
+              "3b6012e709b51f5c10b2e706f07d64296e32da7c5aeacca46e48ac37a1312bf0",
+              "3b6012e709b51f5c10b2e706f07d64296e32da7c5aeacca46e48ac37a1312bf0",
+              "712fbea7ee1fea20a29ce52195150ec9b88405bbcfe9af85918dee5c9cb423ba",
+              "712fbea7ee1fea20a29ce52195150ec9b88405bbcfe9af85918dee5c9cb423ba",
+              "4c8684a7b2a9b7c4bdaa23da7f04631846a22e256c220689f31a16e808f2daf6",
+              "fd8b16a399aca10a0e3e2a408748fe40afce4b7c5e993fcb60389e7a971abcab"
+            ],
+            "run_ids": [
+              "eb75bb518eef8887",
+              "6541c65c0bed5f36",
+              "5b41e82812a4c7e1",
+              "55404f1459b10605",
+              "f4c575d68a9dbc30",
+              "99e9f6f98b671356",
+              "788391880e3edf5e",
+              "6025e673258957f8",
+              "e373b58cf091bdef",
+              "4486c99e3f1cb62c",
+              "78f5a63217f7edcb",
+              "1e34ceaa92854176",
+              "23e7214de2b6dc6a",
+              "630ca7311d0644fd",
+              "6101570deabb3726",
+              "f9b2c8c0f7177e3f",
+              "f4fcf0a72f35a5e9",
+              "8c5305cddca9c914",
+              "cbc20180994b17ea",
+              "ed932fd224300314",
+              "6a3b6d816705a1d2",
+              "b9594f0a9ef606fd",
+              "130f71934c649d2a",
+              "4c64ec78639aefba",
+              "017e0fe8390c2951",
+              "5c48ae6151542c99",
+              "da016e417bcbc218",
+              "6371969aab0f18d0",
+              "767683610d2b3d4e",
+              "a789506f950f2c89",
+              "87c4afde3cf24e7f",
+              "4161f3cdf699c27e",
+              "24e67527344028c6",
+              "b2cd326e05e4ed3f",
+              "ed0d318b287e660c",
+              "b91846b2de279427",
+              "c18ec947ff702184",
+              "7053ebd99c5f48f1",
+              "90ff38521acc0f82",
+              "de14ff6b7be1f25c"
+            ]
+          },
+          "score": {
+            "exact_role_cells": 120,
+            "total_role_cells": 120,
+            "exact_semantic_verdicts": 40,
+            "total_semantic_verdicts": 40,
+            "stable_cases": 20,
+            "total_cases": 20,
+            "regressions": 0,
+            "confidence": {
+              "threshold": 0.8,
+              "cells_at_or_above_threshold": 120,
+              "total_cells": 120,
+              "minimum": 0.88,
+              "p10": 0.97,
+              "median": 1.0,
+              "mean": 0.9881
+            }
+          },
+          "decision": {
+            "status": "sealed",
+            "question_set_sha256": "1236291db483a542206b94a3239bb90545678b5f97821adeee409e329f65743a",
+            "reason_code": "TOURNAMENT.SEALED"
+          },
+          "supersedes": {
+            "protocol_version": "plan-anchor/question-tournament/2.0.0",
+            "decision_sha256": "5c63c4d0d5cc3179824404eabfdbeb94da1321ed633d979d7fbb771bb54da9e9"
+          }
+        }
+      ]
+    },
+    "tuning_history_after_sha256": "44cf6a83e49081e917d1edafe7adaec2a40aa79a984e280cb29481c1083ad3d7",
+    "production_semantics_unchanged": true,
+    "authority_citations": [
+      "ANC-035 v3 (locked, prohibition) statement: Public storage functions MUST NOT panic.",
+      "ANC-035 v3 quote: public storage functions return `Result<T, E>` with a typed error and do not panic",
+      "ANC-035 v3 scope (clarity-only rewording of v2; the v2 parenthetical crate list was illustrative, not exhaustive): plan items that write or change public storage functions in this phase, in any crate: storage traits and engine backends (such as sc-storage and sc-runtime-db-sqlite), domain stores built on generic storage (such as sc-cron's CronStore/CronStorage), and template stores",
+      "ANC-035 context: storage contract direction: atomic transactions, cron feature withdrawn (cron storage moved out of the SQLite backend into sc-cron over generic Storage<T>; ANC-034 fixtures)",
+      "ANC-035 fixtures.pass and fixtures.fail (approved, unchanged); deterministic_check: sc-lint panic rule (randlee/sc-lint#931) clean on changed storage crates",
+      "phase-d intent: PRD v2 storage and cron requirements apply; release includes sc-cron and sc-cron-commands. Owner guideline: where readings conflict, take the stricter reading. Drift review m2 (2026-11-12) ruled the quote covers public storage functions generally.",
+      "Untyped errors, Option returns, debug_assert!, and pub(crate) helpers are deliberately not probed because ANC-035 does not determine their labels."
+    ],
+    "oracle_sha256": "18975d7240a54e7c459d938d07eb98f107fbe925413feee63031732ee6b5af30",
+    "sealed_question_set": {
+      "digest": "1236291db483a542206b94a3239bb90545678b5f97821adeee409e329f65743a",
+      "questions": {
+        "addressed": {
+          "criteria": {
+            "no": "No: the item is silent about panics, only generally topical about errors, or plans a panic.",
+            "unclear": "Whether the item commits to not panicking cannot be determined.",
+            "yes": "Yes: the item states the public storage functions do not panic."
+          },
+          "instructions": "Does `item.text` state that the public storage functions it touches avoid panicking (returning typed errors instead of panicking, or denying unwrap/expect/panic)? Judge presence only.",
+          "type": "choice"
+        },
+        "contradicted": {
+          "type": "choice",
+          "instructions": "Does `item.text` plan for a public storage function to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Public storage functions include those of sc-storage, sc-runtime-db-sqlite or another storage backend, a domain store such as CronStore, a template store, and a storage writer or store helper that writes, reads or decodes stored rows. Silence about panics is not conflict; unwrap in tests and panics in code that does not read or write stored data are outside `anchor.statement`. Judge conflict only.",
+          "criteria": {
+            "yes": "A public storage function is stated to panic on some path.",
+            "no": "No such outcome is stated, including when the item is silent about panics.",
+            "unclear": "It may let a public storage function panic but cannot be determined."
+          }
+        },
+        "relevant": {
+          "type": "choice",
+          "instructions": "Does `item.text` touch the public storage functions described in `anchor.scope`? Judge subject overlap only.",
+          "criteria": {
+            "yes": "The item touches public functions of sc-storage, sc-runtime-db-sqlite or another storage engine backend, of a domain store built on generic storage such as sc-cron's CronStore/CronStorage, or of a template store, including a storage writer, a store, or a store helper that writes, reads or decodes stored rows.",
+            "no": "The item touches none of them, including public functions that do not read or write stored data.",
+            "unclear": "The item is too vague to tell."
+          }
+        }
+      }
+    },
+    "candidate_rankings": [
+      {
+        "rank": 1,
+        "bundle_id": "r2b3-rl2-acur-cl2",
+        "roles": {
+          "relevant": "rel-list2",
+          "addressed": "add-current",
+          "contradicted": "con-list2"
+        },
+        "question_sha256": "30d25ea7ca7047c167c02b923aa1a708fcb1e1367d654efcbd282cdf70bf847a",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 120,
+          "total_cells": 120,
+          "minimum": 0.88,
+          "p10": 0.97,
+          "median": 1.0,
+          "mean": 0.9881
+        },
+        "complexity_bytes": 1953,
+        "selected": true,
+        "co_leader": false,
+        "reason": "Selected: top lexicographic rank among semantically accepted bundles.",
+        "mismatches": []
+      },
+      {
+        "rank": 2,
+        "bundle_id": "r2b5-rl3-acur-cl2",
+        "roles": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-list2"
+        },
+        "question_sha256": "17dfc42fd539daa644dffa2f96b55cdf1088d224ca5efd8bd46b867aaaf7e1e9",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 120,
+          "total_cells": 120,
+          "minimum": 0.88,
+          "p10": 0.97,
+          "median": 1.0,
+          "mean": 0.9879
+        },
+        "complexity_bytes": 1984,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2b3-rl2-acur-cl2 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 3,
+        "bundle_id": "r2b1-rl2-acur-ccur",
+        "roles": {
+          "relevant": "rel-list2",
+          "addressed": "add-current",
+          "contradicted": "con-current"
+        },
+        "question_sha256": "2e4fee355455ee83498d8da5692dca7cbd91b855c483f90f931e9c909894ffbe",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 120,
+          "total_cells": 120,
+          "minimum": 0.88,
+          "p10": 0.94,
+          "median": 1.0,
+          "mean": 0.9848
+        },
+        "complexity_bytes": 1734,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2b3-rl2-acur-cl2 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 4,
+        "bundle_id": "r2b2-rl3-acur-ccur",
+        "roles": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-current"
+        },
+        "question_sha256": "600bca3d46f9a155b8be3f1cace5344b97f73c85c7d27818ef1783c31c5f7c25",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 120,
+          "total_cells": 120,
+          "minimum": 0.86,
+          "p10": 0.96,
+          "median": 1.0,
+          "mean": 0.9864
+        },
+        "complexity_bytes": 1765,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2b3-rl2-acur-cl2 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 5,
+        "bundle_id": "baseline",
+        "roles": {
+          "addressed": "current",
+          "contradicted": "current",
+          "relevant": "current"
+        },
+        "question_sha256": "983f22a71c82506623d9417af589c8694dc21f572ccc364a530782432d28579a",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 119,
+          "total_cells": 120,
+          "minimum": 0.76,
+          "p10": 0.94,
+          "median": 1.0,
+          "mean": 0.9804
+        },
+        "complexity_bytes": 1636,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2b3-rl2-acur-cl2 in the lexicographic order.",
+        "mismatches": []
+      },
+      {
+        "rank": 6,
+        "bundle_id": "r2b4-rl3-acur-cany",
+        "roles": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-any-crate"
+        },
+        "question_sha256": "d935333af66a0361be1bc479fc80c031486dd04cc3aeaa099ec5440dcd4eba03",
+        "semantic_accepted": true,
+        "complete": true,
+        "exact_role_cells": 120,
+        "total_role_cells": 120,
+        "exact_semantic_verdicts": 40,
+        "total_semantic_verdicts": 40,
+        "stable_cases": 20,
+        "total_cases": 20,
+        "regressions": 0,
+        "confidence": {
+          "threshold": 0.8,
+          "cells_at_or_above_threshold": 118,
+          "total_cells": 120,
+          "minimum": 0.46,
+          "p10": 0.96,
+          "median": 1.0,
+          "mean": 0.9778
+        },
+        "complexity_bytes": 1901,
+        "selected": false,
+        "co_leader": false,
+        "reason": "Semantically accepted; ranked below r2b3-rl2-acur-cl2 in the lexicographic order.",
+        "mismatches": []
+      }
+    ],
+    "acceptance_table": [
+      {
+        "case_id": "fx-pass",
+        "probe": "fixture_pass",
+        "expected_roles": {
+          "addressed": "yes",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Approved ANC-035 pass fixture: public storage functions return typed errors instead of panicking."
+      },
+      {
+        "case_id": "fx-fail",
+        "probe": "fixture_fail",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "yes",
+          "relevant": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.98,
+            "contradicted": 0.97,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.98,
+            "contradicted": 0.97,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Approved ANC-035 fail fixture: a public storage function panics via expect, which the prohibition rules out."
+      },
+      {
+        "case_id": "compliant-delete-many",
+        "probe": "compliant",
+        "expected_roles": {
+          "addressed": "yes",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.97,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.96,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "New public storage function that commits to a typed error rather than a panic on invalid input."
+      },
+      {
+        "case_id": "compliant-template-store",
+        "probe": "compliant",
+        "expected_roles": {
+          "addressed": "yes",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Template store (in scope) public functions explicitly avoid panics and return typed errors."
+      },
+      {
+        "case_id": "compliant-lints",
+        "probe": "compliant",
+        "expected_roles": {
+          "addressed": "yes",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Changes public storage functions and commits that they cannot panic, matching the pass fixture's deny unwrap/expect approach."
+      },
+      {
+        "case_id": "silent-list-page",
+        "probe": "silent",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Writes a public storage function (in scope) but says nothing about panics or error handling; silence is compliance with a prohibition."
+      },
+      {
+        "case_id": "silent-busy-timeout",
+        "probe": "silent",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.98,
+            "contradicted": 0.98,
+            "relevant": 0.96
+          },
+          {
+            "addressed": 0.98,
+            "contradicted": 0.98,
+            "relevant": 0.94
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Changes a public storage function without saying whether it can panic; neither carries nor contradicts the prohibition."
+      },
+      {
+        "case_id": "topical-error-messages",
+        "probe": "topical_only",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.98,
+            "contradicted": 0.98,
+            "relevant": 0.98
+          },
+          {
+            "addressed": 0.98,
+            "contradicted": 0.98,
+            "relevant": 0.97
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Mentions error handling of public storage functions generically without committing that they do not panic; no conflicting plan is stated."
+      },
+      {
+        "case_id": "conflict-unreachable",
+        "probe": "conflicting",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "yes",
+          "relevant": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 0.98
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 0.98
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "A public storage function that is planned to panic on invalid input is exactly what the prohibition rules out."
+      },
+      {
+        "case_id": "conflict-writer-new",
+        "probe": "conflicting",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "yes",
+          "relevant": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 0.98
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 0.98
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "A public storage constructor that panics via unwrap conflicts with the prohibition, whatever the justification."
+      },
+      {
+        "case_id": "irrelevant-readme",
+        "probe": "irrelevant",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "no"
+        },
+        "expected_verdict": "not_applicable",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "README documentation of an unrelated feature; it does not write or change any public storage function."
+      },
+      {
+        "case_id": "irrelevant-ci",
+        "probe": "irrelevant",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "no"
+        },
+        "expected_verdict": "not_applicable",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "CI toolchain work; it does not write or change any public storage function."
+      },
+      {
+        "case_id": "boundary-result-but-panics",
+        "probe": "boundary",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "yes",
+          "relevant": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 0.96,
+            "contradicted": 0.89,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 0.96,
+            "contradicted": 0.91,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Boundary: returning Result does not exempt a public storage function from the prohibition; the stated panic path conflicts."
+      },
+      {
+        "case_id": "boundary-non-storage-panic",
+        "probe": "boundary",
+        "expected_roles": {
+          "addressed": "no",
+          "contradicted": "no",
+          "relevant": "no"
+        },
+        "expected_verdict": "not_applicable",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Boundary: a panic in non-storage CLI argument parsing is not a public storage function, so the anchor does not apply."
+      },
+      {
+        "case_id": "exception-tests-unwrap",
+        "probe": "exception",
+        "expected_roles": {
+          "addressed": "yes",
+          "contradicted": "no",
+          "relevant": "yes"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 0.88
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 0.89
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Exception: test code is not a public storage function; the item also commits that the public functions do not panic."
+      },
+      {
+        "case_id": "compliant-domain-store",
+        "probe": "compliant",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "The quote covers public storage functions generally; a domain store's public persistence functions built over generic storage are public storage functions (context: cron storage was withdrawn from the SQLite backend into the domain crate). The item commits to typed errors and no panic."
+      },
+      {
+        "case_id": "silent-domain-store",
+        "probe": "silent",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 0.98,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Adds a public domain-store storage function (in scope under the general quote) but is silent about panics; silence is compliance with a prohibition."
+      },
+      {
+        "case_id": "conflict-domain-store",
+        "probe": "conflicting",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "no",
+          "contradicted": "yes"
+        },
+        "expected_verdict": "contradicted",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "yes",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 1.0
+          }
+        ],
+        "semantic_verdicts": [
+          "contradicted",
+          "contradicted"
+        ],
+        "production_verdicts_at_threshold": [
+          "contradicted",
+          "contradicted"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "A public domain-store storage function planned to panic on a missing row is exactly what the prohibition rules out."
+      },
+      {
+        "case_id": "boundary-other-backend",
+        "probe": "boundary",
+        "expected_roles": {
+          "relevant": "yes",
+          "addressed": "yes",
+          "contradicted": "no"
+        },
+        "expected_verdict": "satisfied",
+        "observed_roles": [
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          },
+          {
+            "addressed": "yes",
+            "contradicted": "no",
+            "relevant": "yes"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 0.98
+          },
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 0.98
+          }
+        ],
+        "semantic_verdicts": [
+          "satisfied",
+          "satisfied"
+        ],
+        "production_verdicts_at_threshold": [
+          "satisfied",
+          "satisfied"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Boundary: an engine backend not named in the original example list still provides public storage functions; the quote is not limited to listed crates."
+      },
+      {
+        "case_id": "boundary-domain-nonstorage",
+        "probe": "boundary",
+        "expected_roles": {
+          "relevant": "no",
+          "addressed": "no",
+          "contradicted": "no"
+        },
+        "expected_verdict": "not_applicable",
+        "observed_roles": [
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          },
+          {
+            "addressed": "no",
+            "contradicted": "no",
+            "relevant": "no"
+          }
+        ],
+        "observed_confidence": [
+          {
+            "addressed": 1.0,
+            "contradicted": 1.0,
+            "relevant": 0.96
+          },
+          {
+            "addressed": 0.98,
+            "contradicted": 1.0,
+            "relevant": 0.96
+          }
+        ],
+        "semantic_verdicts": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "production_verdicts_at_threshold": [
+          "not_applicable",
+          "not_applicable"
+        ],
+        "stable": true,
+        "accepted": true,
+        "baseline_exact": true,
+        "regression": false,
+        "rationale": "Boundary: a public function in a crate that also has a store is not a storage function when it neither reads nor writes stored data; the anchor does not reach it."
+      }
+    ],
+    "evidence": {
+      "out_dir": "docs/plans/phase-d/anchor-runs/tune-ANC-035-planning-v3-r2",
+      "results_path": "docs/plans/phase-d/anchor-runs/tune-ANC-035-planning-v3-r2/results.jsonl",
+      "oracle_path": "docs/plans/phase-d/anchor-runs/tune-ANC-035-planning-v3-r2/oracle.frozen.json",
+      "oracle_frozen_before_first_jev_call": true,
+      "calls": 240,
+      "failed_calls": [],
+      "missing_calls": [],
+      "retries": 0,
+      "max_parallel_evaluators": 4,
+      "repeat_requests_byte_identical": true,
+      "models_answered": [
+        "jev-1.14.0"
+      ],
+      "baseline_bundle": "baseline",
+      "bundles": {
+        "baseline": {
+          "addressed": "current",
+          "contradicted": "current",
+          "relevant": "current"
+        },
+        "r2b1-rl2-acur-ccur": {
+          "relevant": "rel-list2",
+          "addressed": "add-current",
+          "contradicted": "con-current"
+        },
+        "r2b2-rl3-acur-ccur": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-current"
+        },
+        "r2b3-rl2-acur-cl2": {
+          "relevant": "rel-list2",
+          "addressed": "add-current",
+          "contradicted": "con-list2"
+        },
+        "r2b4-rl3-acur-cany": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-any-crate"
+        },
+        "r2b5-rl3-acur-cl2": {
+          "relevant": "rel-list3",
+          "addressed": "add-current",
+          "contradicted": "con-list2"
+        }
+      },
+      "role_rankings": {
+        "addressed": [
+          {
+            "candidate_id": "add-current",
+            "bundles": [
+              "r2b1-rl2-acur-ccur",
+              "r2b2-rl3-acur-ccur",
+              "r2b3-rl2-acur-cl2",
+              "r2b4-rl3-acur-cany",
+              "r2b5-rl3-acur-cl2"
+            ],
+            "exact_cells": 200,
+            "total_cells": 200,
+            "stable_cases": 100,
+            "total_cases": 100
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 40,
+            "total_cells": 40,
+            "stable_cases": 20,
+            "total_cases": 20
+          }
+        ],
+        "contradicted": [
+          {
+            "candidate_id": "con-current",
+            "bundles": [
+              "r2b1-rl2-acur-ccur",
+              "r2b2-rl3-acur-ccur"
+            ],
+            "exact_cells": 80,
+            "total_cells": 80,
+            "stable_cases": 40,
+            "total_cases": 40
+          },
+          {
+            "candidate_id": "con-list2",
+            "bundles": [
+              "r2b3-rl2-acur-cl2",
+              "r2b5-rl3-acur-cl2"
+            ],
+            "exact_cells": 80,
+            "total_cells": 80,
+            "stable_cases": 40,
+            "total_cases": 40
+          },
+          {
+            "candidate_id": "con-any-crate",
+            "bundles": [
+              "r2b4-rl3-acur-cany"
+            ],
+            "exact_cells": 40,
+            "total_cells": 40,
+            "stable_cases": 20,
+            "total_cases": 20
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 40,
+            "total_cells": 40,
+            "stable_cases": 20,
+            "total_cases": 20
+          }
+        ],
+        "relevant": [
+          {
+            "candidate_id": "rel-list3",
+            "bundles": [
+              "r2b2-rl3-acur-ccur",
+              "r2b4-rl3-acur-cany",
+              "r2b5-rl3-acur-cl2"
+            ],
+            "exact_cells": 120,
+            "total_cells": 120,
+            "stable_cases": 60,
+            "total_cases": 60
+          },
+          {
+            "candidate_id": "rel-list2",
+            "bundles": [
+              "r2b1-rl2-acur-ccur",
+              "r2b3-rl2-acur-cl2"
+            ],
+            "exact_cells": 80,
+            "total_cells": 80,
+            "stable_cases": 40,
+            "total_cases": 40
+          },
+          {
+            "candidate_id": "current",
+            "bundles": [
+              "baseline"
+            ],
+            "exact_cells": 40,
+            "total_cells": 40,
+            "stable_cases": 20,
+            "total_cases": 20
+          }
+        ]
+      },
+      "ranking_order": "semantic acceptance, exact role cells, exact semantic verdicts, stable cases, fewest regressions, cells at or above the confidence reference, then minimum, p10, median and mean confidence, fewest question bytes, bundle id",
+      "run_ids_all": [
+        "007d80723127c676",
+        "017e0fe8390c2951",
+        "06d8c74f194337b6",
+        "0798b058ebe8ecf8",
+        "07d14a7cd4b9014e",
+        "08db0a27fa627d63",
+        "08f9a6383035d6ee",
+        "09dd0dc359b23535",
+        "0a514ec47e0431a4",
+        "0ab08e6325b29dd7",
+        "0c8851b3645a8652",
+        "0fce1d717896713f",
+        "1024d1c71316b9a7",
+        "1122515ddef44a26",
+        "130f71934c649d2a",
+        "1317052d9146c93f",
+        "132d3b10f0617e78",
+        "138a404e919dbbd2",
+        "14644ed13724dba3",
+        "14a7dc0ff05daed4",
+        "16b837942e015702",
+        "1a73766a2d59e82d",
+        "1be51b454d55dd5d",
+        "1cbbf813ea120596",
+        "1dfe9a958ba142d7",
+        "1e222fe3aac5faee",
+        "1e34ceaa92854176",
+        "1e833a6bb8598a87",
+        "20749d16625507df",
+        "2119ddc64e36d4e5",
+        "2305d2f92e070876",
+        "23e7214de2b6dc6a",
+        "23e871c8600ce488",
+        "24914b0c84f8031b",
+        "24e67527344028c6",
+        "25493a9f16770b74",
+        "2662ca7461d2464a",
+        "26edb526d3c0a434",
+        "28cf04b94bba4f8c",
+        "2977dd22b37467af",
+        "2a3d128a86438e94",
+        "2aa37d86a423b873",
+        "2c4a3b625c8d5c49",
+        "2e66d551984c0bc4",
+        "2f5c4b4e5a8771f4",
+        "31253a0be94c8de6",
+        "3250fe7624ea96b7",
+        "3322a3fd18141c39",
+        "345bc25c1c871576",
+        "38a9748e284a9fd4",
+        "398c6bc081674f71",
+        "3a719a2499911a10",
+        "3c4830b852a5f14d",
+        "3d8f6420d0d8e948",
+        "40e2f732d16db53b",
+        "4161f3cdf699c27e",
+        "4230007333fa287b",
+        "433c7e95403ddfef",
+        "445ca40e48ef9145",
+        "4486c99e3f1cb62c",
+        "44975b84290b119d",
+        "46c577fef2a088ff",
+        "46f15dca8236662c",
+        "46f40533b72709a7",
+        "48aff455acab5608",
+        "49e8c22511658eaf",
+        "4aa551ca872f2299",
+        "4bdbecb0bc8f6f53",
+        "4c64ec78639aefba",
+        "4f2e27944041e0ac",
+        "4f6bb93820088d9a",
+        "503d686fb476781d",
+        "507c2d6b760e76e0",
+        "50aec94950fa003d",
+        "55404f1459b10605",
+        "55d02cc20ccfe37e",
+        "583d65467419671c",
+        "58a948e37e13a197",
+        "58b4ca2381cac968",
+        "5a175a5b1b8fed7b",
+        "5a7286c02e903c07",
+        "5a741322a74eee3c",
+        "5b02599af671f182",
+        "5b41e82812a4c7e1",
+        "5c48ae6151542c99",
+        "5d5762a4f71e2e88",
+        "5ebbf0fae3515271",
+        "5fa396cc854ac789",
+        "6025e673258957f8",
+        "6101570deabb3726",
+        "621c3056dd7fbd98",
+        "630ca7311d0644fd",
+        "631649e81539457f",
+        "6371969aab0f18d0",
+        "646a1b234a3a2b19",
+        "6541c65c0bed5f36",
+        "66a30999fc1679a9",
+        "66c920835850e418",
+        "6786749d9428445c",
+        "684f507b4aea6dc0",
+        "6a3b6d816705a1d2",
+        "6f4ab7463ae5c317",
+        "7053ebd99c5f48f1",
+        "7219553cc64ffc1d",
+        "73c5c4f9c2ef307e",
+        "7444b363da8a8820",
+        "767683610d2b3d4e",
+        "779a8800affacc87",
+        "77b87ba66b8b1a6a",
+        "788391880e3edf5e",
+        "78b12b4fc5a5ae0c",
+        "78f5a63217f7edcb",
+        "7b0cdef1d2e795ba",
+        "7d09ae854e13966a",
+        "7d36f6aa72ab204e",
+        "7de086a2b9ba0c6e",
+        "7e5ad1b995767a7d",
+        "7f6116649332c79e",
+        "81414acc1e83d3cc",
+        "8283c917757f7c48",
+        "83f759a26b6acfaf",
+        "8496dff244469692",
+        "84ebed2cc77de831",
+        "850e8b23d56fc16c",
+        "852d5a67b3ed22f4",
+        "8566bea38a423a27",
+        "86b9fd56f522c98c",
+        "8719955309faffdd",
+        "87214ccdb2c8c9bc",
+        "87baff9aef189861",
+        "87c4afde3cf24e7f",
+        "8960f7f8f34837de",
+        "8c5305cddca9c914",
+        "8ddab533d4fdb684",
+        "8e0e31955860b0b9",
+        "8eb06f68c86e3029",
+        "90ff38521acc0f82",
+        "911fc3c25ff0d264",
+        "9379077dbc73061c",
+        "958b29501bf98daf",
+        "97b3bb03db936000",
+        "989ce3d9e9332ccd",
+        "99e9f6f98b671356",
+        "9b441b4c4118e68f",
+        "9e4443d4c6a53654",
+        "a1543a06fefe2218",
+        "a318478e3dbdcffd",
+        "a4885d14e2502a75",
+        "a596453ece7d9495",
+        "a786d8ef5a25f2c0",
+        "a789506f950f2c89",
+        "a7d5326dad999b7c",
+        "aa29bd1fad0f6bd4",
+        "aa3d5346e38e2836",
+        "aa428f331041ff26",
+        "aa8c03f8e3493ec3",
+        "ab79a78b2ff60a58",
+        "af2cc8cca499cf83",
+        "af5f823643dcbf69",
+        "af6d525ca354be3d",
+        "b2cd326e05e4ed3f",
+        "b3272da21e4b149a",
+        "b369683fe7e3a6f6",
+        "b372a89d35f598da",
+        "b54a8f24a1adbbaf",
+        "b5b06a0100fab230",
+        "b752c5a883984d6e",
+        "b8c785e27f1cf655",
+        "b91846b2de279427",
+        "b9594f0a9ef606fd",
+        "b9dad18ec0b82997",
+        "ba28a6ce3c75ff74",
+        "ba82d74d18bffbd0",
+        "baa0a30c46d9482a",
+        "bad7601906dc70cb",
+        "bb4c001edfc012a0",
+        "bb7efcb59e21fa8c",
+        "bcb063b1829dcb62",
+        "bd5ac4c6fd77316c",
+        "be9f689eb8d07f5e",
+        "becc1a6a8dd4cde1",
+        "c01c8d96d28be66d",
+        "c18ec947ff702184",
+        "c239fdc6a858957e",
+        "c2eaff3173473a85",
+        "c6b22443e9fd950d",
+        "c7d606f267eb8d2d",
+        "c7de9077fb3f1873",
+        "ca82411612b20d54",
+        "cbc20180994b17ea",
+        "cc55484527b964c1",
+        "cc5eaa13d9d8bbb2",
+        "ce7bc6cf23f9b58e",
+        "cfc9e484b835cbc0",
+        "d03883bd774aeacc",
+        "d187a4d42b2d9fc9",
+        "d1d2c713ae5771d8",
+        "d284128b1bb64eca",
+        "d4b47339d0bbff9d",
+        "d7c1e5c72e735cab",
+        "d95c0b1ab5c155a0",
+        "da016e417bcbc218",
+        "da0e5b26df60ef51",
+        "dac8a433059398f5",
+        "dc5f5fadea5826ea",
+        "dcc8e29bb42e4931",
+        "de14ff6b7be1f25c",
+        "dfae33ad528e83c9",
+        "e0c7a12b01c1b2aa",
+        "e136b2d40abfd4bc",
+        "e1fd8122958ae5e8",
+        "e373b58cf091bdef",
+        "e8a544ff9b8c34a9",
+        "eb75bb518eef8887",
+        "ec0e8649032490ed",
+        "ec2e28a7d88b25ee",
+        "ec83e5a3580d44c5",
+        "ed0d318b287e660c",
+        "ed31e9b75354dc5d",
+        "ed399df51f044a68",
+        "ed932fd224300314",
+        "ee028afdd8064f3d",
+        "ee802f5d2a4a6dc1",
+        "efa42063ebc3ee7b",
+        "efaea3dbab051d5a",
+        "efef34cb528685d2",
+        "f13ee9a57accca64",
+        "f3197838b77f3fc9",
+        "f46dc06f8c0397af",
+        "f4c575d68a9dbc30",
+        "f4fcf0a72f35a5e9",
+        "f5248e4f8c0159d9",
+        "f62bef5aeb551fdc",
+        "f839b3b157e6d7cc",
+        "f88ef519b8886517",
+        "f9925a58b1ee5fb5",
+        "f9b2c8c0f7177e3f",
+        "fc542f771911f8a2",
+        "fe101b98740e349c",
+        "feeb00f5721ea94a"
+      ],
+      "tie": null
+    },
+    "explanation": "6 role-complete bundles (baseline included) x 20 frozen oracle cases x 2 repeats: 240 calls, 0 retries. Bundle r2b3-rl2-acur-cl2 is the top-ranked semantically accepted set: 120/120 role cells, 40/40 threshold-0 verdicts, 20/20 stable cases, zero regressions against the baseline. Confidence is diagnostic only; production review keeps the 0.6 threshold.",
+    "planner_action": "Write sealed_question_set.questions as the anchor's plan-questions override after validating this result; store tuning_history_after byte-identical. Do not use tournament confidence in production review.",
+    "question_action": null,
+    "sealed_question_set_digest_before": null,
+    "sealed_question_set_digest_after": "1236291db483a542206b94a3239bb90545678b5f97821adeee409e329f65743a",
+    "authority_recommendations": []
+  },
+  "error": null,
+  "metadata": {
+    "duration_ms": 5953,
+    "tool_calls": 240,
+    "retry_count": 0,
+    "correlation_id": "sc-runtime-phase-d-anc-035-planning-tune-v3-r2",
+    "jev_run_ids": [
+      "007d80723127c676",
+      "017e0fe8390c2951",
+      "06d8c74f194337b6",
+      "0798b058ebe8ecf8",
+      "07d14a7cd4b9014e",
+      "08db0a27fa627d63",
+      "08f9a6383035d6ee",
+      "09dd0dc359b23535",
+      "0a514ec47e0431a4",
+      "0ab08e6325b29dd7",
+      "0c8851b3645a8652",
+      "0fce1d717896713f",
+      "1024d1c71316b9a7",
+      "1122515ddef44a26",
+      "130f71934c649d2a",
+      "1317052d9146c93f",
+      "132d3b10f0617e78",
+      "138a404e919dbbd2",
+      "14644ed13724dba3",
+      "14a7dc0ff05daed4",
+      "16b837942e015702",
+      "1a73766a2d59e82d",
+      "1be51b454d55dd5d",
+      "1cbbf813ea120596",
+      "1dfe9a958ba142d7",
+      "1e222fe3aac5faee",
+      "1e34ceaa92854176",
+      "1e833a6bb8598a87",
+      "20749d16625507df",
+      "2119ddc64e36d4e5",
+      "2305d2f92e070876",
+      "23e7214de2b6dc6a",
+      "23e871c8600ce488",
+      "24914b0c84f8031b",
+      "24e67527344028c6",
+      "25493a9f16770b74",
+      "2662ca7461d2464a",
+      "26edb526d3c0a434",
+      "28cf04b94bba4f8c",
+      "2977dd22b37467af",
+      "2a3d128a86438e94",
+      "2aa37d86a423b873",
+      "2c4a3b625c8d5c49",
+      "2e66d551984c0bc4",
+      "2f5c4b4e5a8771f4",
+      "31253a0be94c8de6",
+      "3250fe7624ea96b7",
+      "3322a3fd18141c39",
+      "345bc25c1c871576",
+      "38a9748e284a9fd4",
+      "398c6bc081674f71",
+      "3a719a2499911a10",
+      "3c4830b852a5f14d",
+      "3d8f6420d0d8e948",
+      "40e2f732d16db53b",
+      "4161f3cdf699c27e",
+      "4230007333fa287b",
+      "433c7e95403ddfef",
+      "445ca40e48ef9145",
+      "4486c99e3f1cb62c",
+      "44975b84290b119d",
+      "46c577fef2a088ff",
+      "46f15dca8236662c",
+      "46f40533b72709a7",
+      "48aff455acab5608",
+      "49e8c22511658eaf",
+      "4aa551ca872f2299",
+      "4bdbecb0bc8f6f53",
+      "4c64ec78639aefba",
+      "4f2e27944041e0ac",
+      "4f6bb93820088d9a",
+      "503d686fb476781d",
+      "507c2d6b760e76e0",
+      "50aec94950fa003d",
+      "55404f1459b10605",
+      "55d02cc20ccfe37e",
+      "583d65467419671c",
+      "58a948e37e13a197",
+      "58b4ca2381cac968",
+      "5a175a5b1b8fed7b",
+      "5a7286c02e903c07",
+      "5a741322a74eee3c",
+      "5b02599af671f182",
+      "5b41e82812a4c7e1",
+      "5c48ae6151542c99",
+      "5d5762a4f71e2e88",
+      "5ebbf0fae3515271",
+      "5fa396cc854ac789",
+      "6025e673258957f8",
+      "6101570deabb3726",
+      "621c3056dd7fbd98",
+      "630ca7311d0644fd",
+      "631649e81539457f",
+      "6371969aab0f18d0",
+      "646a1b234a3a2b19",
+      "6541c65c0bed5f36",
+      "66a30999fc1679a9",
+      "66c920835850e418",
+      "6786749d9428445c",
+      "684f507b4aea6dc0",
+      "6a3b6d816705a1d2",
+      "6f4ab7463ae5c317",
+      "7053ebd99c5f48f1",
+      "7219553cc64ffc1d",
+      "73c5c4f9c2ef307e",
+      "7444b363da8a8820",
+      "767683610d2b3d4e",
+      "779a8800affacc87",
+      "77b87ba66b8b1a6a",
+      "788391880e3edf5e",
+      "78b12b4fc5a5ae0c",
+      "78f5a63217f7edcb",
+      "7b0cdef1d2e795ba",
+      "7d09ae854e13966a",
+      "7d36f6aa72ab204e",
+      "7de086a2b9ba0c6e",
+      "7e5ad1b995767a7d",
+      "7f6116649332c79e",
+      "81414acc1e83d3cc",
+      "8283c917757f7c48",
+      "83f759a26b6acfaf",
+      "8496dff244469692",
+      "84ebed2cc77de831",
+      "850e8b23d56fc16c",
+      "852d5a67b3ed22f4",
+      "8566bea38a423a27",
+      "86b9fd56f522c98c",
+      "8719955309faffdd",
+      "87214ccdb2c8c9bc",
+      "87baff9aef189861",
+      "87c4afde3cf24e7f",
+      "8960f7f8f34837de",
+      "8c5305cddca9c914",
+      "8ddab533d4fdb684",
+      "8e0e31955860b0b9",
+      "8eb06f68c86e3029",
+      "90ff38521acc0f82",
+      "911fc3c25ff0d264",
+      "9379077dbc73061c",
+      "958b29501bf98daf",
+      "97b3bb03db936000",
+      "989ce3d9e9332ccd",
+      "99e9f6f98b671356",
+      "9b441b4c4118e68f",
+      "9e4443d4c6a53654",
+      "a1543a06fefe2218",
+      "a318478e3dbdcffd",
+      "a4885d14e2502a75",
+      "a596453ece7d9495",
+      "a786d8ef5a25f2c0",
+      "a789506f950f2c89",
+      "a7d5326dad999b7c",
+      "aa29bd1fad0f6bd4",
+      "aa3d5346e38e2836",
+      "aa428f331041ff26",
+      "aa8c03f8e3493ec3",
+      "ab79a78b2ff60a58",
+      "af2cc8cca499cf83",
+      "af5f823643dcbf69",
+      "af6d525ca354be3d",
+      "b2cd326e05e4ed3f",
+      "b3272da21e4b149a",
+      "b369683fe7e3a6f6",
+      "b372a89d35f598da",
+      "b54a8f24a1adbbaf",
+      "b5b06a0100fab230",
+      "b752c5a883984d6e",
+      "b8c785e27f1cf655",
+      "b91846b2de279427",
+      "b9594f0a9ef606fd",
+      "b9dad18ec0b82997",
+      "ba28a6ce3c75ff74",
+      "ba82d74d18bffbd0",
+      "baa0a30c46d9482a",
+      "bad7601906dc70cb",
+      "bb4c001edfc012a0",
+      "bb7efcb59e21fa8c",
+      "bcb063b1829dcb62",
+      "bd5ac4c6fd77316c",
+      "be9f689eb8d07f5e",
+      "becc1a6a8dd4cde1",
+      "c01c8d96d28be66d",
+      "c18ec947ff702184",
+      "c239fdc6a858957e",
+      "c2eaff3173473a85",
+      "c6b22443e9fd950d",
+      "c7d606f267eb8d2d",
+      "c7de9077fb3f1873",
+      "ca82411612b20d54",
+      "cbc20180994b17ea",
+      "cc55484527b964c1",
+      "cc5eaa13d9d8bbb2",
+      "ce7bc6cf23f9b58e",
+      "cfc9e484b835cbc0",
+      "d03883bd774aeacc",
+      "d187a4d42b2d9fc9",
+      "d1d2c713ae5771d8",
+      "d284128b1bb64eca",
+      "d4b47339d0bbff9d",
+      "d7c1e5c72e735cab",
+      "d95c0b1ab5c155a0",
+      "da016e417bcbc218",
+      "da0e5b26df60ef51",
+      "dac8a433059398f5",
+      "dc5f5fadea5826ea",
+      "dcc8e29bb42e4931",
+      "de14ff6b7be1f25c",
+      "dfae33ad528e83c9",
+      "e0c7a12b01c1b2aa",
+      "e136b2d40abfd4bc",
+      "e1fd8122958ae5e8",
+      "e373b58cf091bdef",
+      "e8a544ff9b8c34a9",
+      "eb75bb518eef8887",
+      "ec0e8649032490ed",
+      "ec2e28a7d88b25ee",
+      "ec83e5a3580d44c5",
+      "ed0d318b287e660c",
+      "ed31e9b75354dc5d",
+      "ed399df51f044a68",
+      "ed932fd224300314",
+      "ee028afdd8064f3d",
+      "ee802f5d2a4a6dc1",
+      "efa42063ebc3ee7b",
+      "efaea3dbab051d5a",
+      "efef34cb528685d2",
+      "f13ee9a57accca64",
+      "f3197838b77f3fc9",
+      "f46dc06f8c0397af",
+      "f4c575d68a9dbc30",
+      "f4fcf0a72f35a5e9",
+      "f5248e4f8c0159d9",
+      "f62bef5aeb551fdc",
+      "f839b3b157e6d7cc",
+      "f88ef519b8886517",
+      "f9925a58b1ee5fb5",
+      "f9b2c8c0f7177e3f",
+      "fc542f771911f8a2",
+      "fe101b98740e349c",
+      "feeb00f5721ea94a"
+    ],
+    "planner_observation_trust": null,
+    "authoritative_sources_unchanged": true
+  }
+}

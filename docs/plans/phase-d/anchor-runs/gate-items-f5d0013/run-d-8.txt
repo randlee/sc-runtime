@@ -1,0 +1,27 @@
+# d-8: mysql-storage
+
+## Description
+
+### Deliverables
+
+1. Implement the same Storage<T> contract on direct sqlx-core/sqlx-mysql MySQL pool/migration code with engine-specific typed mapping — REQ-RUN-0328; PRD-STO2.
+2. Retain real MySQL errors/transaction semantics and replace per-table functions only with a compiling consumer path — ADR0020; REQ-RUN-0302.
+
+3. Implement the shared sc-storage Storage<T> trait, generic row mapping and engine factory contract and generated-key create/delete primitives using arbitrary conformance rows and generic atomic transaction begin/commit/retry. App supplies schema mapping; backend has no specific consumer table code — ANC-032/033/034/035.
+4. Replace sqlx umbrella with direct sqlx-core + engine driver + sqlx-macros requirements, retaining only necessary features; qualify real query macros, migration/offline/CLI paths, not just a successful resolver — REQ-RUN-0002; NFR-RUN-0007.
+
+### This sprint does not close
+Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.
+SQLite (d-6), Postgres (d-7) and MySQL (d-8) all implement the same sc-storage Storage<T> trait and its inherited generic AtomicStorage::transaction(spec, producer) operation; this single method runs several row operations as one atomic unit (ANC-032/033). This sprint implements Storage<T> for MysqlStore<T> using that shared trait, with no MySQL-specific parallel storage trait; it implements the SAME AtomicStorage::transaction(spec, producer) method with SERIALIZABLE transactions and retry.
+
+## Acceptance criteria
+
+boundary:template-store-mysql — identical row contract passes on actual MySQL with required CI service; typed errors and transaction behavior pass target/workspace/boundary checks. d-11 owns final surfaces/template composition.
+
+### Required validation commands
+Generate a development-source consumer with just new <temp-dir> --var-file wizard/fixtures/mysql.json. With a real provisioned MySQL service in MYSQL_DATABASE_URL and matching migrations applied by the test harness, run cargo test --manifest-path <temp-dir>/crates/store-mysql/Cargo.toml; cargo clippy --manifest-path <temp-dir>/crates/store-mysql/Cargo.toml --all-targets -- -D warnings; cargo build --manifest-path <temp-dir>/Cargo.toml --workspace; sc-lint lint sc-boundary --root <temp-dir> --config <temp-dir>/sc-lint.toml. SQLX_OFFLINE cache compilation alone is not live MySQL proof. d-8 owns .github/workflows/store-mysql.yml: provision its real mysql service and MYSQL_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_MYSQL=1 and fail on skipped live tests; no min/latest duplication. Preserve thin legacy wrappers until the actual consumer compiles.
+Boundary contract includes generic read/insert/delete primitives with generated ID and typed errors on arbitrary test rows against real engine, plus generic atomic serializable begin/commit/retry and panic-free typed Result behavior; shared contract imports real definitions. Test actual live query macros, migrations, offline/sqlx-toml replacement and CLI migration procedures as applicable. A cargo check-only probe is not evidence those paths work.
+Compile actual direct-crate backend + generic rusqlite writer dependency probes for selected mixed layouts. cargo tree -i libsqlite3-sys selects exactly one>=0.39 and cargo tree -i sqlx-sqlite has no selected package; never grep Cargo.lock. Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11 after sibling stores close. cargo build --workspace and live generated target engine tests pass at this sprint's closure. Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema; application service/schema wrapper supplies row descriptors. No ATM/sc-compose deps.
+Wire the single sc-storage observability wrapper defined/tested by d-5 into this engine; do not reimplement it. Engine tests use controlled observer inputs (ANC-033; NFR-RUN-0002).
+boundary:template-store-mysql/dependency-floors — sqlx-core/sqlx-mysql/sqlx-macros use >=0.9 with no upper bound (ANC-037). The normal backend suite exercises the real engine.
+boundary:template-store-mysql/atomic — MySQL implements the same generic transaction operation from the Storage<T> contract; a real MySQL conformance test performs several row mutations and proves they all commit or all roll back, including retry/error cases (ANC-032/033).

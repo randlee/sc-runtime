@@ -1,0 +1,1144 @@
+{
+  "consumer": "run-lead independent gate/drift review and owner final HTML",
+  "gate": "Scope-correct exclusions for four relevance-only failures",
+  "observed_defect": "Low-confidence relevance on work outside the four locked scopes",
+  "retirement": "Archive with Phase D review after implementation closes",
+  "failed_revision": "1b0dabc",
+  "failures": [
+    {
+      "row_id": "REL-01",
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081326Z-run-d-5",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.6,
+            "probabilities": {
+              "yes": 0.26,
+              "no": 0.73,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.82,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.88,
+              "unclear": 0.09
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.97,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.96,
+              "unclear": 0.02
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.65,
+              "unclear": 0.0
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.28,
+              "no": 0.71,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.74,
+            "probabilities": {
+              "yes": 0.05,
+              "no": 0.83,
+              "unclear": 0.12
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.96,
+              "unclear": 0.01
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "second",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.56
+          }
+        ],
+        "weak_sentence": "No .sc-runtime/ metadata work; nearest text changes dependency ranges.",
+        "diagnosis": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-038",
+        "version": 3,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "predates_failure": true
+      },
+      "reason": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+    },
+    {
+      "row_id": "REL-02",
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-026",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081419Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.58,
+            "probabilities": {
+              "no": 0.72,
+              "unclear": 0.02,
+              "yes": 0.26
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.52,
+            "probabilities": {
+              "no": 0.23,
+              "unclear": 0.09,
+              "yes": 0.68
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.02,
+              "yes": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.54,
+              "no": 0.45,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.72,
+            "probabilities": {
+              "yes": 0.17,
+              "no": 0.81,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.53,
+            "probabilities": {
+              "yes": 0.69,
+              "no": 0.29,
+              "unclear": 0.02
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.71,
+              "no": 0.26,
+              "unclear": 0.03
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.52,
+            "probabilities": {
+              "yes": 0.68,
+              "no": 0.31,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.61,
+            "probabilities": {
+              "no": 0.74,
+              "unclear": 0.01,
+              "yes": 0.25
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.49,
+            "probabilities": {
+              "no": 0.24,
+              "unclear": 0.1,
+              "yes": 0.66
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.58
+          }
+        ],
+        "weak_sentence": "Storage submission is never wrapped in spawn_blocking.",
+        "diagnosis": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-026",
+        "version": 2,
+        "statement": "Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.",
+        "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+        "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+        "predates_failure": true
+      },
+      "reason": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint."
+    },
+    {
+      "row_id": "REL-03",
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081419Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.34,
+              "no": 0.65,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.86,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.91,
+              "unclear": 0.07
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.82,
+            "probabilities": {
+              "yes": 0.11,
+              "no": 0.88,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.25,
+            "probabilities": {
+              "yes": 0.5,
+              "no": 0.5,
+              "unclear": 0.0
+            }
+          }
+        },
+        "question_answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.48
+          }
+        ],
+        "weak_sentence": "No .sc-runtime/ metadata work; nearest text changes dependency ranges.",
+        "diagnosis": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-038",
+        "version": 3,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "predates_failure": true
+      },
+      "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
+    },
+    {
+      "row_id": "REL-04",
+      "item_id": "run-d-12",
+      "anchor_id": "ANC-003",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081448Z-run-d-12",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.55,
+            "probabilities": {
+              "no": 0.7,
+              "unclear": 0.03,
+              "yes": 0.27
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.98,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.97,
+              "unclear": 0.01
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.96,
+              "unclear": 0.02
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.54,
+              "no": 0.45,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.6,
+            "probabilities": {
+              "no": 0.73,
+              "unclear": 0.03,
+              "yes": 0.24
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.55
+          }
+        ],
+        "weak_sentence": "After final0.3.0 conversion and registry availability, refresh template/.sc-runtime/**",
+        "diagnosis": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-003",
+        "version": 4,
+        "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+        "scope": "Changes scripts/new_project.py, the sc-compose executable selection logic, or generated-app generation instructions; excludes Rust crate dependency resolution.",
+        "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+        "predates_failure": true
+      },
+      "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
+    }
+  ],
+  "fix_rows": [
+    {
+      "row_id": "REL-01",
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081326Z-run-d-5",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.6,
+            "probabilities": {
+              "yes": 0.26,
+              "no": 0.73,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.82,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.88,
+              "unclear": 0.09
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.97,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.96,
+              "unclear": 0.02
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.65,
+              "unclear": 0.0
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.28,
+              "no": 0.71,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.74,
+            "probabilities": {
+              "yes": 0.05,
+              "no": 0.83,
+              "unclear": 0.12
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.96,
+              "unclear": 0.01
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "second",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.56
+          }
+        ],
+        "weak_sentence": "No .sc-runtime/ metadata work; nearest text changes dependency ranges.",
+        "diagnosis": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-038",
+        "version": 3,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "predates_failure": true
+      },
+      "reason": "d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12."
+    },
+    {
+      "row_id": "REL-02",
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-026",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081419Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.58,
+            "probabilities": {
+              "no": 0.72,
+              "unclear": 0.02,
+              "yes": 0.26
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.52,
+            "probabilities": {
+              "no": 0.23,
+              "unclear": 0.09,
+              "yes": 0.68
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.02,
+              "yes": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.54,
+              "no": 0.45,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.72,
+            "probabilities": {
+              "yes": 0.17,
+              "no": 0.81,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.53,
+            "probabilities": {
+              "yes": 0.69,
+              "no": 0.29,
+              "unclear": 0.02
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.71,
+              "no": 0.26,
+              "unclear": 0.03
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.52,
+            "probabilities": {
+              "yes": 0.68,
+              "no": 0.31,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.61,
+            "probabilities": {
+              "no": 0.74,
+              "unclear": 0.01,
+              "yes": 0.25
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.49,
+            "probabilities": {
+              "no": 0.24,
+              "unclear": 0.1,
+              "yes": 0.66
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.58
+          }
+        ],
+        "weak_sentence": "Storage submission is never wrapped in spawn_blocking.",
+        "diagnosis": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-026",
+        "version": 2,
+        "statement": "Callers MUST NOT use spawn_blocking to submit writes to the SQLite writer.",
+        "scope": "plan items that implement or change a SQLite storage backend, the SQLite writer, or the generated template's SQLite store",
+        "quote": "Every write to an app's SQLite database MUST go through one writer with an async channel input, a single thread that owns the only write connection, and batched transactions that reply after commit. No caller blocks or uses spawn_blocking to reach it.",
+        "predates_failure": true
+      },
+      "reason": "d-10 implements generic sc-command combinators and Python/Monty transforms against a Storage<T> double; it changes no SQLite backend, writer or generated SQLite store. Those callers/implementations are owned by d-6 and integrated by d-11; d-10 retains its own nonblocking storage-submission constraint."
+    },
+    {
+      "row_id": "REL-03",
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081419Z-run-d-10",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.34,
+              "no": 0.65,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.86,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.91,
+              "unclear": 0.07
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.82,
+            "probabilities": {
+              "yes": 0.11,
+              "no": 0.88,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.25,
+            "probabilities": {
+              "yes": 0.5,
+              "no": 0.5,
+              "unclear": 0.0
+            }
+          }
+        },
+        "question_answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.48
+          }
+        ],
+        "weak_sentence": "No .sc-runtime/ metadata work; nearest text changes dependency ranges.",
+        "diagnosis": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-038",
+        "version": 3,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "predates_failure": true
+      },
+      "reason": "d-10 changes generic commands/transforms and dependency floors, not .sc-runtime/ metadata or generation/tools that read/write recorded tested versions. d-11 owns that metadata path and d-12 refreshes release inputs."
+    },
+    {
+      "row_id": "REL-04",
+      "item_id": "run-d-12",
+      "anchor_id": "ANC-003",
+      "action": "exclude",
+      "why": {
+        "run_id": "plan-20261112T081448Z-run-d-12",
+        "question_answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.55,
+            "probabilities": {
+              "no": 0.7,
+              "unclear": 0.03,
+              "yes": 0.27
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.98,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.97,
+              "unclear": 0.01
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.02,
+              "no": 0.96,
+              "unclear": 0.02
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.54,
+              "no": 0.45,
+              "unclear": 0.01
+            }
+          }
+        },
+        "question_answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.6,
+            "probabilities": {
+              "no": 0.73,
+              "unclear": 0.03,
+              "yes": 0.24
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.55
+          }
+        ],
+        "weak_sentence": "After final0.3.0 conversion and registry availability, refresh template/.sc-runtime/**",
+        "diagnosis": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
+      },
+      "authority": {
+        "revision": "1b0dabc",
+        "id": "ANC-003",
+        "version": 4,
+        "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+        "scope": "Changes scripts/new_project.py, the sc-compose executable selection logic, or generated-app generation instructions; excludes Rust crate dependency resolution.",
+        "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+        "predates_failure": true
+      },
+      "reason": "d-12 refreshes recommendation inputs and runs delivered generation code unchanged; it changes neither scripts/new_project.py, sc-compose executable selection nor generated-app generation instructions. Compatible CLI generation is owned by d-4 and d-11."
+    }
+  ],
+  "evidence": [
+    {
+      "run_id": "plan-20261112T081326Z-run-d-5",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T081326Z-run-d-5.json",
+      "run_sha256": "1049d241f38c0f585eb248da10a6147c2c3d0b2d02b0d63097240257eb25f24b",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-1b0dabc/run-d-5.txt",
+      "snapshot_sha256": "7e91afbe6967cd2d925e6b221e06a80c4dbfa44e19001e8a701b55fbb3855073"
+    },
+    {
+      "run_id": "plan-20261112T081419Z-run-d-10",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T081419Z-run-d-10.json",
+      "run_sha256": "c56e401602834b29114100c52eaa224710fc896538beb9850da581ad71861a49",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-1b0dabc/run-d-10.txt",
+      "snapshot_sha256": "72b3cb3be857e180da0d152078e37a2f76c2c967ef2e3578b7e36b5f156ed2a8"
+    },
+    {
+      "run_id": "plan-20261112T081448Z-run-d-12",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T081448Z-run-d-12.json",
+      "run_sha256": "c095883759a50ded6642d9e010f68c581f12a63413bfe8a7b71566e53ec33bba",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-1b0dabc/run-d-12.txt",
+      "snapshot_sha256": "40907b6f6b5fad25f4eb1a7b053bf7127e6cfe01e52d7c1b737d2795bf43a5c5"
+    }
+  ],
+  "other_independent_owner_observations": [
+    {
+      "item_id": "run-d-6",
+      "anchor_id": "ANC-026",
+      "run_id": "plan-20261112T081329Z-run-d-6",
+      "verdict": "satisfied"
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-038",
+      "run_id": "plan-20261112T081432Z-run-d-11",
+      "verdict": "satisfied"
+    },
+    {
+      "item_id": "run-d-4",
+      "anchor_id": "ANC-003",
+      "run_id": "plan-20261112T081320Z-run-d-4",
+      "verdict": "satisfied"
+    }
+  ]
+}

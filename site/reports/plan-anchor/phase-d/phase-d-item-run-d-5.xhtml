@@ -1,0 +1,1720 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-item" id="item-run-d-5">
+  <div class="section-head">
+    <h2>run-d-5 <span class="unit-title">d-5: storage-contract</span> <span class="status status-pass">PASS</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy item data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;changes&quot;: [
+    {
+      &quot;after_chars&quot;: 7462,
+      &quot;before_chars&quot;: 3179,
+      &quot;field&quot;: &quot;description&quot;
+    },
+    {
+      &quot;after_chars&quot;: 5240,
+      &quot;before_chars&quot;: 1527,
+      &quot;field&quot;: &quot;acceptance_criteria&quot;
+    },
+    {
+      &quot;after_chars&quot;: 7915,
+      &quot;before_chars&quot;: 14484,
+      &quot;field&quot;: &quot;design&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+      &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+      &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+      &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+      &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+    }
+  ],
+  &quot;first&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T03:39:58+00:00&quot;,
+    &quot;excluded&quot;: [],
+    &quot;failing&quot;: [
+      &quot;ANC-016&quot;,
+      &quot;ANC-017&quot;,
+      &quot;ANC-021&quot;,
+      &quot;ANC-022&quot;,
+      &quot;ANC-023&quot;,
+      &quot;ANC-024&quot;,
+      &quot;ANC-027&quot;,
+      &quot;ANC-030&quot;,
+      &quot;ANC-031&quot;,
+      &quot;ANC-019&quot;,
+      &quot;ANC-025&quot;,
+      &quot;ANC-032&quot;,
+      &quot;ANC-033&quot;,
+      &quot;ANC-034&quot;,
+      &quot;ANC-036&quot;
+    ],
+    &quot;pass&quot;: false,
+    &quot;run_id&quot;: &quot;plan-20261112T033958Z-run-d-5&quot;,
+    &quot;score&quot;: &quot;5/21&quot;,
+    &quot;status&quot;: &quot;fail&quot;
+  },
+  &quot;id&quot;: &quot;run-d-5&quot;,
+  &quot;last&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T23:37:47+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+        &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+        &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+        &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+        &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+      }
+    ],
+    &quot;failing&quot;: [],
+    &quot;pass&quot;: true,
+    &quot;run_id&quot;: &quot;plan-20261112T233747Z-run-d-5&quot;,
+    &quot;score&quot;: &quot;33/33&quot;,
+    &quot;status&quot;: &quot;pass&quot;
+  },
+  &quot;runs&quot;: 27,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;text_note&quot;: &quot;&quot;,
+  &quot;text_source&quot;: &quot;bd&quot;,
+  &quot;title&quot;: &quot;d-5: storage-contract&quot;,
+  &quot;trail&quot;: [
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:39:58+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;,
+        &quot;ANC-017&quot;,
+        &quot;ANC-021&quot;,
+        &quot;ANC-022&quot;,
+        &quot;ANC-023&quot;,
+        &quot;ANC-024&quot;,
+        &quot;ANC-027&quot;,
+        &quot;ANC-030&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-019&quot;,
+        &quot;ANC-025&quot;,
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;,
+        &quot;ANC-034&quot;,
+        &quot;ANC-036&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T033958Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;5/21&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:41:24+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;,
+        &quot;ANC-017&quot;,
+        &quot;ANC-021&quot;,
+        &quot;ANC-022&quot;,
+        &quot;ANC-023&quot;,
+        &quot;ANC-024&quot;,
+        &quot;ANC-027&quot;,
+        &quot;ANC-029&quot;,
+        &quot;ANC-030&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-019&quot;,
+        &quot;ANC-025&quot;,
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;,
+        &quot;ANC-034&quot;,
+        &quot;ANC-036&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T034124Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;5/21&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:53:08+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;,
+        &quot;ANC-036&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T035308Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/12&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:06:29+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11 and d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T040629Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:44:32+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T044432Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:22:03+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-003&quot;,
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T052203Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/12&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:27:00+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T052700Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/11&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T05:34:43+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no &#x27;&lt;&#x27; bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T053443Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:08:52+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 owns no ANC-003 scope: it does not change scripts/new_project.py, sc-compose executable selection or generation instructions, and its crates take no sc-compose dependency; template generation with sc-compose 1.8.0 is exercised by d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-5 adds and retains no upper bound beyond a Cargo caret: its manifests (checked at 509017a) contain no &#x27;&lt;&#x27; bound, and it converts the six =1.5.0/=6.0.0 template pins to carets; ANC-016 covers those ranges and is judged on d-5.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T060852Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T06:46:36+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;Every d-5 dependency requirement is a normal caret or an internal SDK path identity; it adds or retains no explicit third-party upper bound beyond Cargo compatibility, the conditional scope of ANC-019.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T064636Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T07:19:33+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T071933Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/11&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T07:22:09+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T072209Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;11/11&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:05:00+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-038&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T080500Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;11/12&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:13:26+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-038&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T081326Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/11&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:17:48+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T081748Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;10/10&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:31:29+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T083129Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;9/9&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:19:51+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and dependency floors; it neither writes .sc-runtime/ metadata nor implements the generation step or tools that read/write the recorded versions. Those are owned by d-11 and refreshed by d-12.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-033&quot;,
+        &quot;ANC-032&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T091951Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;7/9&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:40:32+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T094032Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;9/9&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:48:55+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T094855Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;9/9&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;1/1&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T22:51:50+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-045&quot;,
+        &quot;ANC-046&quot;,
+        &quot;ANC-048&quot;,
+        &quot;ANC-049&quot;,
+        &quot;ANC-050&quot;,
+        &quot;ANC-052&quot;,
+        &quot;ANC-055&quot;,
+        &quot;ANC-044&quot;,
+        &quot;ANC-053&quot;,
+        &quot;ANC-054&quot;,
+        &quot;ANC-056&quot;,
+        &quot;ANC-057&quot;,
+        &quot;ANC-058&quot;,
+        &quot;ANC-059&quot;,
+        &quot;ANC-060&quot;,
+        &quot;ANC-061&quot;,
+        &quot;ANC-063&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T225150Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;16/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:05:20+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-053&quot;,
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T230520Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;31/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:17:14+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T231714Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;32/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:24:24+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T232424Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;32/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:29:06+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-054&quot;,
+        &quot;ANC-039&quot;,
+        &quot;ANC-040&quot;,
+        &quot;ANC-047&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T232906Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;29/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:33:36+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-039&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T233336Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;32/33&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:37:47+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ANC-003&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-036&quot;,
+          &quot;reason&quot;: &quot;d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-038&quot;,
+          &quot;reason&quot;: &quot;d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T233747Z-run-d-5&quot;,
+      &quot;score&quot;: &quot;33/33&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;url&quot;: &quot;&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-5: d-5: storage-contract
+Gate FAIL 5/21 -&gt; PASS 33/33 over 27 runs.
+Failing at first run: ANC-016, ANC-017, ANC-021, ANC-022, ANC-023, ANC-024, ANC-027, ANC-030, ANC-031, ANC-019, ANC-025, ANC-032, ANC-033, ANC-034, ANC-036.
+Failing now: none.
+Excluded ANC-003: d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.
+Excluded ANC-021: d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.
+Excluded ANC-022: d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.
+Excluded ANC-023: d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.
+Excluded ANC-024: d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.
+Excluded ANC-025: d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.
+Excluded ANC-027: d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.
+Excluded ANC-029: d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.
+Excluded ANC-030: d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.
+Excluded ANC-031: d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.
+Excluded ANC-036: d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.
+Excluded ANC-038: d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.
+Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
+    </div>
+  </div>
+
+  <table class="gate">
+    <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>5/21</td><td>ANC-016, ANC-017, ANC-021, ANC-022, ANC-023, ANC-024, ANC-027, ANC-030, ANC-031, ANC-019, ANC-025, ANC-032, ANC-033, ANC-034, ANC-036</td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>33/33</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <details class="trail">
+    <summary>All 27 runs</summary>
+    <table>
+      <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
+      <tbody>
+        <tr><td><code>plan-20261112T033958Z-run-d-5</code></td><td>2026-11-12T03:39:58+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/21</td><td>ANC-016, ANC-017, ANC-021, ANC-022, ANC-023, ANC-024, ANC-027, ANC-030, ANC-031, ANC-019, ANC-025, ANC-032, ANC-033, ANC-034, ANC-036</td></tr>
+        <tr><td><code>plan-20261112T034124Z-run-d-5</code></td><td>2026-11-12T03:41:24+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/21</td><td>ANC-016, ANC-017, ANC-021, ANC-022, ANC-023, ANC-024, ANC-027, ANC-029, ANC-030, ANC-031, ANC-019, ANC-025, ANC-032, ANC-033, ANC-034, ANC-036</td></tr>
+        <tr><td><code>plan-20261112T035308Z-run-d-5</code></td><td>2026-11-12T03:53:08+00:00</td><td><span class="status status-fail">FAIL</span></td><td>10/12</td><td>ANC-019, ANC-036</td></tr>
+        <tr><td><code>plan-20261112T040629Z-run-d-5</code></td><td>2026-11-12T04:06:29+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T044432Z-run-d-5</code></td><td>2026-11-12T04:44:32+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T052203Z-run-d-5</code></td><td>2026-11-12T05:22:03+00:00</td><td><span class="status status-fail">FAIL</span></td><td>10/12</td><td>ANC-003, ANC-019</td></tr>
+        <tr><td><code>plan-20261112T052700Z-run-d-5</code></td><td>2026-11-12T05:27:00+00:00</td><td><span class="status status-fail">FAIL</span></td><td>10/11</td><td>ANC-019</td></tr>
+        <tr><td><code>plan-20261112T053443Z-run-d-5</code></td><td>2026-11-12T05:34:43+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T060852Z-run-d-5</code></td><td>2026-11-12T06:08:52+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T064636Z-run-d-5</code></td><td>2026-11-12T06:46:36+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T071933Z-run-d-5</code></td><td>2026-11-12T07:19:33+00:00</td><td><span class="status status-fail">FAIL</span></td><td>10/11</td><td>ANC-019</td></tr>
+        <tr><td><code>plan-20261112T072209Z-run-d-5</code></td><td>2026-11-12T07:22:09+00:00</td><td><span class="status status-pass">PASS</span></td><td>11/11</td><td></td></tr>
+        <tr><td><code>plan-20261112T080500Z-run-d-5</code></td><td>2026-11-12T08:05:00+00:00</td><td><span class="status status-fail">FAIL</span></td><td>11/12</td><td>ANC-038</td></tr>
+        <tr><td><code>plan-20261112T081326Z-run-d-5</code></td><td>2026-11-12T08:13:26+00:00</td><td><span class="status status-fail">FAIL</span></td><td>10/11</td><td>ANC-038</td></tr>
+        <tr><td><code>plan-20261112T081748Z-run-d-5</code></td><td>2026-11-12T08:17:48+00:00</td><td><span class="status status-pass">PASS</span></td><td>10/10</td><td></td></tr>
+        <tr><td><code>plan-20261112T083129Z-run-d-5</code></td><td>2026-11-12T08:31:29+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
+        <tr><td><code>plan-20261112T091951Z-run-d-5</code></td><td>2026-11-12T09:19:51+00:00</td><td><span class="status status-fail">FAIL</span></td><td>7/9</td><td>ANC-033, ANC-032</td></tr>
+        <tr><td><code>plan-20261112T094032Z-run-d-5</code></td><td>2026-11-12T09:40:32+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
+        <tr><td><code>plan-20261112T094855Z-run-d-5</code></td><td>2026-11-12T09:48:55+00:00</td><td><span class="status status-pass">PASS</span></td><td>9/9</td><td></td></tr>
+        <tr><td><code>plan-20261112T100339Z-run-d-5</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+        <tr><td><code>plan-20261112T225150Z-run-d-5</code></td><td>2026-11-12T22:51:50+00:00</td><td><span class="status status-fail">FAIL</span></td><td>16/33</td><td>ANC-045, ANC-046, ANC-048, ANC-049, ANC-050, ANC-052, ANC-055, ANC-044, ANC-053, ANC-054, ANC-056, ANC-057, ANC-058, ANC-059, ANC-060, ANC-061, ANC-063</td></tr>
+        <tr><td><code>plan-20261112T230520Z-run-d-5</code></td><td>2026-11-12T23:05:20+00:00</td><td><span class="status status-fail">FAIL</span></td><td>31/33</td><td>ANC-053, ANC-054</td></tr>
+        <tr><td><code>plan-20261112T231714Z-run-d-5</code></td><td>2026-11-12T23:17:14+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/33</td><td>ANC-054</td></tr>
+        <tr><td><code>plan-20261112T232424Z-run-d-5</code></td><td>2026-11-12T23:24:24+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/33</td><td>ANC-054</td></tr>
+        <tr><td><code>plan-20261112T232906Z-run-d-5</code></td><td>2026-11-12T23:29:06+00:00</td><td><span class="status status-fail">FAIL</span></td><td>29/33</td><td>ANC-054, ANC-039, ANC-040, ANC-047</td></tr>
+        <tr><td><code>plan-20261112T233336Z-run-d-5</code></td><td>2026-11-12T23:33:36+00:00</td><td><span class="status status-fail">FAIL</span></td><td>32/33</td><td>ANC-039</td></tr>
+        <tr><td><code>plan-20261112T233747Z-run-d-5</code></td><td>2026-11-12T23:37:47+00:00</td><td><span class="status status-pass">PASS</span></td><td>33/33</td><td></td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ANC-003">ANC-003</a></th><td>d-5 defines storage APIs and shared manifests; it changes neither sc-compose executable selection nor generated-app generation instructions, so ANC-003 does not govern this work.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-021">ANC-021</a></th><td>d-5 defines the generic storage contract; generated apps defaulting cron rows into the app SQLite database is wired in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-5 defines the contract only; the SQLite channel writer that all writes go through is implemented and tested in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-023">ANC-023</a></th><td>d-5 defines the contract only; writer-thread ownership of the single write connection is implemented in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>d-5 defines the contract only; commit-before-reply in the SQLite writer is implemented and tested in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>d-5 defines the contract only; writer batching of queued writes into one transaction is implemented in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-5 defines the contract only; the non-blocking async caller path to the SQLite writer is implemented in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>d-5 is the storage contract; rejecting cron with the no-database template layout is template generation work in d-11.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-030">ANC-030</a></th><td>d-5 defines the generic transaction; sc-cron&#x27;s active-name rejection over it is implemented and its tests ported in d-9.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-031">ANC-031</a></th><td>d-5 defines the generic transaction; sc-cron&#x27;s row-limit refusal over it is implemented and its tests ported in d-9.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-036">ANC-036</a></th><td>d-5 defines the contract only; the SQLite writer thread and its panic delivery to waiting callers are implemented and tested in d-6.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-038">ANC-038</a></th><td>d-5 defines storage contracts and registry floors, not .sc-runtime/ metadata or the generation step/tools that read/write recorded tested versions; d-12 owns all recommendation production.</td><td>this round</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Text: first judged to now</h3>
+  <p class="small">Source: bd</p>
+  <details open="open">
+    <summary>description</summary>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="rm">- 1. Define real production Storage&lt;T&gt;, row mapping, Transform, StorageCommands/StorageCommandError and a named retryable atomic transaction producer/future in sc-storage. Storage backends are generic and contain no specific consumer&#x27;s row type, schema or SQL. Add std-only test doubles — REQ-RUN-0328; ADR-RUN-0020/0021; ANC-012/032/033/034.</div><div class="rm">- 2. Prototype the new transaction-future mechanism before freezing it. Producer owns Send+&#x27;static captures and creates a fresh body for retries; transaction spec declares only name and read-only/read-write. SQLite evaluates it in one queued savepoint and refuses actual suspension; Postgres/MySQL use begin/commit with serialization retry. The generic observability wrapper records name, queue wait, run time, row operation count and outcome. Settle exact handle/future shape and row mapping from prototype evidence, including whether one transaction spans row types (currently unbuilt, not forbidden) — ANC-033; NFR-RUN-0002.</div><div class="rm">- 3. Define the real backend factory/codec declarations in writer src/contract.rs and export them; define template schema WidgetStorage/OpenWidgetStore/StoresView extension signatures preserving existing create/get/delete. This is recommended option(a), PENDING USER RATIFICATION. Compile conformance cases against real exported traits, never copies — REQ-RUN-0201/0328; ADR-RUN-0020.</div><div class="rm">- 4. Define CronRow/CronStorage declarations, shared async conformance suite and double at tests/support/cron-storage; register the allowed test-double path. sc-cron will implement domain guarantees ONCE over the atomic unit, not in backends — REQ-CRON-0004/0020/0021; ANC-030/031/033/034.</div><div class="rm">- 5. Make additive shared contract registrations in workspace/template manifests and boundaries. Root registers sc-storage plus one rusqlite0.41 baseline inherited by sc-cron/writer; absorb legacy API drift and retain its existing SQLite tests. No version bump here: development stays0.2.0, release owner d-12 coordinates0.3.0. No rmcp-line edit in d-3-owned command/daemon manifests — REQ-RUN-0001/0002; REQ-DBSQ-0001.</div><div class="rm">- 6. Close ADR0020 Open items1-4 with dated decision text: read/write/atomic plus template extension, generic row mapping, schema/migration ownership, sc-storage/engine placement. Result status &#x27;Accepted pending owner (randlee) sign-off&#x27;; recommended contract and delete/create extension PENDING USER RATIFICATION, layers explicitly build at risk until approval. Item5 synchronization stays deferred. Amend ADR0021 transform/extra-path decisions without inventing permissions — ADR-RUN-0020/0021.</div><div class="rm">- 7. Public storage functions return Result&lt;T,E&gt;, never panic; writer panic completes every waiting caller with typed failure. Require external analyzer/no-panic enforcement dependencies below; no fake successful checks — ANC-035/036.</div><div class="ad">+ 1. Define the one shared sc-storage Storage&lt;T&gt; trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033). Define real std-only sc-storage Storage&lt;T&gt;, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+&#x27;static future per retry; phase-d transaction properties are name and read-only/read-write (ANC-033); engine retry defaults do not preclude a later transaction-specific retry policy. Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.</div><div class="ad">+ 2. Freeze row descriptors with validated Identifier values, typed StorageError codes/retryability/source/recovery, and template WidgetStorage/OpenWidgetStore/StoresView extensions preserving existing create/get/delete (REQ-RUN-0201/0328/0330). Public storage functions return typed Results and never panic (ANC-035). Backend factory entry points are concrete inherent methods; sc-command owns Transform and plain storage_read/storage_write functions in d-10, with no StorageCommands or SqliteDatabaseFactory trait.</div><div class="ad">+ 3. Define CronRow and an intentionally open CronStorage domain interface in sc-cron. CronStore wraps a backend Storage&lt;CronRow&gt;; it does not implement a public raw-write supertrait that bypasses fencing/name/row-limit policy. Declare the one shared generic double and conformance suite; d-9 implements cron policy once and owns its domain suite (REQ-CRON-0004/0005/0020/0021).</div><div class="ad">+ 4. Register sc-storage and shared SDK/backend dependencies in root/template registries and boundaries including the cron Windows dev-dependency lines, with &gt;= tested floors and no upper bound (ANC-037). Root owns rusqlite &gt;=0.41. Make only the legacy SQLite API/dependency adaptations necessary for this contract branch&#x27;s workspace build; the named files pass to d-9 for removal after contract sanity. Preserve existing legacy tests. Development remains0.2.0; release is coordinated0.3.0.</div><div class="ad">+ 5. Amend REQ-RUN-0002/0702 and NFR-RUN-0009 for nine public0.3.0 crates and shared-storage typed errors; amend REQ-DBSQ-0001/0002 for sc-storage/Tokio plus the generic async writer surface; amend REQ-CRON-0001/0004 and NFR-CRON-0001 for sc-storage/sc-command/sc-monty domain policy and removal of direct cron rusqlite/Monty engine ownership. Amend ADR-RUN-0020/0021 with the exact tested contracts. Owner (randlee) ratification of the proposed extension/transaction/row/migration shape is PENDING: record it and change both ADR statuses to Active before this sprint closes or d-6..d-12 start. Synchronization and unspecified permissions remain deferred.</div><div class="ad">+ 6. Record the existing one-checker interim rule in ADR-RUN-0005: d-3 owns it, d-11 uses it for generation, d-12 for unpacked archives/upload. Consumer=release reviewer; defect=restrictive SDK manifest defaults; remove after equivalent sc-lint#936 release and adoption. Record the approved nine-package tradeoff in ADR-RUN-0020: only SQLite gets the new published engine crate this phase; table-neutral Postgres/MySQL implementations remain generated, so fixes to that generated engine code require template updates/regeneration, not cargo update. Do not claim otherwise.</div><div class="eq"></div><div class="rm">- ## This sprint does not close</div><div class="rm">- No real engine/cron policy implementation, generated composition or publication. d-6 implements generic SQLite; d-9 owns cron schema/migration/policy over atomic storage; d-11 runs real engine conformance; d-12 publishes0.3.0 after generated sanity. New transaction futures are not copied from atm-core typed-op channels and are not yet prototyped.</div><div class="ad">+ 7. Deliver sc-monty in Wave 1 as the single Monty implementation, beginning with an exact copy of current sc-cron Monty code AND its unit and integration tests, passing before API extension. At the d-5 closing revision, sc-monty normal/build dependencies are only pydantic Monty crates: no sc-* crate, Tokio or serde_json, and no cron types or reserved cron names. The earlier unpublishable baseline commit preserves the original code/dependencies only to run the exact-copy tests before API changes; those temporary dependencies are removed before closure. Preserve every assertion while separating cron/JSON adapters. It owns compilation, compiled sessions, resource limits, host dispatch, typed errors and session byte dump/load. Expose a compiled session and value-level MontyInvoke&lt;Tin,Tout&gt; (script, function name, inputs -&gt; output); no new serialization framework. Move all interpreter machinery here; sc-cron, sc-command and generated services call it and contain no second host. Scheduler-specific adaptation and its integration tests remain in sc-cron, receiving Monty values rather than JSON strings. Register this ninth public crate in workspace/release/boundary inputs with open dependency floors; d-9 consumes it for hooks/cache and d-10 directly for transforms. — owner 2026-11-12 requirement change, item 1 and copy/single-implementation rulings.</div><div class="ad">+ </div><div class="ad">+ ## Boundaries and handoffs</div><div class="ad">+ No production storage engine or cron policy implementation, generated integration or publication; this sprint does deliver the independent sc-monty interpreter implementation. Real contract types/doubles compile and the workspace builds. Exact new transaction futures are prototype risk, not copied atm-core typed operations. D-6..d-10 consume the closed, ratified contract.</div><div class="ad">+ Register tests/support/storage and tests/support/cron-storage as allowed_test_double_paths in the relevant storage/cron boundary manifests and sc-lint configuration; these are private test support. Hand only each specific boundary facade file to d-6/d-9 after contract sanity. Convert sc-cron Windows dev requirements win32job &gt;=2.0.3 and waitpid-any &gt;=0.3.0 here; d-9 leaves those lines unchanged (ANC-037).</div><div class="ad">+ </div><div class="ad">+ The real sc-monty crate code and its initial copy/tests close here before d-9/d-10 consume it. Register sc-monty in the template service registry without coupling its feature to cron; hand template service manifests to d-10 and daemon selection to d-11. The cache-specific MontyBlobRow belongs to d-9, not a generic engine.</div><div class="ad">+ </div><div class="ad">+ The REQ/ADR amendments state the following contract, implemented by the named downstream owners: sc-cron captures each compiled session immediately after compilation and before any hook runs, then saves that snapshot through Storage&lt;MontyBlobRow&gt;, keyed by sc-sha SHA-256(source) plus dump version; source in CronRow is authoritative and only a matching key may load. Missing/corrupt/version-incompatible/missing-hook blobs recompile from source and overwrite; schedule writes reject non-compiling source before a tick (d-9; ANC-044/045/046/048). Transform sources load from an app-owned UTF-8 file at invocation and can be replaced without rebuilding (d-10; ANC-049). Transform/storage_read/storage_write are documented as provisional0.3.0 and their signatures preserve later second-input, typed no-write and atomic-transform additions without building those options (ANC-050/051/052). Basic commands need only types, built-in plain conversion and Storage&lt;T&gt;, without an app-written transform/action; no REQ/ADR mandates hand-writing or forbids later consumer-side generation (ANC-056/057/058). Widget create/delete use storage_write and get uses storage_read. The complete cron command set is cron.start/cron.end via storage_write and cron.list via storage_read; none is excluded. Consumers may enrich JSON before schedule persistence (d-11; ANC-053/054/055/059/060/063).</div><div class="ad">+ </div><div class="ad">+ The complete cron command set is: cron.start uses storage_write; cron.end uses storage_write; cron.list uses storage_read. Every cron command uses the shared path. No cron command is excluded (ANC-053/054).</div></div>
+  </details>
+  <details>
+    <summary>acceptance_criteria</summary>
+    <div class="diff"><div class="rm">- boundary:storage-contract — Real exported Storage/atomic producer/handle, row/error/factory, CronStorage/double and template create/get/delete extension compile. Generic suite runs double; production imports are checked, not replicas. Prototype demonstrates owned retryable bodies, rollback on Pending, two declared properties, typed Result/no panic and pending writer callers receiving failure. Name row/migration/transaction-lifetime decisions and dated ADR decisions; pending owner ratification remains explicit.</div><div class="rm">- boundary:storage-contract/workspace — cargo build --workspace; existing sc-cron legacy SQLite tests pass with inherited rusqlite0.41 at this closure. Cargo tree selected dependency graph has one libsqlite3-sys line; do not infer from Cargo.lock. Existing legacy assertions are preserved in shared conformance, never deleted to get green. New sc-storage is std-only and backend contracts have no consumer-specific types/schema/SQL, no ATM/sc-compose dependencies.</div><div class="rm">- Required: cargo test -p sc-storage; cargo test --manifest-path tests/support/cron-storage/Cargo.toml; cargo test -p sc-cron; cargo test --manifest-path tests/contracts/storage-v2/Cargo.toml against real exported APIs; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml. Prototype/analyzer tests include known-unsafe awaits/unmarked callees and Pending suspension, with controlled inputs. Static sc-lint dependencies remain visibly external until the actual rules run. No claim a prototype is production implementation.</div><div class="ad">+ boundary:storage-contract — Real exported row/storage/transaction/error/extension contracts and generic double compile; tests import production definitions, not replicas. Prototype verifies fresh owned retry bodies, atomic rollback on controlled Pending/error, exactly name/mode properties and controlled-clock transaction observations (ANC-033). Demonstrate multi-row-type support or the tested single-row-type limitation; if neither contract passes atomic/retry/safety cases, closure stays blocked.</div><div class="ad">+ boundary:storage-contract/ratification — Record randlee ratification and Active ADR-RUN-0020/0021 with the exact tested shape before closure. The named REQ/NFR amendments match the nine-package0.3.0 architecture. Future consumers never start against merely Proposed ADRs.</div><div class="ad">+ boundary:storage-contract/errors — StorageError exposes stable code, retryability, std::error::Error source and recovery guidance; mappings preserve those as typed cause/details without replacing existing domain error codes. Identifier construction returns typed errors and engines quote identifiers/parameterize values; descriptors contain no raw SQL.</div><div class="ad">+ boundary:storage-contract/workspace — cargo build --workspace and existing sc-cron legacy SQLite tests pass after necessary inherited rusqlite0.41 adaptations. Retain legacy assertions in the shared conformance suite. Generic test support contains no CronRow or domain policy; sc-storage is std-only.</div><div class="ad">+ Required: cargo test -p sc-storage; cargo test --manifest-path tests/support/storage/Cargo.toml; cargo test -p sc-cron; cargo test --manifest-path tests/contracts/storage-v2/Cargo.toml; cargo build --workspace; sc-lint lint sc-boundary --root . --config sc-lint.toml. The actual sc-lint#931 no-panic and external transaction-body analyzer must exist and pass on changed storage code before closure. Controlled unsafe-await/unmarked-helper/Pending cases stay separate from static proof; no implicit waiver.</div><div class="ad">+ </div><div class="ad">+ boundary:sc-monty — First preserve an exact code/test copy, including existing integration tests, and run it before API extension. Port every existing assertion through extraction; the standalone crate tests exercise compile/invoke, host dispatch, resource errors and dump/load with values. Cron-facing integration assertions run through the shared interpreter in d-9, not a replacement host. cargo test -p sc-monty and its README doctest pass; isolated cargo tree shows production dependencies only on the pydantic Monty crates, with no sc-*, tokio, serde_json, cron types or cron-reserved names. No Monty interpreter implementation remains outside sc-monty after the d-9/d-10 handoffs. Nine public crates release at0.3.0; sc-monty is implemented in Wave 1 and packaged in the first publication wave.</div><div class="ad">+ </div><div class="ad">+ boundary:transaction-extensibility — Retain bounded engine retry defaults. The specification uses the agreed non-exhaustive shape and constructors, with no engine-only retry prohibition; no per-transaction policy or test of that future option is built in phase-d (owner item8; PRD-ENG-6).</div><div class="ad">+ </div><div class="ad">+ boundary:copy-first-tests — Closing-revision rule (ANC-039/040): sc-monty normal/build dependencies are ONLY pydantic Monty crates, with NO sc-*, tokio or serde_json edge. No cron types/reserved names (including cron_tick/cron_stop) or second scheduler/store implementation remain in sc-monty source/tests. The preceding baseline is an earlier unpublishable commit, not this closing graph. In an isolated baseline worktree, first copy the whole current sc-cron package exactly, including implementation, tests, fixture data and its original dependencies/crate identity. Workspace/path wiring selects the copy at crates/sc-monty instead of the original tree. Before any API change, run original and copy with the same existing repository configurations/results, including cargo test -p sc-cron and rustup run 1.96.1 cargo test -p sc-cron --features monty, and retain existing Windows/sc-cron-commands coverage. Also run rustup run 1.96.1 cargo test -p sc-cron --features monty,monty-test-handshake on BOTH original and copy so the 18 monty_hook integration tests and handshake-only unit tests actually pass. Normal output records these results; current ignored/skipped tests stay so, including sc_compose_bench. Add no checker or CI job; run-3oeu owns the separate existing CI coverage gap. Record the passing exact-copy baseline commit before API changes and retain it as an ancestor of d-5&#x27;s closing commit. Then restore the normal workspace with separate sc-cron/sc-monty members and remove the temporary baseline-only dependencies/code to meet the closing rule above. Preserve every copied assertion: generic interpreter tests run in sc-monty; cron-specific assertions remain in sc-cron. Their port onto the shared interpreter is d-9 work, not a d-5 closure requirement. No transitional duplicate scheduler/store fixture or dev-dependency cycle remains at d-5 closure (ANC-039/040/041/042/062; range12 M32/m33/m34).</div><div class="ad">+ </div><div class="ad">+ boundary:production-dependencies — The published crate normal/build graphs forbid ATM and every sc-compose-repository crate except sc-sha. sc-monty is stricter: only pydantic Monty crates as production dependencies; the new allowed sc-sha use is in sc-cron, not the interpreter (ANC-039/061).</div></div>
+  </details>
+  <details>
+    <summary>design</summary>
+    <div class="diff"><div class="ch">## Proposed <del>signatures</del><ins>contracts</ins> — <del>prototype</del><ins>prototype,</ins> <del>and</del><ins>then</ins> <del>freeze</del><ins>owner</ins> <del>at contract closure</del><ins>ratification</ins></div><div class="ch"><del>These</del><ins>Phase-d</ins> <del>define</del><ins>implements</ins> <del>real</del><ins>name/mode</ins> <del>production</del><ins>transaction</ins> <del>APIs,</del><ins>properties</ins> <del>not</del><ins>and</ins> <del>test-directory</del><ins>finite</ins> <del>replicas.</del><ins>engine</ins> <del>Proposed</del><ins>retry/deadline</ins> <del>exact</del><ins>defaults.</ins> <del>handle/mapping design is the</del><ins>The</ins> contract <del>sprint&#x27;s</del><ins>permits</ins> <del>prototype</del><ins>adding</ins> <del>risk,</del><ins>a</ins> <del>not an already user-decided implementation. Only name and mode are transaction properties;</del><ins>transaction-specific</ins> retry policy <del>remains</del><ins>later;</ins> <del>engine</del><ins>that</ins> <del>implementation</del><ins>option</ins> <del>detail.</del><ins>is not implemented in phase-d. TransactionSpec uses constructors/builders and a non-exhaustive public shape rather than requiring consumer struct literals. Real exported interfaces live in sc-storage; no test-directory signature copies.</ins></div><div class="eq">```rust</div><div class="eq">// sc-storage; std-only, no sc-*, SQLx, rusqlite, ATM or sc-compose deps.</div><div class="eq">use std::{future::Future,pin::Pin};</div><div class="eq">pub enum TransactionMode { ReadOnly, ReadWrite }</div><div class="rm">- pub struct TransactionSpec { pub name: &amp;&#x27;static str, pub mode: TransactionMode }</div><div class="ad">+ #[non_exhaustive]</div><div class="ad">+ pub struct TransactionSpec { /* private name/mode; constructor and accessors */ }</div><div class="eq">pub type TransactionFuture&lt;&#x27;tx,R&gt; = Pin&lt;Box&lt;dyn Future&lt;Output=Result&lt;R,StorageError&gt;&gt;+Send+&#x27;tx&gt;&gt;;</div><div class="eq">pub trait TransactionProducer&lt;H,R&gt;: Send+Sync+&#x27;static {</div><div class="eq">    fn start&lt;&#x27;tx&gt;(&amp;&#x27;tx self, tx:&amp;&#x27;tx mut H)-&gt;TransactionFuture&lt;&#x27;tx,R&gt;;</div><div class="eq">}</div><div class="eq">pub trait StorageRow: Send+Sync+&#x27;static {</div><div class="eq">    type Key: Send+Sync+&#x27;static;</div><div class="eq">    type New: Send+&#x27;static;</div><div class="eq">    fn schema()-&gt; &amp;&#x27;static RowSchema;</div><div class="eq">    fn encode(&amp;self)-&gt;Result&lt;Vec&lt;Value&gt;,StorageError&gt;;</div><div class="eq">    fn decode(values:Vec&lt;Value&gt;)-&gt;Result&lt;Self,StorageError&gt; where Self:Sized;</div><div class="eq">}</div><div class="eq">pub trait TransactionHandle: Send {</div><div class="eq">    fn read&lt;T:StorageRow&gt;(&amp;mut self,key:T::Key)-&gt;impl Future&lt;Output=Result&lt;Option&lt;T&gt;,StorageError&gt;&gt;+Send;</div><div class="eq">    fn write&lt;T:StorageRow&gt;(&amp;mut self,row:T)-&gt;impl Future&lt;Output=Result&lt;(),StorageError&gt;&gt;+Send;</div><div class="eq">}</div><div class="ch">//<del> Optional</del> CRUD primitives <ins>built </ins>for<ins> option (a),</ins> the <del>proposed </del>template <del>extension,</del><ins>extension;</ins> <del>not</del><ins>no</ins> domain SQL.</div><div class="eq">pub trait CrudTransaction: TransactionHandle {</div><div class="eq">    fn insert&lt;T:StorageRow&gt;(&amp;mut self,new:T::New)-&gt;impl Future&lt;Output=Result&lt;T,StorageError&gt;&gt;+Send;</div><div class="eq">    fn delete&lt;T:StorageRow&gt;(&amp;mut self,key:T::Key)-&gt;impl Future&lt;Output=Result&lt;bool,StorageError&gt;&gt;+Send;</div><div class="eq">}</div><div class="eq">pub trait AtomicStorage: Send+Sync {</div><div class="eq">    type Transaction: TransactionHandle;</div><div class="eq">    fn transaction&lt;R:Send+&#x27;static,P:TransactionProducer&lt;Self::Transaction,R&gt;&gt;(</div><div class="eq">        &amp;self,spec:TransactionSpec,producer:P</div><div class="eq">    )-&gt;impl Future&lt;Output=Result&lt;R,StorageError&gt;&gt;+Send;</div><div class="eq">}</div><div class="eq">pub trait Storage&lt;T&gt;: AtomicStorage {</div><div class="eq">    type Key: Send+Sync;</div><div class="eq">    type Error: std::error::Error+Send+Sync+&#x27;static;</div><div class="eq">    fn read(&amp;self,key:Self::Key)-&gt;impl Future&lt;Output=Result&lt;Option&lt;T&gt;,Self::Error&gt;&gt;+Send;</div><div class="eq">    fn read_all(&amp;self)-&gt;impl Future&lt;Output=Result&lt;Vec&lt;T&gt;,Self::Error&gt;&gt;+Send;</div><div class="eq">    fn write(&amp;self,row:T)-&gt;impl Future&lt;Output=Result&lt;(),Self::Error&gt;&gt;+Send;</div><div class="eq">}</div><div class="eq">```</div><div class="rm">- StorageError is a typed enum covering encoding/mapping, engine/query, conflict/serialization, suspension, worker failure/panic and closure; no panic/unwrap bridge. RowSchema/Value are backend-neutral table/column/key/value descriptors fixed by the prototype, not SQL strings. Producer owns captures; each retry clones immutable inputs into a fresh future. Result owns its data and cannot leak the transaction handle. Whether transactions span several row types remains an explicit prototype decision, neither promised built nor forbidden. Public APIs always return typed Results.</div><div class="rm">- SQLite: read-write body is one message to writer, one savepoint in the outer queued-write transaction; all .await must be transaction-handle operations. Call graph is checked by the external analyzer, including transaction-safe-marked callees. A Pending poll is a typed suspension failure with rollback; Ready/Err rolls back, Ready/Ok replies only after outer commit. Read-only may execute on a reader. Writer unwind is caught at the worker boundary; fail every admitted/in-flight/queued reply, close admission and return typed errors to racing submitters. Reader workers use blocking_recv; only writer owns Runtime::block_on per root constraints. PostgreSQL/MySQL default uses real serializable transaction isolation, begin/commit and fresh-body retry on serialization failure. Cancellation rolls back, never commits after refusal.</div><div class="rm">- ```rust</div><div class="rm">- // template schema: existing concrete row/key/error types, no new DTO identity.</div><div class="rm">- use std::future::Future;</div><div class="rm">- use sc_storage::Storage;</div><div class="rm">- pub trait WidgetStorage: Storage&lt;WidgetRow,Key=WidgetId,Error=StoreError&gt; {</div><div class="rm">-     fn create_widget(&amp;self,name:String)-&gt;impl Future&lt;Output=Result&lt;WidgetRow,StoreError&gt;&gt;+Send;</div><div class="rm">-     fn delete_widget(&amp;self,key:WidgetId)-&gt;impl Future&lt;Output=Result&lt;bool,StoreError&gt;&gt;+Send;</div><div class="rm">- }</div><div class="rm">- pub trait OpenWidgetStore: WidgetStorage+Sized {</div><div class="rm">-     fn open(config:&amp;OpenConfig)-&gt;impl Future&lt;Output=Result&lt;Self,StoreError&gt;&gt;+Send;</div><div class="rm">- }</div><div class="rm">- pub trait StoresView {</div><div class="rm">-     type Widgets: WidgetStorage;</div><div class="rm">-     fn widgets(&amp;self)-&gt;&amp;Self::Widgets;</div><div class="rm">- }</div><div class="rm">- ```</div><div class="rm">- Tsql=existing schema::WidgetRow{id:schema::WidgetId,name:String}; Key=schema::WidgetId; draft New={name:String} has no key. Keep api-types CLI DTO identities and existing conversions/errors. WidgetStorage uses the generic atomic unit/CRUD transaction primitives for generated-key insert/delete, pending owner ratification; map typed storage failures to existing StoreCode/StoreError, never strings. Each engine exports generic Store&lt;T&gt; and async open&lt;T:StorageRow&gt;(&amp;EngineConfig)-&gt;Result&lt;Store&lt;T&gt;,StorageError&gt;; EngineConfig is table-neutral (SQLite path, Postgres URL, MySQL URL). It validates target and applies the application-supplied row schema before returning. Application-owned OpenWidgetStore translates existing OpenConfig/StoreError, not an engine trait. SQLite Store clones one supplied/shared SqliteDatabase. Generated service Stores implements StoresView and passes its Widgets to common commands. d-5 owns actual schema definitions; d-6/7/8 implement generic Storage&lt;T&gt;/CRUD primitives with arbitrary contract rows; d-10 implements WidgetStorage/OpenWidgetStore application wrappers and consumes them.</div><div class="rm">- StorageCommands/StorageCommandError and Transform signatures from STEP3 live in sc-storage; sc-command&#x27;s local DefaultStorageCommands implements that foreign trait in d-10. Factory/codec definitions live in real writer src/contract.rs and exported lib.rs; contract tests import them. SqliteDatabase::open(path,capacity,readers).await then storage::&lt;T&gt;(mapping).await applies registered generic schema on its writer; no consumer table code in backend. Factory/mapping declarations are frozen before consumers begin. No signature copies remain as an alternate source.</div><div class="rm">- CronRow wraps existing Schedule without dropping its stored fields. Real awaited CronStorage declarations in sc-cron retain create/get/list_active, fenced record_run/set_next/stop/disable, set_enabled, atomic set_enabled_many/replace_and_set_enabled, limits, query and operation context from STEP3. Implementation in d-9 is CronStore&lt;S:Storage&lt;CronRow&gt;&gt;, using generic transactions for domain read/check/mutate atomically. Table/column mapping and legacy cron.db migration belong to sc-cron, never backend crates. The one shared tests/support/cron-storage crate exports the controlled double plus generic async conformance cases derived from current consumer_contract.rs; d-9 runs double, d-11 runs actual engines. d-5 registers it at boundaries/sc-cron/sc-cron.toml allowed_test_double_paths and as private test support; no second copy of cron types. d-6 uses generic-row conformance only.</div><div class="rm">- </div><div class="rm">- ## External dependencies and prototype acceptance</div><div class="rm">- No-panic enforcement: randlee/sc-lint#931 (external). Transaction-body await analyzer: second sc-lint rule, external request not yet filed; lead owns that request. Record external state honestly; do not replace either with a grep or a fabricated successful linter. d-5 defines the transaction-safe marker contract with that rule&#x27;s maintainer, and prototype/runtime tests are separate from static analyzer evidence. Production release requires actual analyzer/no-panic enforcement on changed phase code, or a new explicit user decision; no implicit waiver. Analyzer rejects awaits on non-tx handles and calls to unmarked helpers; runtime non-suspension is an additional check, not proof of static safety.</div><div class="rm">- </div><div class="rm">- ## Staged manifest and source handoffs</div><div class="rm">- Parallel d-3/d-4/d-5 files do not overlap. d-3 owns command and daemon manifests entirely (including rmcp) through closure. d-10 follows d-3/d-5 and takes command manifest only to register sc-storage. d-5 owns root members/workspace.dependencies registration; d-12 later owns0.3.0 version conversion and Cargo.lock, after consumed owners close. d-5 registers sc-storage/writer/rusqlite baseline in sc-cron/writer/store manifests without deleting old SQLx code. Those files pass to d-9/d-6/d-7/d-8 after d-5 sanity; only those layers remove SQLx SQLite/legacy rusqlite and implement direct SQLx driver imports. Root rusqlite0.41 baseline is shared with retained cron legacy; d-5 absorbs legacy API drift in its explicitly staged sqlite/operation/consumer-contract modules, d-9 later removes them. No backend-&gt;sc-cron dependency or optional cron feature remains.</div><div class="rm">- The root and generated workspace remain development0.2.0 until d-12; this is never published. D-12 converts sibling version literals to workspace-inherited deps and bumps all8 to0.3.0 atomically before archive rehearsal. D-12 alone commits canonical root Cargo.lock after all public source owners close; earlier sprints regenerate temporary worktree locks to build/test, never claim an old locked file proves selected native libraries. Shared boundaries and generated renderer profiles remain d-5; source owners implement within budgets. D-5 amends REQ-CRON-0004 own-file-store definition and exact workspace-member requirement.</div><div class="rm">- </div><div class="rm">- ## Ratification</div><div class="rm">- ADR0020 Open1 read/write/atomic plus proposed template extension; Open2 handwritten generic row descriptors; Open3 application-owned schema, engine migrates before open returns; Open4 sc-storage + table-neutral backends. Each gets dated decision text and status Accepted pending owner (randlee) sign-off; owner has not ratified extension/shape. Item5 synchronization remains deferred. ADR0021 supplies transform via the existing async Transform seam, extra create/delete paths use the template extension, permissions remain unspecified/deferred. Layer starts acknowledge at-risk pending ratification; publication cannot treat it as approved.</div><div class="rm">- ## Remaining real contract signatures</div><div class="rm">- ```rust</div><div class="rm">- // real sc-runtime-db-sqlite::contract, imported by contract/layer tests</div><div class="rm">- use std::{future::Future,path::Path};</div><div class="rm">- use sc_storage::{Storage,StorageRow,StorageError};</div><div class="rm">- pub trait SqliteDatabaseFactory:Clone+Send+Sync+Sized {</div><div class="rm">-     type Store&lt;T:StorageRow&gt;:Storage&lt;T,Key=T::Key,Error=StorageError&gt;;</div><div class="rm">-     fn open(path:&amp;Path,capacity:usize,readers:usize)-&gt;impl Future&lt;Output=Result&lt;Self,StorageError&gt;&gt;+Send;</div><div class="rm">-     fn storage&lt;T:StorageRow&gt;(&amp;self)-&gt;impl Future&lt;Output=Result&lt;Self::Store&lt;T&gt;,StorageError&gt;&gt;+Send;</div><div class="rm">-     fn shutdown(&amp;self)-&gt;impl Future&lt;Output=Result&lt;(),StorageError&gt;&gt;+Send;</div><div class="rm">- }</div><div class="rm">- ```</div><div class="rm">- ```rust</div><div class="rm">- // real sc-storage command vocabulary, implemented by sc-command DefaultStorageCommands</div><div class="rm">- use std::future::Future;</div><div class="rm">- pub trait Transform&lt;I,O&gt;:Send+Sync {</div><div class="rm">-     type Error:std::error::Error+Send+Sync+&#x27;static;</div><div class="rm">-     fn apply(&amp;self,input:I)-&gt;impl Future&lt;Output=Result&lt;O,Self::Error&gt;&gt;+Send;</div><div class="rm">- }</div><div class="rm">- pub enum StorageCommandError&lt;S,T&gt; { Storage(S),Transform(T) }</div><div class="rm">- pub trait StorageCommands {</div><div class="rm">-     fn storage_write&lt;I:Send,T:Send+Sync,S:Storage&lt;T&gt;,X:Transform&lt;I,T&gt;&gt;(</div><div class="rm">-         &amp;self,store:&amp;S,transform:&amp;X,input:I</div><div class="rm">-     )-&gt;impl Future&lt;Output=Result&lt;(),StorageCommandError&lt;S::Error,X::Error&gt;&gt;&gt;+Send;</div><div class="rm">-     fn storage_read&lt;I:Send,T:Send+Sync,S:Storage&lt;T&gt;,X:Transform&lt;T,I&gt;&gt;(</div><div class="rm">-         &amp;self,store:&amp;S,transform:&amp;X,key:S::Key</div><div class="rm">-     )-&gt;impl Future&lt;Output=Result&lt;Option&lt;I&gt;,StorageCommandError&lt;S::Error,X::Error&gt;&gt;&gt;+Send;</div><div class="rm">- }</div><div class="rm">- ```</div><div class="ad">+ StorageError covers mapping/engine/conflict/suspension/worker-failure/closure and provides code(), is_retryable(), source() and recovery(). Error mappings retain typed causes and remediation while preserving existing domain codes; do not include panic payloads or sensitive data. RowSchema uses validated Identifier values (nonempty, no NUL); engines quote/escape identifiers and bind values rather than accepting SQL strings. SqliteOpenOptions names queue_capacity and reader_count with nonzero types, instead of adjacent usize parameters.</div><div class="ad">+ Storage/AtomicStorage/TransactionHandle/CrudTransaction/TransactionProducer/StorageRow remain intentionally open for backend, row and producer implementations. CronStorage is open for consumer adapters; WidgetStorage/OpenWidgetStore/StoresView for application wrappers. Current implementations use static dispatch, with concrete generated engine selection; no dyn-selection framework is requested. TransactionProducer&#x27;s boxed future is only its lifetime-carrying future representation.</div><div class="ad">+ Concrete SqliteDatabase::open(path, options), storage&lt;T&gt;() and shutdown()/wait_closed() are d-6 inherent APIs; no single-implementation factory trait. Real options/codec declarations stay in writer contract.rs; d-5 exports those declarations and d-6 implements the database. Template schema owns WidgetRow/WidgetId/WidgetStorage/OpenWidgetStore/StoresView, not engine crates. Store&lt;T&gt; uses the application row descriptors/migrations. Transform and StorageCommandError belong beside the two generic free functions in sc-command, implemented in d-10.</div><div class="ad">+ SQLite read-write transactions are one queued message/savepoint; all awaits use transaction-handle operations, Pending rolls back with a typed error, and success replies follow outer commit. Writer panic fails every admitted/in-flight/queued reply and closes admission. Read-only workers use blocking_recv without a runtime; only the writer owns Runtime::block_on. The actual transaction-safe analyzer is mandatory; its marker is coordinated with its maintainer, not declared advisory or invented before delivery.</div><div class="eq">```rust</div><div class="eq">// sc-cron: existing types imported from crate; all operations awaited.</div><div class="eq">use std::future::Future;</div><div class="eq">use sc_storage::Storage;</div><div class="eq">use crate::{Schedule,ScheduleId,ScheduleName,NewSchedule,Generation,Timestamp,</div><div class="eq">    RunOutcome,ScheduleLimits,CronError,StoreOperationSupport,StoreOperationContext,</div><div class="eq">    ScheduleQuery,SchedulePage};</div><div class="eq">pub struct CronRow { pub schedule: Schedule }</div><div class="ch">pub trait CronStorage: <del>Storage&lt;CronRow,Key=ScheduleId,Error=CronError&gt;</del><ins>Send+Sync</ins> {</div><div class="eq">    fn limits(&amp;self) -&gt; ScheduleLimits;</div><div class="eq">    fn operation_support(&amp;self) -&gt; StoreOperationSupport;</div><div class="eq">    fn with_operation_context&lt;&#x27;a,T:Send+&#x27;a,F:Future&lt;Output=Result&lt;T,CronError&gt;&gt;+Send+&#x27;a&gt;(</div><div class="eq">        &amp;&#x27;a self, context: &amp;&#x27;a StoreOperationContext,</div><div class="eq">        operation: impl FnOnce(&amp;&#x27;a Self)-&gt;F + Send+&#x27;a</div><div class="ch">    )-&gt;impl <del>Future&lt;Output=Result&lt;T,CronError&gt;&gt;+Send+&#x27;a where Self:Sized;</del><ins>Future&lt;Output=Result&lt;T,CronError&gt;&gt;+Send+&#x27;a;</ins></div><div class="eq">    fn query(&amp;self, query: &amp;ScheduleQuery) -&gt; impl Future&lt;Output=Result&lt;SchedulePage,CronError&gt;&gt; + Send;</div><div class="eq">    fn create(&amp;self, value: &amp;NewSchedule, at:Timestamp) -&gt; impl Future&lt;Output=Result&lt;Schedule,CronError&gt;&gt; + Send;</div><div class="eq">    fn get(&amp;self, id:ScheduleId) -&gt; impl Future&lt;Output=Result&lt;Option&lt;Schedule&gt;,CronError&gt;&gt; + Send;</div><div class="eq">    fn list_active(&amp;self) -&gt; impl Future&lt;Output=Result&lt;Vec&lt;Schedule&gt;,CronError&gt;&gt; + Send;</div><div class="eq">    fn record_run(&amp;self,id:ScheduleId,generation:Generation,at:Timestamp,outcome:&amp;RunOutcome) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn set_next(&amp;self,id:ScheduleId,generation:Generation,at:Timestamp) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn stop(&amp;self,id:ScheduleId,generation:Generation,at:Timestamp,reason:&amp;str) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn disable(&amp;self,id:ScheduleId,generation:Generation,at:Timestamp,reason:&amp;str) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn set_enabled(&amp;self,name:&amp;ScheduleName,enabled:bool) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn set_enabled_many(&amp;self,flags:&amp;[(ScheduleName,bool)]) -&gt; impl Future&lt;Output=Result&lt;bool,CronError&gt;&gt; + Send;</div><div class="eq">    fn replace_and_set_enabled(&amp;self,value:&amp;NewSchedule,enabled:bool,at:Timestamp,flags:&amp;[(ScheduleName,bool)]) -&gt; impl Future&lt;Output=Result&lt;Option&lt;Schedule&gt;,CronError&gt;&gt; + Send;</div><div class="eq">}</div><div class="eq">```</div><div class="rm">- Factory creates generic stores from application-owned StorageRow mapping; no per-table codec declaration in backend. RowSchema/Value/StorageError are defined/exported once in sc-storage by this sprint; engine codecs interpret those generic descriptors. CronStore adapter maps StorageError to CronError, template wrappers map it to StoreError. No backend dependency on either consumer. Existing cooperative context becomes an awaited scope and propagates copied cancellation metadata to each atomic request, no sync-over-async callback.</div><div class="rm">- Consumer-neutrality fence: no schema::WidgetRow/WidgetId, api-types or sc-cron import in engine crates. App schema owns row descriptors; d-10 service WidgetStore&lt;S&gt; adapts generic storage and maps errors, and d-11 injects concrete engine stores. Backend conformance uses arbitrary test-only rows, not an application/cron table. Exact generic per-engine factory signatures and application factory adapters are real d-5 declarations; backend Config types carry path/URL only, no table fields.</div><div class="ad">+ CronStore&lt;S:Storage&lt;CronRow&gt;&gt; keeps the backend private and implements only the domain CronStorage surface. All scheduler mutations enter fenced read/check/write transactions; no raw public write bypass. CronRow preserves stored Schedule fields; sc-cron owns domain schema/migration and one policy conformance suite, generic tests/support/storage owns no cron policy. D-9 receives lib.rs/row.rs/storage.rs and the legacy source files after the additive contract/legacy-compatibility build passes; it removes the old facade in0.3.0. Source handoffs are staged on the existing d-5-&gt;d-9 edge, never concurrent ownership.</div><div class="ad">+ Root Cargo.toml belongs to d-5 for registrations/rusqlite &gt;=0.41 and passes directly to d-12 for release-version conversion. Layer owners consume that root read-only. D-5&#x27;s remaining layer-file handoffs are additive contract declarations and the minimal legacy compile adaptation, not duplicate implementation obligations. Canonical root Cargo.lock remains d-12-owned. Pending owner ratification gates d-5; Active ADR0020/0021 land before consumers start.</div><div class="ad">+ </div><div class="ad">+ The nine-package engine placement tradeoff is recorded in ADR0020 for owner ratification; it does not prohibit consumer engine implementations or future separately requested publication.</div></div>
+  </details>
+</section>

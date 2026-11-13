@@ -1,0 +1,161 @@
+{
+ "schema": "plan-anchor/tune-candidates/1",
+ "gate": "planning",
+ "anchor_id": "ANC-035",
+ "candidates": {
+  "relevant": {
+   "rel-current": {
+    "criteria": {
+     "no": "The item touches none of them.",
+     "unclear": "The item is too vague to tell.",
+     "yes": "The item touches public functions of sc-storage, sc-runtime-db-sqlite or a template store."
+    },
+    "instructions": "Does `item.text` touch the public storage functions named in `anchor.scope`? Judge subject overlap only.",
+    "type": "choice"
+   },
+   "rel-signals": {
+    "type": "choice",
+    "instructions": "Does `item.text` add or change a public storage function as described in `anchor.scope`? A public storage function is a public function that reads, writes or transacts stored data, in any crate; the crates named in `anchor.scope` are examples, not a complete list. Judge subject overlap only; do not judge panics.",
+    "criteria": {
+     "yes": "The item adds or changes a public function that reads, writes or transacts stored data: a storage trait or engine backend (such as sc-storage, sc-runtime-db-sqlite, or a PostgreSQL or MySQL backend), a domain store built on generic storage (such as sc-cron's CronStore/CronStorage or a stored-data migration), or a template store.",
+     "no": "The item adds or changes no public function that reads or writes stored data: for example it only touches documentation, CI, dependency versions, expression parsing, command-line handling or other code that does not read or write stored data.",
+     "unclear": "The item is too vague to tell whether any public function it changes reads or writes stored data."
+    }
+   },
+   "rel-compact": {
+    "type": "choice",
+    "instructions": "Does `item.text` add or change any public storage function (a public function that reads, writes or transacts stored data), in any crate? The crates named in `anchor.scope` are examples only. Judge subject overlap only.",
+    "criteria": {
+     "yes": "The item adds or changes a public function that reads, writes or transacts stored data, such as a storage backend, a domain store such as CronStore, or a template store.",
+     "no": "The item adds or changes no public function that reads or writes stored data.",
+     "unclear": "The item is too vague to tell."
+    }
+   },
+   "rel-list": {
+    "type": "choice",
+    "instructions": "Does `item.text` touch the public storage functions described in `anchor.scope`? Judge subject overlap only.",
+    "criteria": {
+     "yes": "The item touches public functions of sc-storage, sc-runtime-db-sqlite or another storage engine backend, of a domain store built on generic storage such as sc-cron's CronStore/CronStorage, or of a template store.",
+     "no": "The item touches none of them, including public functions that do not read or write stored data.",
+     "unclear": "The item is too vague to tell."
+    }
+   }
+  },
+  "addressed": {
+   "add-current": {
+    "criteria": {
+     "no": "No: the item is silent about panics, only generally topical about errors, or plans a panic.",
+     "unclear": "Whether the item commits to not panicking cannot be determined.",
+     "yes": "Yes: the item states the public storage functions do not panic."
+    },
+    "instructions": "Does `item.text` state that the public storage functions it touches avoid panicking (returning typed errors instead of panicking, or denying unwrap/expect/panic)? Judge presence only.",
+    "type": "choice"
+   },
+   "add-any-crate": {
+    "type": "choice",
+    "instructions": "Does `item.text` state that the public storage functions it adds or changes, in whichever crate or store, avoid panicking (returning typed errors instead of panicking, or denying unwrap/expect/panic)? Judge presence only.",
+    "criteria": {
+     "yes": "Yes: the item states the public storage functions do not panic.",
+     "no": "No: the item is silent about panics, only generally topical about errors, or plans a panic.",
+     "unclear": "Whether the item commits to not panicking cannot be determined."
+    }
+   },
+   "add-typed": {
+    "type": "choice",
+    "instructions": "Does `item.text` commit that the public storage functions it touches do not panic, for example by stating they return typed errors instead of panicking, or by denying unwrap, expect and panic in them? Judge presence of that commitment only; do not judge conflict.",
+    "criteria": {
+     "yes": "The item states that the public storage functions it touches do not panic or return typed errors instead of panicking.",
+     "no": "The item is silent about panics, only generally mentions errors or error messages, or plans a panic.",
+     "unclear": "It cannot be determined whether the item commits to the functions not panicking."
+    }
+   }
+  },
+  "contradicted": {
+   "con-current": {
+    "criteria": {
+     "no": "No such outcome is stated, including when the item is silent about panics.",
+     "unclear": "It may let a public storage function panic but cannot be determined.",
+     "yes": "A public storage function is stated to panic on some path."
+    },
+    "instructions": "Does `item.text` plan for a public sc-storage, sc-runtime-db-sqlite or template store function to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Silence about panics is not conflict; unwrap in tests and panics outside storage code are outside `anchor.statement`. Judge conflict only.",
+    "type": "choice"
+   },
+   "con-any-crate": {
+    "type": "choice",
+    "instructions": "Does `item.text` plan for a public storage function (a public function that reads, writes or transacts stored data, in any crate: a storage backend, a domain store such as CronStore, or a template store) to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Silence about panics is not conflict; unwrap in tests and panics in code that does not read or write stored data are outside `anchor.statement`. Judge conflict only.",
+    "criteria": {
+     "yes": "A public storage function is stated to panic on some path.",
+     "no": "No such outcome is stated, including when the item is silent about panics.",
+     "unclear": "It may let a public storage function panic but cannot be determined."
+    }
+   },
+   "con-compact": {
+    "type": "choice",
+    "instructions": "Does `item.text` plan for a public storage function, in the sense of `anchor.scope` and in any crate, to panic (unwrap, expect, panic!, or a panicking assert), even on a single path? Silence about panics is not conflict; unwrap in tests and panics outside storage functions are outside `anchor.statement`. Judge conflict only.",
+    "criteria": {
+     "yes": "A public storage function is stated to panic on some path.",
+     "no": "No such outcome is stated, including when the item is silent about panics.",
+     "unclear": "It may let a public storage function panic but cannot be determined."
+    }
+   }
+  }
+ },
+ "bundles": [
+  {
+   "bundle_id": "b1-rsig-acur-cany",
+   "roles": {
+    "relevant": "rel-signals",
+    "addressed": "add-current",
+    "contradicted": "con-any-crate"
+   }
+  },
+  {
+   "bundle_id": "b2-rcmp-acur-ccmp",
+   "roles": {
+    "relevant": "rel-compact",
+    "addressed": "add-current",
+    "contradicted": "con-compact"
+   }
+  },
+  {
+   "bundle_id": "b3-rlist-acur-ccur",
+   "roles": {
+    "relevant": "rel-list",
+    "addressed": "add-current",
+    "contradicted": "con-current"
+   }
+  },
+  {
+   "bundle_id": "b4-rcmp-acur-cany",
+   "roles": {
+    "relevant": "rel-compact",
+    "addressed": "add-current",
+    "contradicted": "con-any-crate"
+   }
+  },
+  {
+   "bundle_id": "b5-rsig-aany-ccmp",
+   "roles": {
+    "relevant": "rel-signals",
+    "addressed": "add-any-crate",
+    "contradicted": "con-compact"
+   }
+  },
+  {
+   "bundle_id": "b6-rlist-atyp-cany",
+   "roles": {
+    "relevant": "rel-list",
+    "addressed": "add-typed",
+    "contradicted": "con-any-crate"
+   }
+  },
+  {
+   "bundle_id": "b7-rcur-acur-cany",
+   "roles": {
+    "relevant": "rel-current",
+    "addressed": "add-current",
+    "contradicted": "con-any-crate"
+   }
+  }
+ ]
+}

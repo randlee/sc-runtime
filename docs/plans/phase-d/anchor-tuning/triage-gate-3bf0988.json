@@ -1,0 +1,861 @@
+{
+  "consumer": "run-lead independent gates and drift review; owner final HTML",
+  "gate": "Phase D plan acceptance",
+  "observed_defect": "Dropped constraint, relevance ambiguity and drift review scope/ownership defects",
+  "deletion_condition": "Archive with accepted Phase D review after implementation closes",
+  "failed_revision": "3bf0988",
+  "failures": [
+    {
+      "item_id": "run-d-8",
+      "anchor_id": "ANC-021",
+      "run_id": "plan-20261112T094111Z-run-d-8",
+      "why": "MySQL engine work is outside the SQLite/cron persistence scope.",
+      "raw_cell": {
+        "anchor_id": "ANC-021",
+        "source_type": "ANC",
+        "source_ref": null,
+        "statement": "In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.",
+        "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file.",
+        "stated_by": "Rand Lee",
+        "stated_at": "2026-11-11",
+        "context": "Phase D planning session; option B storage decision",
+        "anchor_version": 2,
+        "deterministic_check": "generated SQLite+cron app: cron schedule table exists in the app database file and no other .db file is created under the instance root (test)",
+        "kind": "directive",
+        "leaning": "not_applicable",
+        "question_set": {
+          "gate": "plan",
+          "version": 1,
+          "overridden": true
+        },
+        "questions_sha256": "f9998e0fdd522cfb6528330162b4c3a069a181796ebc4d8e0f82e3eeb208082d",
+        "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+        "questions": {
+          "relevant": {
+            "criteria": {
+              "no": "The item concerns a different subsystem (for example dependency bumps, advisories, transport, documentation of other features), or it expressly concerns only apps that have no SQLite database and leaves SQLite apps unchanged.",
+              "unclear": "The item text is too vague to tell whether it touches cron storage, cron wiring, or the SQLite store.",
+              "yes": "The item changes, configures, or depends on cron storage, cron persistence configuration, the generated template's SQLite store, or cron wiring in an app that has a SQLite database."
+            },
+            "instructions": "Does `item.text` plan, change, or depend on how or where cron schedule rows are persisted, or the cron wiring, for an app that has a SQLite database? Signals: sc-cron's SQLite storage, a cron database location or URL setting, the generated template's SQLite store or database layout, or the template's cron wiring. Judge subject overlap only; do not judge whether the item obeys any rule.",
+            "type": "choice"
+          },
+          "addressed": {
+            "criteria": {
+              "no": "The item is silent about where cron rows are stored, only mentions cron storage as a topic, or states a different default location such as a separate cron.db or schedules file.",
+              "unclear": "The item mentions where cron rows go but it cannot be determined whether the default is the app's own SQLite database file.",
+              "yes": "The item states that by default cron rows live in the app's SQLite database file, in any of the accepted wordings."
+            },
+            "instructions": "Does `item.text` state that, by default, cron schedule rows are stored in the same SQLite database file as the app's own data? Accept equivalent wording: the cron table is created inside the app database (for example app.db), sc-cron reuses the app's SQLite pool, connection, or DATABASE_URL by default, or the app opens one database file holding both. An additional optional, non-default setting to move cron elsewhere does not remove a stated same-file default. Judge presence of this default only; do not judge conflict.",
+            "type": "choice"
+          },
+          "contradicted": {
+            "criteria": {
+              "no": "No stated default places cron rows outside the app's SQLite database file, including when the item is silent, only topical, compliant, offers only an opt-in override, or concerns apps without a SQLite database.",
+              "unclear": "The item states a cron storage default whose location relative to the app's SQLite file cannot be determined.",
+              "yes": "The item sets or keeps a default in which cron rows are stored outside the app's SQLite database file."
+            },
+            "instructions": "Does `item.text` make the default configuration store cron rows somewhere other than the app's SQLite database file in an app that has a SQLite database and enables cron? Examples of conflict: a separate cron.db or schedules.sqlite file by default, a separate cron database URL by default, or sharing the app file offered only as an opt-in. Not a conflict: silence about storage, topic-only mention, a same-file default, or an optional non-default override. Judge conflict only.",
+            "type": "choice"
+          },
+          "owns": {
+            "type": "choice",
+            "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`). Is this item itself responsible for delivering the requirement, meaning the item's own work implements, changes or tests the specific behavior `anchor.statement` requires? Answer no if the item only depends on that behavior, consumes it, re-runs or audits it as final validation, defers it to another sprint or item, or does not touch it. Judge responsibility only, not whether the item states the requirement clearly or obeys it.",
+            "criteria": {
+              "yes": "The item's own deliverables implement, change or test the behavior the requirement is about.",
+              "no": "The item only depends on, consumes, re-validates or defers this behavior, or works on something else.",
+              "unclear": "The item text does not make it possible to tell whether it delivers this behavior itself."
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "instructions": "Imagine a developer who reads only `item.text` and has never seen `anchor.statement`. Working from `item.text` alone, would they know that they must deliver exactly what `anchor.statement` requires: the same condition (mode, command, input or artifact) and the same specific result (behavior, error, value, count or prohibition)? Answer no if they could follow `item.text` faithfully and still miss or get wrong any specific part of the requirement, for example because the item names only the topic, refers to it only through a test name, or covers it with a general phrase such as 'existing behavior remains'. Judge only whether the item text alone conveys the requirement, not whether the item is responsible for it.",
+            "criteria": {
+              "yes": "Reading only the item, a developer would know to deliver the requirement's condition and its specific result.",
+              "no": "A developer following only the item could miss or get wrong a specific part of the requirement.",
+              "unclear": "The item conveys part of the requirement, and it is not possible to tell whether the rest is implied."
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "instructions": "Does `item.text` state the specific requirement in `anchor.statement` as something the item must do or verify, in a sentence or clause of its own? Answer no when the requirement is only implied, appears only as a detail inside a test name or a list of other things, is covered only by a generic phrase (for example 'existing behavior remains'), or is absent. Judge how explicitly it is stated, not whether the item is responsible for it.",
+            "criteria": {
+              "yes": "A sentence or clause in the item states this requirement's specific content as a step, constraint or acceptance criterion.",
+              "no": "The requirement's specific content is only implied, buried in a test name or list, covered by a generic phrase, or absent.",
+              "unclear": "Some text may state the requirement, but it is not possible to tell whether it states this specific content."
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Does `item.text` contain a passage that means the same thing as `anchor.statement` but uses different words, numbers or structure (for example a count instead of a list, a synonym, or a summary phrase that a domain reader would take as equivalent)? Judge equivalence of meaning, not wording.",
+            "criteria": {
+              "yes": "A passage in the item means the same as the requirement in different words.",
+              "no": "No passage in the item means the same as the requirement.",
+              "unclear": "A passage is close in meaning but it is not possible to tell whether a domain reader would take it as equivalent."
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "instructions": "The state holds one planning item (`item.title`, `item.text`) and one requirement (`anchor.statement`, area in `anchor.scope`). Split `anchor.statement` into its specific parts: the condition (mode, command, input or artifact) and each required result (behavior, error, value, count or prohibition). Does `item.text` state at least one of these parts but omit or blur at least one other? Judge completeness only.",
+            "criteria": {
+              "yes": "The item states some parts of the requirement and omits or blurs at least one other part.",
+              "no": "The item states every part, or states none of them.",
+              "unclear": "It is not possible to tell which parts the item covers."
+            }
+          }
+        },
+        "near_threshold": true,
+        "confirmed": true,
+        "verdict": "underspecified",
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.53,
+            "probabilities": {
+              "no": 0.69,
+              "unclear": 0.01,
+              "yes": 0.3
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.98,
+              "unclear": 0.01,
+              "yes": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.46,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.64,
+              "unclear": 0.01
+            }
+          }
+        },
+        "min_confidence": 0.53,
+        "explanation": "Jev was not confident (min confidence 0.53); the anchor or the bead may be underspecified.",
+        "usage": {
+          "input_tokens": 2116,
+          "output_tokens": 117
+        },
+        "low_questions": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.53
+          }
+        ],
+        "triage_questions": [
+          "owns",
+          "specific",
+          "stated",
+          "paraphrase",
+          "partial"
+        ],
+        "triage_attempts": 1,
+        "attempts": 2,
+        "item_chars_sent": 4431,
+        "item_shortened": false,
+        "request_bytes": 7951
+      },
+      "authority": {
+        "id": "ANC-021",
+        "version": 2,
+        "statement": "In an app that has a SQLite database and enables cron, the default configuration MUST store cron rows in the app's SQLite database file.",
+        "scope": "plan items that change sc-cron storage, cron persistence configuration, or the generated template's SQLite store or cron wiring",
+        "quote": "When an app has a SQLite database and enables cron, cron rows MUST by default be stored in that same SQLite database file."
+      },
+      "authority_revision": "3bf0988"
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-038",
+      "run_id": "plan-20261112T094130Z-run-d-9",
+      "why": "Dependency ranges alone are expressly outside the metadata scope.",
+      "raw_cell": {
+        "anchor_id": "ANC-038",
+        "source_type": "ANC",
+        "source_ref": null,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "stated_by": "randlee",
+        "stated_at": "2026-11-11",
+        "context": "Phase D planning, m6 owner decision 2026-11-12",
+        "anchor_version": 4,
+        "deterministic_check": "Generate an application; assert a .sc-runtime/ metadata file lists every locked dependency version and matches the shipped Cargo.lock.",
+        "kind": "directive",
+        "leaning": "not_applicable",
+        "question_set": {
+          "gate": "plan",
+          "version": 1,
+          "overridden": false
+        },
+        "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+        "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+        "near_threshold": true,
+        "confirmed": true,
+        "verdict": "underspecified",
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.58,
+            "probabilities": {
+              "yes": 0.27,
+              "no": 0.72,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.95,
+              "unclear": 0.04
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "yes": 0.06,
+              "no": 0.93,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 0.99,
+              "unclear": 0.01
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.35,
+            "probabilities": {
+              "yes": 0.43,
+              "no": 0.57,
+              "unclear": 0.0
+            }
+          }
+        },
+        "min_confidence": 0.58,
+        "explanation": "Jev was not confident (min confidence 0.58); the anchor or the bead may be underspecified.",
+        "usage": {
+          "input_tokens": 2653,
+          "output_tokens": 117
+        },
+        "low_questions": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.58
+          }
+        ],
+        "triage_questions": [
+          "owns",
+          "specific",
+          "stated",
+          "paraphrase",
+          "partial"
+        ],
+        "triage_attempts": 1,
+        "attempts": 2,
+        "item_chars_sent": 6522,
+        "item_shortened": false,
+        "request_bytes": 9803
+      },
+      "authority": {
+        "id": "ANC-038",
+        "version": 4,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
+      },
+      "authority_revision": "3bf0988"
+    },
+    {
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-037",
+      "run_id": "plan-20261112T094141Z-run-d-10",
+      "why": "The newly added requirement lost its explicit no-upper-bound commitment.",
+      "raw_cell": {
+        "anchor_id": "ANC-037",
+        "source_type": "ANC",
+        "source_ref": null,
+        "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+        "stated_by": "randlee",
+        "stated_at": "2026-11-11",
+        "context": "Phase D planning, m6 owner decision 2026-11-12",
+        "anchor_version": 2,
+        "deterministic_check": "Parse every published-crate and template Cargo.toml registry requirement; fail on any '<', '<=', '=', '~' or caret requirement (caret implies an upper bound).",
+        "kind": "prohibition",
+        "leaning": "satisfied",
+        "question_set": {
+          "gate": "plan",
+          "version": 1,
+          "overridden": false
+        },
+        "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+        "extra_questions_sha256": "2c336ccce283f2c51d6ae8000e7531cc7f44a06907bc0a28a13ead14170d7fb6",
+        "verdict": "underspecified",
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 1.0,
+              "no": 0.0,
+              "unclear": 0.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.67,
+            "probabilities": {
+              "yes": 0.78,
+              "no": 0.18,
+              "unclear": 0.04
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.43,
+            "probabilities": {
+              "yes": 0.37,
+              "no": 0.62,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.41,
+              "no": 0.58,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.86,
+            "probabilities": {
+              "yes": 0.07,
+              "no": 0.91,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.5,
+            "probabilities": {
+              "yes": 0.32,
+              "no": 0.67,
+              "unclear": 0.01
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.33,
+            "probabilities": {
+              "yes": 0.42,
+              "no": 0.55,
+              "unclear": 0.03
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.64,
+            "probabilities": {
+              "yes": 0.76,
+              "no": 0.23,
+              "unclear": 0.01
+            }
+          }
+        },
+        "min_confidence": 0.43,
+        "explanation": "Jev was not confident (min confidence 0.43); the anchor or the bead may be underspecified.",
+        "usage": {
+          "input_tokens": 1904,
+          "output_tokens": 117
+        },
+        "low_questions": [
+          {
+            "ask": "first",
+            "role": "conflict",
+            "question_id": "contradicted",
+            "choice": "no",
+            "confidence": 0.43
+          }
+        ],
+        "triage_questions": [
+          "owns",
+          "specific",
+          "stated",
+          "paraphrase",
+          "partial"
+        ],
+        "triage_attempts": 1,
+        "attempts": 1,
+        "item_chars_sent": 4179,
+        "item_shortened": false,
+        "request_bytes": 7245
+      },
+      "authority": {
+        "id": "ANC-037",
+        "version": 2,
+        "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+        "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+      },
+      "authority_revision": "3bf0988"
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-10",
+      "field": "description",
+      "action": "replace",
+      "sentence": "add sc-storage >=0.2.0 (>=0.3.0 at release) in the handed-off command manifest",
+      "replacement": "add sc-storage >=0.2.0 (>=0.3.0 at release), with no upper bound, in the handed-off command manifest",
+      "authority": [
+        "ANC-037"
+      ],
+      "why": "plan-20261112T094141Z-run-d-10: contradicted=no confidence0.43; restored the dropped explicit property of the new requirement."
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "description",
+      "action": "replace",
+      "sentence": "Convert every registry line in the owned sc-cron-commands manifest to >= tested floors, explicitly utoipa >=6.0.0 and schemars >=1.2.3, with no upper bound; preserve features (ANC-037).",
+      "replacement": "Convert every remaining registry line in crates/sc-cron/Cargo.toml and every registry line in crates/sc-cron-commands/Cargo.toml, including dev/optional entries, to >= tested floors with no upper bound; preserve features. This includes async-trait, chrono, cron, getrandom, tokio, tracing, process-wrap, monty, monty-types, tempfile and libc, plus utoipa >=6.0.0 and schemars >=1.2.3 in sc-cron-commands (ANC-037).",
+      "authority": [
+        "ANC-037"
+      ],
+      "why": "Drift M11: remaining bare/caret sc-cron lines had no converting owner; d-5 owns only the Windows conversion."
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "all registry requirements changed here in sc-cron/sc-cron-commands use >= tested floors with no upper bound",
+      "replacement": "every registry requirement in sc-cron/sc-cron-commands uses >= its tested floor with no upper bound",
+      "authority": [
+        "ANC-037"
+      ],
+      "why": "Drift M11: checking only lines changed here omitted unassigned existing requirements."
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "These are the CronStorage domain functions governed by NFR-RUN-0009 and REQ-CRON-0005",
+      "replacement": "These are the public storage functions governed by ANC-035, NFR-RUN-0009 and REQ-CRON-0005",
+      "authority": [
+        "ANC-035",
+        "NFR-RUN-0009",
+        "REQ-CRON-0005"
+      ],
+      "why": "Drift M13: restore the previously required anchor tracking; naming the functions must not remove the development-gate check."
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "action": "replace",
+      "sentence": "SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033).",
+      "replacement": "Define the one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033).",
+      "authority": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "why": "Drift m20: d-5 closes the contract, not three later engine implementations."
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "description",
+      "action": "replace",
+      "sentence": "SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033).",
+      "replacement": "Implement SQLite's share of the one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033).",
+      "authority": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "why": "Drift m20: each engine sprint closes its own implementation; the shared three-engine contract remains explicit."
+    },
+    {
+      "item_id": "run-d-7",
+      "field": "description",
+      "action": "replace",
+      "sentence": "SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033).",
+      "replacement": "Implement Postgres's share of the one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033).",
+      "authority": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "why": "Drift m20: each engine sprint closes its own implementation; the shared three-engine contract remains explicit."
+    },
+    {
+      "item_id": "run-d-8",
+      "field": "description",
+      "action": "replace",
+      "sentence": "SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033).",
+      "replacement": "Implement MySQL's share of the one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033).",
+      "authority": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "why": "Drift m20: each engine sprint closes its own implementation; the shared three-engine contract remains explicit."
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "d-12 changes only SDK release-version lines",
+      "replacement": "in SDK crate manifests and root Cargo.toml, d-12 changes only release-version lines",
+      "authority": [
+        "ANC-037",
+        "REQ-RUN-0002"
+      ],
+      "why": "Drift m21: scope the restriction to its manifests; recommendation delivery and consumer-manifest conversions remain required."
+    },
+    {
+      "item_id": "run-d-3",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-10",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "description",
+      "action": "replace",
+      "sentence": "## This sprint does not close",
+      "replacement": "## Boundaries and handoffs",
+      "authority": [
+        "PRD-ENG-4"
+      ],
+      "why": "Drift m22: positive assigned obligations must not sit beneath a heading saying this sprint does not close them."
+    },
+    {
+      "item_id": "run-d-8",
+      "anchor_id": "ANC-021",
+      "action": "exclude",
+      "why": "MySQL engine work is outside the SQLite/cron persistence scope.",
+      "replacement": "d-8 implements the generic MySQL engine and its dependency probes; it changes neither SQLite store or cron wiring nor cron persistence configuration. d-11 owns default cron rows in the app SQLite database.",
+      "authority": [
+        "ANC-021"
+      ]
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "why": "Dependency ranges alone are expressly outside the metadata scope.",
+      "replacement": "d-9 implements cron policy, migration and registry dependency floors; it does not write/read .sc-runtime/ tested-version metadata or its generation tools. d-12 owns that metadata and recommendation production.",
+      "authority": [
+        "ANC-038"
+      ]
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "action": "remove_exclusion",
+      "why": "Drift M13: previous m2 required retaining the public storage development check; stricter reading prevails.",
+      "authority": [
+        "ANC-035"
+      ],
+      "replacement": "Restore live plan and development-gate applicability; named typed-error/no-panic functions remain explicit."
+    }
+  ],
+  "evidence": [
+    {
+      "run": "docs/plans/phase-d/anchor-runs/plan-20261112T094111Z-run-d-8.json",
+      "run_sha256": "73e3121ac0291378814d14ba8b141ec01ba068f55901e25048fdfc4488d7a678",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-3bf0988/run-d-8.txt",
+      "snapshot_sha256": "35a687f9d8c2cd3e5911aaf136f46e95c74d1a7efcdce455fcaa2706130333e3"
+    },
+    {
+      "run": "docs/plans/phase-d/anchor-runs/plan-20261112T094130Z-run-d-9.json",
+      "run_sha256": "a153b565d51efac338c1e192ab76ec409ca16af67e030dafc4bfb7d013d18a87",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-3bf0988/run-d-9.txt",
+      "snapshot_sha256": "1e08628afc213463fbd50d4173077e20ce8bb0f12febb19d5c069d60eeae1a1f"
+    },
+    {
+      "run": "docs/plans/phase-d/anchor-runs/plan-20261112T094141Z-run-d-10.json",
+      "run_sha256": "ad25d9ecb61a9f919e51c8c69f8c59cf92ff2882feda8347d00a83dc5ce3631d",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-3bf0988/run-d-10.txt",
+      "snapshot_sha256": "9290621b90b623faa026737d46a71ae6a8bde48d40c35b192297b61f4c0fd12a"
+    }
+  ],
+  "independent_drift": {
+    "compared": "979400e..3bf0988 (single commit 3bf0988). The composed sprint text is gate-items-83943f5 vs gate-items-3bf0988 for all ten sprints (run-d-{3..12}.txt). In the .bead.json snapshots I compared metadata (owned_paths, requirements, adrs, pr_target) and the root description/design. Also compared: docs/plans/phase-d.jsonl depends_on; anchors.json and anchors.md exclusions and their history (ANC-003 d-12, ANC-035 d-9, ANC-038 d-5/d-10/d-11); triage-gate-83943f5.json for the d-9 ANC-035 cell; the earlier drift-review-2026-11-12.json m2 ruling on the same exclusion. I checked the current crates/sc-command, crates/sc-cron and crates/sc-cron-commands Cargo.toml, boundaries/*.toml, and template/cargo-generate.toml with its hooks against the ownership claims, and checked that REQ-RT-0005, ADR-RT-0005, REQ-RUN-0005, ADR-RUN-0005, REQ-CRON-0005 and NFR-RUN-0009 exist. docs/requirements.md and docs/architecture.md are unchanged in this range.",
+    "not_reviewed": "phase-d-dag.html rendering; the full 3057-line triage-gate-83943f5.json beyond the d-9 ANC-035 and d-5..d-8 ANC-032/033 cells; triage-drift-range4.json beyond the push.md summary; Jev verdicts at 3bf0988 (no fresh runs exist, and Jev was not run); sprint text of d-6 and d-7/d-8 outside the changed sentences; whether sc-lint accepts a not-yet-existing allowed_test_double_paths entry. No code was run.",
+    "prior_findings": [
+      {
+        "id": "M10",
+        "verdict": "resolved",
+        "evidence": "d-3 deliverable 3: 'Own pin removal in crates/sc-command/Cargo.toml and crates/sc-runtime/Cargo.toml ...'. d-3: 'In the complete command manifest convert every registry requirement, including dev/optional entries, to open floors: rmcp >=3.9, utoipa >=6.0.0, schemars >=1.2.3, sc-observability-types >=1.5.0, axum >=0.8.9 and serde/serde_json/tokio >=1.' Every registry line in the current crates/sc-command/Cargo.toml is named. d-3 owned_paths adds crates/sc-command/Cargo.toml. phase-d.jsonl has d-10 depends_on [d-3, d-5], and d-10 pr_target is sprint/d-3-dependency-qualification. d-10: 'After d-3's compiled rmcp3.9 server/schema ... lands, add sc-storage >=0.2.0 ... without changing its already-open registry floors.' d-3 can now close on its own branch, and the d-3/d-10 manifest overlap is sequenced by the DAG."
+      },
+      {
+        "id": "M11",
+        "verdict": "partially",
+        "evidence": "sc-cron-commands is fixed. d-9: 'Convert every registry line in the owned sc-cron-commands manifest to >= tested floors, explicitly utoipa >=6.0.0 and schemars >=1.2.3, with no upper bound; preserve features (ANC-037).' The dangling pointer is replaced by 'all registry requirements changed here in sc-cron/sc-cron-commands use >= tested floors'. Still open: the range4 fix also asked for 'the d-9-owned lines of crates/sc-cron/Cargo.toml'. That manifest still has bare-caret registry lines: async-trait \"0.1\", chrono \"0.4\", cron \"0.17\", getrandom \"0.4\", tokio \"1\", tracing \"0.1\", process-wrap \"10\", monty/monty-types \"1.4.0\", tempfile \"3\", libc \"0.2\". d-3 deliverable 1 defines carets as violations ('replace exact/tilde pins, bare versions and carets with >= tested floors') but hands 'd-9 cron dependencies' to d-9. d-5 converts only the Windows lines. d-9's AC covers only lines 'changed here'. No sprint is told to convert those lines, so they would first fail at d-12's archive check."
+      },
+      {
+        "id": "M12",
+        "verdict": "resolved",
+        "evidence": "d-5: 'Register tests/support/storage and tests/support/cron-storage as allowed_test_double_paths in the relevant storage/cron boundary manifests and sc-lint configuration ... Hand only each specific boundary facade file to d-6/d-9 after contract sanity.' d-6 owned_paths adds boundaries/sc-runtime-db-sqlite/sc-runtime-db-sqlite.toml, the file whose facade/roots list SqliteWriter/WriterConn/SqlValue/SqliteWriterError. d-9 owned_paths adds boundaries/sc-cron/sc-cron.toml, whose facade/roots list ScheduleStore/SqliteScheduleStore. The two files are disjoint, so the parallel d-6/d-9 do not overlap, and d-5 precedes both."
+      },
+      {
+        "id": "m13",
+        "verdict": "resolved",
+        "evidence": "The ANC-038 reasons for d-5 and d-10 now name d-12 ('d-12 owns all recommendation production'; 'd-12 owns the metadata path and recommendation script'). A new ANC-038 exclusion for run-d-11 matches the d-11 text ('Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned') and d-12 owned_paths (template/.sc-runtime/**, template/scripts/tested_dependencies.py). The ANC-003 d-12 reason is restated: 'd-12 changes Cargo.lock recommendation metadata/post-hook delivery, not scripts/new_project.py, sc-compose executable selection ...'. All three are true of the item text."
+      },
+      {
+        "id": "m14",
+        "verdict": "resolved",
+        "evidence": "d-12 package-caps: 'root rusqlite registration stays d-5-owned; d-12 changes only SDK release-version lines.' (See m21 for an ambiguity this sentence introduces.)"
+      },
+      {
+        "id": "m15",
+        "verdict": "resolved",
+        "evidence": "d-4: 'req:REQ-RUN-0703/floor — Controlled inputs prove equal/newer versions ...'"
+      },
+      {
+        "id": "m16",
+        "verdict": "resolved",
+        "evidence": "run-d-11.bead.json metadata adds ADR-RT-0005 to adrs and REQ-RT-0005 to requirements. Both records exist (docs/sc-runtime/architecture.md:457 'Await application cleanup before releasing runtime ownership'; docs/sc-runtime/requirements.md:418 'Graceful shutdown on SIGINT and SIGTERM')."
+      },
+      {
+        "id": "m17",
+        "verdict": "resolved",
+        "evidence": "d-12: 'Apply template/cargo-generate.toml changes only after the completed d-11 merge: preserve its existing layout/cron choices and validation hook, remove Cargo.lock suppression as needed ... and add the recommendation script after project-name prefixing. No concurrent section ownership.' d-11 owned_paths exclude the file, so there is one owner and the order is explicit. The d-11 text does not say it avoids new layout files; owned_paths enforce that."
+      },
+      {
+        "id": "m18",
+        "verdict": "resolved",
+        "evidence": "d-12 publication-gate: 'Immediately before the first upload, recheck the same publication predicate against the current source, completed d-11, ratification, safety-rule results and exact rehearsed archives.'"
+      },
+      {
+        "id": "m19",
+        "verdict": "resolved",
+        "evidence": "d-5: 'Convert sc-cron Windows dev requirements win32job >=2.0.3 and waitpid-any >=0.3.0 here; d-9 leaves those lines unchanged (ANC-037).' d-9: 'The sc-cron Windows win32job >=2.0.3 and waitpid-any >=0.3.0 lines were converted by d-5 and are left unchanged here.'"
+      }
+    ],
+    "findings": [
+      {
+        "id": "M13",
+        "severity": "material",
+        "location": "anchors.json ANC-035 exclude run-d-9 (added 2026-11-12T09:24:21); d-9 AC boundary:sc-cron/public-storage-functions ('under ANC-035' replaced by 'governed by NFR-RUN-0009 and REQ-CRON-0005')",
+        "finding": "This re-adds the exclusion that drift finding m2 (drift-review-2026-11-12.json) rejected with 'Do not narrow scope by exclusion'. The run lead removed it at 06:40:50 and verified the fix. The new reason again reads ANC-035's scope parenthetical '(sc-storage, sc-runtime-db-sqlite, template stores)' as an exhaustive list. The excluded cell was not failing on substance: at plan-20261112T092053Z, addressed=yes @1.0, contradicted=no @1.0 and owns=yes @0.92. Only relevance was weak (yes @0.35). The gate-fix instruction for this cell was 'Name the functions the rule covers', not 'exclude'. The planner named the functions, then also excluded the cell and removed the ANC-035 citation from the AC. d-9's own no-panic text and sc-lint#931 requirement remain, so the obligation is not lost. What is lost is the anchor-tracked development-gate check on sc-cron's public storage functions. This is gate self-weakening: a previously resolved loosening is reintroduced with no owner ruling.",
+        "authority": {
+          "ref": "ANC-035 (locked v2); owner guideline 'Where anchors conflict, take the stricter reading'; drift-review-2026-11-12 m2 suggested_fix",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+        },
+        "suggested_fix": "Remove the run-d-9 ANC-035 exclusion and restore the ANC-035 citation alongside NFR-RUN-0009/REQ-CRON-0005 in boundary:sc-cron/public-storage-functions. The named function list already answers the 'specific' weakness. If scope is really in question, ask the owner to amend ANC-035's scope; do not exclude the cell."
+      },
+      {
+        "id": "m20",
+        "severity": "minor",
+        "location": "d-5, d-6, d-7, d-8 deliverable 1, first sentence (added in range)",
+        "finding": "The ANC-032/033 carrier is restored as the first sentence of numbered deliverable 1: 'SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation ...'. As a deliverable it claims all three engines, but on its own branch d-5 (wave 1) has none of them, and d-6, d-7 and d-8 (parallel) each have only one. A per-deliverable sanity check that reads it literally cannot close it on the sprint's own branch. The lead asked to keep the cross-engine fact, so this is about wording, not content.",
+        "authority": {
+          "ref": "ANC-032 / ANC-033 (locked)",
+          "quote": "SQLite, Postgres and MySQL MUST implement the same storage trait."
+        },
+        "suggested_fix": "Keep the fact but give each sprint its own share. d-5: 'Define the one Storage<T> trait and AtomicStorage::transaction that SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement'. d-6/7/8: 'This sprint's <engine> implementation is one of the three implementations of that shared trait and transaction operation.'"
+      },
+      {
+        "id": "m21",
+        "severity": "minor",
+        "location": "d-12 AC req:REQ-RUN-0002/package-caps, last clause",
+        "finding": "'d-12 changes only SDK release-version lines' (added in range to fix m14) reads as a global restriction. It contradicts d-12 deliverable 4 (converting rmcp >=3.9 and the win32job/waitpid-any lines in tests/integration/cron-consumer manifests) and deliverable 6 (cargo-generate.toml and Cargo.lock delivery).",
+        "authority": {
+          "ref": "owner statement",
+          "quote": "All dependencies"
+        },
+        "suggested_fix": "Scope it: 'in SDK crate manifests and root Cargo.toml, d-12 changes only release-version lines'."
+      },
+      {
+        "id": "m22",
+        "severity": "minor",
+        "location": "'This sprint does not close' sections of d-3 (full command-manifest conversion), d-5 (test-double registration, boundary handoff, Windows conversion), d-6/d-9 (boundary facade ownership), d-9 (sc-cron-commands conversion), d-12 (cargo-generate.toml sequencing)",
+        "finding": "The new positive obligations in range were added under a heading that says the sprint does not close them. Each is backed by an AC or required command: d-3 req:REQ-RUN-0002/compatibility; d-5/d-6/d-9 'sc-lint lint sc-boundary'; d-9 boundary:sc-cron/migration; d-12 publication-gate. So none is unowned, but a reader of the deliverables list would miss them. The pattern predates this range (d-10's manifest work sat there at 83943f5).",
+        "authority": {
+          "ref": "docs/prd/sc-runtime-prd.md PRD-ENG-4",
+          "quote": "Keep it simple. \"What I want is very simple.\""
+        },
+        "suggested_fix": "Move each positive obligation into a numbered deliverable, or retitle the section (e.g. 'Boundaries and handoffs')."
+      }
+    ],
+    "acceptable_choices": [
+      "DAG: d-10 now depends on [d-3, d-5]. The d-3 edges were removed from d-11 and d-12 because they are transitive through d-10. d-3's checker and qualified source still reach both. Waves stay 3 and the root says 'critical path3, width6', which matches the antichain {d-4, d-6..d-10}.",
+      "d-3 now owns crates/sc-command/Cargo.toml and d-10 also owns it later. The DAG sequences the overlap (d-3 -> d-10 -> d-12), so there is no concurrent edit.",
+      "d-10 conversion obligation moved to d-3. d-10 adds only sc-storage. Its wording 'no StorageCommands wrapper' drops the word 'trait', but d-5 deliverable 2 still states 'with no StorageCommands or SqliteDatabaseFactory trait', so the prohibition is still in the plan.",
+      "The d-3 phrase 'typed public error/envelope ABI compiled against those identities' traces to the existing req:REQ-RUN-0005/source ('rmcp>=3.9 builds/tests with existing command/server/schema paths'). It adds no new scope.",
+      "Adding ADR-RUN-0005 and REQ-RUN-0005 to d-6/d-9 metadata traces their new boundary-file ownership to the boundary-manifest requirement.",
+      "The ANC-038 exclusions for d-5/d-10/d-11 have true reasons. d-12 owns template/.sc-runtime/**, template/scripts/tested_dependencies.py and template/cargo-generate.toml, and its release-recommendations AC carries ANC-038.",
+      "The ANC-003 exclusion for d-12 has a true reason. d-12 adds a recommendation post-hook and lock delivery but does not touch scripts/new_project.py, sc-compose selection or sc-compose instructions, and d-4/d-11 still hold ANC-003.",
+      "The d-11 sentence 'Every registry requirement in the template manifests changed here is >= its tested floor with no upper bound (ANC-037)' answers the gate-fix request and traces to locked ANC-037.",
+      "Growth rule: each added passage traces to locked authority that predates the failed runs. ANC-032/033 carriers; ANC-037 conversions in d-3/d-5/d-9/d-11; REQ-RUN-0005/ADR-RUN-0005 boundary ownership; ANC-038 ownership in the d-12 sequencing; REQ-RUN-0002 for the restored upload recheck. No untraced scope was found.",
+      "No upper bound, exact pin or min/latest job was reintroduced anywhere in the range."
+    ]
+  },
+  "acceptance": "Pending independent gate and drift review; no pass claimed"
+}

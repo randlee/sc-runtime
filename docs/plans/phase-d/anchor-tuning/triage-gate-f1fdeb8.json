@@ -1,0 +1,288 @@
+{
+  "consumer": "run-lead independent gate/drift review and owner final HTML",
+  "gate": "Phase D plan acceptance",
+  "observed_defect": "Implementation deliverable does not explicitly carry the existing public-storage no-panic prohibition",
+  "deletion_condition": "Archive with accepted Phase D review after implementation closes",
+  "failed_revision": "f1fdeb8",
+  "failures": [
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "why": {
+        "run_id": "plan-20261112T094933Z-run-d-9",
+        "result": "underspecified; unstable",
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.61,
+            "probabilities": {
+              "no": 0.25,
+              "unclear": 0.01,
+              "yes": 0.74
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "yes": 0.94,
+              "no": 0.06,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.58,
+              "no": 0.41,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.29,
+              "no": 0.71,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.56,
+            "probabilities": {
+              "no": 0.28,
+              "unclear": 0.01,
+              "yes": 0.71
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "weak_sentence": "keep the underlying Storage<CronRow> backend private and map its typed failures to CronError.",
+        "diagnosis": "The explicit no-panic obligation is in acceptance criteria, while the implementation deliverable states only typed failure mapping. State it directly in that deliverable; no new behavior or validation step."
+      },
+      "authority": {
+        "id": "ANC-035",
+        "version": 2,
+        "statement": "Public storage functions MUST NOT panic.",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+        "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+        "revision": "f1fdeb8",
+        "predates_failure": true
+      }
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "field": "description",
+      "action": "replace",
+      "sentence": "keep the underlying Storage<CronRow> backend private and map its typed failures to CronError.",
+      "replacement": "keep the underlying Storage<CronRow> backend private and map its typed failures to CronError. Every public storage function implemented or changed here in CronStore/CronStorage, migration and cron-command storage adapters must return a typed Result and must not panic (ANC-035).",
+      "why": {
+        "run_id": "plan-20261112T094933Z-run-d-9",
+        "result": "underspecified; unstable",
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.61,
+            "probabilities": {
+              "no": 0.25,
+              "unclear": 0.01,
+              "yes": 0.74
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "yes": 0.94,
+              "no": 0.06,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.58,
+              "no": 0.41,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.56,
+            "probabilities": {
+              "yes": 0.29,
+              "no": 0.71,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.56,
+            "probabilities": {
+              "no": 0.28,
+              "unclear": 0.01,
+              "yes": 0.71
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          }
+        },
+        "weak_sentence": "keep the underlying Storage<CronRow> backend private and map its typed failures to CronError.",
+        "diagnosis": "The explicit no-panic obligation is in acceptance criteria, while the implementation deliverable states only typed failure mapping. State it directly in that deliverable; no new behavior or validation step."
+      },
+      "authority": {
+        "id": "ANC-035",
+        "version": 2,
+        "statement": "Public storage functions MUST NOT panic.",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+        "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+        "revision": "f1fdeb8",
+        "predates_failure": true
+      }
+    }
+  ],
+  "evidence": {
+    "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T094933Z-run-d-9.json",
+    "run_sha256": "eb54386bbe60b9cd43c333b34c6a58879cf94035853fc8af8dd546f0bcbf7b05",
+    "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-f1fdeb8/run-d-9.txt",
+    "snapshot_sha256": "1bd9920b600c15d6545ec07ef4bd408ac6a59dcf00d1d304131e96a035a77ced"
+  },
+  "acceptance": "Pending independent review; no pass claimed"
+}

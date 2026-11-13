@@ -206,7 +206,9 @@ Other phase-end reviewers stay on their YAML defaults.
    - `.claude/agents/{req-qa,arch-qa,extensibility-qa,ceremony-qa,ceremony-finding-screen,ruthless-boundary-qa,flaky-test-qa,rust-qa-agent,rust-best-practices-agent,rust-service-hardening-agent,rust-developer}.md`
    - `.claude/skills/quality-management-gh/SKILL.md`
    - `.claude/assets/sc-rust/quality-mgr/quality-mgr.rust.md`
-4. `sc-compose` is on `PATH` and usable (see **Tool recipes**).
+4. `sc-compose` is on `PATH` at **≥** the repo floor (`.sc/generation-tools.json`
+   `minimum_version` when present; else plan-anchoring’s 1.8.0 default). Newer
+   CLI releases are fine; do not require an exact version match (see **Tool recipes**).
 
 ## Dev–QA loop (mandatory per sprint)
 
@@ -457,6 +459,7 @@ Skill template root (repo-root-relative):
 
 ```bash
 command -v sc-compose
+sc-compose --version   # >= floor from .sc/generation-tools.json when present
 command -v gh
 command -v git
 ```

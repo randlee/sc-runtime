@@ -1,0 +1,198 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-045">
+  <div class="section-head">
+    <h2>ANC-045 <span class="status status-locked">locked</span> <span class="small">bead run-nd6j</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-nd6j&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;plan items that change how sc-cron stores or looks up compiled Monty hook sessions (the saved result of compiling a cron hook script)&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;locked&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    },
+    {
+      &quot;after&quot;: &quot;directive&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;kind&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;quote&quot;
+    },
+    {
+      &quot;after&quot;: &quot;the compiled-hook row key is computed with sc-sha over the hook source plus the Monty dump version; a test changes either and gets a miss&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;The compiled-hook row is keyed by sc-sha&#x27;s SHA-256 of the hook source plus Monty&#x27;s dump version.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;The compiled-hook row is keyed by schedule name only.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-10&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-11&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-12&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.&quot;
+    }
+  ],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:11+00:00&quot;,
+      &quot;detail&quot;: &quot;status: locked&quot;,
+      &quot;event&quot;: &quot;created&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:11+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:42+00:00&quot;,
+      &quot;detail&quot;: &quot;beads: {\&quot;anchor\&quot;: \&quot;run-nd6j\&quot;, \&quot;plan_questions\&quot;: \&quot;run-nd6j.1\&quot;, \&quot;dev_questions\&quot;: \&quot;run-nd6j.2\&quot;}&quot;,
+      &quot;event&quot;: &quot;beads_set&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:14:19+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-12; reason: Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-045&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;absent&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;-&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-045 (absent v- -&gt; locked v2)
+Statement: sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.
+Quote: Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;&#x27; -&gt; &quot;sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.&quot;
+Changed scope: &#x27;&#x27; -&gt; &#x27;plan items that change how sc-cron stores or looks up compiled Monty hook sessions (the saved result of compiling a cron hook script)&#x27;
+Changed status: &#x27;&#x27; -&gt; &#x27;locked&#x27;
+Changed kind: &#x27;&#x27; -&gt; &#x27;directive&#x27;
+Changed quote: &#x27;&#x27; -&gt; &quot;Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.&quot;
+Changed deterministic_check: &#x27;&#x27; -&gt; &#x27;the compiled-hook row key is computed with sc-sha over the hook source plus the Monty dump version; a test changes either and gets a miss&#x27;
+Changed fixture pass: &#x27;&#x27; -&gt; &quot;The compiled-hook row is keyed by sc-sha&#x27;s SHA-256 of the hook source plus Monty&#x27;s dump version.&quot;
+Changed fixture fail: &#x27;&#x27; -&gt; &#x27;The compiled-hook row is keyed by schedule name only.&#x27;
+Excluded for run-d-10: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.
+Excluded for run-d-11: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.
+Excluded for run-d-12: Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.
+2026-11-12T22:42:11+00:00 created: status: locked
+2026-11-12T22:42:11+00:00 updated: fields: [&quot;fixtures&quot;]
+2026-11-12T22:42:42+00:00 beads_set: beads: {&quot;anchor&quot;: &quot;run-nd6j&quot;, &quot;plan_questions&quot;: &quot;run-nd6j.1&quot;, &quot;dev_questions&quot;: &quot;run-nd6j.2&quot;}
+2026-11-12T23:02:27+00:00 excluded: item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false
+2026-11-12T23:02:27+00:00 excluded: item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false
+2026-11-12T23:14:19+00:00 excluded: item: run-d-12; reason: Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.; replaced: false">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.</p>
+  <p class="quote">&#x201C;Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>absent</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>-</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><ins>sc-cron MUST key each stored compiled Monty hook session by the SHA-256 of the hook&#x27;s source text, computed with the sc-sha crate, combined with Monty&#x27;s dump format version.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><ins>plan items that change how sc-cron stores or looks up compiled Monty hook sessions (the saved result of compiling a cron hook script)</ins></div>
+  <p><b>status</b></p>
+  <div class="diff"><ins>locked</ins></div>
+  <p><b>kind</b></p>
+  <div class="diff"><ins>directive</ins></div>
+  <p><b>quote</b></p>
+  <div class="diff"><ins>Key: SHA-256 of the source, computed with the sc-sha crate, plus Monty&#x27;s dump version.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><ins>the compiled-hook row key is computed with sc-sha over the hook source plus the Monty dump version; a test changes either and gets a miss</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><ins>The compiled-hook row is keyed by sc-sha&#x27;s SHA-256 of the hook source plus Monty&#x27;s dump version.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><ins>The compiled-hook row is keyed by schedule name only.</ins></div>
+
+  <details>
+    <summary>History since the baseline (6)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T22:42:11+00:00</td><td>created</td><td>status: locked</td></tr>
+        <tr><td>2026-11-12T22:42:11+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
+        <tr><td>2026-11-12T22:42:42+00:00</td><td>beads_set</td><td>beads: {&quot;anchor&quot;: &quot;run-nd6j&quot;, &quot;plan_questions&quot;: &quot;run-nd6j.1&quot;, &quot;dev_questions&quot;: &quot;run-nd6j.2&quot;}</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-10; reason: After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-11; reason: Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:14:19+00:00</td><td>excluded</td><td>item: run-d-12; reason: Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.; replaced: false</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details open="open">
+    <summary>Exclusions (3)</summary>
+    <table>
+      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">run-d-10</th><td>After routing moves to d-11, this sprint changes generic command helpers and no-cron widget transforms, not cron wiring/policy/compilation/cache or the sc-monty crate/types/copy-first extraction owned by d-5/d-9/d-11.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-11</th><td>Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-12</th><td>Release/migration does not change compiled-session cache storage/lookup or SHA-256/dump-version key implementation; d-9 owns that behavior.</td><td>added</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>

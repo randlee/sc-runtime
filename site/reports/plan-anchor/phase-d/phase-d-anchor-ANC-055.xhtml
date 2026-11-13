@@ -1,0 +1,183 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-anchor" id="anchor-ANC-055">
+  <div class="section-head">
+    <h2>ANC-055 <span class="status status-locked">locked</span> <span class="small">bead run-qjv1</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy anchor data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;bead&quot;: &quot;run-qjv1&quot;,
+  &quot;bead_url&quot;: &quot;&quot;,
+  &quot;changes&quot;: [
+    {
+      &quot;after&quot;: &quot;Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;statement&quot;
+    },
+    {
+      &quot;after&quot;: &quot;plan items that change cron schedule creation, cron commands or the command transform&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;scope&quot;
+    },
+    {
+      &quot;after&quot;: &quot;locked&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;status&quot;
+    },
+    {
+      &quot;after&quot;: &quot;directive&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;kind&quot;
+    },
+    {
+      &quot;after&quot;: &quot;an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;quote&quot;
+    },
+    {
+      &quot;after&quot;: &quot;a test supplies an app transform that appends a field to the user&#x27;s schedule JSON; the written CronRow contains it&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;deterministic_check&quot;
+    },
+    {
+      &quot;after&quot;: &quot;An app transform appends its own fields to the user&#x27;s schedule JSON, and the CronRow is then written through Storage&lt;CronRow&gt;.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture pass&quot;
+    },
+    {
+      &quot;after&quot;: &quot;Cron writes the user&#x27;s JSON unchanged; an app cannot add its own data before the row is written.&quot;,
+      &quot;before&quot;: &quot;&quot;,
+      &quot;field&quot;: &quot;fixture fail&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-7&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;item&quot;: &quot;run-d-8&quot;,
+      &quot;item_url&quot;: &quot;&quot;,
+      &quot;reason&quot;: &quot;The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.&quot;
+    }
+  ],
+  &quot;fixtures_after&quot;: &quot;-&quot;,
+  &quot;fixtures_before&quot;: &quot;-&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:13+00:00&quot;,
+      &quot;detail&quot;: &quot;status: locked&quot;,
+      &quot;event&quot;: &quot;created&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:42:13+00:00&quot;,
+      &quot;detail&quot;: &quot;fields: [\&quot;fixtures\&quot;]&quot;,
+      &quot;event&quot;: &quot;updated&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T22:43:00+00:00&quot;,
+      &quot;detail&quot;: &quot;beads: {\&quot;anchor\&quot;: \&quot;run-qjv1\&quot;, \&quot;plan_questions\&quot;: \&quot;run-qjv1.1\&quot;, \&quot;dev_questions\&quot;: \&quot;run-qjv1.2\&quot;}&quot;,
+      &quot;event&quot;: &quot;beads_set&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:02:27+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-7; reason: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    },
+    {
+      &quot;at&quot;: &quot;2026-11-12T23:14:19+00:00&quot;,
+      &quot;detail&quot;: &quot;item: run-d-8; reason: The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.; replaced: false&quot;,
+      &quot;event&quot;: &quot;excluded&quot;
+    }
+  ],
+  &quot;id&quot;: &quot;ANC-055&quot;,
+  &quot;questions_default&quot;: &quot;-&quot;,
+  &quot;questions_tuned&quot;: &quot;-&quot;,
+  &quot;quote&quot;: &quot;an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.&quot;,
+  &quot;removed_exclusions&quot;: [],
+  &quot;statement&quot;: &quot;Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.&quot;,
+  &quot;status&quot;: &quot;locked&quot;,
+  &quot;status_before&quot;: &quot;absent&quot;,
+  &quot;tuning&quot;: [],
+  &quot;version_before&quot;: &quot;-&quot;,
+  &quot;version_now&quot;: &quot;2&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Anchor ANC-055 (absent v- -&gt; locked v2)
+Statement: Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.
+Quote: an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.
+Fixture checks: - -&gt; -.
+Questions: default - -&gt; tuned - oracle cases.
+Changed statement: &#x27;&#x27; -&gt; &#x27;Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.&#x27;
+Changed scope: &#x27;&#x27; -&gt; &#x27;plan items that change cron schedule creation, cron commands or the command transform&#x27;
+Changed status: &#x27;&#x27; -&gt; &#x27;locked&#x27;
+Changed kind: &#x27;&#x27; -&gt; &#x27;directive&#x27;
+Changed quote: &#x27;&#x27; -&gt; &#x27;an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.&#x27;
+Changed deterministic_check: &#x27;&#x27; -&gt; &quot;a test supplies an app transform that appends a field to the user&#x27;s schedule JSON; the written CronRow contains it&quot;
+Changed fixture pass: &#x27;&#x27; -&gt; &quot;An app transform appends its own fields to the user&#x27;s schedule JSON, and the CronRow is then written through Storage&lt;CronRow&gt;.&quot;
+Changed fixture fail: &#x27;&#x27; -&gt; &quot;Cron writes the user&#x27;s JSON unchanged; an app cannot add its own data before the row is written.&quot;
+Excluded for run-d-7: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded for run-d-8: The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.
+2026-11-12T22:42:13+00:00 created: status: locked
+2026-11-12T22:42:13+00:00 updated: fields: [&quot;fixtures&quot;]
+2026-11-12T22:43:00+00:00 beads_set: beads: {&quot;anchor&quot;: &quot;run-qjv1&quot;, &quot;plan_questions&quot;: &quot;run-qjv1.1&quot;, &quot;dev_questions&quot;: &quot;run-qjv1.2&quot;}
+2026-11-12T23:02:27+00:00 excluded: item: run-d-7; reason: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.; replaced: false
+2026-11-12T23:14:19+00:00 excluded: item: run-d-8; reason: The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.; replaced: false">&#x2398;</button>
+    </div>
+  </div>
+  <p class="statement">Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.</p>
+  <p class="quote">&#x201C;an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.&#x201D;</p>
+
+  <table class="scores">
+    <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">Now</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Status</th><td>absent</td><td>locked</td></tr>
+      <tr><th scope="row">Version</th><td>-</td><td>2</td></tr>
+      <tr><th scope="row">Fixture checks (expected verdicts)</th><td>-</td><td>-</td></tr>
+      <tr><th scope="row">Questions: oracle cases matched (default, tuned)</th><td>-</td><td>-</td></tr>
+    </tbody>
+  </table>
+
+
+  <h3>Record changes</h3>
+  <p><b>statement</b></p>
+  <div class="diff"><ins>Before a cron schedule row is written, a consuming application MUST be able to modify or append to the JSON data the end user supplied with the schedule.</ins></div>
+  <p><b>scope</b></p>
+  <div class="diff"><ins>plan items that change cron schedule creation, cron commands or the command transform</ins></div>
+  <p><b>status</b></p>
+  <div class="diff"><ins>locked</ins></div>
+  <p><b>kind</b></p>
+  <div class="diff"><ins>directive</ins></div>
+  <p><b>quote</b></p>
+  <div class="diff"><ins>an end user schedules cron with a Monty or Python script plus JSON data that is passed to the script. A consuming app can modify or append to that JSON before it is written. That step is the transform.</ins></div>
+  <p><b>deterministic_check</b></p>
+  <div class="diff"><ins>a test supplies an app transform that appends a field to the user&#x27;s schedule JSON; the written CronRow contains it</ins></div>
+  <p><b>fixture pass</b></p>
+  <div class="diff"><ins>An app transform appends its own fields to the user&#x27;s schedule JSON, and the CronRow is then written through Storage&lt;CronRow&gt;.</ins></div>
+  <p><b>fixture fail</b></p>
+  <div class="diff"><ins>Cron writes the user&#x27;s JSON unchanged; an app cannot add its own data before the row is written.</ins></div>
+
+  <details>
+    <summary>History since the baseline (5)</summary>
+    <table>
+      <thead><tr><th scope="col">At</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-12T22:42:13+00:00</td><td>created</td><td>status: locked</td></tr>
+        <tr><td>2026-11-12T22:42:13+00:00</td><td>updated</td><td>fields: [&quot;fixtures&quot;]</td></tr>
+        <tr><td>2026-11-12T22:43:00+00:00</td><td>beads_set</td><td>beads: {&quot;anchor&quot;: &quot;run-qjv1&quot;, &quot;plan_questions&quot;: &quot;run-qjv1.1&quot;, &quot;dev_questions&quot;: &quot;run-qjv1.2&quot;}</td></tr>
+        <tr><td>2026-11-12T23:02:27+00:00</td><td>excluded</td><td>item: run-d-7; reason: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.; replaced: false</td></tr>
+        <tr><td>2026-11-12T23:14:19+00:00</td><td>excluded</td><td>item: run-d-8; reason: The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.; replaced: false</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details open="open">
+    <summary>Exclusions (2)</summary>
+    <table>
+      <thead><tr><th scope="col">Item</th><th scope="col">Reason</th><th scope="col">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">run-d-7</th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>added</td></tr>
+        <tr><th scope="row">run-d-8</th><td>The generic MySQL backend does not change schedule creation, cron commands or command transforms; pre-persistence JSON enrichment is owned by d-10/d-11.</td><td>added</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>

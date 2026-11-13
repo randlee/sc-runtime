@@ -1,0 +1,95 @@
+{
+  "consumer": "run-lead independent gate/drift review",
+  "feature": "owner-required Monty copy-first baseline and provisional command seam",
+  "observed_defect": "d-11/ANC051 fails at1f4e693; range10 M29 feature-gated tests omitted and m31 baseline history/workspace unclear",
+  "deletion_condition": "ordinary Git history suffices after final plan approval",
+  "base": "1f4e693",
+  "to_fix": [
+    {
+      "item": "run-d-5",
+      "action": "replace",
+      "edits": [
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "boundary:copy-first-tests \u2014 Stage1: in an isolated baseline worktree, copy the current implementation AND unit/integration tests exactly, retaining their current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree. Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets against that actual copy and record its passing commit before any API change. This baseline is not publishable; the old dependency graph is intentional at this stage. Stage2: separate the interpreter into sc-monty, retaining every copied assertion. Interpreter assertions run there; scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9. At d-5 closure, ANC-039 applies: sc-monty normal/build dependencies are only pydantic Monty, and no second scheduler/store implementation remains anywhere in sc-monty source or tests. Remove transitional copied scheduler/store fixtures rather than leave a parallel implementation or a dev-dependency cycle. Preserve the exact baseline in Git history; running the original sc-cron code cannot satisfy its copied-code gate (ANC-039/041/042/062; range9 M28)."
+          ],
+          "after": [
+            "boundary:copy-first-tests \u2014 Stage1: in an isolated baseline worktree, copy the whole current sc-cron package, including all Monty implementation code, unit/integration tests, fixture data and existing dependency manifest, exactly; retain its current dependencies and crate/import identity. Workspace/path wiring selects the copy at crates/sc-monty, not the original sc-cron tree. Run cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets --all-features against that actual copy, enabling monty, monty-test-handshake and test-utils. Normal test output must show copied Monty code and the monty_hook, monty_host_bridge and sc_compose_bench integration targets actually ran and passed. Record that passing baseline commit before any API change and keep it reachable as an ancestor of the d-5 closing commit, not an orphaned scratch commit. This baseline is not publishable; the old dependency graph is intentional at this stage. Stage2: restore the normal repository workspace with separate sc-cron and sc-monty members while separating the interpreter into sc-monty, retaining every copied assertion. Interpreter assertions run there; scheduler/store/JSON assertions remain with the real sc-cron implementation and are ported in d-9. At d-5 closure, ANC-039 applies: sc-monty normal/build dependencies are only pydantic Monty, and no second scheduler/store implementation remains anywhere in sc-monty source or tests. Remove transitional copied scheduler/store fixtures rather than leave a parallel implementation or a dev-dependency cycle. Preserve the exact baseline in Git history; running the original sc-cron code cannot satisfy its copied-code gate (ANC-039/041/042/062; range9 M28)."
+          ]
+        }
+      ],
+      "why": "Baseline must execute the feature-gated copied code and preserve reachable history/workspace restoration; current command flow must not imply a permanent prohibition on future extensions.",
+      "authority": [
+        "ANC-062",
+        "ANC-042",
+        "ANC-051",
+        "ANC-050",
+        "ANC-052"
+      ],
+      "source": "Locked before cited gate; range10 M29/m31 owner-authority rulings."
+    },
+    {
+      "item": "run-d-11",
+      "action": "replace",
+      "edits": [
+        {
+          "field": "description",
+          "before": [
+            "In generated SQLite+cron profiles, application writes, cron command writes and scheduler persistence all use Storage<T> backed by the same SqliteDatabase instance, its single bounded write channel, dedicated writer thread and sole write-mode connection. Cron policy atomic operations submit through that same writer; there is no second SQLite write path. Preserve the d-9 scheduler operations and their existing tests (ANC-022/023/024/025/033)."
+          ],
+          "after": [
+            "In generated SQLite+cron profiles, application writes, cron command writes and scheduler persistence all use Storage<T> backed by the same SqliteDatabase instance, its single bounded write channel, dedicated writer thread and sole write-mode connection. Cron policy atomic operations submit through that same writer; there is no second SQLite write path. Preserve the d-9 scheduler operations and their existing tests (ANC-022/023/033)."
+          ]
+        },
+        {
+          "field": "acceptance_criteria",
+          "before": [
+            "boundary:cron-start-transform \u2014 For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043)."
+          ],
+          "after": [
+            "boundary:cron-start-transform \u2014 For the implemented Phase D cron.start flow, the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence. Transform/storage_read/storage_write remain provisional: this current flow does not prohibit later adding a second transform input, a typed Ok outcome with no write distinct from Err, or a transform inside an atomic transaction. Those three behaviors are not implemented in Phase D; the extensible seam delivered by d-10 preserves their later addition. A registered app transform is always awaited; the direct-conversion default is used only when no custom transform is selected and cannot bypass a selected transform. The test appends an application field and asserts the persisted JSON contains it; a transform error produces no write. d-10 tests the generic helper with its controlled storage double; d-11 exercises the real cron.start adapter and verifies sc-cron passes Monty values, not JSON strings, to the hook (ANC-055/043)."
+          ]
+        }
+      ],
+      "why": "Baseline must execute the feature-gated copied code and preserve reachable history/workspace restoration; current command flow must not imply a permanent prohibition on future extensions.",
+      "authority": [
+        "ANC-062",
+        "ANC-042",
+        "ANC-051",
+        "ANC-050",
+        "ANC-052"
+      ],
+      "source": "Locked before cited gate; range10 M29/m31 owner-authority rulings."
+    }
+  ],
+  "held_unchanged": "ANC-054 wording, questions, anchors and exclusions unchanged pending independent tuner",
+  "failed_cell": {
+    "item": "run-d-11",
+    "anchor": "ANC-051",
+    "run": "plan-20261112T232505Z-run-d-11",
+    "verdict": "underspecified",
+    "why": "The pre-persistence Transform sentence did not limit its one-input/pre-transaction sequence to Phase D and could read as forbidding future seam extensions.",
+    "authority": {
+      "ref": "ANC-051",
+      "commit": "cf23ce0",
+      "quote": "Build none of these now. Forbid none of them."
+    },
+    "answers": {
+      "relevant": {
+        "choice": "yes",
+        "confidence": 0.97
+      },
+      "addressed": {
+        "choice": "no",
+        "confidence": 0.66
+      },
+      "contradicted": {
+        "choice": "no",
+        "confidence": 0.44
+      }
+    },
+    "replacement_ref": "run-d-11 to_fix"
+  },
+  "rulings": "# Gate at 1f4e693 and range-10 drift (565255d..1f4e693), run-lead\n\nGate: d-3/4/6/7/8 pass. d-5/9/10/12 fail ONLY ANC-054; d-11 fails ANC-054 + ANC-051.\nANC-054: HOLD. The independent tuner is adjudicating question defect vs plan gap. Do not edit for it.\nRange-10 (independent; /Users/randlee/.config/atm/share/run/drift-range10.json): m29 fixed, m30 fixed. Scheduler obligations intact in d-9. d-11 single-writer is consistent with d-6 and ADR (it is a plan, not current code). Both exclusions accepted. No new edge, cap or pin. ADR-RUN-0021 still Proposed.\n\n## d-11 / ANC-051 (contradicted, no 0.44; new)\n- WHY: run plan-20261112T232505Z-run-d-11. Weak sentence: \"For cron.start the configured application Transform receives the script plus user JSON, may modify/append that JSON, and returns the row input before storage_write invokes the policy adapter/persistence.\" It reads as a fixed shape (single input, always writes, transform before the transaction), as if the other shapes were forbidden.\n- AUTHORITY: ANC-051 (forbid none of the three seam extensions), owner item 4; ANC-050/052.\n\n## M29 (material, rejected). The d-5 Stage-1 baseline can pass without running the copied Monty code\n- WHY: the Stage-1 command `cargo test --manifest-path <baseline>/crates/sc-monty/Cargo.toml --all-targets` passes no features. In the copied manifest every Monty module is behind cfg(feature=\"monty\"), and the monty_hook, monty_host_bridge and sc_compose_bench targets require that feature (plus monty-test-handshake). Green therefore proves nothing about the copy.\n- AUTHORITY: owner copy-first statement (\"exact copy of current code AND tests including integration tests\"); ANC-062/042.\n- WHAT MUST BE TRUE: the baseline run enables the features the copied code and tests need, and the recorded evidence shows those Monty test targets actually ran. Normal test output is enough; add no new checker.\n## m31 (minor). Baseline scope and history are implicit\n- WHY: keeping crate/import identity means copying the whole sc-cron package (monty_host.rs uses crate:: worker/environment/process). The text doesn't say so, doesn't say the baseline commit stays reachable in d-5's branch history, and doesn't say Stage 2 restores the normal workspace.\n- AUTHORITY: ANC-062; range-9 M28 ruling point 1 (\"recorded commit\").\n- WHAT MUST BE TRUE: the plan states what the baseline copy contains, the baseline commit is reachable from the d-5 branch, and Stage 2 ends in the normal workspace.\n## Cosmetic\nd-11 cites ANC-024/025 although they're excluded for d-11. Your call.\n\nFix these, leave ANC-054 alone, then push. I'll rejudge d-5 and d-11 (and any other sprint whose text changes) and run range 11.\n"
+}

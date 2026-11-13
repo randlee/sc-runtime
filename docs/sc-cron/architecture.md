@@ -1,5 +1,7 @@
 # sc-cron Architecture
 
+**Amended 2026-11-11.** [PRD v2.0](../prd/sc-runtime-prd.md) §6 replaces the `ScheduleStore` trait and `SqliteScheduleStore` described here with a `CronRow` struct stored through `Storage<CronRow>` in the application's database. Sections on the store describe the code as it is today, not the target.
+
 **Status:** Active as of 2026-10-28. Binding decisions: [ADR-RUN-0013](../architecture.md) and [ADR-RUN-0016](../architecture.md). Sprints `b-3` through `b-17` establish the contract below.
 
 Port source: beads-cache `integrate/phase-b` commit `d5fbed94f6c3b7fa9e5a562787964a5e6f298423`.

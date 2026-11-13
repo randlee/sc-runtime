@@ -1,0 +1,3057 @@
+{
+  "consumer": "run-lead independent gate/drift review and owner final HTML",
+  "gate": "Regressions after plan-QA round1 trim",
+  "observed_defect": "Carrier sentences and local manifest rule removed while cutting duplicate prose",
+  "retirement": "Archive with accepted Phase D review after implementation closes",
+  "failed_revision": "83943f5",
+  "failures": [
+    {
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-033",
+      "run_id": "plan-20261112T091951Z-run-d-5",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.62,
+            "probabilities": {
+              "no": 0.75,
+              "unclear": 0.24,
+              "yes": 0.01
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.33,
+            "probabilities": {
+              "no": 0.55,
+              "unclear": 0.03,
+              "yes": 0.42
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.3,
+            "probabilities": {
+              "yes": 0.46,
+              "no": 0.53,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "yes": 0.05,
+              "no": 0.93,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.49,
+            "probabilities": {
+              "yes": 0.32,
+              "no": 0.66,
+              "unclear": 0.02
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.33,
+            "probabilities": {
+              "yes": 0.31,
+              "no": 0.55,
+              "unclear": 0.14
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.95,
+              "no": 0.05,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [],
+        "weak_sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+        "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-033",
+        "version": 2,
+        "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+        "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+        "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-5",
+      "anchor_id": "ANC-032",
+      "run_id": "plan-20261112T091951Z-run-d-5",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "no": 0.65,
+              "unclear": 0.03,
+              "yes": 0.32
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.01,
+              "yes": 0.02
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.53,
+            "probabilities": {
+              "yes": 0.69,
+              "no": 0.3,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.73,
+            "probabilities": {
+              "yes": 0.16,
+              "no": 0.82,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.44,
+            "probabilities": {
+              "yes": 0.34,
+              "no": 0.63,
+              "unclear": 0.03
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.4,
+            "probabilities": {
+              "yes": 0.6,
+              "no": 0.32,
+              "unclear": 0.08
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.83,
+            "probabilities": {
+              "yes": 0.89,
+              "no": 0.11,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.48
+          }
+        ],
+        "weak_sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+        "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-032",
+        "version": 3,
+        "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+        "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+        "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "anchor_id": "ANC-032",
+      "run_id": "plan-20261112T092015Z-run-d-6",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "no": 0.93,
+              "unclear": 0.05,
+              "yes": 0.02
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.01,
+              "yes": 0.02
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.52,
+            "probabilities": {
+              "yes": 0.68,
+              "no": 0.31,
+              "unclear": 0.01
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.98,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.54,
+              "no": 0.4,
+              "unclear": 0.06
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.61,
+            "probabilities": {
+              "yes": 0.13,
+              "no": 0.74,
+              "unclear": 0.13
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [],
+        "weak_sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+        "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-032",
+        "version": 3,
+        "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+        "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+        "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-6",
+      "anchor_id": "ANC-033",
+      "run_id": "plan-20261112T092015Z-run-d-6",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.52,
+            "probabilities": {
+              "no": 0.68,
+              "unclear": 0.27,
+              "yes": 0.05
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.86,
+            "probabilities": {
+              "no": 0.91,
+              "unclear": 0.01,
+              "yes": 0.08
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.98,
+              "no": 0.02,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.66,
+            "probabilities": {
+              "yes": 0.22,
+              "no": 0.77,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.99,
+              "no": 0.01,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.2,
+            "probabilities": {
+              "yes": 0.47,
+              "no": 0.31,
+              "unclear": 0.22
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.96,
+              "no": 0.04,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.52
+          }
+        ],
+        "weak_sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+        "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-033",
+        "version": 2,
+        "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+        "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+        "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-7",
+      "anchor_id": "ANC-032",
+      "run_id": "plan-20261112T092022Z-run-d-7",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.77,
+            "probabilities": {
+              "no": 0.85,
+              "unclear": 0.08,
+              "yes": 0.07
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.53,
+            "probabilities": {
+              "yes": 0.69,
+              "no": 0.31,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.96,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.66,
+            "probabilities": {
+              "yes": 0.77,
+              "no": 0.23,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.23,
+              "no": 0.65,
+              "unclear": 0.12
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.98,
+              "no": 0.02,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [],
+        "weak_sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-032",
+        "version": 3,
+        "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+        "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+        "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-7",
+      "anchor_id": "ANC-033",
+      "run_id": "plan-20261112T092022Z-run-d-7",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.18,
+            "probabilities": {
+              "no": 0.45,
+              "unclear": 0.41,
+              "yes": 0.14
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "no": 0.93,
+              "unclear": 0.0,
+              "yes": 0.07
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "yes": 0.94,
+              "no": 0.06,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.67,
+            "probabilities": {
+              "yes": 0.21,
+              "no": 0.78,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.88,
+            "probabilities": {
+              "yes": 0.92,
+              "no": 0.08,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.64,
+            "probabilities": {
+              "yes": 0.76,
+              "no": 0.17,
+              "unclear": 0.07
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "yes": 0.94,
+              "no": 0.06,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.18
+          }
+        ],
+        "weak_sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-033",
+        "version": 2,
+        "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+        "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+        "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-8",
+      "anchor_id": "ANC-032",
+      "run_id": "plan-20261112T092034Z-run-d-8",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.62,
+            "probabilities": {
+              "no": 0.75,
+              "unclear": 0.08,
+              "yes": 0.17
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.68,
+            "probabilities": {
+              "yes": 0.79,
+              "no": 0.21,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.04,
+              "no": 0.95,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.73,
+            "probabilities": {
+              "yes": 0.82,
+              "no": 0.18,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.37,
+            "probabilities": {
+              "yes": 0.3,
+              "no": 0.58,
+              "unclear": 0.12
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "yes": 0.98,
+              "no": 0.02,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [],
+        "weak_sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-032",
+        "version": 3,
+        "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+        "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+        "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-8",
+      "anchor_id": "ANC-033",
+      "run_id": "plan-20261112T092034Z-run-d-8",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.19,
+            "probabilities": {
+              "no": 0.21,
+              "unclear": 0.33,
+              "yes": 0.46
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.97,
+              "unclear": 0.0,
+              "yes": 0.03
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "yes": 0.96,
+              "no": 0.04,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.64,
+            "probabilities": {
+              "yes": 0.23,
+              "no": 0.76,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.88,
+            "probabilities": {
+              "yes": 0.92,
+              "no": 0.08,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.73,
+            "probabilities": {
+              "yes": 0.82,
+              "no": 0.13,
+              "unclear": 0.05
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.82,
+            "probabilities": {
+              "yes": 0.88,
+              "no": 0.12,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "yes",
+            "confidence": 0.19
+          }
+        ],
+        "weak_sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-033",
+        "version": 2,
+        "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+        "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+        "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "run_id": "plan-20261112T092053Z-run-d-9",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.35,
+            "probabilities": {
+              "no": 0.41,
+              "unclear": 0.02,
+              "yes": 0.57
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "yes": 0.95,
+              "no": 0.05,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.42,
+            "probabilities": {
+              "yes": 0.61,
+              "no": 0.38,
+              "unclear": 0.01
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 1.0,
+              "no": 0.0,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 1.0,
+              "no": 0.0,
+              "unclear": 0.0
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.48,
+            "probabilities": {
+              "yes": 0.35,
+              "no": 0.65,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "yes",
+            "confidence": 0.35
+          }
+        ],
+        "weak_sentence": "These are this sprint's changed public storage functions under ANC-035",
+        "diagnosis": "No public storage function in the recorded sc-storage/writer/template-store package scope is changed; public CronStorage is a separate domain facade and remains typed/no-panic under its governing requirements."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-035",
+        "version": 2,
+        "statement": "Public storage functions MUST NOT panic.",
+        "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+        "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-037",
+      "run_id": "plan-20261112T092053Z-run-d-9",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.35,
+            "probabilities": {
+              "yes": 0.57,
+              "no": 0.4,
+              "unclear": 0.03
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.26,
+            "probabilities": {
+              "yes": 0.06,
+              "no": 0.51,
+              "unclear": 0.43
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.85,
+            "probabilities": {
+              "yes": 0.04,
+              "no": 0.9,
+              "unclear": 0.06
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "yes": 0.03,
+              "no": 0.93,
+              "unclear": 0.04
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.96,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.97,
+              "unclear": 0.02
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.89,
+            "probabilities": {
+              "yes": 0.05,
+              "no": 0.93,
+              "unclear": 0.02
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.83,
+            "probabilities": {
+              "yes": 0.06,
+              "no": 0.89,
+              "unclear": 0.05
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.31,
+            "probabilities": {
+              "yes": 0.45,
+              "no": 0.54,
+              "unclear": 0.01
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "yes",
+            "confidence": 0.35
+          }
+        ],
+        "weak_sentence": "boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; dependency requirements follow schema-range below.",
+        "diagnosis": "Trimming left a dangling range pointer or only a checker reference instead of this owner's open-floor requirement."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-037",
+        "version": 2,
+        "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+        "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-037",
+      "run_id": "plan-20261112T092117Z-run-d-11",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.88,
+            "probabilities": {
+              "yes": 0.92,
+              "no": 0.08,
+              "unclear": 0.0
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.44,
+            "probabilities": {
+              "yes": 0.31,
+              "no": 0.63,
+              "unclear": 0.06
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.49,
+            "probabilities": {
+              "yes": 0.33,
+              "no": 0.66,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.79,
+            "probabilities": {
+              "yes": 0.1,
+              "no": 0.86,
+              "unclear": 0.04
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.88,
+            "probabilities": {
+              "yes": 0.08,
+              "no": 0.92,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.77,
+            "probabilities": {
+              "yes": 0.13,
+              "no": 0.85,
+              "unclear": 0.02
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.25,
+            "probabilities": {
+              "yes": 0.49,
+              "no": 0.5,
+              "unclear": 0.01
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "conflict",
+            "question_id": "contradicted",
+            "choice": "no",
+            "confidence": 0.49
+          }
+        ],
+        "weak_sentence": "4. Invoke d-3's single manifest checker on the real generated outputs; no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+        "diagnosis": "Trimming left a dangling range pointer or only a checker reference instead of this owner's open-floor requirement."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-037",
+        "version": 2,
+        "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+        "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+        "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+        "predates_failure": true
+      }
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-038",
+      "run_id": "plan-20261112T092117Z-run-d-11",
+      "why": {
+        "answers": {
+          "relevant": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.42,
+            "probabilities": {
+              "yes": 0.38,
+              "no": 0.61,
+              "unclear": 0.01
+            }
+          },
+          "addressed": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.5,
+            "probabilities": {
+              "yes": 0.11,
+              "no": 0.67,
+              "unclear": 0.22
+            }
+          },
+          "contradicted": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.52,
+            "probabilities": {
+              "yes": 0.31,
+              "no": 0.68,
+              "unclear": 0.01
+            }
+          },
+          "owns": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "specific": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "yes": 0.0,
+              "no": 1.0,
+              "unclear": 0.0
+            }
+          },
+          "stated": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "yes": 0.01,
+              "no": 0.99,
+              "unclear": 0.0
+            }
+          },
+          "paraphrase": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.79,
+            "probabilities": {
+              "yes": 0.04,
+              "no": 0.86,
+              "unclear": 0.1
+            }
+          },
+          "partial": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.42,
+            "probabilities": {
+              "yes": 0.61,
+              "no": 0.39,
+              "unclear": 0.0
+            }
+          }
+        },
+        "answers_second": null,
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.42
+          },
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.5
+          },
+          {
+            "ask": "first",
+            "role": "conflict",
+            "question_id": "contradicted",
+            "choice": "no",
+            "confidence": 0.52
+          }
+        ],
+        "weak_sentence": "Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+        "diagnosis": "Metadata writing/reading generation moved to d-12; d-11 only mentions that handoff."
+      },
+      "authority": {
+        "revision": "83943f5",
+        "id": "ANC-038",
+        "version": 4,
+        "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+        "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+        "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+        "predates_failure": true
+      }
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "action": "add",
+      "sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+      "replacement": "1. SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033). Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+      "authority_ids": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "row_id": "GATE-R1-01",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-5",
+            "anchor_id": "ANC-033",
+            "run_id": "plan-20261112T091951Z-run-d-5",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.62,
+                  "probabilities": {
+                    "no": 0.75,
+                    "unclear": 0.24,
+                    "yes": 0.01
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.33,
+                  "probabilities": {
+                    "no": 0.55,
+                    "unclear": 0.03,
+                    "yes": 0.42
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.3,
+                  "probabilities": {
+                    "yes": 0.46,
+                    "no": 0.53,
+                    "unclear": 0.01
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.89,
+                  "probabilities": {
+                    "yes": 0.05,
+                    "no": 0.93,
+                    "unclear": 0.02
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.49,
+                  "probabilities": {
+                    "yes": 0.32,
+                    "no": 0.66,
+                    "unclear": 0.02
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.33,
+                  "probabilities": {
+                    "yes": 0.31,
+                    "no": 0.55,
+                    "unclear": 0.14
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.92,
+                  "probabilities": {
+                    "yes": 0.95,
+                    "no": 0.05,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [],
+              "weak_sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+              "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-033",
+              "version": 2,
+              "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+              "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+              "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+              "predates_failure": true
+            }
+          },
+          {
+            "item_id": "run-d-5",
+            "anchor_id": "ANC-032",
+            "run_id": "plan-20261112T091951Z-run-d-5",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.48,
+                  "probabilities": {
+                    "no": 0.65,
+                    "unclear": 0.03,
+                    "yes": 0.32
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.96,
+                  "probabilities": {
+                    "no": 0.97,
+                    "unclear": 0.01,
+                    "yes": 0.02
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.53,
+                  "probabilities": {
+                    "yes": 0.69,
+                    "no": 0.3,
+                    "unclear": 0.01
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.73,
+                  "probabilities": {
+                    "yes": 0.16,
+                    "no": 0.82,
+                    "unclear": 0.02
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.44,
+                  "probabilities": {
+                    "yes": 0.34,
+                    "no": 0.63,
+                    "unclear": 0.03
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.4,
+                  "probabilities": {
+                    "yes": 0.6,
+                    "no": 0.32,
+                    "unclear": 0.08
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.83,
+                  "probabilities": {
+                    "yes": 0.89,
+                    "no": 0.11,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "compliance",
+                  "question_id": "addressed",
+                  "choice": "no",
+                  "confidence": 0.48
+                }
+              ],
+              "weak_sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+              "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-032",
+              "version": 3,
+              "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+              "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+              "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "1. Define real std-only sc-storage Storage<T>, generic row/atomic transaction/error contracts and generic test doubles. No consumer table type, schema or SQL is in a backend (ANC-034). Prototype a fresh owned Send+'static future per retry; transaction properties are only name and read-only/read-write (ANC-033). Preserve measured transaction observations: name, queue wait, run time, row operations and outcome.",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-032",
+          "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+          "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+          "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait."
+        },
+        {
+          "revision": "83943f5",
+          "id": "ANC-033",
+          "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+          "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+          "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine."
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-6",
+      "field": "description",
+      "action": "add",
+      "sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+      "replacement": "1. SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033). Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+      "authority_ids": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "row_id": "GATE-R1-02",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-6",
+            "anchor_id": "ANC-032",
+            "run_id": "plan-20261112T092015Z-run-d-6",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.89,
+                  "probabilities": {
+                    "no": 0.93,
+                    "unclear": 0.05,
+                    "yes": 0.02
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.96,
+                  "probabilities": {
+                    "no": 0.97,
+                    "unclear": 0.01,
+                    "yes": 0.02
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.52,
+                  "probabilities": {
+                    "yes": 0.68,
+                    "no": 0.31,
+                    "unclear": 0.01
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.97,
+                  "probabilities": {
+                    "yes": 0.01,
+                    "no": 0.98,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.31,
+                  "probabilities": {
+                    "yes": 0.54,
+                    "no": 0.4,
+                    "unclear": 0.06
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.61,
+                  "probabilities": {
+                    "yes": 0.13,
+                    "no": 0.74,
+                    "unclear": 0.13
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.98,
+                  "probabilities": {
+                    "yes": 0.99,
+                    "no": 0.01,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [],
+              "weak_sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+              "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-032",
+              "version": 3,
+              "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+              "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+              "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+              "predates_failure": true
+            }
+          },
+          {
+            "item_id": "run-d-6",
+            "anchor_id": "ANC-033",
+            "run_id": "plan-20261112T092015Z-run-d-6",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.52,
+                  "probabilities": {
+                    "no": 0.68,
+                    "unclear": 0.27,
+                    "yes": 0.05
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.86,
+                  "probabilities": {
+                    "no": 0.91,
+                    "unclear": 0.01,
+                    "yes": 0.08
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.97,
+                  "probabilities": {
+                    "yes": 0.98,
+                    "no": 0.02,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.66,
+                  "probabilities": {
+                    "yes": 0.22,
+                    "no": 0.77,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.98,
+                  "probabilities": {
+                    "yes": 0.99,
+                    "no": 0.01,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.2,
+                  "probabilities": {
+                    "yes": 0.47,
+                    "no": 0.31,
+                    "unclear": 0.22
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.94,
+                  "probabilities": {
+                    "yes": 0.96,
+                    "no": 0.04,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "compliance",
+                  "question_id": "addressed",
+                  "choice": "no",
+                  "confidence": 0.52
+                }
+              ],
+              "weak_sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+              "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-033",
+              "version": 2,
+              "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+              "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+              "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "1. Implement the shared sc-storage Storage<T> trait and its generic transaction operation that runs several row operations as one atomic unit over a bounded channel whose design is adapted from atm-core (copied code, no dependency), single writer and reader pool. The writer thread exclusively owns the only write-mode SQLite connection; reader workers open read-only connections. Futures are NEW work, not copied typed operations. Read-write body is one writer message/savepoint; queue batches commit together and replies follow commit. Read-only may use reader pool — REQ-DBSQ-0002/0003; ANC-022..027/033.",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-032",
+          "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+          "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+          "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait."
+        },
+        {
+          "revision": "83943f5",
+          "id": "ANC-033",
+          "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+          "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+          "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine."
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-7",
+      "field": "description",
+      "action": "add",
+      "sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+      "replacement": "1. SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033). Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+      "authority_ids": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "row_id": "GATE-R1-03",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-7",
+            "anchor_id": "ANC-032",
+            "run_id": "plan-20261112T092022Z-run-d-7",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.77,
+                  "probabilities": {
+                    "no": 0.85,
+                    "unclear": 0.08,
+                    "yes": 0.07
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 1.0,
+                    "unclear": 0.0,
+                    "yes": 0.0
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.53,
+                  "probabilities": {
+                    "yes": 0.69,
+                    "no": 0.31,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.94,
+                  "probabilities": {
+                    "yes": 0.03,
+                    "no": 0.96,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.66,
+                  "probabilities": {
+                    "yes": 0.77,
+                    "no": 0.23,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.48,
+                  "probabilities": {
+                    "yes": 0.23,
+                    "no": 0.65,
+                    "unclear": 0.12
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.97,
+                  "probabilities": {
+                    "yes": 0.98,
+                    "no": 0.02,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [],
+              "weak_sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+              "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-032",
+              "version": 3,
+              "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+              "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+              "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+              "predates_failure": true
+            }
+          },
+          {
+            "item_id": "run-d-7",
+            "anchor_id": "ANC-033",
+            "run_id": "plan-20261112T092022Z-run-d-7",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.18,
+                  "probabilities": {
+                    "no": 0.45,
+                    "unclear": 0.41,
+                    "yes": 0.14
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.89,
+                  "probabilities": {
+                    "no": 0.93,
+                    "unclear": 0.0,
+                    "yes": 0.07
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.91,
+                  "probabilities": {
+                    "yes": 0.94,
+                    "no": 0.06,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.67,
+                  "probabilities": {
+                    "yes": 0.21,
+                    "no": 0.78,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.88,
+                  "probabilities": {
+                    "yes": 0.92,
+                    "no": 0.08,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.64,
+                  "probabilities": {
+                    "yes": 0.76,
+                    "no": 0.17,
+                    "unclear": 0.07
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.91,
+                  "probabilities": {
+                    "yes": 0.94,
+                    "no": 0.06,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "compliance",
+                  "question_id": "addressed",
+                  "choice": "no",
+                  "confidence": 0.18
+                }
+              ],
+              "weak_sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+              "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-033",
+              "version": 2,
+              "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+              "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+              "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "1. Implement PostgresStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-032",
+          "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+          "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+          "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait."
+        },
+        {
+          "revision": "83943f5",
+          "id": "ANC-033",
+          "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+          "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+          "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine."
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-8",
+      "field": "description",
+      "action": "add",
+      "sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+      "replacement": "1. SQLite, Postgres and MySQL all implement one shared sc-storage Storage<T> trait and its single AtomicStorage::transaction(spec, producer) operation, which runs several row operations as one atomic unit (ANC-032/033). Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+      "authority_ids": [
+        "ANC-032",
+        "ANC-033"
+      ],
+      "row_id": "GATE-R1-04",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-8",
+            "anchor_id": "ANC-032",
+            "run_id": "plan-20261112T092034Z-run-d-8",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.62,
+                  "probabilities": {
+                    "no": 0.75,
+                    "unclear": 0.08,
+                    "yes": 0.17
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 1.0,
+                    "unclear": 0.0,
+                    "yes": 0.0
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.68,
+                  "probabilities": {
+                    "yes": 0.79,
+                    "no": 0.21,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.92,
+                  "probabilities": {
+                    "yes": 0.04,
+                    "no": 0.95,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.73,
+                  "probabilities": {
+                    "yes": 0.82,
+                    "no": 0.18,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.37,
+                  "probabilities": {
+                    "yes": 0.3,
+                    "no": 0.58,
+                    "unclear": 0.12
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.97,
+                  "probabilities": {
+                    "yes": 0.98,
+                    "no": 0.02,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [],
+              "weak_sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+              "diagnosis": "Only one engine is named after the trim; the shared three-engine contract must be explicit."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-032",
+              "version": 3,
+              "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+              "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+              "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait.",
+              "predates_failure": true
+            }
+          },
+          {
+            "item_id": "run-d-8",
+            "anchor_id": "ANC-033",
+            "run_id": "plan-20261112T092034Z-run-d-8",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.19,
+                  "probabilities": {
+                    "no": 0.21,
+                    "unclear": 0.33,
+                    "yes": 0.46
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.96,
+                  "probabilities": {
+                    "no": 0.97,
+                    "unclear": 0.0,
+                    "yes": 0.03
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.94,
+                  "probabilities": {
+                    "yes": 0.96,
+                    "no": 0.04,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.64,
+                  "probabilities": {
+                    "yes": 0.23,
+                    "no": 0.76,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.88,
+                  "probabilities": {
+                    "yes": 0.92,
+                    "no": 0.08,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.73,
+                  "probabilities": {
+                    "yes": 0.82,
+                    "no": 0.13,
+                    "unclear": 0.05
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.82,
+                  "probabilities": {
+                    "yes": 0.88,
+                    "no": 0.12,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "compliance",
+                  "question_id": "addressed",
+                  "choice": "yes",
+                  "confidence": 0.19
+                }
+              ],
+              "weak_sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+              "diagnosis": "The generic multi-row atomic operation is no longer explicitly implemented by all three engines."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-033",
+              "version": 2,
+              "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+              "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+              "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine.",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "1. Implement MysqlStore<T>: sc-storage Storage<T> plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-032",
+          "statement": "The application storage backends for SQLite, Postgres and MySQL MUST all implement one shared Rust storage trait, Storage<T>.",
+          "scope": "plan items that define the storage trait or implement a SQLite, Postgres or MySQL storage backend",
+          "quote": "Storage is behind one trait. SQLite, Postgres and MySQL MUST implement the same storage trait."
+        },
+        {
+          "revision": "83943f5",
+          "id": "ANC-033",
+          "statement": "The storage contract MUST provide one generic operation that runs several row operations as a single atomic unit, implemented by each engine (SQLite, Postgres, MySQL).",
+          "scope": "plan items that define or change the storage contract (Storage<T>, sc-storage) or implement a storage engine (SQLite writer, Postgres or MySQL store)",
+          "quote": "Storage MUST provide one generic way to run several row operations as a single atomic unit, supplied by each engine."
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; dependency requirements follow schema-range below.",
+      "replacement": "boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; all registry requirements changed here in sc-cron/sc-cron-commands use >= tested floors with no upper bound (ANC-037).",
+      "authority_ids": [
+        "ANC-037"
+      ],
+      "row_id": "GATE-R1-05",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-9",
+            "anchor_id": "ANC-037",
+            "run_id": "plan-20261112T092053Z-run-d-9",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.35,
+                  "probabilities": {
+                    "yes": 0.57,
+                    "no": 0.4,
+                    "unclear": 0.03
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.26,
+                  "probabilities": {
+                    "yes": 0.06,
+                    "no": 0.51,
+                    "unclear": 0.43
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.85,
+                  "probabilities": {
+                    "yes": 0.04,
+                    "no": 0.9,
+                    "unclear": 0.06
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.89,
+                  "probabilities": {
+                    "yes": 0.03,
+                    "no": 0.93,
+                    "unclear": 0.04
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.96,
+                  "probabilities": {
+                    "yes": 0.01,
+                    "no": 0.97,
+                    "unclear": 0.02
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.89,
+                  "probabilities": {
+                    "yes": 0.05,
+                    "no": 0.93,
+                    "unclear": 0.02
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.83,
+                  "probabilities": {
+                    "yes": 0.06,
+                    "no": 0.89,
+                    "unclear": 0.05
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.31,
+                  "probabilities": {
+                    "yes": 0.45,
+                    "no": 0.54,
+                    "unclear": 0.01
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "relevance",
+                  "question_id": "relevant",
+                  "choice": "yes",
+                  "confidence": 0.35
+                }
+              ],
+              "weak_sentence": "boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; dependency requirements follow schema-range below.",
+              "diagnosis": "Trimming left a dangling range pointer or only a checker reference instead of this owner's open-floor requirement."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-037",
+              "version": 2,
+              "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+              "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+              "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "boundary:sc-cron/migration — Controlled legacy-row snapshot imports preserve every field; second invocation is idempotent, collisions/errors are typed and atomic. No default cron.db setting or store constructor. Public changed storage APIs are Result-returning/no-panic; no caller storage block_on/spawn_blocking bridge. READMEs match actual API; dependency requirements follow schema-range below.",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-037",
+          "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+          "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+          "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "description",
+      "action": "replace",
+      "sentence": "4. Invoke d-3's single manifest checker on the real generated outputs; no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+      "replacement": "4. Invoke d-3's single manifest checker on the real generated outputs; Every registry requirement in the template manifests changed here is >= its tested floor with no upper bound (ANC-037); no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+      "authority_ids": [
+        "ANC-037"
+      ],
+      "row_id": "GATE-R1-06",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-11",
+            "anchor_id": "ANC-037",
+            "run_id": "plan-20261112T092117Z-run-d-11",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.88,
+                  "probabilities": {
+                    "yes": 0.92,
+                    "no": 0.08,
+                    "unclear": 0.0
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.44,
+                  "probabilities": {
+                    "yes": 0.31,
+                    "no": 0.63,
+                    "unclear": 0.06
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.49,
+                  "probabilities": {
+                    "yes": 0.33,
+                    "no": 0.66,
+                    "unclear": 0.01
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.79,
+                  "probabilities": {
+                    "yes": 0.1,
+                    "no": 0.86,
+                    "unclear": 0.04
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.98,
+                  "probabilities": {
+                    "yes": 0.01,
+                    "no": 0.99,
+                    "unclear": 0.0
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.88,
+                  "probabilities": {
+                    "yes": 0.08,
+                    "no": 0.92,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.77,
+                  "probabilities": {
+                    "yes": 0.13,
+                    "no": 0.85,
+                    "unclear": 0.02
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.25,
+                  "probabilities": {
+                    "yes": 0.49,
+                    "no": 0.5,
+                    "unclear": 0.01
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "conflict",
+                  "question_id": "contradicted",
+                  "choice": "no",
+                  "confidence": 0.49
+                }
+              ],
+              "weak_sentence": "4. Invoke d-3's single manifest checker on the real generated outputs; no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+              "diagnosis": "Trimming left a dangling range pointer or only a checker reference instead of this owner's open-floor requirement."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-037",
+              "version": 2,
+              "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+              "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+              "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "4. Invoke d-3's single manifest checker on the real generated outputs; no second checker or policy fixture set. Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-037",
+          "statement": "Registry dependency requirements in published crate and template manifests MUST NOT declare an upper version bound.",
+          "scope": "Adds, changes or specifies registry dependency requirements in published crate manifests or template manifests.",
+          "quote": "Remove upper bound / If a security patch is tommorrow I won't be able to use it / The consumer can pin what they want. / All dependencies"
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "root rusqlite stays d-6-owned",
+      "replacement": "root rusqlite registration stays d-5-owned; d-12 changes only SDK release-version lines",
+      "authority_ids": [
+        "PLAN-SCOPE-003",
+        "contract registry ownership rule"
+      ],
+      "why": {
+        "failed_cells": [],
+        "weak_sentence": "root rusqlite stays d-6-owned",
+        "diagnosis": "Known stale ownership pointer contradicts the applied round1 recut; no new failed Jev cell."
+      },
+      "row_id": "GATE-R1-07",
+      "authority": []
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "action": "exclude",
+      "sentence": "These are this sprint's changed public storage functions under ANC-035",
+      "replacement": "d-9 implements the sc-cron CronStorage domain facade over a private Storage<CronRow> backend; it changes no public function of sc-storage, sc-runtime-db-sqlite or a template store, the recorded ANC-035 scope. Its domain typed-error/no-panic tests and NFR-RUN-0009/REQ-CRON-0005 remain required.",
+      "authority_ids": [
+        "ANC-035"
+      ],
+      "row_id": "GATE-R1-08",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-9",
+            "anchor_id": "ANC-035",
+            "run_id": "plan-20261112T092053Z-run-d-9",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.35,
+                  "probabilities": {
+                    "no": 0.41,
+                    "unclear": 0.02,
+                    "yes": 0.57
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 1.0,
+                    "unclear": 0.0,
+                    "yes": 0.0
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.92,
+                  "probabilities": {
+                    "yes": 0.95,
+                    "no": 0.05,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.42,
+                  "probabilities": {
+                    "yes": 0.61,
+                    "no": 0.38,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 1.0,
+                    "no": 0.0,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 1.0,
+                    "no": 0.0,
+                    "unclear": 0.0
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.48,
+                  "probabilities": {
+                    "yes": 0.35,
+                    "no": 0.65,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "relevance",
+                  "question_id": "relevant",
+                  "choice": "yes",
+                  "confidence": 0.35
+                }
+              ],
+              "weak_sentence": "These are this sprint's changed public storage functions under ANC-035",
+              "diagnosis": "No public storage function in the recorded sc-storage/writer/template-store package scope is changed; public CronStorage is a separate domain facade and remains typed/no-panic under its governing requirements."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-035",
+              "version": 2,
+              "statement": "Public storage functions MUST NOT panic.",
+              "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+              "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "These are this sprint's changed public storage functions under ANC-035",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-035",
+          "statement": "Public storage functions MUST NOT panic.",
+          "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic"
+        }
+      ]
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-038",
+      "action": "exclude",
+      "sentence": "Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+      "replacement": "d-11 composes application code and invokes the manifest checker; recommendation generation, template/.sc-runtime/** and the script that reads/writes tested-version metadata are entirely d-12-owned. d-11 does not implement a metadata-writing/reading generation step.",
+      "authority_ids": [
+        "ANC-038"
+      ],
+      "row_id": "GATE-R1-09",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-11",
+            "anchor_id": "ANC-038",
+            "run_id": "plan-20261112T092117Z-run-d-11",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.42,
+                  "probabilities": {
+                    "yes": 0.38,
+                    "no": 0.61,
+                    "unclear": 0.01
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.5,
+                  "probabilities": {
+                    "yes": 0.11,
+                    "no": 0.67,
+                    "unclear": 0.22
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.52,
+                  "probabilities": {
+                    "yes": 0.31,
+                    "no": 0.68,
+                    "unclear": 0.01
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 0.0,
+                    "no": 1.0,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 0.0,
+                    "no": 1.0,
+                    "unclear": 0.0
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.98,
+                  "probabilities": {
+                    "yes": 0.01,
+                    "no": 0.99,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.79,
+                  "probabilities": {
+                    "yes": 0.04,
+                    "no": 0.86,
+                    "unclear": 0.1
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.42,
+                  "probabilities": {
+                    "yes": 0.61,
+                    "no": 0.39,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "relevance",
+                  "question_id": "relevant",
+                  "choice": "no",
+                  "confidence": 0.42
+                },
+                {
+                  "ask": "first",
+                  "role": "compliance",
+                  "question_id": "addressed",
+                  "choice": "no",
+                  "confidence": 0.5
+                },
+                {
+                  "ask": "first",
+                  "role": "conflict",
+                  "question_id": "contradicted",
+                  "choice": "no",
+                  "confidence": 0.52
+                }
+              ],
+              "weak_sentence": "Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+              "diagnosis": "Metadata writing/reading generation moved to d-12; d-11 only mentions that handoff."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-038",
+              "version": 4,
+              "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+              "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+              "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "Final recommended Cargo.lock and .sc-runtime/ metadata generation/delivery are d-12-owned.",
+        "diagnosis": "Restore a missing explicit constraint or record an actually unrelated scope; no question, scope or threshold changes."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "ANC-038",
+          "statement": "The generated application MUST record the release's tested dependency combination as metadata under .sc-runtime/, readable by tools that revert to it or upgrade from it at the next release.",
+          "scope": "Plans what the generated application writes under .sc-runtime/, or the generation step or tool that writes or reads the recorded tested dependency versions there. Work that only sets or tests dependency ranges is outside this scope.",
+          "quote": "This should also be saved as metadata in .sc-runtime/ fit reference or tools to revert/upgrade on next release"
+        }
+      ]
+    },
+    {
+      "row_id": "GATE-R1-10",
+      "item_id": "run-d-9",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "sentence": "These are this sprint's changed public storage functions under ANC-035;",
+      "replacement": "These are the CronStorage domain functions governed by NFR-RUN-0009 and REQ-CRON-0005;",
+      "why": {
+        "failed_cells": [
+          {
+            "item_id": "run-d-9",
+            "anchor_id": "ANC-035",
+            "run_id": "plan-20261112T092053Z-run-d-9",
+            "why": {
+              "answers": {
+                "relevant": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.35,
+                  "probabilities": {
+                    "no": 0.41,
+                    "unclear": 0.02,
+                    "yes": 0.57
+                  }
+                },
+                "addressed": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 0.0,
+                    "unclear": 0.0,
+                    "yes": 1.0
+                  }
+                },
+                "contradicted": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "no": 1.0,
+                    "unclear": 0.0,
+                    "yes": 0.0
+                  }
+                },
+                "owns": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.92,
+                  "probabilities": {
+                    "yes": 0.95,
+                    "no": 0.05,
+                    "unclear": 0.0
+                  }
+                },
+                "specific": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 0.42,
+                  "probabilities": {
+                    "yes": 0.61,
+                    "no": 0.38,
+                    "unclear": 0.01
+                  }
+                },
+                "stated": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 1.0,
+                    "no": 0.0,
+                    "unclear": 0.0
+                  }
+                },
+                "paraphrase": {
+                  "type": "choice",
+                  "choice": "yes",
+                  "confidence": 1.0,
+                  "probabilities": {
+                    "yes": 1.0,
+                    "no": 0.0,
+                    "unclear": 0.0
+                  }
+                },
+                "partial": {
+                  "type": "choice",
+                  "choice": "no",
+                  "confidence": 0.48,
+                  "probabilities": {
+                    "yes": 0.35,
+                    "no": 0.65,
+                    "unclear": 0.0
+                  }
+                }
+              },
+              "answers_second": null,
+              "limiting_answers": [
+                {
+                  "ask": "first",
+                  "role": "relevance",
+                  "question_id": "relevant",
+                  "choice": "yes",
+                  "confidence": 0.35
+                }
+              ],
+              "weak_sentence": "These are this sprint's changed public storage functions under ANC-035",
+              "diagnosis": "No public storage function in the recorded sc-storage/writer/template-store package scope is changed; public CronStorage is a separate domain facade and remains typed/no-panic under its governing requirements."
+            },
+            "authority": {
+              "revision": "83943f5",
+              "id": "ANC-035",
+              "version": 2,
+              "statement": "Public storage functions MUST NOT panic.",
+              "scope": "plan items that write or change public storage functions in this phase (sc-storage, sc-runtime-db-sqlite, template stores)",
+              "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+              "predates_failure": true
+            }
+          }
+        ],
+        "weak_sentence": "These are this sprint's changed public storage functions under ANC-035;",
+        "diagnosis": "Preserve typed Result/no-panic behavior and actual static checks while correcting the attribution after removing the public generic Storage supertrait."
+      },
+      "authority": [
+        {
+          "revision": "83943f5",
+          "id": "NFR-RUN-0009"
+        },
+        {
+          "revision": "83943f5",
+          "id": "REQ-CRON-0005"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "run_id": "plan-20261112T091951Z-run-d-5",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T091951Z-run-d-5.json",
+      "run_sha256": "9054f62501b76abb263e8ff3b7875a4c1e16533b3165d1fe1d2147ff81a00889",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-5.txt",
+      "snapshot_sha256": "b2357834d42f418a2ad6e4cca14033fc2b68118e9ca15802ee8938490e085ad7"
+    },
+    {
+      "run_id": "plan-20261112T092015Z-run-d-6",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T092015Z-run-d-6.json",
+      "run_sha256": "6cc8e0d9cc28dd7cdd0a77b247105089d08c031f2511dd8e94f9a19a58e4cb89",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-6.txt",
+      "snapshot_sha256": "d3bd66f9319e2291ae8f54a39fad9bfd00df3d94768681bcdbc5bae7e43efc67"
+    },
+    {
+      "run_id": "plan-20261112T092022Z-run-d-7",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T092022Z-run-d-7.json",
+      "run_sha256": "5469f7a75efbe94b35a7efc154f7c89e1a38aeee06ea402ad8b2332656904a37",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-7.txt",
+      "snapshot_sha256": "6215d937a4a0f73ad585fb2578445330e9b73ce33d317c58042ebfacfa6e17fa"
+    },
+    {
+      "run_id": "plan-20261112T092034Z-run-d-8",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T092034Z-run-d-8.json",
+      "run_sha256": "efb152e4b1c6a79887a6c7200ae8d29801c00d63cbd055ba0e6658ed82202d51",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-8.txt",
+      "snapshot_sha256": "947e02fb6585d8cee4a7aa6e491d0f52c00a994b835dad5a54331f0c7b25bc64"
+    },
+    {
+      "run_id": "plan-20261112T092053Z-run-d-9",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T092053Z-run-d-9.json",
+      "run_sha256": "41ba5ebcfac08053c5c59c33d7dae84aaa91ada3ca84ae581d8ff65519572ed7",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-9.txt",
+      "snapshot_sha256": "fdd507df951464de943817ec35831d2486397895239989d0271197175fa3b7a9"
+    },
+    {
+      "run_id": "plan-20261112T092117Z-run-d-11",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T092117Z-run-d-11.json",
+      "run_sha256": "02f3383c93d0a3be68cfb2a1bb0ce8d820658e56078bd75f64e1ce5ab39760bf",
+      "snapshot": "docs/plans/phase-d/anchor-runs/gate-items-83943f5/run-d-11.txt",
+      "snapshot_sha256": "b90fbefdac8f73e4859be388b7940fab571f59b6960b103c7554902161f1b325"
+    }
+  ],
+  "unaffected_owner_observation": {
+    "item_id": "run-d-12",
+    "anchor_id": "ANC-038",
+    "run_id": "plan-20261112T092136Z-run-d-12",
+    "verdict": "satisfied"
+  }
+}

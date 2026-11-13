@@ -1,10 +1,11 @@
 # Renderer Contract
 
-- Direct agent template rendering uses the `sc-compose` CLI. Do not import
+- Direct agent template rendering uses the `sc-compose` **CLI** (≥ repo floor in
+  `.sc/generation-tools.json` when present; newer releases OK). Do not import
   `sc_compose` from an agent prompt or an inline Python command.
-- Before a direct render, read the exact `SC_COMPOSE_VERSION` in
-  `.github/scripts/bootstrap_sc_compose.py`; `sc-compose --version` must report
-  that same version. Stop and report a sanitized version mismatch otherwise.
+- **Python publish renderer** (separate): read exact `SC_COMPOSE_VERSION` in
+  `.github/scripts/bootstrap_sc_compose.py`; the bootstrapped wheel must match.
+  That pin is not the generation CLI floor.
 - Package Python code (`install.py`, integration examples, and tests) uses only
   the interpreter printed by `bootstrap_sc_compose.py`. That bootstrapper
   installs or replaces the wheel until it exactly matches

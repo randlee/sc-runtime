@@ -23,7 +23,7 @@ T="<this skill's directory>/scripts/anchor_tracker.py"
 python3 "$T" resolve > /tmp/anchor-tracker.json; jq '{success, error: .error.code}' /tmp/anchor-tracker.json
 ANCHOR_TRACKER="$(jq -r '.data.tracker // empty' /tmp/anchor-tracker.json)"
 which "$ANCHOR_TRACKER" && "$ANCHOR_TRACKER" --version
-which sc-compose && sc-compose --version    # 1.8.0 or newer
+sc-compose --version    # must be >= floor: .sc/generation-tools.json tools.sc-compose.minimum_version when present, else 1.8.0; newer releases are fine (1.7-era templates work on 1.8+)
 test -n "$TYPESAFE_API_KEY" && echo "TYPESAFE_API_KEY set (preferred)" || echo "TYPESAFE_API_KEY absent; live Jev may use the documented platform credential store"
 python3 "<this skill's directory>/scripts/plan_anchor_settings.py" show | jq '.data.allow_remote_judge'   # true, false, or null (never asked)
 ```

@@ -1,0 +1,263 @@
+{
+  "success": true,
+  "error": null,
+  "data": {
+    "dry_run": false,
+    "results": [
+      {
+        "record": {
+          "id": "ADR-RUN-0017",
+          "kind": "adr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-drift-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-adr",
+          "sha256": "2ee15b3641c6e3effae3eb7892151a110f0eda740080f83a0a1be9e2cd257fc1",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-adr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "request_id": "quality/ADR-RUN-0017/wave-1/r1",
+            "reason": [
+              {
+                "id": "context",
+                "text": "`item.text` is one architecture decision record as JSON. Does its context name the problem and the forces behind the decision?",
+                "choice": "problem and forces",
+                "criterion": "Names the problem and the forces or constraints that shaped the decision.",
+                "confidence": 0.97
+              },
+              {
+                "id": "alternatives",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the alternatives considered?",
+                "choice": "named with reasons rejected",
+                "criterion": "Names alternatives and why each was rejected.",
+                "confidence": 1.0
+              },
+              {
+                "id": "consequences",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the decision's consequences?",
+                "choice": "positive and negative",
+                "criterion": "Names benefits and costs.",
+                "confidence": 0.94
+              }
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "ADR-RUN-0020",
+          "kind": "adr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-drift-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-adr",
+          "sha256": "2ee15b3641c6e3effae3eb7892151a110f0eda740080f83a0a1be9e2cd257fc1",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-adr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "request_id": "quality/ADR-RUN-0020/wave-1/r1",
+            "reason": [
+              {
+                "id": "context",
+                "text": "`item.text` is one architecture decision record as JSON. Does its context name the problem and the forces behind the decision?",
+                "choice": "problem and forces",
+                "criterion": "Names the problem and the forces or constraints that shaped the decision.",
+                "confidence": 0.82
+              },
+              {
+                "id": "alternatives",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the alternatives considered?",
+                "choice": "named with reasons rejected",
+                "criterion": "Names alternatives and why each was rejected.",
+                "confidence": 1.0
+              },
+              {
+                "id": "consequences",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the decision's consequences?",
+                "choice": "positive and negative",
+                "criterion": "Names benefits and costs.",
+                "confidence": 0.97
+              }
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "ADR-RUN-0021",
+          "kind": "adr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-drift-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-adr",
+          "sha256": "2ee15b3641c6e3effae3eb7892151a110f0eda740080f83a0a1be9e2cd257fc1",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-adr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "request_id": "quality/ADR-RUN-0021/wave-1/r1",
+            "reason": [
+              {
+                "id": "context",
+                "text": "`item.text` is one architecture decision record as JSON. Does its context name the problem and the forces behind the decision?",
+                "choice": "problem and forces",
+                "criterion": "Names the problem and the forces or constraints that shaped the decision.",
+                "confidence": 0.76
+              },
+              {
+                "id": "alternatives",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the alternatives considered?",
+                "choice": "named with reasons rejected",
+                "criterion": "Names alternatives and why each was rejected.",
+                "confidence": 1.0
+              },
+              {
+                "id": "consequences",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the decision's consequences?",
+                "choice": "positive and negative",
+                "criterion": "Names benefits and costs.",
+                "confidence": 0.86
+              }
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "ADR-RUN-0204",
+          "kind": "adr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-drift-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-adr",
+          "sha256": "2ee15b3641c6e3effae3eb7892151a110f0eda740080f83a0a1be9e2cd257fc1",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-adr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "request_id": "quality/ADR-RUN-0204/wave-1/r1",
+            "reason": [
+              {
+                "id": "context",
+                "text": "`item.text` is one architecture decision record as JSON. Does its context name the problem and the forces behind the decision?",
+                "choice": "problem and forces",
+                "criterion": "Names the problem and the forces or constraints that shaped the decision.",
+                "confidence": 0.86
+              },
+              {
+                "id": "alternatives",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the alternatives considered?",
+                "choice": "named with reasons rejected",
+                "criterion": "Names alternatives and why each was rejected.",
+                "confidence": 0.96
+              },
+              {
+                "id": "consequences",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the decision's consequences?",
+                "choice": "positive and negative",
+                "criterion": "Names benefits and costs.",
+                "confidence": 0.83
+              }
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      },
+      {
+        "record": {
+          "id": "ADR-RUN-0304",
+          "kind": "adr",
+          "source": {
+            "raptor_index": "/tmp/jev-runs-drift-index.json"
+          }
+        },
+        "tree": {
+          "id": "quality-adr",
+          "sha256": "2ee15b3641c6e3effae3eb7892151a110f0eda740080f83a0a1be9e2cd257fc1",
+          "source": "shipped",
+          "path": "/Users/randlee/github/sc-runtime/.codex/skills/judge-jev/assets/questions/quality-adr.json"
+        },
+        "verdict": "yes",
+        "path": [
+          "wave-1"
+        ],
+        "waves": [
+          {
+            "node": "wave-1",
+            "request_id": "quality/ADR-RUN-0304/wave-1/r1",
+            "reason": [
+              {
+                "id": "context",
+                "text": "`item.text` is one architecture decision record as JSON. Does its context name the problem and the forces behind the decision?",
+                "choice": "problem and forces",
+                "criterion": "Names the problem and the forces or constraints that shaped the decision.",
+                "confidence": 0.86
+              },
+              {
+                "id": "alternatives",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the alternatives considered?",
+                "choice": "named with reasons rejected",
+                "criterion": "Names alternatives and why each was rejected.",
+                "confidence": 1.0
+              },
+              {
+                "id": "consequences",
+                "text": "`item.text` is one architecture decision record as JSON. Does it name the decision's consequences?",
+                "choice": "positive and negative",
+                "criterion": "Names benefits and costs.",
+                "confidence": 0.4
+              }
+            ],
+            "next": null,
+            "verdict": "yes"
+          }
+        ]
+      }
+    ],
+    "log": {
+      "run": "runs-drift-r1",
+      "log_root": ".sc/judge-jev"
+    }
+  }
+}

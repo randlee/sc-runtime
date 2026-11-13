@@ -1,0 +1,1605 @@
+{
+  "failed_revision": "ee9b472",
+  "fixed_revision": "fe81543",
+  "consumer": "run-lead and owner reviewing growth justification in PR135",
+  "acceptance_gate": "Acceptance of fe81543 plan corrections",
+  "observed_defect": "Initial seven to_fix rows had one generic authority string and no per-row run/question/weak-passage diagnosis",
+  "retirement": "Remove from the active plan only after Phase D closes and the same immutable review evidence is retained in the PR/archive",
+  "record_note": "The initial to_fix record preceded the edits but had insufficient per-row citations. This record repairs that omission using authorities and snapshots already present before the failed runs; it does not assert that this detailed record existed before fe81543. Raw run files are copied byte-for-byte; absolute original item.source values remain unchanged and are bound to portable local snapshots below.",
+  "evidence_bindings": [
+    {
+      "run_id": "plan-20261112T064548Z-run-d-6",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064548Z-run-d-6.json",
+      "run_sha256": "99e946f2e8a79165c4f199df6d4d56cad93677982c75cc281d6f98b19d2d3475",
+      "raw_item_source_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-6.txt",
+      "item_snapshot": "docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-6.txt",
+      "item_sha256": "cc0e44e80637286447e77950073e36f969cade6d85022abf742400304d2556b1",
+      "reported_item_chars": 6718,
+      "snapshot_chars_stripped": 6717,
+      "snapshot_chars": 6718
+    },
+    {
+      "run_id": "plan-20261112T064640Z-run-d-9",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064640Z-run-d-9.json",
+      "run_sha256": "4a91bc219250a6ef67f54ba6f4c98131dada55c175beb97b859038941769d8a7",
+      "raw_item_source_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-9.txt",
+      "item_snapshot": "docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-9.txt",
+      "item_sha256": "1697ccf0efff97641e0088d20cc4264d0f9e07d4d95d43f382242c8938d46e37",
+      "reported_item_chars": 5733,
+      "snapshot_chars_stripped": 5732,
+      "snapshot_chars": 5733
+    },
+    {
+      "run_id": "plan-20261112T064647Z-run-d-10",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064647Z-run-d-10.json",
+      "run_sha256": "5e281cec41a68018eb6d4d2fe7dea0836cebceae889c8ce08eac331a749efd66",
+      "raw_item_source_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-10.txt",
+      "item_snapshot": "docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-10.txt",
+      "item_sha256": "f8f23526589723759282a059cbf1ba61418bb405c943d43c5f714fe1ef667094",
+      "reported_item_chars": 3649,
+      "snapshot_chars_stripped": 3648,
+      "snapshot_chars": 3649
+    },
+    {
+      "run_id": "plan-20261112T064553Z-run-d-11",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064553Z-run-d-11.json",
+      "run_sha256": "0265a1885f43466d380d85cb15298fcb779cf710438b013e608e0b584987d9bb",
+      "raw_item_source_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-11.txt",
+      "item_snapshot": "docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-11.txt",
+      "item_sha256": "53384879e53028eb6f1a355c81d531101e56ee2ae5ed650b9dd041241e882e72",
+      "reported_item_chars": 7818,
+      "snapshot_chars_stripped": 7817,
+      "snapshot_chars": 7818
+    },
+    {
+      "run_id": "plan-20261112T064552Z-run-d-12",
+      "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064552Z-run-d-12.json",
+      "run_sha256": "a66d8c67006b1807e80552ddf0ad16561f4f05e56251192a11d4a61ca9575be6",
+      "raw_item_source_preserved": "/Users/randlee/github/sc-runtime-worktrees/anchors-phase-d/docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-12.txt",
+      "item_snapshot": "docs/plans/phase-d/anchor-runs/gate-items-ee9b472/run-d-12.txt",
+      "item_sha256": "dfaa7cc5586fa9c9d98eaeaddd3c8dcf11ed5975d3276c30d8b8711b1a8d01ef",
+      "reported_item_chars": 8032,
+      "snapshot_chars_stripped": 8031,
+      "snapshot_chars": 8032
+    }
+  ],
+  "failures": [
+    {
+      "item_id": "run-d-6",
+      "anchor_id": "ANC-019",
+      "run_id": "plan-20261112T064548Z-run-d-6",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "yes",
+          "confidence": 0.94
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "yes",
+          "confidence": 0.53
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "yes",
+          "confidence": 0.89
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "no",
+          "confidence": 0.6
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "yes",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "yes",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "yes",
+          "confidence": 0.31
+        }
+      ],
+      "why": "The item names a break comment only for the0.42 fallback, while its qualified branch writes a literal upper boundary. It never states the comment obligation for every additional third-party upper bound in all manifests this sprint writes.",
+      "weak_sentence": "4. Run the required rusqlite0.42 qualification. If its API, native-link and toolchain tests pass, write the shared root requirement \">=0.41, <0.43\"; this admits all0.41.x and additionally0.42.x. If a demonstrated0.42 break is found, write the plain caret \"0.41\" (^0.41) with an adjacent comment naming the break and evidence; this still admits every patch in0.41.x. The0.42 line is a separate Cargo compatibility line, not a patch upgrade within0.41.x. Thin generated SQLite storage consumes the generic backend and application-owned schema and removes SQLx SQLite/cache/config — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.",
+      "authority": [
+        {
+          "id": "ANC-019",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+          "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-01"
+      ]
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "run_id": "plan-20261112T064640Z-run-d-9",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "no",
+          "confidence": 0.25
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "yes",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "yes",
+          "confidence": 0.94
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "yes",
+          "confidence": 0.44
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "yes",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "yes",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "no",
+          "confidence": 0.6
+        }
+      ],
+      "why": "The item says no-panic clearly (addressed yes1.00), but the relevance question names sc-storage public functions while the item names sc-cron domain functions. Its existing CronStorage:Storage<CronRow> contract requires a public Storage implementation; naming those actual methods makes the governed public storage surface concrete without moving code or changing the question.",
+      "weak_sentence": "1. Implement CronStore<S:Storage<CronRow>> and CronStorage ONCE in sc-cron using the generic atomic unit.",
+      "authority": [
+        {
+          "id": "ANC-035",
+          "status_at_failure": "locked",
+          "version": 2,
+          "statement": "Public storage functions MUST NOT panic.",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-RUN-0328",
+          "status_at_failure": "Active",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/requirements.md",
+            "heading": "## REQ-RUN-0328:",
+            "section_sha256": "8eb05f4d26c0daece7801d883ee719211c80a9e2a0cb0dae11a7acd84a090a3b"
+          },
+          "text": "## REQ-RUN-0328: Paired stores share a trait or use a trait per store\n\n**Status:** Active\n\n### Requirement Statement\n\nEvery store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.\n\n### Success Criteria\n\n1. A generated pair names one trait that both stores implement.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0004",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0004:",
+            "section_sha256": "931cca75dc03a72fc89fe1c04af0514228583bb10c20634b292ff5ded88c572d"
+          },
+          "text": "## REQ-CRON-0004: One configuration table\n\n**Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.\n\nThe bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{\"dotenv\":[],\"variables\":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0005",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0005:",
+            "section_sha256": "e3da23d9444e1c0a0ca338fa43b6bb30c70cf74214a3ea9036aff283e1704029"
+          },
+          "text": "## REQ-CRON-0005: One error enum\n\nPhase C planned amendment: cooperative operation failures remain CronError::Store\nwith non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and\nIndeterminate, and optional typed TransactionOutcome accessor. No second error\nenum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry\nconfirmed committed-late evidence and must not trigger automatic retry;\nIndeterminate never asserts rollback/not-persisted. Existing legacy variants,\nstable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and\nADR-RUN-0018 govern the exact admission/persistence report policy.\n\nFallible library entry points return `CronError`, including both\n`process::supervise` and `process::supervise_with_logger`, which return\n`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.\n\nApplication-implemented callback protocols retain their documented results.\n`EnvironmentReferenceResolver::resolve` returns the value-free\n`EnvironmentReferenceError::{Denied, Unavailable}` protocol; sc-cron maps\nthose failures or a missing reference to fixed `ENV_REFERENCE` outcomes.\nProvider prose is never a second public library error channel.\n\nWith feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):\n\n| Condition | Code | `RunOutcome` | Operator recovery |\n|---|---|---|---|\n| Bridge argument conversion or supplied CLI adapter shape rejected before execution | `HOST_DENIED` | `Failed` | Fix the call's JSON conversion or the supplied adapter's documented argument shape. |\n| Custom application handler returns an error, including `InvalidSpec` | `HOST_CALL_FAILED` | `Failed` | Fix the application handler; configured environment values are redacted from the recorded detail. |\n| CLI executable missing or not runnable | `HOST_SPAWN` | `Failed` | Fix the configured executable path or install the external CLI. |\n| CLI output is invalid UTF-8 or exceeds the per-stream cap | `HOST_OUTPUT` | `Failed` | Return bounded UTF-8 stdout and stderr. |\n| CLI exits nonzero | — | Script receives result | Inspect `exit_code` and bounded `stderr`; the adapter does not turn an application CLI result into an automatic hook failure. |\n| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |\n| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Use the configured host registry and Getenv/GetEnviron; other OS operations remain denied. |\n| Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |\n| `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |\n| Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |\n| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax. Shell expansion is not supported. |\n| Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |\n| Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |\n| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |\n| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `\"action\"` (`continue`, `disable`, or `delete`) and a non-empty `\"reason\"` when disabling or deleting. |\n| Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |\n| Monty feed task panicked (worker join) | `FEED_JOIN_FAILED` | `Failed` | Fix the panic in the hook or host and retry the schedule. |\n| Monty due task panicked or was cancelled | `DUE_JOIN_FAILED` | `Failed` | Retry the schedule; if it persists, inspect the Monty due task and hook source. |\n| Monty due path used for a non-Monty hook | `MONTY_RESOLVE` | `Failed` | Run this row on its Rust or Python target, or set `HookTarget::Monty`. |\n| `cron_tick` returned a stop action (disable/delete) | `MONTY_TICK` | `Failed` | Return normally from `cron_tick`; disable and delete belong in `cron_stop`. |\n| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |\n| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |\n\nHost-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.",
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-02",
+        "R2-03",
+        "R2-04"
+      ]
+    },
+    {
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-016",
+      "run_id": "plan-20261112T064647Z-run-d-10",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "yes",
+          "confidence": 0.66
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "no",
+          "confidence": 0.53
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.8
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "no",
+          "confidence": 0.8
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "no",
+          "confidence": 0.96
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "no",
+          "confidence": 0.67
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "no",
+          "confidence": 0.46
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "yes",
+          "confidence": 0.88
+        }
+      ],
+      "why": "The item adds sc-storage but calls its requirement only an adopted development version; it never states the actual caret or which newer compatible SDK versions that requirement permits.",
+      "weak_sentence": "boundary:template-service/dependency-endpoints — Run the d-3 minimum/latest dependency recipes on sc-command and the generated service with the added sc-storage dependency, executing their real storage/transform tests at both selections. Internal SDK paths use the adopted development version; final published SDK registry proof stays in d-12 (ANC-017).",
+      "authority": [
+        {
+          "id": "ANC-016",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+          "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-017",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+          "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-05"
+      ]
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-005",
+      "run_id": "plan-20261112T064553Z-run-d-11",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "yes",
+          "confidence": 0.67
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "yes",
+          "confidence": 0.44
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "no",
+          "confidence": 0.96
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "no",
+          "confidence": 0.79
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "yes",
+          "confidence": 0.85
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "yes",
+          "confidence": 0.24
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "yes",
+          "confidence": 0.58
+        }
+      ],
+      "why": "The item names1.8.0 as a test executable, but does not state the repository minimum declaration or its source. CLI1.8 test identity alone does not communicate a >=1.8 lower-bound requirement.",
+      "weak_sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+      "authority": [
+        {
+          "id": "ANC-005",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.",
+          "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-003",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+          "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-06"
+      ]
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-015",
+      "run_id": "plan-20261112T064553Z-run-d-11",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "no",
+          "confidence": 0.7
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "no",
+          "confidence": 0.46
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "no",
+          "confidence": 0.82
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "no",
+          "confidence": 0.64
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "yes",
+          "confidence": 0.28
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "yes",
+          "confidence": 0.5
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "yes",
+          "confidence": 0.62
+        },
+        {
+          "attempt": "second",
+          "question": "relevant",
+          "answer": "no",
+          "confidence": 0.52
+        },
+        {
+          "attempt": "second",
+          "question": "addressed",
+          "answer": "no",
+          "confidence": 0.4
+        },
+        {
+          "attempt": "second",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.98
+        }
+      ],
+      "why": "The limiting relevance answer concerns skill version-check code. The item changes generation layouts/docs/tests, not any repository skill script/instruction that checks CLI versions; its actual file fence contains no such path.",
+      "weak_sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+      "authority": [
+        {
+          "id": "ANC-015",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.",
+          "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-08"
+      ]
+    },
+    {
+      "item_id": "run-d-12",
+      "anchor_id": "ANC-016",
+      "run_id": "plan-20261112T064552Z-run-d-12",
+      "question_answers": [
+        {
+          "attempt": "first",
+          "question": "relevant",
+          "answer": "yes",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "first",
+          "question": "addressed",
+          "answer": "yes",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "first",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.56
+        },
+        {
+          "attempt": "first",
+          "question": "owns",
+          "answer": "yes",
+          "confidence": 0.86
+        },
+        {
+          "attempt": "first",
+          "question": "specific",
+          "answer": "no",
+          "confidence": 0.42
+        },
+        {
+          "attempt": "first",
+          "question": "stated",
+          "answer": "yes",
+          "confidence": 0.91
+        },
+        {
+          "attempt": "first",
+          "question": "paraphrase",
+          "answer": "yes",
+          "confidence": 0.94
+        },
+        {
+          "attempt": "first",
+          "question": "partial",
+          "answer": "yes",
+          "confidence": 0.3
+        },
+        {
+          "attempt": "second",
+          "question": "relevant",
+          "answer": "yes",
+          "confidence": 1.0
+        },
+        {
+          "attempt": "second",
+          "question": "addressed",
+          "answer": "yes",
+          "confidence": 0.98
+        },
+        {
+          "attempt": "second",
+          "question": "contradicted",
+          "answer": "no",
+          "confidence": 0.61
+        }
+      ],
+      "why": "The item commits generally to caret-compatible updates, but does not enumerate the admitted line for each SDK/rmcp/Windows requirement it writes. Exact release-test identity language can be mistaken for dependency pins unless the two are distinguished.",
+      "weak_sentence": "req:REQ-RUN-0002/package-caps — Every additional third-party dependency upper bound in a packaged, generated-template or owned test manifest MUST have an adjacent manifest comment naming the demonstrated API, links or toolchain break requiring it; the bound starts at the first release with that break. d-12 enforces this locally stated obligation by calling d-11's single check_dependency_manifests(paths) on the exact unpacked archives and test inputs. Missing/insufficient comments or a wrong boundary FAIL the rehearsal, both endpoint proofs and the upload gate. The same call rejects exact/tilde production or template requirements and preserves normal caret-compatible updates (ANC-016/019). d-12 owns inputs/wiring and the existing negative tests, not another checker; the root rusqlite line remains d-6-owned.",
+      "authority": [
+        {
+          "id": "ANC-016",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+          "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-017",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+          "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-019",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+          "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "fix_rows": [
+        "R2-07"
+      ]
+    }
+  ],
+  "fix_rows": [
+    {
+      "item_id": "run-d-6",
+      "anchor_id": "ANC-019",
+      "field": "acceptance_criteria",
+      "sentence": "",
+      "action": "add",
+      "replacement": "boundary:sc-runtime-db-sqlite/upper-bound-comments — Every additional third-party dependency upper bound this sprint writes or retains in root Cargo.toml, the writer or store-sqlite manifests MUST have a comment immediately beside that requirement identifying the actual known API, native-links or toolchain break requiring that bound, with its evidence. This applies to every extra bound, not only the documented0.42 fallback. A normal caret boundary needs no such justification. An unexplained additional bound prevents this sprint closing and fails the shared release manifest inspection (ANC-019).",
+      "authority": [
+        {
+          "id": "ANC-019",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+          "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-01",
+      "failing_anchor_id": "ANC-019",
+      "why": {
+        "run_id": "plan-20261112T064548Z-run-d-6",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064548Z-run-d-6.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "yes",
+            "confidence": 0.94
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 0.53
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "yes",
+            "confidence": 0.89
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "no",
+            "confidence": 0.6
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "yes",
+            "confidence": 0.31
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "yes",
+            "confidence": 0.53
+          }
+        ],
+        "weak_sentence": "4. Run the required rusqlite0.42 qualification. If its API, native-link and toolchain tests pass, write the shared root requirement \">=0.41, <0.43\"; this admits all0.41.x and additionally0.42.x. If a demonstrated0.42 break is found, write the plain caret \"0.41\" (^0.41) with an adjacent comment naming the break and evidence; this still admits every patch in0.41.x. The0.42 line is a separate Cargo compatibility line, not a patch upgrade within0.41.x. Thin generated SQLite storage consumes the generic backend and application-owned schema and removes SQLx SQLite/cache/config — REQ-DBSQ-0001; REQ-RUN-0308; ANC-012/016/017/019/028.",
+        "diagnosis": "The item names a break comment only for the0.42 fallback, while its qualified branch writes a literal upper boundary. It never states the comment obligation for every additional third-party upper bound in all manifests this sprint writes."
+      }
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "field": "description",
+      "sentence": "1. Implement CronStore<S:Storage<CronRow>> and CronStorage ONCE in sc-cron using the generic atomic unit.",
+      "action": "replace",
+      "replacement": "1. Implement CronStore<S:Storage<CronRow>> and CronStorage ONCE in sc-cron using the generic atomic unit. Implement the public sc-storage::Storage<CronRow> supertrait for CronStore, including read/read_all/write and typed mapping to CronError.",
+      "authority": [
+        {
+          "id": "ANC-035",
+          "status_at_failure": "locked",
+          "version": 2,
+          "statement": "Public storage functions MUST NOT panic.",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-RUN-0328",
+          "status_at_failure": "Active",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/requirements.md",
+            "heading": "## REQ-RUN-0328:",
+            "section_sha256": "8eb05f4d26c0daece7801d883ee719211c80a9e2a0cb0dae11a7acd84a090a3b"
+          },
+          "text": "## REQ-RUN-0328: Paired stores share a trait or use a trait per store\n\n**Status:** Active\n\n### Requirement Statement\n\nEvery store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.\n\n### Success Criteria\n\n1. A generated pair names one trait that both stores implement.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0004",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0004:",
+            "section_sha256": "931cca75dc03a72fc89fe1c04af0514228583bb10c20634b292ff5ded88c572d"
+          },
+          "text": "## REQ-CRON-0004: One configuration table\n\n**Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.\n\nThe bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{\"dotenv\":[],\"variables\":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0005",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0005:",
+            "section_sha256": "e3da23d9444e1c0a0ca338fa43b6bb30c70cf74214a3ea9036aff283e1704029"
+          },
+          "text": "## REQ-CRON-0005: One error enum\n\nPhase C planned amendment: cooperative operation failures remain CronError::Store\nwith non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and\nIndeterminate, and optional typed TransactionOutcome accessor. No second error\nenum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry\nconfirmed committed-late evidence and must not trigger automatic retry;\nIndeterminate never asserts rollback/not-persisted. Existing legacy variants,\nstable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and\nADR-RUN-0018 govern the exact admission/persistence report policy.\n\nFallible library entry points return `CronError`, including both\n`process::supervise` and `process::supervise_with_logger`, which return\n`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.\n\nApplication-implemented callback protocols retain their documented results.\n`EnvironmentReferenceResolver::resolve` returns the value-free\n`EnvironmentReferenceError::{Denied, Unavailable}` protocol; sc-cron maps\nthose failures or a missing reference to fixed `ENV_REFERENCE` outcomes.\nProvider prose is never a second public library error channel.\n\nWith feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):\n\n| Condition | Code | `RunOutcome` | Operator recovery |\n|---|---|---|---|\n| Bridge argument conversion or supplied CLI adapter shape rejected before execution | `HOST_DENIED` | `Failed` | Fix the call's JSON conversion or the supplied adapter's documented argument shape. |\n| Custom application handler returns an error, including `InvalidSpec` | `HOST_CALL_FAILED` | `Failed` | Fix the application handler; configured environment values are redacted from the recorded detail. |\n| CLI executable missing or not runnable | `HOST_SPAWN` | `Failed` | Fix the configured executable path or install the external CLI. |\n| CLI output is invalid UTF-8 or exceeds the per-stream cap | `HOST_OUTPUT` | `Failed` | Return bounded UTF-8 stdout and stderr. |\n| CLI exits nonzero | — | Script receives result | Inspect `exit_code` and bounded `stderr`; the adapter does not turn an application CLI result into an automatic hook failure. |\n| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |\n| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Use the configured host registry and Getenv/GetEnviron; other OS operations remain denied. |\n| Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |\n| `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |\n| Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |\n| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax. Shell expansion is not supported. |\n| Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |\n| Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |\n| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |\n| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `\"action\"` (`continue`, `disable`, or `delete`) and a non-empty `\"reason\"` when disabling or deleting. |\n| Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |\n| Monty feed task panicked (worker join) | `FEED_JOIN_FAILED` | `Failed` | Fix the panic in the hook or host and retry the schedule. |\n| Monty due task panicked or was cancelled | `DUE_JOIN_FAILED` | `Failed` | Retry the schedule; if it persists, inspect the Monty due task and hook source. |\n| Monty due path used for a non-Monty hook | `MONTY_RESOLVE` | `Failed` | Run this row on its Rust or Python target, or set `HookTarget::Monty`. |\n| `cron_tick` returned a stop action (disable/delete) | `MONTY_TICK` | `Failed` | Return normally from `cron_tick`; disable and delete belong in `cron_stop`. |\n| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |\n| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |\n\nHost-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.",
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-02",
+      "failing_anchor_id": "ANC-035",
+      "why": {
+        "run_id": "plan-20261112T064640Z-run-d-9",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064640Z-run-d-9.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "no",
+            "confidence": 0.25
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "yes",
+            "confidence": 0.94
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "yes",
+            "confidence": 0.44
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "no",
+            "confidence": 0.6
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.25
+          }
+        ],
+        "weak_sentence": "1. Implement CronStore<S:Storage<CronRow>> and CronStorage ONCE in sc-cron using the generic atomic unit.",
+        "diagnosis": "The item says no-panic clearly (addressed yes1.00), but the relevance question names sc-storage public functions while the item names sc-cron domain functions. Its existing CronStorage:Storage<CronRow> contract requires a public Storage implementation; naming those actual methods makes the governed public storage surface concrete without moving code or changing the question."
+      },
+      "supporting_preexisting_contract": {
+        "source": "run-d-5 design at ee9b472",
+        "excerpt": "pub trait CronStorage: Storage<CronRow,Key=ScheduleId,Error=CronError>",
+        "meaning": "Implementing the already selected CronStorage contract on CronStore entails implementing its Storage<CronRow> supertrait; no new trait decision is introduced.",
+        "ratification": "The exact contract remains subject to d-5 owner ratification; ADR-RUN-0020 is Proposed and not cited as binding authority."
+      }
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "field": "acceptance_criteria",
+      "sentence": "boundary:sc-cron/no-panic — Changed public storage functions on CronStore/CronStorage and cron-command storage adapters return Result with typed errors and do not panic (ANC-035; NFR-RUN-0002).\n",
+      "action": "replace",
+      "replacement": "",
+      "authority": [
+        {
+          "id": "ANC-035",
+          "status_at_failure": "locked",
+          "version": 2,
+          "statement": "Public storage functions MUST NOT panic.",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-RUN-0328",
+          "status_at_failure": "Active",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/requirements.md",
+            "heading": "## REQ-RUN-0328:",
+            "section_sha256": "8eb05f4d26c0daece7801d883ee719211c80a9e2a0cb0dae11a7acd84a090a3b"
+          },
+          "text": "## REQ-RUN-0328: Paired stores share a trait or use a trait per store\n\n**Status:** Active\n\n### Requirement Statement\n\nEvery store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.\n\n### Success Criteria\n\n1. A generated pair names one trait that both stores implement.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0004",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0004:",
+            "section_sha256": "931cca75dc03a72fc89fe1c04af0514228583bb10c20634b292ff5ded88c572d"
+          },
+          "text": "## REQ-CRON-0004: One configuration table\n\n**Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.\n\nThe bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{\"dotenv\":[],\"variables\":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0005",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0005:",
+            "section_sha256": "e3da23d9444e1c0a0ca338fa43b6bb30c70cf74214a3ea9036aff283e1704029"
+          },
+          "text": "## REQ-CRON-0005: One error enum\n\nPhase C planned amendment: cooperative operation failures remain CronError::Store\nwith non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and\nIndeterminate, and optional typed TransactionOutcome accessor. No second error\nenum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry\nconfirmed committed-late evidence and must not trigger automatic retry;\nIndeterminate never asserts rollback/not-persisted. Existing legacy variants,\nstable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and\nADR-RUN-0018 govern the exact admission/persistence report policy.\n\nFallible library entry points return `CronError`, including both\n`process::supervise` and `process::supervise_with_logger`, which return\n`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.\n\nApplication-implemented callback protocols retain their documented results.\n`EnvironmentReferenceResolver::resolve` returns the value-free\n`EnvironmentReferenceError::{Denied, Unavailable}` protocol; sc-cron maps\nthose failures or a missing reference to fixed `ENV_REFERENCE` outcomes.\nProvider prose is never a second public library error channel.\n\nWith feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):\n\n| Condition | Code | `RunOutcome` | Operator recovery |\n|---|---|---|---|\n| Bridge argument conversion or supplied CLI adapter shape rejected before execution | `HOST_DENIED` | `Failed` | Fix the call's JSON conversion or the supplied adapter's documented argument shape. |\n| Custom application handler returns an error, including `InvalidSpec` | `HOST_CALL_FAILED` | `Failed` | Fix the application handler; configured environment values are redacted from the recorded detail. |\n| CLI executable missing or not runnable | `HOST_SPAWN` | `Failed` | Fix the configured executable path or install the external CLI. |\n| CLI output is invalid UTF-8 or exceeds the per-stream cap | `HOST_OUTPUT` | `Failed` | Return bounded UTF-8 stdout and stderr. |\n| CLI exits nonzero | — | Script receives result | Inspect `exit_code` and bounded `stderr`; the adapter does not turn an application CLI result into an automatic hook failure. |\n| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |\n| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Use the configured host registry and Getenv/GetEnviron; other OS operations remain denied. |\n| Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |\n| `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |\n| Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |\n| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax. Shell expansion is not supported. |\n| Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |\n| Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |\n| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |\n| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `\"action\"` (`continue`, `disable`, or `delete`) and a non-empty `\"reason\"` when disabling or deleting. |\n| Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |\n| Monty feed task panicked (worker join) | `FEED_JOIN_FAILED` | `Failed` | Fix the panic in the hook or host and retry the schedule. |\n| Monty due task panicked or was cancelled | `DUE_JOIN_FAILED` | `Failed` | Retry the schedule; if it persists, inspect the Monty due task and hook source. |\n| Monty due path used for a non-Monty hook | `MONTY_RESOLVE` | `Failed` | Run this row on its Rust or Python target, or set `HookTarget::Monty`. |\n| `cron_tick` returned a stop action (disable/delete) | `MONTY_TICK` | `Failed` | Return normally from `cron_tick`; disable and delete belong in `cron_stop`. |\n| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |\n| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |\n\nHost-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.",
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-03",
+      "failing_anchor_id": "ANC-035",
+      "why": {
+        "run_id": "plan-20261112T064640Z-run-d-9",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064640Z-run-d-9.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "no",
+            "confidence": 0.25
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "yes",
+            "confidence": 0.94
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "yes",
+            "confidence": 0.44
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "no",
+            "confidence": 0.6
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.25
+          }
+        ],
+        "weak_sentence": "boundary:sc-cron/no-panic — Changed public storage functions on CronStore/CronStorage and cron-command storage adapters return Result with typed errors and do not panic (ANC-035; NFR-RUN-0002).",
+        "diagnosis": "The item says no-panic clearly (addressed yes1.00), but the relevance question names sc-storage public functions while the item names sc-cron domain functions. Its existing CronStorage:Storage<CronRow> contract requires a public Storage implementation; naming those actual methods makes the governed public storage surface concrete without moving code or changing the question."
+      },
+      "supporting_preexisting_contract": {
+        "source": "run-d-5 design at ee9b472",
+        "excerpt": "pub trait CronStorage: Storage<CronRow,Key=ScheduleId,Error=CronError>",
+        "meaning": "Implementing the already selected CronStorage contract on CronStore entails implementing its Storage<CronRow> supertrait; no new trait decision is introduced.",
+        "ratification": "The exact contract remains subject to d-5 owner ratification; ADR-RUN-0020 is Proposed and not cited as binding authority."
+      }
+    },
+    {
+      "item_id": "run-d-9",
+      "anchor_id": "ANC-035",
+      "field": "acceptance_criteria",
+      "sentence": "boundary:sc-cron/public-storage-functions — Public create/get/list_active, record_run/set_next/stop/disable, set_enabled/set_enabled_many/replace_and_set_enabled, query/context operations on CronStore/CronStorage the legacy migration entrypoint, and changed cron-command storage adapters each return a typed Result without panic (ANC-035; NFR-RUN-0002).",
+      "action": "replace",
+      "replacement": "boundary:sc-cron/public-storage-functions — The public sc-storage::Storage<CronRow> functions implemented on CronStore (read/read_all/write) and the CronStorage domain operations (create/get/list_active, record_run/set_next/stop/disable, set_enabled/set_enabled_many/replace_and_set_enabled, query/context), migration and storage adapters all return typed Results and do not panic. These are this sprint's changed public storage functions under ANC-035; exercise their typed-error paths through the shared conformance tests and actual sc-lint#931 rule, with no missing-rule waiver (NFR-RUN-0002).",
+      "authority": [
+        {
+          "id": "ANC-035",
+          "status_at_failure": "locked",
+          "version": 2,
+          "statement": "Public storage functions MUST NOT panic.",
+          "quote": "public storage functions return `Result<T, E>` with a typed error and do not panic",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-RUN-0328",
+          "status_at_failure": "Active",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/requirements.md",
+            "heading": "## REQ-RUN-0328:",
+            "section_sha256": "8eb05f4d26c0daece7801d883ee719211c80a9e2a0cb0dae11a7acd84a090a3b"
+          },
+          "text": "## REQ-RUN-0328: Paired stores share a trait or use a trait per store\n\n**Status:** Active\n\n### Requirement Statement\n\nEvery store in an application implements the same storage trait, `Storage<T>` (PRD-STO-2). Amended 2026-11-11: the earlier alternative of a different trait per store is withdrawn.\n\n### Success Criteria\n\n1. A generated pair names one trait that both stores implement.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0004",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0004:",
+            "section_sha256": "931cca75dc03a72fc89fe1c04af0514228583bb10c20634b292ff5ded88c572d"
+          },
+          "text": "## REQ-CRON-0004: One configuration table\n\n**Amended 2026-11-11 (PRD-CRON-2, PRD-CRON-3, PRD-CRON-4).** The schedule table is a `CronRow` struct stored through `Storage<CronRow>` in the application's database, the SQLite database by default. The bundled own-file store, the `SqliteWriter` sentence and the per-writer limit rule in the paragraph below are superseded. The row's columns and the row limit's meaning stand.\n\nThe bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{\"dotenv\":[],\"variables\":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.",
+          "predates_failure": true
+        },
+        {
+          "id": "REQ-CRON-0005",
+          "status_at_failure": "amended requirement",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/sc-cron/requirements.md",
+            "heading": "## REQ-CRON-0005:",
+            "section_sha256": "e3da23d9444e1c0a0ca338fa43b6bb30c70cf74214a3ea9036aff283e1704029"
+          },
+          "text": "## REQ-CRON-0005: One error enum\n\nPhase C planned amendment: cooperative operation failures remain CronError::Store\nwith non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and\nIndeterminate, and optional typed TransactionOutcome accessor. No second error\nenum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry\nconfirmed committed-late evidence and must not trigger automatic retry;\nIndeterminate never asserts rollback/not-persisted. Existing legacy variants,\nstable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and\nADR-RUN-0018 govern the exact admission/persistence report policy.\n\nFallible library entry points return `CronError`, including both\n`process::supervise` and `process::supervise_with_logger`, which return\n`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.\n\nApplication-implemented callback protocols retain their documented results.\n`EnvironmentReferenceResolver::resolve` returns the value-free\n`EnvironmentReferenceError::{Denied, Unavailable}` protocol; sc-cron maps\nthose failures or a missing reference to fixed `ENV_REFERENCE` outcomes.\nProvider prose is never a second public library error channel.\n\nWith feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):\n\n| Condition | Code | `RunOutcome` | Operator recovery |\n|---|---|---|---|\n| Bridge argument conversion or supplied CLI adapter shape rejected before execution | `HOST_DENIED` | `Failed` | Fix the call's JSON conversion or the supplied adapter's documented argument shape. |\n| Custom application handler returns an error, including `InvalidSpec` | `HOST_CALL_FAILED` | `Failed` | Fix the application handler; configured environment values are redacted from the recorded detail. |\n| CLI executable missing or not runnable | `HOST_SPAWN` | `Failed` | Fix the configured executable path or install the external CLI. |\n| CLI output is invalid UTF-8 or exceeds the per-stream cap | `HOST_OUTPUT` | `Failed` | Return bounded UTF-8 stdout and stderr. |\n| CLI exits nonzero | — | Script receives result | Inspect `exit_code` and bounded `stderr`; the adapter does not turn an application CLI result into an automatic hook failure. |\n| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |\n| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Use the configured host registry and Getenv/GetEnviron; other OS operations remain denied. |\n| Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |\n| `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |\n| Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |\n| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax. Shell expansion is not supported. |\n| Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |\n| Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |\n| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |\n| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `\"action\"` (`continue`, `disable`, or `delete`) and a non-empty `\"reason\"` when disabling or deleting. |\n| Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |\n| Monty feed task panicked (worker join) | `FEED_JOIN_FAILED` | `Failed` | Fix the panic in the hook or host and retry the schedule. |\n| Monty due task panicked or was cancelled | `DUE_JOIN_FAILED` | `Failed` | Retry the schedule; if it persists, inspect the Monty due task and hook source. |\n| Monty due path used for a non-Monty hook | `MONTY_RESOLVE` | `Failed` | Run this row on its Rust or Python target, or set `HookTarget::Monty`. |\n| `cron_tick` returned a stop action (disable/delete) | `MONTY_TICK` | `Failed` | Return normally from `cron_tick`; disable and delete belong in `cron_stop`. |\n| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |\n| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |\n\nHost-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.",
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-04",
+      "failing_anchor_id": "ANC-035",
+      "why": {
+        "run_id": "plan-20261112T064640Z-run-d-9",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064640Z-run-d-9.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "no",
+            "confidence": 0.25
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "yes",
+            "confidence": 0.94
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "yes",
+            "confidence": 0.44
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "no",
+            "confidence": 0.6
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.25
+          }
+        ],
+        "weak_sentence": "boundary:sc-cron/public-storage-functions — Public create/get/list_active, record_run/set_next/stop/disable, set_enabled/set_enabled_many/replace_and_set_enabled, query/context operations on CronStore/CronStorage the legacy migration entrypoint, and changed cron-command storage adapters each return a typed Result without panic (ANC-035; NFR-RUN-0002).",
+        "diagnosis": "The item says no-panic clearly (addressed yes1.00), but the relevance question names sc-storage public functions while the item names sc-cron domain functions. Its existing CronStorage:Storage<CronRow> contract requires a public Storage implementation; naming those actual methods makes the governed public storage surface concrete without moving code or changing the question."
+      },
+      "supporting_preexisting_contract": {
+        "source": "run-d-5 design at ee9b472",
+        "excerpt": "pub trait CronStorage: Storage<CronRow,Key=ScheduleId,Error=CronError>",
+        "meaning": "Implementing the already selected CronStorage contract on CronStore entails implementing its Storage<CronRow> supertrait; no new trait decision is introduced.",
+        "ratification": "The exact contract remains subject to d-5 owner ratification; ADR-RUN-0020 is Proposed and not cited as binding authority."
+      }
+    },
+    {
+      "item_id": "run-d-10",
+      "anchor_id": "ANC-016/017",
+      "field": "acceptance_criteria",
+      "sentence": "boundary:template-service/dependency-endpoints — Run the d-3 minimum/latest dependency recipes on sc-command and the generated service with the added sc-storage dependency, executing their real storage/transform tests at both selections. Internal SDK paths use the adopted development version; final published SDK registry proof stays in d-12 (ANC-017).",
+      "action": "replace",
+      "replacement": "boundary:template-service/dependency-endpoints — The added sc-command sc-storage requirement is a normal caret ^0.2.0 with its development workspace path, then ^0.3.0 at d-12 release conversion. It admits every newer SDK0.2.x/0.3.x patch respectively, not an exact or tilde pin or an extra patch ceiling. The generated service's SDK requirements use the same adopted-version carets. Run d-3 minimum/latest dependency recipes on sc-command and the generated service, executing their real storage/transform tests at both selections. Internal paths remain the adopted development version; published registry proof is d-12 (ANC-016/017).",
+      "authority": [
+        {
+          "id": "ANC-016",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+          "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-017",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+          "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-05",
+      "failing_anchor_id": "ANC-016",
+      "why": {
+        "run_id": "plan-20261112T064647Z-run-d-10",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064647Z-run-d-10.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "yes",
+            "confidence": 0.66
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "no",
+            "confidence": 0.53
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.8
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "no",
+            "confidence": 0.8
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "no",
+            "confidence": 0.96
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "no",
+            "confidence": 0.67
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "no",
+            "confidence": 0.46
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "yes",
+            "confidence": 0.88
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.53
+          }
+        ],
+        "weak_sentence": "boundary:template-service/dependency-endpoints — Run the d-3 minimum/latest dependency recipes on sc-command and the generated service with the added sc-storage dependency, executing their real storage/transform tests at both selections. Internal SDK paths use the adopted development version; final published SDK registry proof stays in d-12 (ANC-017).",
+        "diagnosis": "The item adds sc-storage but calls its requirement only an adopted development version; it never states the actual caret or which newer compatible SDK versions that requirement permits."
+      }
+    },
+    {
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-003/005",
+      "field": "acceptance_criteria",
+      "sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+      "action": "replace",
+      "replacement": "req:REQ-RUN-0328/generator-compatibility — Generation/setup instructions declare the repository sc-compose CLI minimum as >=1.8.0, using .sc/generation-tools.json as the source. Run the supported layout generation procedures with CLI1.8.0 and compatible CLI commands; generation succeeds at that floor. d-4 owns that declared tool requirement and executable-selection check; d-11 updates the layout instructions and generation tests using it (ANC-003/005).",
+      "authority": [
+        {
+          "id": "ANC-005",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.",
+          "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-003",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
+          "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-06",
+      "failing_anchor_id": "ANC-005",
+      "why": {
+        "run_id": "plan-20261112T064553Z-run-d-11",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064553Z-run-d-11.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "yes",
+            "confidence": 0.67
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 0.44
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "no",
+            "confidence": 0.96
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "no",
+            "confidence": 0.79
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.85
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 0.24
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "yes",
+            "confidence": 0.58
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "yes",
+            "confidence": 0.44
+          }
+        ],
+        "weak_sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+        "diagnosis": "The item names1.8.0 as a test executable, but does not state the repository minimum declaration or its source. CLI1.8 test identity alone does not communicate a >=1.8 lower-bound requirement."
+      }
+    },
+    {
+      "item_id": "run-d-12",
+      "anchor_id": "ANC-016/017/019",
+      "field": "acceptance_criteria",
+      "sentence": "",
+      "action": "add",
+      "replacement": "req:REQ-RUN-0002/admitted-requirements — Every dependency requirement this sprint writes admits the entire Cargo-compatible line from its tested floor: SDK sibling/consumer ^0.3.0 admits all0.3.x; consumer rmcp ^3.9 admits3.9 and all newer3.x; Windows win32job ^2.0.3 admits that floor and newer2.x; waitpid-any ^0.3.0 admits all0.3.x. Every other changed registry requirement is a normal tested-floor caret under the same rule, with no extra ceiling within that line unless a demonstrated API/links/toolchain break is documented beside it. Inspect the actual unpacked manifests and execute the minimum/latest consumers without rewriting SDK requirements or republishing the SDK. The --version0.3.0 and archive-hash assertions identify the release under test; they never write exact dependency pins (ANC-016/017/019).",
+      "authority": [
+        {
+          "id": "ANC-016",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
+          "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-017",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+          "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        },
+        {
+          "id": "ANC-019",
+          "status_at_failure": "locked",
+          "version": 4,
+          "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
+          "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "row_id": "R2-07",
+      "failing_anchor_id": "ANC-016",
+      "why": {
+        "run_id": "plan-20261112T064552Z-run-d-12",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064552Z-run-d-12.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.56
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "yes",
+            "confidence": 0.86
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "no",
+            "confidence": 0.42
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.91
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 0.94
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "yes",
+            "confidence": 0.3
+          },
+          {
+            "attempt": "second",
+            "question": "relevant",
+            "answer": "yes",
+            "confidence": 1.0
+          },
+          {
+            "attempt": "second",
+            "question": "addressed",
+            "answer": "yes",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "second",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.61
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "conflict",
+            "question_id": "contradicted",
+            "choice": "no",
+            "confidence": 0.56
+          }
+        ],
+        "weak_sentence": "req:REQ-RUN-0002/package-caps — Every additional third-party dependency upper bound in a packaged, generated-template or owned test manifest MUST have an adjacent manifest comment naming the demonstrated API, links or toolchain break requiring it; the bound starts at the first release with that break. d-12 enforces this locally stated obligation by calling d-11's single check_dependency_manifests(paths) on the exact unpacked archives and test inputs. Missing/insufficient comments or a wrong boundary FAIL the rehearsal, both endpoint proofs and the upload gate. The same call rejects exact/tilde production or template requirements and preserves normal caret-compatible updates (ANC-016/019). d-12 owns inputs/wiring and the existing negative tests, not another checker; the root rusqlite line remains d-6-owned.",
+        "diagnosis": "The item commits generally to caret-compatible updates, but does not enumerate the admitted line for each SDK/rmcp/Windows requirement it writes. Exact release-test identity language can be mistaken for dependency pins unless the two are distinguished."
+      }
+    },
+    {
+      "row_id": "R2-08",
+      "item_id": "run-d-11",
+      "anchor_id": "ANC-015",
+      "failing_anchor_id": "ANC-015",
+      "action": "exclude",
+      "sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+      "replacement": "ANC-015 excludes run-d-11 because it edits no skill CLI-version-check file; d-4 owns those checks.",
+      "why": {
+        "run_id": "plan-20261112T064553Z-run-d-11",
+        "run_path": "docs/plans/phase-d/anchor-runs/plan-20261112T064553Z-run-d-11.json",
+        "question_answers": [
+          {
+            "attempt": "first",
+            "question": "relevant",
+            "answer": "no",
+            "confidence": 0.7
+          },
+          {
+            "attempt": "first",
+            "question": "addressed",
+            "answer": "no",
+            "confidence": 0.46
+          },
+          {
+            "attempt": "first",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.98
+          },
+          {
+            "attempt": "first",
+            "question": "owns",
+            "answer": "no",
+            "confidence": 0.82
+          },
+          {
+            "attempt": "first",
+            "question": "specific",
+            "answer": "no",
+            "confidence": 0.64
+          },
+          {
+            "attempt": "first",
+            "question": "stated",
+            "answer": "yes",
+            "confidence": 0.28
+          },
+          {
+            "attempt": "first",
+            "question": "paraphrase",
+            "answer": "yes",
+            "confidence": 0.5
+          },
+          {
+            "attempt": "first",
+            "question": "partial",
+            "answer": "yes",
+            "confidence": 0.62
+          },
+          {
+            "attempt": "second",
+            "question": "relevant",
+            "answer": "no",
+            "confidence": 0.52
+          },
+          {
+            "attempt": "second",
+            "question": "addressed",
+            "answer": "no",
+            "confidence": 0.4
+          },
+          {
+            "attempt": "second",
+            "question": "contradicted",
+            "answer": "no",
+            "confidence": 0.98
+          }
+        ],
+        "limiting_answers": [
+          {
+            "ask": "first",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.46
+          },
+          {
+            "ask": "second",
+            "role": "relevance",
+            "question_id": "relevant",
+            "choice": "no",
+            "confidence": 0.52
+          },
+          {
+            "ask": "second",
+            "role": "compliance",
+            "question_id": "addressed",
+            "choice": "no",
+            "confidence": 0.4
+          }
+        ],
+        "weak_sentence": "req:REQ-RUN-0328/generator-compatibility — Supported generated layouts and the generation instructions work with sc-compose1.8.0 while its used CLI commands remain compatible; run the actual generation procedures at that declared floor. d-4 owns CLI selection, this sprint owns the generated layouts/docs (ANC-003).",
+        "diagnosis": "The limiting relevance answer concerns skill version-check code. The item changes generation layouts/docs/tests, not any repository skill script/instruction that checks CLI versions; its actual file fence contains no such path."
+      },
+      "authority": [
+        {
+          "id": "ANC-015",
+          "status_at_failure": "locked",
+          "version": 3,
+          "statement": "Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.",
+          "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
+          "source": {
+            "revision": "ee9b472",
+            "path": "docs/plans/phase-d/anchors.json"
+          },
+          "predates_failure": true
+        }
+      ],
+      "scope_evidence": {
+        "source": "run-d-11 metadata.owned_paths at ee9b472",
+        "owned_paths": [
+          "tests/integration/storage-v2/**",
+          "template/crates/daemon/src/**",
+          "template/crates/cli/src/**",
+          "template/config/**",
+          "template/hooks/**",
+          "wizard/**",
+          "tests/unit/wizard/**",
+          "docs/generation.md",
+          "docs/getting-started.md",
+          "tests/unit/generation/store_boundaries.py",
+          "tests/unit/generation/test_application_control_contract.py",
+          "tests/unit/generation/test_consumer_sc_lint_profile.py",
+          "tests/unit/generation/test_cron_environment.py",
+          "tests/unit/generation/test_cron_schema.py",
+          "tests/unit/generation/test_daemon_scratch_policy.py",
+          "tests/unit/generation/test_fixtures.py",
+          "tests/unit/generation/test_general_db_disable.py",
+          "tests/unit/generation/test_keys.py",
+          "tests/unit/generation/test_liquid.py",
+          "tests/unit/generation/test_monty_example.py",
+          "tests/unit/generation/test_prefix_packages.py",
+          "tests/unit/generation/test_runtime_ecosystem_upgrade.py",
+          "tests/unit/generation/test_schema.py",
+          "tests/unit/generation/test_store_boundaries.py",
+          "template/crates/cli/tests/**",
+          "template/crates/daemon/tests/**",
+          "template/crates/schema/tests/**",
+          "template/crates/api-types/src/**",
+          "template/crates/api-types/tests/**"
+        ]
+      }
+    }
+  ]
+}

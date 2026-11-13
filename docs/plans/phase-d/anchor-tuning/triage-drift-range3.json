@@ -1,0 +1,467 @@
+{
+  "consumer": "run-lead independent drift/gate review and owner final HTML",
+  "gate": "Range3 drift corrections M7/M8/M9/m12",
+  "observed_defect": "Binding observability pin/probe gates and generated live CI ownership remained stale after policy simplification",
+  "retirement": "Archive with final Phase D review after implementation closes",
+  "before_revision": "286424e",
+  "fix_rows": [
+    {
+      "item_id": "run-d-3",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: replace exact/tilde pins, bare versions and carets with >= tested floors and no upper bound, update rmcp to patched >=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/016/037."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "1. Perform the complete changed-registry dependency sweep across root, template and separate-consumer inputs: replace exact/tilde pins, bare versions and carets with >= tested floors and no upper bound, update rmcp to patched >=3.9, preserve features, adapt source/API call sites and qualify Windows/Monty under the supported toolchains — REQ-RUN-0002/0005; NFR-RUN-0007; ANC-012/037."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-01"
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "8. Apply the pre-dispatch ADR-RUN-0017/0203 Phase D amendments to the matching lines in template/Cargo.toml and template/workspace.template.toml: sc-observability/sc-observability-types >=1.5.0, utoipa >=6.0.0, utoipa-axum >=0.3.0, schemars >=1.2.3 and rmcp >=3.9 where present. The approved amendments are committed with this plan before any dispatch; this sprint owns the shared template manifest conversions, not a later permission to remove pins. Use the normal test suite for compatibility; consumer requirements remain open — ANC-016/037; ADR-RUN-0017/0203.",
+          "9. Record the owner-approved interim manifest check under ADR-RUN-0005 in docs/architecture.md: d-11 owns one enumeration/check used by compatible-generation; d-12 reuses it for packaged/test manifests and release enforcement. Consumer: release reviewer; gate: compatible0.3.0 packages; observed defect: restrictive SDK manifest defaults. This lint belongs in sc-lint; track randlee/sc-lint#936 (already filed). Remove the interim rule, release adapter and its dedicated fixtures once sc-lint ships the equivalent lint and sc-runtime adopts it; preserve ordinary generation/registry tests — ANC-016/037; ADR-RUN-0005."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "8. Apply the pre-dispatch ADR-RUN-0017/0203 Phase D amendments to the matching lines in template/Cargo.toml and template/workspace.template.toml: sc-observability/sc-observability-types >=1.5.0, utoipa >=6.0.0, utoipa-axum >=0.3.0, schemars >=1.2.3 and rmcp >=3.9 where present. The approved amendments are committed with this plan before any dispatch; this sprint owns the shared template manifest conversions, not a later permission to remove pins. Use the normal test suite for compatibility; consumer requirements remain open — ANC-037; ADR-RUN-0017/0203.",
+        "9. Record the owner-approved interim manifest check under ADR-RUN-0005 in docs/architecture.md: d-11 owns one enumeration/check used by compatible-generation; d-12 reuses it for packaged/test manifests and release enforcement. Consumer: release reviewer; gate: compatible0.3.0 packages; observed defect: restrictive SDK manifest defaults. This lint belongs in sc-lint; track randlee/sc-lint#936 (already filed). Remove the interim rule, release adapter and its dedicated fixtures once sc-lint ships the equivalent lint and sc-runtime adopts it; preserve ordinary generation/registry tests — ANC-037; ADR-RUN-0005."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-02"
+    },
+    {
+      "item_id": "run-d-5",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "boundary:storage-contract/adr-pins — ADR-RUN-0017/0203 amendments and all sc-observability/sc-observability-types/utoipa pin lines in both shared template manifests match the tested-floor/no-upper-bound policy. No protective pin, exception or conditional removal remains (ANC-016/037).",
+          "boundary:storage-contract/windows-ranges — The existing Windows tests exercise the inherited purpose of win32job and waitpid-any with the selected versions in the normal test suite. Both requirements are lower-bound-only; no exact pin, implicit caret ceiling or explicit cap is introduced (ANC-016/037)."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "boundary:storage-contract/adr-pins — ADR-RUN-0017/0203 amendments and all sc-observability/sc-observability-types/utoipa pin lines in both shared template manifests match the tested-floor/no-upper-bound policy. No protective pin, exception or conditional removal remains (ANC-037).",
+        "boundary:storage-contract/windows-ranges — The existing Windows tests exercise the inherited purpose of win32job and waitpid-any with the selected versions in the normal test suite. Both requirements are lower-bound-only; no exact pin, implicit caret ceiling or explicit cap is introduced (ANC-037)."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-03"
+    },
+    {
+      "item_id": "run-d-9",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "4. Reuse the ported async CronStorage conformance suite owned here against its double; port, never delete, existing assertions. Retire legacy DB files/dependency only after generic suite has equivalent case IDs and double tests pass. Actual engine/two-process provider runs are d-11, not a false double claim. Adapt thin cron-command APIs and READMEs — REQ-RUN-0702; ANC-012/016/035."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "4. Reuse the ported async CronStorage conformance suite owned here against its double; port, never delete, existing assertions. Retire legacy DB files/dependency only after generic suite has equivalent case IDs and double tests pass. Actual engine/two-process provider runs are d-11, not a false double claim. Adapt thin cron-command APIs and READMEs — REQ-RUN-0702; ANC-012/035."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-04"
+    },
+    {
+      "item_id": "run-d-11",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "4. Deliver the compatible-generation manifest enumeration/check as one callable check_dependency_manifests(paths) in tests/unit/generation/test_runtime_ecosystem_upgrade.py. d-11 alone owns that function/file; it accepts manifest paths and returns file/line violations under ANC-016/037. Generation tests invoke it; d-12 passes additional unpacked package and owned test manifests to the same function without copying it or changing this file — ADR-RUN-0005 interim check; sc-lint#936."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "4. Deliver the compatible-generation manifest enumeration/check as one callable check_dependency_manifests(paths) in tests/unit/generation/test_runtime_ecosystem_upgrade.py. d-11 alone owns that function/file; it accepts manifest paths and returns file/line violations under ANC-037. Generation tests invoke it; d-12 passes additional unpacked package and owned test manifests to the same function without copying it or changing this file — ADR-RUN-0005 interim check; sc-lint#936."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-05"
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M8",
+        "source": "Independent drift review286424e, not a Jev failure; question/answer/confidence N/A",
+        "weak_sentence": [
+          "2. Own registry runner/workflow, archive rehearsal and actual eight-crate coordinated0.3.0 publication in dependency order with sc-storage first. Run fresh registry-only upstream/cron, server/rmcp and test-util helper consumers with the release-tested dependency combination, with advisory/source/native-identity checks — REQ-RUN-0002/0702; NFR-RUN-0007; ANC-012/016.",
+          "4. Remove tests/integration/cron-consumer/schema/Cargo.toml rmcp =3.8.0 pin in this sole-owned consumer manifest: use >=3.9 because3.9.x is the tested patched minimum for RUSTSEC-2026-0462 under the ADR-RUN-0203 amendment. Raising the floor removes older vulnerable releases; every later release from3.9 is admitted with no upper bound. Preserve the existing server/default-features selection and run the normal registry consumer tests and apply req:REQ-RUN-0002/package-caps (ADR-RUN-0203; ANC-016/037). Also convert tests/integration/cron-consumer/Cargo.toml Windows dev-dependencies to win32job >=2.0.3 and waitpid-any >=0.3.0, preserving purpose comments and running the normal Windows tests. d-3/d-5/d-9 retain their own pin-line edits; this sprint does not repeat them."
+        ],
+        "diagnosis": "Retired ANC-016 still cited beside its replacement ANC-037."
+      },
+      "replacement": [
+        "2. Own registry runner/workflow, archive rehearsal and actual eight-crate coordinated0.3.0 publication in dependency order with sc-storage first. Run fresh registry-only upstream/cron, server/rmcp and test-util helper consumers with the release-tested dependency combination, with advisory/source/native-identity checks — REQ-RUN-0002/0702; NFR-RUN-0007; ANC-012.",
+        "4. Remove tests/integration/cron-consumer/schema/Cargo.toml rmcp =3.8.0 pin in this sole-owned consumer manifest: use >=3.9 because3.9.x is the tested patched minimum for RUSTSEC-2026-0462 under the ADR-RUN-0203 amendment. Raising the floor removes older vulnerable releases; every later release from3.9 is admitted with no upper bound. Preserve the existing server/default-features selection and run the normal registry consumer tests and apply req:REQ-RUN-0002/package-caps (ADR-RUN-0203; ANC-037). Also convert tests/integration/cron-consumer/Cargo.toml Windows dev-dependencies to win32job >=2.0.3 and waitpid-any >=0.3.0, preserving purpose comments and running the normal Windows tests. d-3/d-5/d-9 retain their own pin-line edits; this sprint does not repeat them."
+      ],
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-06"
+    },
+    {
+      "item_id": "run-d-3",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "why": {
+        "review_finding": "M7",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "req:REQ-RUN-0005/source — rmcp>=3.9 builds/tests with existing command/server/schema paths; selected Windows/Monty jobs run on the supported toolchains. No sc-compose or ATM production dependency. Public0.3.0 docs describe actual crate behavior and unchanged sc-config sync API.",
+        "diagnosis": "After removing endpoint probes, the plan left no explicit shim/native disposition or pin-independent noop check."
+      },
+      "replacement": "req:REQ-RUN-0005/source — rmcp>=3.9 builds/tests with existing command/server/schema paths; selected Windows/Monty jobs run on the supported toolchains. No sc-compose or ATM production dependency. Public0.3.0 docs describe actual crate behavior and unchanged sc-config sync API. Phase D retains the existing sc_command::observability shim; normal observability tests cover the fixed noop ServiceName literal with the selected types, without an exact pin or registry-availability/signature probe (ADR-RUN-0017; REQ-RUN-0309).",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ]
+      },
+      "row_id": "DR3-07"
+    },
+    {
+      "item_id": "run-d-7",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "why": {
+        "review_finding": "M9",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "d-3 owns the CI prerequisite/recipe wiring.",
+        "diagnosis": "The named d-3 CI work and dependency edge were removed, leaving generated live-engine CI unowned."
+      },
+      "replacement": "d-7 owns .github/workflows/store-postgres.yml: provision its real postgres service and POSTGRES_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_POSTGRES=1 and fail on skipped live tests; no min/latest duplication.",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "PRD-STO-2",
+          "REQ-RUN-0302"
+        ]
+      },
+      "row_id": "DR3-08"
+    },
+    {
+      "item_id": "run-d-7",
+      "field": "metadata.owned_paths",
+      "action": "add",
+      "why": {
+        "review_finding": "M9",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "No owner of generated-consumer CI workflow",
+        "diagnosis": "Execution ownership needs the matching exact file fence."
+      },
+      "replacement": ".github/workflows/store-postgres.yml",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "PRD-STO-2",
+          "REQ-RUN-0302"
+        ]
+      },
+      "row_id": "DR3-09"
+    },
+    {
+      "item_id": "run-d-8",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "why": {
+        "review_finding": "M9",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "d-3 owns CI prerequisites/recipes.",
+        "diagnosis": "The named d-3 CI work and dependency edge were removed, leaving generated live-engine CI unowned."
+      },
+      "replacement": "d-8 owns .github/workflows/store-mysql.yml: provision its real mysql service and MYSQL_DATABASE_URL, apply migrations, generate the consumer with the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_MYSQL=1 and fail on skipped live tests; no min/latest duplication.",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "PRD-STO-2",
+          "REQ-RUN-0302"
+        ]
+      },
+      "row_id": "DR3-10"
+    },
+    {
+      "item_id": "run-d-8",
+      "field": "metadata.owned_paths",
+      "action": "add",
+      "why": {
+        "review_finding": "M9",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "No owner of generated-consumer CI workflow",
+        "diagnosis": "Execution ownership needs the matching exact file fence."
+      },
+      "replacement": ".github/workflows/store-mysql.yml",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "PRD-STO-2",
+          "REQ-RUN-0302"
+        ]
+      },
+      "row_id": "DR3-11"
+    },
+    {
+      "item_id": "run-d-12",
+      "field": "acceptance_criteria",
+      "action": "replace",
+      "why": {
+        "review_finding": "m12",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "Actual archives and both registry registry consumer proof must also pass the check.",
+        "diagnosis": "Retired endpoints left an ambiguous both and duplicated registry."
+      },
+      "replacement": "Actual archives and the registry consumer proof must also pass the check.",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "PRD-ENG-4"
+        ],
+        "quote": "Keep it simple."
+      },
+      "row_id": "DR3-12"
+    },
+    {
+      "item_id": "run-phase-d",
+      "field": "description",
+      "action": "replace",
+      "why": {
+        "review_finding": "M9",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "Old d-7/d-8 owned-path counts omit CI files",
+        "diagnosis": "Root inventory must match concrete ownership."
+      },
+      "replacement": "Update each backend owned-path count for its existing workflow file.",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "PRD-STO-2",
+          "REQ-RUN-0302"
+        ]
+      },
+      "row_id": "DR3-13"
+    },
+    {
+      "path": "docs/architecture.md",
+      "action": "replace",
+      "why": {
+        "review_finding": "M7",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": "### Phase D amendment (2026-11-12)\n\nPublished/template registry requirements for sc-observability and sc-observability-types use >=1.5.0 with no upper bound (ANC-037). This replaces the exact-pin policy below for Phase D.\n",
+        "diagnosis": "Old narrow amendment left the binding readiness/probe/forced-cleanup gate and exact-types noop justification intact."
+      },
+      "replacement": "### Phase D amendment (2026-11-12)\n\nPublished/template requirements for sc-observability and sc-observability-types\nuse >=1.5.0 with no upper bound (ANC-037). Phase D retains the existing\nsc_command::observability shim and generated inline LoggerAdapter. d-3 owns\ncompatibility adaptations and ordinary observability tests; d-11 owns generated\nadapter integration tests. The normal build/test suite at the selected versions\nreplaces registry-availability refresh, the isolated signature/Arc<Logger> probe,\nand the forced \"shim mode fail\" cleanup gate below. No new cleanup work follows\nmerely from an upstream release becoming available.\n\nThe fixed \"noop\" ServiceName literal remains the sole invariant exception,\nnever caller/environment data; ordinary tests validate it with the selected\ntypes, rather than an exact 1.5.0 pin. Existing error, panic-containment,\ninitialization/lifetime and dependency-boundary behavior remains unchanged.\nThis amendment supersedes those pin, readiness/probe and version-triggered\ncleanup clauses below for Phase D; historical release evidence is preserved.\n",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "ADR-RUN-0017",
+          "REQ-RUN-0309"
+        ]
+      },
+      "row_id": "DR3-14"
+    },
+    {
+      "path": "docs/requirements.md",
+      "action": "replace",
+      "why": {
+        "review_finding": "M7",
+        "source": "Independent drift review286424e; no Jev failed cell",
+        "weak_sentence": [
+          "REQ-RUN-0309 item1: registry sc-observability/types =1.5.0 and future direct-Arc cleanup gate",
+          "REQ-RUN-0309 item3: command temporarily pins =1.5.0 and root lock exact1.5.0",
+          "REQ-RUN-0309 SC1: exact1.5.0 registry pair"
+        ],
+        "diagnosis": "Active requirement contradicts open floors and retired probes."
+      },
+      "replacement": "## REQ-RUN-0309: Generated daemon initialises `sc-observability` directly\n\n**Status:** Active  \n\n### Requirement Statement\n\nThis applies to `crates/daemon` of a project rendered from `template/`.\n`sc-observability` is the SC logging crate.\n\n1. `crates/daemon/Cargo.toml` MUST use registry requirements\n   `sc-observability = \">=1.5.0\"` and\n   `sc-observability-types = \">=1.5.0\"`, with no upper bound (ANC-037).\n   Phase D retains the command-owned neutral port and private generated\n   LoggerAdapter. Normal build/tests check compatibility at the selected\n   versions; no registry-availability, signature or forced-cleanup probe gates\n   the release. ADR-RUN-0017's Phase D amendment governs panic/error behavior.\n\n2. `crates/daemon/src/main.rs` MUST perform these three steps, in this order:\n   1. load the project's configuration with `sc-config` into the project's\n      own config struct; on error, report it and return a failure exit code\n      without panicking;\n   2. initialise `sc-observability` by calling it directly, passing plain\n      values taken from the loaded config (its logging section); if the\n      initialisation call returns a guard value, bind it to a variable that\n      lives until `main` returns;\n   3. assemble and run the daemon with `sc_runtime::Daemon::builder(...)`.\n\n   The shape below fixes the ownership and lifetime, while the generated\n   `daemon::observability` module owns the detailed settings conversion:\n\n   ```rust\n   let cfg: AppConfig = match sc_config::load(\"my-app\") {\n       Ok(cfg) => cfg,\n       Err(e) => return report(e),\n   };\n   let app = sc_transport::AppName::new(APP_NAME)?;\n   let log_root = resolve_log_root(&cfg, &app)?;\n   let observability = daemon::observability::Observability::build(\n       APP_NAME,\n       log_root,\n       &cfg.logging,\n   )?; // generated main maps this to DAEMON.OBSERVABILITY\n   let logger = observability.logger();\n   let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)\n       .logger(logger.clone())\n       /* .stores(...).routes(...).mcp(...) */\n       .run()\n       .await;\n   drop(logger);\n   let shutdown = observability.shutdown();\n   prefer_run_error(result, shutdown)?;\n   ```\n\n3. No library crate may initialise, wrap or depend on\n   `sc-observability` or its OpenTelemetry export crate\n   `sc-observability-otlp`; the forbidden edges are owned by\n   [REQ-RUN-0005](requirements.md). The only observability dependency inside\n   library crates is registry `sc-observability-types` with requirement\n   `>=1.5.0` and no upper bound; the recommended lock records the versions\n   actually tested. Runtime/cron receive the command-owned neutral port;\n   no library wraps or links the full logger. Types remain forbidden on\n   config/transport and remediation stays on command only.\n   `DaemonNotRunning` carries `code: &'static str`\n   (`DAEMON.NOT_RUNNING`) plus the endpoint and the cause, and does not\n   carry `sc_observability_types::ErrorCode`\n   ([ADR-RUN-0004](architecture.md)). a-4's `sc-command` publishes the\n   string-to-`OpError` constructor; a-6's generated CLI calls it.\n4. The template MUST NOT add OpenTelemetry export. A project that wants it\n   adds `sc-observability-otlp` to its own `daemon` crate.\n5. The template MUST NOT contain a bridge from the `tracing` crate into\n   `sc-observability`. Phase B resolves the earlier open question in favor of\n   direct injected `LogEvent` emission; no tracing bridge is added.\n\nThe Phase B composition contract fixes the concrete path: the generated\ndaemon crate defines `AppConfig`; its `observability` module builds\n`LoggerConfig::default_for(ServiceName::new(APP_NAME)?, log_root)`, applies\nthe generated logging settings, and calls `LoggerBuilder::build`. It retains\nthe resulting `Arc<Logger>` until all injected handles have drained and then\nconsumes the generated `Observability` owner with `shutdown(self)`.\n\n### Rationale\n\n`sc-observability` is the SC logging standard, so every generated daemon uses\nit. It is initialised by the project's own `main.rs`, not hidden inside\n`sc-config` or `sc-runtime`, so that those two crates stay usable by programs\nthat do not use `sc-observability`, and so the observability crates can\nrelease independently of them. Config is loaded first because logging\nsettings come from config; the daemon is assembled last so that its start-up\nis logged.\n\n### Success Criteria\n\n1. Rendered `crates/daemon/Cargo.toml` declares `sc-observability = \">=1.5.0\"`\n   and `sc-observability-types = \">=1.5.0\"` without upper bounds, lists no\n   OpenTelemetry crate, and passes ordinary generated-daemon logging tests.\n\n2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes\n   before `daemon::observability::Observability::build`, which comes before\n   `Daemon::builder`. The named `Observability` owner lives until runtime and\n   scheduler workers have drained and every injected handle has been dropped;\n   `shutdown(self)` is then called exactly once. There is no anonymous guard,\n   library-owned construction, or second logger.\n3. In the `randlee/sc-runtime` repository, for each library\n   crates, `cargo tree -p <crate> -e normal --prefix none` prints no line\n   beginning with `sc-observability ` or `sc-observability-otlp ` (the name\n   followed by a space). A line beginning with `sc-observability-types ` is\n   expected under `sc-command` and does not match those two names. The\n   same command on `sc-config` and `sc-transport` prints no line beginning\n   with `sc-observability-types `. `sc-runtime` and `sc-cron` follow the\n   direct types-only rule in [REQ-RUN-0005](requirements.md) criterion 5.\n4. `grep -rn 'tracing' template/crates/daemon` finds no bridge or subscriber\n   set-up code.\n5. Rendered `main.rs` contains no `unwrap`, `expect` or `panic!` on the\n   config load path.\n\n---\n",
+      "authority": {
+        "revision": "286424e",
+        "refs": [
+          "ANC-037",
+          "PRD-ENG-4",
+          "PRD-ENG-6"
+        ],
+        "owner_quotes": [
+          "Remove upper bound",
+          "All dependencies",
+          "A compile error would pick that up.",
+          "Everything gets extensive testing. If there was a real issue it would show up"
+        ],
+        "additional_refs": [
+          "REQ-RUN-0309",
+          "ADR-RUN-0017"
+        ]
+      },
+      "row_id": "DR3-15"
+    }
+  ]
+}

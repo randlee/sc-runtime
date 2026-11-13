@@ -1,0 +1,1101 @@
+<section xmlns="http://www.w3.org/1999/xhtml" class="section unit unit-item" id="item-run-d-7">
+  <div class="section-head">
+    <h2>run-d-7 <span class="unit-title">d-7: postgres-storage</span> <span class="status status-pass">PASS</span></h2>
+    <div class="section-actions" role="group" aria-label="Copy item data">
+      <button type="button" class="icon-button" title="Copy JSON" data-copy-text="{
+  &quot;changes&quot;: [
+    {
+      &quot;after_chars&quot;: 1669,
+      &quot;before_chars&quot;: 1129,
+      &quot;field&quot;: &quot;description&quot;
+    },
+    {
+      &quot;after_chars&quot;: 3473,
+      &quot;before_chars&quot;: 2567,
+      &quot;field&quot;: &quot;acceptance_criteria&quot;
+    },
+    {
+      &quot;after_chars&quot;: 2412,
+      &quot;before_chars&quot;: 2165,
+      &quot;field&quot;: &quot;design&quot;
+    }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+      &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+      &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+      &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+      &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+      &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+      &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-050&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-055&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-056&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-058&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-060&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    },
+    {
+      &quot;added&quot;: true,
+      &quot;anchor_id&quot;: &quot;ANC-063&quot;,
+      &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+    }
+  ],
+  &quot;first&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T03:42:20+00:00&quot;,
+    &quot;excluded&quot;: [],
+    &quot;failing&quot;: [
+      &quot;ANC-016&quot;,
+      &quot;ANC-022&quot;,
+      &quot;ADR-RUN-0011&quot;,
+      &quot;ANC-017&quot;,
+      &quot;ANC-019&quot;,
+      &quot;ANC-021&quot;,
+      &quot;ANC-023&quot;,
+      &quot;ANC-024&quot;,
+      &quot;ANC-025&quot;,
+      &quot;ANC-026&quot;,
+      &quot;ANC-027&quot;,
+      &quot;ANC-029&quot;,
+      &quot;ANC-030&quot;,
+      &quot;ANC-031&quot;,
+      &quot;ANC-032&quot;,
+      &quot;ANC-033&quot;
+    ],
+    &quot;pass&quot;: false,
+    &quot;run_id&quot;: &quot;plan-20261112T034220Z-run-d-7&quot;,
+    &quot;score&quot;: &quot;4/20&quot;,
+    &quot;status&quot;: &quot;fail&quot;
+  },
+  &quot;id&quot;: &quot;run-d-7&quot;,
+  &quot;last&quot;: {
+    &quot;created_at&quot;: &quot;2026-11-12T23:07:09+00:00&quot;,
+    &quot;excluded&quot;: [
+      {
+        &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+        &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+        &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+        &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+        &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+        &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+        &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-050&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-055&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-056&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-058&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-060&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      },
+      {
+        &quot;anchor_id&quot;: &quot;ANC-063&quot;,
+        &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+      }
+    ],
+    &quot;failing&quot;: [],
+    &quot;pass&quot;: true,
+    &quot;run_id&quot;: &quot;plan-20261112T230709Z-run-d-7&quot;,
+    &quot;score&quot;: &quot;8/8&quot;,
+    &quot;status&quot;: &quot;pass&quot;
+  },
+  &quot;runs&quot;: 14,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;text_note&quot;: &quot;&quot;,
+  &quot;text_source&quot;: &quot;bd&quot;,
+  &quot;title&quot;: &quot;d-7: postgres-storage&quot;,
+  &quot;trail&quot;: [
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:42:20+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [
+        &quot;ANC-016&quot;,
+        &quot;ANC-022&quot;,
+        &quot;ADR-RUN-0011&quot;,
+        &quot;ANC-017&quot;,
+        &quot;ANC-019&quot;,
+        &quot;ANC-021&quot;,
+        &quot;ANC-023&quot;,
+        &quot;ANC-024&quot;,
+        &quot;ANC-025&quot;,
+        &quot;ANC-026&quot;,
+        &quot;ANC-027&quot;,
+        &quot;ANC-029&quot;,
+        &quot;ANC-030&quot;,
+        &quot;ANC-031&quot;,
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T034220Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;4/20&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T03:54:10+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;,
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T035410Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;6/9&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:06:24+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-019&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T040624Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;8/9&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:11:22+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019&#x27;s scope excludes.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is SQLite/cron work in d-9 and d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T041122Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;8/8&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T04:45:15+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-019&quot;,
+          &quot;reason&quot;: &quot;d-7 declares no added or retained upper bound beyond Cargo caret for sqlx-core/sqlx-postgres/sqlx-macros, which ANC-019&#x27;s scope excludes.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T044515Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;8/8&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:05:41+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-038&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T080541Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;9/10&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:13:50+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T081350Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;8/8&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T08:31:34+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T083134Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;7/7&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:20:22+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-032&quot;,
+        &quot;ANC-033&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T092022Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;5/7&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:41:04+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T094104Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;7/7&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T09:49:21+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T094921Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;7/7&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T10:03:39+00:00&quot;,
+      &quot;excluded&quot;: [],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T100339Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;1/1&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T22:53:51+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        }
+      ],
+      &quot;failing&quot;: [
+        &quot;ANC-044&quot;,
+        &quot;ANC-050&quot;,
+        &quot;ANC-051&quot;,
+        &quot;ANC-052&quot;,
+        &quot;ANC-055&quot;,
+        &quot;ANC-056&quot;,
+        &quot;ANC-057&quot;,
+        &quot;ANC-058&quot;,
+        &quot;ANC-060&quot;,
+        &quot;ANC-061&quot;,
+        &quot;ANC-063&quot;
+      ],
+      &quot;pass&quot;: false,
+      &quot;run_id&quot;: &quot;plan-20261112T225351Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;6/17&quot;,
+      &quot;status&quot;: &quot;fail&quot;
+    },
+    {
+      &quot;created_at&quot;: &quot;2026-11-12T23:07:09+00:00&quot;,
+      &quot;excluded&quot;: [
+        {
+          &quot;anchor_id&quot;: &quot;ADR-RUN-0011&quot;,
+          &quot;reason&quot;: &quot;d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-021&quot;,
+          &quot;reason&quot;: &quot;Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-022&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-023&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-024&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-025&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-026&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-027&quot;,
+          &quot;reason&quot;: &quot;d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-029&quot;,
+          &quot;reason&quot;: &quot;Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-030&quot;,
+          &quot;reason&quot;: &quot;Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-031&quot;,
+          &quot;reason&quot;: &quot;The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-044&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-050&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-052&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-055&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-056&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-057&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-058&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-060&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        },
+        {
+          &quot;anchor_id&quot;: &quot;ANC-063&quot;,
+          &quot;reason&quot;: &quot;Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.&quot;
+        }
+      ],
+      &quot;failing&quot;: [],
+      &quot;pass&quot;: true,
+      &quot;run_id&quot;: &quot;plan-20261112T230709Z-run-d-7&quot;,
+      &quot;score&quot;: &quot;8/8&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;url&quot;: &quot;&quot;
+}">{}</button>
+      <button type="button" class="icon-button" title="Copy Context" data-copy-text="Plan item run-d-7: d-7: postgres-storage
+Gate FAIL 4/20 -&gt; PASS 8/8 over 14 runs.
+Failing at first run: ANC-016, ANC-022, ADR-RUN-0011, ANC-017, ANC-019, ANC-021, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-029, ANC-030, ANC-031, ANC-032, ANC-033.
+Failing now: none.
+Excluded ADR-RUN-0011: d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.
+Excluded ANC-021: Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.
+Excluded ANC-022: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-023: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-024: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-025: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-026: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-027: d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.
+Excluded ANC-029: Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.
+Excluded ANC-030: Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
+Excluded ANC-031: The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.
+Excluded ANC-044: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-050: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-052: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-055: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-056: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-057: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-058: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-060: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Excluded ANC-063: Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.
+Changed fields: description, acceptance_criteria, design.">&#x2398;</button>
+    </div>
+  </div>
+
+  <table class="gate">
+    <thead><tr><th scope="col">Planning gate</th><th scope="col">Result</th><th scope="col">Satisfied / applicable</th><th scope="col">Failing anchors</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">First run</th><td><span class="status status-fail">FAIL</span></td><td>4/20</td><td>ANC-016, ANC-022, ADR-RUN-0011, ANC-017, ANC-019, ANC-021, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-029, ANC-030, ANC-031, ANC-032, ANC-033</td></tr>
+      <tr><th scope="row">Last run</th><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <details class="trail">
+    <summary>All 14 runs</summary>
+    <table>
+      <thead><tr><th scope="col">Run</th><th scope="col">Created</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Failing</th></tr></thead>
+      <tbody>
+        <tr><td><code>plan-20261112T034220Z-run-d-7</code></td><td>2026-11-12T03:42:20+00:00</td><td><span class="status status-fail">FAIL</span></td><td>4/20</td><td>ANC-016, ANC-022, ADR-RUN-0011, ANC-017, ANC-019, ANC-021, ANC-023, ANC-024, ANC-025, ANC-026, ANC-027, ANC-029, ANC-030, ANC-031, ANC-032, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T035410Z-run-d-7</code></td><td>2026-11-12T03:54:10+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/9</td><td>ANC-019, ANC-032, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T040624Z-run-d-7</code></td><td>2026-11-12T04:06:24+00:00</td><td><span class="status status-fail">FAIL</span></td><td>8/9</td><td>ANC-019</td></tr>
+        <tr><td><code>plan-20261112T041122Z-run-d-7</code></td><td>2026-11-12T04:11:22+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
+        <tr><td><code>plan-20261112T044515Z-run-d-7</code></td><td>2026-11-12T04:45:15+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
+        <tr><td><code>plan-20261112T080541Z-run-d-7</code></td><td>2026-11-12T08:05:41+00:00</td><td><span class="status status-fail">FAIL</span></td><td>9/10</td><td>ANC-038</td></tr>
+        <tr><td><code>plan-20261112T081350Z-run-d-7</code></td><td>2026-11-12T08:13:50+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
+        <tr><td><code>plan-20261112T083134Z-run-d-7</code></td><td>2026-11-12T08:31:34+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T092022Z-run-d-7</code></td><td>2026-11-12T09:20:22+00:00</td><td><span class="status status-fail">FAIL</span></td><td>5/7</td><td>ANC-032, ANC-033</td></tr>
+        <tr><td><code>plan-20261112T094104Z-run-d-7</code></td><td>2026-11-12T09:41:04+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T094921Z-run-d-7</code></td><td>2026-11-12T09:49:21+00:00</td><td><span class="status status-pass">PASS</span></td><td>7/7</td><td></td></tr>
+        <tr><td><code>plan-20261112T100339Z-run-d-7</code></td><td>2026-11-12T10:03:39+00:00</td><td><span class="status status-pass">PASS</span></td><td>1/1</td><td></td></tr>
+        <tr><td><code>plan-20261112T225351Z-run-d-7</code></td><td>2026-11-12T22:53:51+00:00</td><td><span class="status status-fail">FAIL</span></td><td>6/17</td><td>ANC-044, ANC-050, ANC-051, ANC-052, ANC-055, ANC-056, ANC-057, ANC-058, ANC-060, ANC-061, ANC-063</td></tr>
+        <tr><td><code>plan-20261112T230709Z-run-d-7</code></td><td>2026-11-12T23:07:09+00:00</td><td><span class="status status-pass">PASS</span></td><td>8/8</td><td></td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <h3>Excluded anchors (not judged)</h3>
+  <table class="exclusions">
+    <thead><tr><th scope="col">Anchor</th><th scope="col">Reason</th><th scope="col">Since</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="#anchor-ADR-RUN-0011">ADR-RUN-0011</a></th><td>d-7 adds async sqlx Postgres code only; it introduces no blocking bridge and does not touch the SQLite writer thread.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-021">ANC-021</a></th><td>Default cron placement in the app SQLite file is generated-app composition in d-11, not the Postgres backend.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-022">ANC-022</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-023">ANC-023</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-024">ANC-024</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-025">ANC-025</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-026">ANC-026</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-027">ANC-027</a></th><td>d-7 is the Postgres backend over async sqlx; it does not touch the SQLite writer, which d-6 owns.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-029">ANC-029</a></th><td>Rejecting cron with the no-database layout is template generation work in d-11; d-7 changes no generator.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-030">ANC-030</a></th><td>Active-name rejection is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-031">ANC-031</a></th><td>The cron row limit is sc-cron policy over the generic transaction, implemented in d-9; d-7 has no cron code.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-044">ANC-044</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-050">ANC-050</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-052">ANC-052</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-055">ANC-055</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-056">ANC-056</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-057">ANC-057</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-058">ANC-058</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-060">ANC-060</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+      <tr><th scope="row"><a href="#anchor-ANC-063">ANC-063</a></th><td>Generic Postgres backend implementation does not change cron compilation/tables, command signatures/transforms/widgets or command-path REQ/ADRs; d-5/d-9/d-10 own them.</td><td>this round</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Text: first judged to now</h3>
+  <p class="small">Source: bd</p>
+  <details open="open">
+    <summary>description</summary>
+    <div class="diff"><div class="eq">## Deliverables</div><div class="rm">- </div><div class="rm">- 1. Implement the agreed Storage&lt;T&gt; backend using direct sqlx-core/sqlx-postgres Postgres pool/migration code; typed row mapping stays in backend/consumer contract, no raw cross-engine query API — REQ-RUN-0328; PRD-STO2.</div><div class="rm">- 2. Replace widget-specific store functions only when the typed consumer calls compile; preserve live-engine transaction/error semantics and feature gates — ADR0020; REQ-RUN-0302.</div><div class="rm">- </div><div class="rm">- 3. Implement the exact d-5 generic StorageRow/Store&lt;T&gt;/engine factory contract and generated-key create/delete primitives using arbitrary conformance rows and generic atomic transaction begin/commit/retry. App supplies schema mapping; backend has no specific consumer table code — ANC-032/033/034/035.</div><div class="rm">- 4. Replace sqlx umbrella with direct sqlx-core + engine driver + sqlx-macros requirements, retaining only necessary features; qualify real query macros, migration/offline/CLI paths, not just a successful resolver — REQ-RUN-0002; NFR-RUN-0007.</div><div class="ad">+ 1. Implement Postgres&#x27;s share of the one shared sc-storage Storage&lt;T&gt; trait and its single AtomicStorage::transaction(spec, producer) operation for several row operations as one atomic unit; SQLite (d-6), Postgres (d-7) and MySQL (d-8) each implement that same contract (ANC-032/033). Implement PostgresStore&lt;T&gt;: sc-storage Storage&lt;T&gt; plus the same generic AtomicStorage::transaction(spec, producer), generic row mapping, generated-key insert/delete and engine factory. App owns schema/migrations; no WidgetRow, CronRow or consumer SQL lives in the generic engine (ANC-032/033/034/035).</div><div class="ad">+ 2. Replace the sqlx umbrella with sqlx-core/sqlx-postgres/sqlx-macros &gt;=0.9, no upper bound. Qualify real live query macros, migrations/offline replacement and CLI paths, preserving typed errors and existing wrapper behavior (REQ-RUN-0002/0302/0321; ANC-037).</div><div class="ad">+ 3. Bound serialization retries and pool-acquire/statement/transaction waits in EngineConfig using finite defaults and validated configuration. Exhaustion/deadline yields typed StorageError with retryability/recovery, never an infinite loop. Controlled conflicts/timeouts test the bound; no sleeps or load races. Phase-d uses engine retry defaults; later transaction-specific retry policy remains possible (NFR-RUN-0002/0009).</div><div class="eq"></div><div class="eq">## This sprint does not close</div><div class="eq">Real production composition, generated database security and registry migration are d-11; no generator/sync/permission feature is added.</div><div class="ad">+ These phase-d transaction-body rules do not prohibit later second transform inputs, typed Ok/no-write outcomes or a transform inside an atomic transaction; those behaviors are not built in this sprint (ANC-051).</div></div>
+  </details>
+  <details>
+    <summary>acceptance_criteria</summary>
+    <div class="diff"><div class="eq">boundary:template-store-postgres — contract tests pass against an actual Postgres service with named CI prerequisites, write/read and typed error behavior; workspace/boundary checks pass. A fake/sqlite stand-in is not live Postgres proof. d-11 owns final surfaces/template composition.</div><div class="eq"></div><div class="eq">## Required validation commands</div><div class="ch">Generate a development-source consumer with just new &lt;temp-dir&gt; --var-file wizard/fixtures/postgres.json. With a real provisioned PostgreSQL service in POSTGRES_DATABASE_URL and matching migrations applied by the test harness, run cargo test --manifest-path &lt;temp-dir&gt;/crates/store-postgres/Cargo.toml; cargo clippy --manifest-path &lt;temp-dir&gt;/crates/store-postgres/Cargo.toml --all-targets -- -D warnings; cargo build --manifest-path &lt;temp-dir&gt;/Cargo.toml --workspace; sc-lint lint sc-boundary --root &lt;temp-dir&gt; --config &lt;temp-dir&gt;/sc-lint.toml. SQLX_OFFLINE may support query-macro compilation but does not substitute for actual live-engine tests. <del>d-3</del><ins>d-7</ins> owns <ins>.github/workflows/store-postgres.yml: provision its real postgres service and POSTGRES_DATABASE_URL, apply migrations, generate </ins>the <del>CI</del><ins>consumer</ins> <del>prerequisite/recipe</del><ins>with</ins> <del>wiring.</del><ins>the fixture above, then run these same generated-consumer test/clippy/build/boundary commands in its existing normal live job. Preserve REQUIRE_POSTGRES=1 and fail on skipped live tests; no min/latest duplication.</ins> Preserve thin legacy wrappers until the replacement consumer compiles; do not create an artificial dependency on the service implementation.</div><div class="ch">Boundary contract includes generic read/insert/delete primitives with generated ID and typed errors on arbitrary test rows against real engine, plus generic atomic serializable begin/commit/retry and panic-free typed Result behavior; shared contract imports real definitions. Test <del>minimum/latest direct-crate features and </del>actual live query macros, migrations, offline/sqlx-toml replacement and CLI migration procedures as applicable. A cargo check-only probe is not evidence those paths work.</div><div class="eq">Compile actual direct-crate backend + generic rusqlite writer dependency probes for selected mixed layouts. cargo tree -i libsqlite3-sys selects exactly one&gt;=0.39 and cargo tree -i sqlx-sqlite has no selected package; never grep Cargo.lock. Full generated sqlite-postgres/sqlite-mysql build/runtime proof belongs to d-11 after sibling stores close. cargo build --workspace and live generated target engine tests pass at this sprint&#x27;s closure. Production engine source has no api-types/schema::WidgetRow/WidgetId/sc-cron import or table-specific SQL/schema; application service/schema wrapper supplies row descriptors. No ATM/sc-compose deps.</div><div class="rm">- Generic transaction observability wrapper emits name, queue wait, run time, row operation count and outcome, tested with controlled clock/observer inputs; these are output measurements, not extra transaction properties. No wall-clock sleep/load assertion establishes correctness.</div><div class="ad">+ Use d-5&#x27;s transaction observation wrapper with controlled observer tests (ANC-033).</div><div class="ad">+ boundary:template-store-postgres/atomic — Postgres implements the same generic transaction operation from the Storage&lt;T&gt; contract; a real Postgres conformance test performs several row mutations and proves they all commit or all roll back, including retry/error cases (ANC-032/033).</div><div class="ad">+ boundary:template-store-postgres/bounded-errors — Finite retry/acquire/statement/transaction limits are applied to real engine operations; controlled outcomes exhaust retries and yield typed conflict/timeout errors. Driver tests run in the existing live workflow; no min/latest jobs.</div><div class="ad">+ </div><div class="ad">+ boundary:production-dependencies — The existing resolved normal/build graph validation covers all dependencies of this backend: no ATM crate or sc-compose-repository crate except permitted sc-sha; it is not limited to the SQL/native edge (ANC-061).</div></div>
+  </details>
+  <details>
+    <summary>design</summary>
+    <div class="diff"><div class="eq">Consumes d-5 shared storage/mapping/factory signatures and test contract. Source/tests/migrations/cache owned here; all manifests/reexports are contract-owned. Separate from SQLite/MySQL implementation fences.</div><div class="eq"></div><div class="rm">- Version is approved coordinated0.3.0; publication still requires all release gates. Source authority is PRD2 and proposed ADR0020/0021; scope B is selected by user.</div><div class="rm">- Implement the same sc-storage Storage&lt;T&gt; contract. SQLx enables only this engine, never SQLite; production has no ATM/sc-compose dependencies. Generated boundaries are emitted by d-5 template/boundaries/render.py at boundaries/&lt;prefixed-package&gt;/&lt;prefixed-package&gt;.toml. Backend tests use actual engine services.</div><div class="ad">+ Implement the same sc-storage Storage&lt;T&gt; contract. SQLx enables only this engine, never SQLite; production has no ATM/sc-compose composition-crate dependencies; sc-sha is permitted (ANC-061). Generated boundaries are emitted by d-5 template/boundaries/render.py at boundaries/&lt;prefixed-package&gt;/&lt;prefixed-package&gt;.toml. Backend tests use actual engine services.</div><div class="eq">Real engine contract is defined/exported by d-5: generic StorageRow/Store&lt;T&gt; plus table-neutral EngineConfig and typed StorageError; async open&lt;T&gt;(&amp;EngineConfig) completes application-supplied generic schema migration before returning Store&lt;T&gt;. Service WidgetStore&lt;S&gt;/StoresView maps schema::WidgetRow/WidgetId/errors outside the backend. Backend generic mapping implements generated-key insert/delete primitives and named atomic producer/future; serializable begin/commit and engine-controlled serialization retry call a fresh owned Send+&#x27;static producer. Backend source contains no specific consumer row/schema/SQL; generic engine code is separated from application-owned mapping wrapper. Only transaction name/mode are declared properties. Public storage APIs return typed Results, never panic.</div><div class="rm">- Proven dependency facts: umbrella sqlx0.9 with current macros/migrate/sqlx-toml features conflicts with rusqlite0.41/0.42 even when SQLite feature is off. Direct core+engine+macros crates resolve and cargo check; live query!/offline/sqlx-cli paths are UNVERIFIED until this sprint qualifies them. No vulnerable rusqlite downgrade or dropped feature presented as a fix. Shared manifest registration in d-5 hands this owner&#x27;s store Cargo file over after contract sanity; d-3 supplies live-engine CI/endpoint recipes. Mixed probe here compiles this actual engine backend with generic writer crate in one graph; full generated mixed app consumes sibling SQLite wrapper only in d-11.</div><div class="ad">+ Proven dependency facts: umbrella sqlx0.9 with current macros/migrate/sqlx-toml features conflicts with rusqlite0.41/0.42 even when SQLite feature is off. Direct core+engine+macros crates resolve and cargo check; live query!/offline/sqlx-cli paths are UNVERIFIED until this sprint qualifies them. No vulnerable rusqlite downgrade or dropped feature presented as a fix. Shared manifest registration in d-5 hands this owner&#x27;s store Cargo file over after contract sanity. Mixed probe here compiles this actual engine backend with generic writer crate in one graph; full generated mixed app consumes sibling SQLite wrapper only in d-11.</div><div class="ad">+ EngineConfig supplies finite retry/timeout defaults in phase-d; the extensible transaction contract leaves room for later per-transaction policy without implementing it now. This phase retains the generic engine in the generated template under the approved nine-crate release; engine-code fixes require template updates/regeneration, recorded explicitly in ADR0020 rather than promised as a registry update.</div></div>
+  </details>
+</section>

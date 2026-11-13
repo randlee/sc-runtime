@@ -1,6 +1,6 @@
 # sc-runtime framework charter
 
-**Status:** Active planning authority  
+**Status:** Active planning authority, under [PRD v2.0](prd/sc-runtime-prd.md) (2026-11-11). Where this charter disagrees with the PRD, the PRD is right.  
 **Audience:** Maintainers, plan authors, QA reviewers, and every generated consumer project  
 **Companion:** [`sc-runtime-design.md`](sc-runtime-design.md), [`architecture.md`](architecture.md)
 
@@ -17,8 +17,9 @@ application and not a traditional “batteries included” web framework.
   cargo-generate template. API and boundary choices must assume **unknown
   downstream wiring**, not one reference app.
 - **The framework instantiates; each project wires.** Published crates own
-  daemon lifecycle, transport, envelopes, and assembly. Generated projects own
-  operations, routes, MCP tools, CLI commands, stores, and schemas.
+  daemon lifecycle, transport, envelopes, assembly, the command path between
+  an interface and storage, and `Storage<T>` (PRD §3, §4). Generated projects
+  own their types (`Tcli`, `Tsql`), their transforms, and their schemas.
 - **Thin template, versioned crates.** Anything that should improve across all
   consumers belongs in a published crate. Anything a team will edit belongs in
   the generated tree.
@@ -36,8 +37,8 @@ Consumers are often **agents and automation**, not only human developers.
 | **JSON CLI** | Clap commands talk HTTP to the daemon; responses use the shared envelope and typed errors. | Command names, payloads, and business rules. |
 | **Actionable errors (mandatory)** | Every cross-boundary failure exposes stable codes, causes, and **recovery/remediation** (`OpError`, leaf error inventories, transport `ErrorCode`). Agents must be able to act on failures without reading source. | Domain-specific error variants inside project code. |
 | **MCP “a plug-in away”** | Same service functions serve REST and MCP; `sc-command` server feature converts envelopes; MCP mounts on the shared Axum router. | Which tools exist and what they call. |
-| **Data: local first, cloud path** | Template ships **SQLite** via sqlx in a dedicated store crate; Postgres (or other backends) is an **additional store crate**, not a rewrite of the framework. | Schemas, migrations, and which store each route uses. |
-| **Minimal surface** | No command registry, no codegen framework, no portable query layer, no opinions on frontend or deployment. Standard crates used the documented way. | All application-layer structure. |
+| **Data: one trait, three engines** | `Storage<T>` over SQLite, Postgres and MySQL, interchangeable behind one trait. SQLite uses the atm-core high-performance writer (PRD §4). | Row types, schemas, and which database each command uses. |
+| **Minimal surface** | No opinions on frontend or deployment. Standard crates used the documented way. The shared command path and `Storage<T>` are the product (PRD §2); they are not the registries or query layers this row used to forbid. | All application-layer rules, written in transforms. |
 
 If a plan or change adds registries, macros, indirection layers, or “helper
 frameworks” inside reusable crates **without** reducing code in **many**

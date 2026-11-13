@@ -1,0 +1,14 @@
+{
+  "phase_id": "d",
+  "integration_branch": "integrate/phase-d",
+  "plan_branch": "plan/phase-d",
+  "plan_doc": "docs/plans/phase-d/phase-d-plan.md",
+  "enforcer": "cursor-quality-mgr",
+  "github_issues": [
+    131,
+    132,
+    133
+  ],
+  "status": "plan_only",
+  "qa_rounds": []
+}
