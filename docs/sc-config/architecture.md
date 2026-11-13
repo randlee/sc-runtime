@@ -304,7 +304,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 
 - NFR-CFG-0002 — dependencies are `serde` and `serde_json` only
 - NFR-CFG-0003 — synchronous v0.1 load calls; reload, notification and async work outside the current deliverable
-- REQ-RUN-0005 — owner of the workspace-internal edges and forbidden edges of all four crates
+- REQ-RUN-0005 — owner of the workspace-internal edges and forbidden edges of the workspace library crates
 - NFR-RUN-0001 — hold the OPEN on cargo feature unification under `cargo build --workspace`
 
 **Architecture Decisions:**
