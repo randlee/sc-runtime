@@ -1788,7 +1788,7 @@ example keeps the template thin and leaves little to delete.
 
 ### Requirement Statement
 
-Definitions: Whole-file selection means determining whether an entire file is present in a generated project for the selected option values. A conditional line is a line containing a Liquid control tag, or a line between an opening control tag and its closing tag. Liquid value substitutions are not conditional lines ([REQ-RUN-0304](requirements.md)).
+Definitions: Whole-file selection means determining whether an entire file is present in a generated project for the selected option values. A Liquid control tag is a tag written `{% ... %}`, such as `{% if mcp %}` or `{% endif %}`. A conditional line is a line containing a Liquid control tag, or a line between an opening control tag (such as `{% if mcp %}`) and its closing tag (such as `{% endif %}`); each such line counts once. A Liquid value substitution is a tag written `{{ ... }}`; it does not make a line conditional. This counting rule is the one in [REQ-RUN-0304](requirements.md).
 
 "v0.1" is the first release of the template. The generation options are
 defined in `wizard/answers.schema.json` and mirrored as placeholders in
@@ -1834,7 +1834,7 @@ removed by sprint `b-8`. Amended 2026-10-25.
 **MUST statements:**
 
 - Whole-file selection MUST be done only by the `ignore` lists in `template/cargo-generate.toml`.
-- The total number of conditional lines across all `.rs` files under `template/` MUST be fewer than ten, counted as specified in [REQ-RUN-0304](requirements.md).
+- The total number of conditional lines across all `.rs` files under `template/` MUST be fewer than ten.
 ### Rationale
 
 Phase b generates every layout in [REQ-RUN-0326](requirements.md), including
