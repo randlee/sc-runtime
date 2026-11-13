@@ -4367,31 +4367,31 @@ would be tested against the old crate code.
 
 ### Requirement Statement
 
-Definitions: The SDK (software development kit) is the public crate set in REQ-RUN-0002. The qualified publishing kit is sc-publish, selected by release/sc-publish-pin.toml. Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. The first publication wave is the first group of packages published in that order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. Archive rehearsal is the pre-upload build/test rehearsal using the exact packaged archives. Human authorization and registry credentials are the existing release permission and credential requirements. A controlled-host benchmark runs on the controlled benchmark host; an isolated daemon lifecycle test runs on an isolated machine as required by NFR-RUN-0010. The release lock is the newest-tested Cargo.lock. Registry proof is the build/test of a consumer resolving the SDK from crates.io without checkout paths, Git or patch substitutes. An actual SDK consumer is a consuming project built and tested against the published SDK after publication.
+Definitions: The SDK (software development kit) is the nine public crates of REQ-RUN-0002: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The release tag is the Git tag `v0.3.0` of this repository. The qualified publishing kit is sc-publish at the revision pinned in `release/sc-publish-pin.toml`. Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. The first publication wave is the first group of packages published in that order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. Archive rehearsal is the pre-upload build and tests of the exact packaged archives that the release uploads. The released template is the `template/` directory at the release tag. The registry proof run is the workflow run that performs the registry proof; the registry proof commit is the commit it checks out. The rehearsed archives are the packaged archives that passed archive rehearsal. Human authorization and registry credentials are the existing release permission and credential requirements. The release lock is the newest-tested Cargo.lock. A crates.io source is a Cargo.lock `source` value of `registry+https://github.com/rust-lang/crates.io-index`. The release run is the run of the Template workflow (`.github/workflows/template.yml`) started by pushing the release tag, in which every generated project resolves the SDK from crates.io with no checkout patch. Registry proof is the build and tests of a consumer whose Cargo.lock gives a crates.io source for every SDK crate, with no checkout path, Git or patch substitute. An actual SDK consumer is a project that depends on SDK crates published to crates.io, such as a project generated from the released template. The controlled-host benchmark check is the publish preflight run of `scripts/benchmark/check_release_evidence.py` on committed controlled-host benchmark evidence for the release tag commit, required by ADR-RUN-0015. A fixture matrix entry is the Template workflow job for one answers JSON file under `wizard/fixtures/`. The daemon-process tests are the tests that NFR-RUN-0010 requires to run on an isolated machine.
 
 This requirement governs the coordinated 0.3.0 release of the nine public crates identified by REQ-RUN-0002 and delivery of the generated template.
 
 **MUST statements:**
 
-- The coordinated 0.3.0 release MUST publish every public crate identified by REQ-RUN-0002 at version 0.3.0.
-- The release MUST publish packages in a topological order of the published-package dependencies declared in the final Cargo manifests.
+- The crates.io page of each SDK crate MUST list version 0.3.0.
+- The crates-publish workflow (`.github/workflows/crates-publish.yml`) MUST upload the packages in the dependency order.
 - `sc-storage`, the shared storage crate with no dependency on another package in this release, MUST be included in the first publication wave.
-- Independent sc-monty MUST be in the first publication wave.
-- The released template MUST resolve its SDK dependencies from crates.io.
-- The release run of the template fixture matrix defined by REQ-RUN-0701 MUST pass using the released crates.io SDK packages.
-- The release tag MUST identify the source revision used to build the published packages.
-- The release tag MUST identify the source revision used for the registry consumer build/test proof.
+- `sc-monty`, the Monty interpreter crate with no dependency on another package in this release, MUST be included in the first publication wave.
+- Every SDK crate entry in the Cargo.lock of a project generated from the released template MUST have a crates.io source.
+- The job of every fixture matrix entry in the release run MUST finish with conclusion success.
+- The crates-publish workflow run that uploads the published packages MUST check out the commit that the release tag points to.
+- The checkout step log of the registry proof run MUST show the commit that the release tag points to.
 - The release MUST use the qualified publishing kit.
-- The release MUST use the existing preflight checks of `sc-publish` selected by `release/sc-publish-pin.toml`.
-- The release MUST use the existing package checks of `sc-publish` selected by `release/sc-publish-pin.toml`.
+- Before upload, the release MUST pass the preflight checks of the qualified publishing kit.
+- Before upload, the release MUST pass the package checks of the qualified publishing kit.
 - Exact packaged archives MUST pass rehearsal before upload.
-- After publication, actual SDK consumers MUST pass their build/tests while resolving SDK dependencies exclusively from crates.io.
+- After publication, the registry proof of each actual SDK consumer MUST exit with status 0.
 - Publication MUST preserve the existing human-authorization requirements.
 - Publication MUST preserve the existing registry-credential requirements.
-- The existing controlled-host benchmark requirements MUST remain prerequisites for release.
-- The existing isolated daemon lifecycle requirements MUST remain prerequisites for release.
+- The controlled-host benchmark check MUST pass before the release uploads any package.
+- Before upload, the daemon-process tests MUST pass for the release tag commit.
 - Each delivered template release MUST include its newest-tested Cargo.lock.
-- Each delivered template release MUST include the matching .sc-runtime/tested-dependencies.json.
+- Each delivered template release MUST include its tested-dependency metadata.
 - Generated populated repositories MUST receive the release lock.
 - Generated populated repositories MUST receive the tested-dependency metadata.
 
@@ -4402,7 +4402,8 @@ This requirement governs the coordinated 0.3.0 release of the nine public crates
 - The released template MUST NOT substitute a patched source for a registry SDK dependency.
 
 - Checkout-patched consumer tests MUST NOT be reported as registry proof.
-- Publication MUST NOT change source or manifests between the qualified archives and the registry consumer proof.
+- The source files of the registry proof commit MUST NOT differ from the source files of the rehearsed archives.
+- The Cargo manifests of the registry proof commit MUST NOT differ from the Cargo manifests of the rehearsed archives.
 
 ### Rationale
 
