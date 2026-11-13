@@ -555,7 +555,7 @@ the same JSON as a string.
 
 1. A test compiled with `--features server` calls
    `Ok::<Sample, OpError>(sample).into_mcp()` and asserts: the result is
-   `Ok`; `is_error` is `None` or `Some(false)`; the envelope JSON extracted
+   `Ok`; `is_error` is `Some(false)`; the envelope JSON extracted
    from the `CallToolResult` content has `ok` equal to `true` and `data`
    equal to the serialised `sample`.
 2. A test calls `Err::<Sample, OpError>(op_error).into_mcp()` and asserts:

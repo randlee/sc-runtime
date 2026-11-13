@@ -536,8 +536,7 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - After graceful shutdown begins, the listener MUST refuse each new connection attempt.
 - If the handler of an in-flight request completes before both its request-handler deadline and the drain deadline, the client MUST receive the complete response of the handler.
 - While an in-flight request has no response, `run()` MUST keep serving the in-flight request on the listener.
-- During graceful shutdown, the socket file MUST still exist when `run()` stops serving on the listener.
-- During graceful shutdown, the endpoint lock MUST remain held until removal of the socket file completes.
+- For a Unix domain socket endpoint, during graceful shutdown, the socket file MUST still exist when `run()` stops serving on the listener.
 - The source of `run()` MUST place the call that removes the socket file before the call that releases the endpoint lock.
 - For a Unix domain socket endpoint, the socket file MUST no longer exist when `run()` returns.
 - After the call that stops serving on the listener, the source of `run_with_cleanup` MUST call the cleanup callback.
@@ -558,8 +557,6 @@ Statements that name Windows are Phase C targets. Phase B observability reports 
 - If the drain deadline passes before an in-flight request's handler completes and before that request's request-handler deadline, `run()` MUST answer the in-flight request with the 503 error envelope whose code is `RUNTIME.DRAIN_TIMEOUT`.
 - After a request receives the 503 error envelope with code `RUNTIME.REQUEST_TIMEOUT` or `RUNTIME.DRAIN_TIMEOUT`, `sc-runtime` MUST drop the handler future of that request.
 - When the drain deadline passes during graceful shutdown, `run()` MUST complete shutdown cleanup before returning `Ok(())`.
-- In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the request-handler timeout expires MUST drop the handler future.
-- In `crates/sc-runtime/src/router.rs`, the code of `with_request_timeout` that runs when the drain timeout expires MUST drop the handler future.
 - When the drain timeout expires during graceful shutdown, `run()` MUST return `Ok(())`.
 - For a Unix domain socket endpoint, after `run()` returns, the endpoint-lock file MUST still exist.
 - Every call site of `run()` MUST await the future returned by `run()` to completion.

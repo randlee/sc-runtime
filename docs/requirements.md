@@ -5202,12 +5202,11 @@ Definitions:
 - The isolation variables are the three environment variable values `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`, `GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`.
 - The isolation check passes when all three isolation variables are set to those values, and fails otherwise.
 - A process-spawning call is a call that starts an operating-system process.
-- A daemon or CLI process is one kind of process: an operating-system process started from the daemon binary or from the generated `cli` binary.
 - An isolation guard is a statement that returns from the test when the isolation check fails.
 - A daemon-starting call is a process-spawning call that starts a daemon, or a call that starts a `DaemonFixture` daemon.
 - A test starts a daemon when it executes a daemon-starting call.
 - A host check is a statement that returns from the test when the test is not running on an isolated machine; an isolation guard is a host check.
-- A test has established that it is running on an isolated machine when its host check has passed.
+- A host check fails when the test is not running on an isolated machine.
 - A test runner is a GitHub Actions workflow job or a `just` recipe.
 - Production daemon code is the source compiled into the daemon binary, including `crates/sc-runtime/src`.
 - A test variant of the daemon is a crate, binary target, cargo feature, `cfg` flag or build configuration whose purpose is the daemon for tests: a daemon-like executable, a stub daemon or a daemon with parts switched off.
@@ -5220,8 +5219,8 @@ Scope:
 
 - The rule governs where a daemon-process test executes, not which command starts it. `just test` MAY run daemon-process tests inside an isolated machine that `just test` starts. What `just test` covers belongs to the standard SC `just` system, whose source of truth is the sc-lint project.
 - Daemon-process tests exist in this repository's crate tests and in tests of the generated `cli` and `daemon` binaries that live in `template/` ([REQ-RUN-0310](requirements.md) criterion 4).
-- Phase B selects the generated real-daemon SIGINT/SIGTERM tests with the signal-test job. Selection of other generated daemon-process tests remains OPEN.
-- Selection and isolation detection for other tests remain OPEN.
+- Phase B selects the generated real-daemon SIGINT/SIGTERM tests with the signal-test job.
+- Selection and isolation detection for other daemon-process tests remain OPEN.
 - The host-safe classification of `DaemonFixture` tests is an interpretation of the owner's decision that the owner has not yet confirmed.
 - Phase A proves CLI behavior primarily through host-safe tests and runs the minimal real-binary smoke test on an isolated CI runner. This rule does not prescribe helper functions, attributes or a generated unit-test layout.
 - Building, provisioning or scripting a virtual machine is not part of v0.1 of this repository.
@@ -5233,14 +5232,14 @@ Scope:
 - When no isolated machine is available to `just test`, `just test` MUST print a line stating that the daemon-process tests were not run.
 - The template's example test MUST place its database files under the temporary `<instance-root>` of its `DaemonFixture`.
 - The signal-test job MUST be the only test runner that sets `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`.
-- Every daemon-process test MUST refuse to start a daemon or CLI process unless it has established that it is running on an isolated machine.
-- The Phase B generated SIGINT/SIGTERM tests MUST use the three-variable isolation guard defined here.
+- The host check of each Phase B generated SIGINT/SIGTERM test MUST be an isolation guard.
 
 **MUST NOT statements:**
 
 - The workspace MUST NOT contain a test variant of the daemon.
 - Production daemon code MUST NOT contain a test-only switch.
-- A daemon-process test that runs on a developer host MUST NOT start a daemon.
+- When its host check fails, a daemon-process test MUST NOT execute a daemon-starting call.
+- When its host check fails, a daemon-process test MUST NOT execute a process-spawning call that starts the generated `cli` binary.
 - The source of a daemon-process test MUST NOT contain a daemon-starting call that is not preceded by a host check.
 - The `just test` recipe MUST NOT contain a command that runs a daemon-process test on the host.
 - Production daemon code MUST NOT weaken the `daemon.lock` singleton.

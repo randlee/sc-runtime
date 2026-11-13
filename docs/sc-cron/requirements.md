@@ -346,9 +346,6 @@ The condition table matches [architecture.md](architecture.md):
 **MUST NOT statements:**
 
 - A host-deadline outcome MUST NOT contain a code token.
-- Adding a cooperative operation failure MUST NOT change an existing variant of `CronError`.
-- Adding a cooperative operation failure MUST NOT change an existing top-level error code.
-- Adding a cooperative operation failure MUST NOT change the `RunOutcome` recorded for a condition-table row.
 - When a cooperative operation fails, the string returned by `to_string()` on the returned error MUST NOT contain SQL text.
 - When a cooperative operation fails, the string returned by `to_string()` on the returned error MUST NOT contain provider prose.
 - After an operation returns a deadline-exceeded failure, sc-cron MUST NOT run the operation again without a new call from the application.
