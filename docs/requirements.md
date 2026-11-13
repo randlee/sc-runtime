@@ -3929,15 +3929,14 @@ naming the failed step tells a person or an agent where to look.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The base driver is scripts/new_project.py. The required tools are the executable names in the lookup table below. sc-compose validates and renders the agent-document Jinja templates.
+Definitions: JSON means JavaScript Object Notation. ADR means architecture decision record. The driver is the generation script `scripts/new_project.py`, which the command `just new <dest>` runs. An answers file is a file that holds a complete answers JSON object for `wizard/answers.schema.json`. The wizard is the Wyvern answers editor that `scripts/run_wizard.py` starts. A prompt is text written to stdout or stderr that asks the user for input. sc-compose is the executable that validates and renders the agent-document Jinja templates. sc-compose is missing when `SC_COMPOSE` is unset and no directory on `PATH` holds an executable named `sc-compose`.
 
 This item is the single owner of the rule that `--var-file` never runs the wizard.
 
 `cargo generate` is kept from prompting by `--template-values-file` and
 `--silent`, as recorded in Active [ADR-RUN-0402](architecture.md). Sprint
-a-1 proved that pair with stdin closed on cargo-generate 0.25.1 (row V4a of
-[REQ-RUN-0102](requirements.md)). `--var-file` still never prompts and never
-starts the wizard.
+a-1 proved the two options with stdin closed on cargo-generate 0.25.1 (row V4a of
+[REQ-RUN-0102](requirements.md)).
 
 | Tool | First | Then |
 |---|---|---|
@@ -3947,23 +3946,27 @@ Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 
 **MUST statements:**
 
-- The generation driver `scripts/new_project.py` (run as `just new <dest>`) MUST accept `--var-file <answers.json>`, where the file is a complete answers JSON object for `wizard/answers.schema.json`.
-- Every tool it starts (`cargo generate` in particular) MUST be started so that it cannot prompt.
-- The base driver MUST locate `sc-compose` in this order: (see table above)
-- When a required tool is found in neither place the driver MUST exit with a non-zero status.
-- It MUST do so before running `cargo generate`, so that no half-generated project is left behind (the timing is decided in this document).
-- The missing-tool stderr message MUST name that tool.
-- The missing-tool stderr message MUST identify its environment variable as a way to supply it.
-- The missing-tool stderr message MUST identify `PATH` as a way to supply it.
+- `just new <dest>` MUST accept the option `--var-file <answers file>`.
+- The `cargo generate` process that `just new <dest>` starts MUST have its standard input closed.
+- Each child process that `just new <dest> --var-file <answers file>` starts MUST have its standard input closed.
+- `just new <dest>` MUST pass the option `--template-values-file` to `cargo generate`.
+- `just new <dest>` MUST pass the option `--silent` to `cargo generate`.
+- When `SC_COMPOSE` is set, `just new <dest>` MUST run the file named by `SC_COMPOSE` as sc-compose.
+- When `SC_COMPOSE` is unset, the sc-compose process that `just new <dest>` starts MUST run the `sc-compose` executable found on `PATH`.
+- When sc-compose is missing, `just new <dest>` MUST exit with a non-zero status.
+- When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `sc-compose`.
+- When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `SC_COMPOSE`.
+- When sc-compose is missing, the stderr of `just new <dest>` MUST contain the text `PATH`.
 
 **MUST NOT statements:**
 
-- With `--var-file` the driver MUST NOT read from stdin.
-- With `--var-file` the driver MUST NOT show any prompt.
-- With `--var-file` the driver MUST NOT start the Wyvern wizard.
-- With `--var-file` the driver MUST NOT look for the `wyvern` executable.
-- With `--var-file` the driver MUST NOT require the `wyvern` executable.
-- The driver MUST NOT contain a hard-coded install path for `sc-compose`.
+- When sc-compose is missing, `just new <dest>` MUST NOT start `cargo generate`.
+- The `just new <dest> --var-file <answers file>` process MUST NOT read from its standard input.
+- `just new <dest> --var-file <answers file>` MUST NOT write a prompt.
+- `just new <dest> --var-file <answers file>` MUST NOT start the wizard.
+- `scripts/new_project.py` MUST NOT contain code that searches for the `wyvern` executable.
+- On a machine with no `wyvern` executable, `just new <dest> --var-file <answers file>` MUST NOT exit with a non-zero status because `wyvern` is absent.
+- `scripts/new_project.py` MUST NOT contain an absolute path to `sc-compose`.
 
 ### Rationale
 
