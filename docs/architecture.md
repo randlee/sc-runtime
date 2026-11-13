@@ -3416,7 +3416,7 @@ Under [ADR-RUN-0301](architecture.md) point 5, `sc-runtime` only calls the proje
 Amended: 2026-10-29. Point 3 records the pre-release schema baseline; point 4 and the consequences define the b-16 extensible host interface and b-17 hook environment; approved ANC-027 through ANC-042 govern this amendment.
 
 - beads-cache ADR-BDC-0006.
-- [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
+- [ADR-RUN-0012](architecture.md). Withdrawn 2026-11-11: the cron table uses the application's storage, not a separate rusqlite connection.
 - [ADR-RUN-0014](architecture.md). Optional embedder-supplied schedule row limit.
 - [ADR-RUN-0016](architecture.md). Explicit Python and Monty hook environments.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
