@@ -3512,12 +3512,12 @@ Owner (ANC-014): "it would be optional set of standard cron commands to set up c
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set adds cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object. A meta-schema is a JSON Schema used to validate another JSON Schema; the `$schema` value names it. The project-name option is the project name row in the Option table; its key spelling remains undecided. A conditional requirement between options makes one option depend on another, such as `cron_commands = true` requiring `cron = true`. Fixing a generated project licence means preventing the consumer from supplying a different licence. The schema version is the integer at the root key `x-schema-version` of `wizard/answers.schema.json`; it identifies the version of the published answers schema (ADR-RUN-0401).
+Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set is the v0.1 option set plus cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object. A meta-schema is a JSON Schema used to validate another JSON Schema; the `$schema` value names it. The project-name option is the project name row in the Option table; its key spelling remains undecided. The licence option is the licence row in the Option table. A generation-option property is the entry for a generation option in the top-level `properties` object of `wizard/answers.schema.json`. The v0.1 answers schema is `wizard/answers.schema.json` as released for v0.1; the Phase C answers schema is `wizard/answers.schema.json` as released by Phase C. A conditional requirement between options makes one option depend on another, such as `cron_commands = true` requiring `cron = true`. The schema version is the integer at the root key `x-schema-version` of `wizard/answers.schema.json`; it identifies the version of the published answers schema (ADR-RUN-0401).
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
@@ -3556,19 +3556,18 @@ The generator is used for projects that are not MIT licensed and not open source
 - `wizard/answers.schema.json` MUST validate against the meta-schema identified by its own `$schema` value.
 - The top-level `type` in `wizard/answers.schema.json` MUST be `object`.
 - The schema MUST be the only definition of the generation options.
-- The schema MUST declare every generation option as a property under its option name.
-- The schema MUST declare the JSON type of each generation-option property.
-- For every generation option the schema MUST state its default where it has one.
-- For each enum-valued generation option, the schema MUST declare the enum’s allowed values.
+- Every generation option MUST appear as a key of the top-level `properties` object in `wizard/answers.schema.json`.
+- Every generation-option property MUST have a `type` keyword equal to the JSON type in the Option table row for the option.
+- When an Option table row gives a default, the `default` keyword of the generation-option property for the row MUST equal the default in the row.
+- For each generation option whose Option table row lists a fixed set of string values, the `enum` keyword of the option's property in `wizard/answers.schema.json` MUST list exactly the values in the row.
 - The schema MUST encode every defined conditional requirement between generation options.
-- The v0.1 answers schema MUST define the project-name option according to its row in the Option table.
-- The v0.1 answers schema MUST define the `db` option according to its row in the Option table.
-- The v0.1 answers schema MUST define the `mcp` option according to its row in the Option table.
-- The v0.1 answers schema MUST define the licence option according to its row in the Option table.
-- The Phase C answers schema MUST define the `cron` option according to its row in the Option table.
+- The project-name generation-option property in the v0.1 answers schema MUST match the project name row of the Option table.
+- The `db` generation-option property in the v0.1 answers schema MUST match the `db` row of the Option table.
+- The `mcp` generation-option property in the v0.1 answers schema MUST match the `mcp` row of the Option table.
+- The licence generation-option property in the v0.1 answers schema MUST match the licence row of the Option table.
+- The `cron` generation-option property in the Phase C answers schema MUST match the `cron` row of the Option table.
 
-- The Phase C answers schema MUST define the `cron_commands` option according to its row in the Option table.
-
+- The `cron_commands` generation-option property in the Phase C answers schema MUST match the `cron_commands` row of the Option table.
 - The schema MUST require `cron = true` when `cron_commands = true`.
 - The answers object MUST accept a consumer-supplied licence for the generated project.
 - `wizard/answers.schema.json` MUST carry the schema version.
@@ -3577,10 +3576,9 @@ The generator is used for projects that are not MIT licensed and not open source
 
 **MUST NOT statements:**
 
-- The v0.1 answers schema MUST NOT define generation options other than project name, `db`, `mcp` and licence.
-
-- The Phase C answers schema MUST NOT define generation options other than project name, `db`, `mcp`, licence, `cron` and `cron_commands`.
-- The template MUST NOT fix the licence of a generated project.
+- The v0.1 answers schema MUST NOT define a generation option outside the v0.1 option set.
+- The Phase C answers schema MUST NOT define a generation option outside the Phase C option set.
+- A file under `template/` MUST NOT set the licence of a generated project to a literal value instead of the licence value from the answers object.
 - The driver MUST NOT hold its own list of option names.
 - The driver MUST NOT hold its own list of option defaults.
 
