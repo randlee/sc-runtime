@@ -4507,15 +4507,15 @@ CLI, HTTP and MCP must share the same application command behavior. The common p
 
 8. Documentation MUST identify Transform, storage_read and storage_write as provisional in version 0.3.0.
 
-9. The command seam MUST permit later addition of a second transform input, a typed Ok outcome that writes nothing distinct from Err, and a transform within an atomic transaction without breaking consumers.
+9. The command seam MUST permit later addition of a second transform input and of a transform within an atomic transaction without breaking consumers.
 
-10. Phase D MUST NOT implement those three deferred command-seam behaviors.
+10. Phase D MUST NOT implement those two deferred command-seam behaviors.
 
 11. The Phase D interpreter transform MUST complete before the storage transaction begins.
 
 12. Monty compilation, sessions, resource limits, host-function dispatch, typed interpreter errors and session dump/load MUST be implemented only in sc-monty.
 
-13. sc-monty MUST expose a compiled session and value-level MontyInvoke<Tin,Tout> invocation of a script and named function with typed inputs and output.
+13. sc-monty MUST expose a compiled session and value-level MontyInvoke<Tin,Tout> invocation of a script and named function. Typed Rust struct inputs and outputs for Monty calls are open and deferred to the owner.
 
 14. At d-5 closure, sc-monty normal and build dependencies MUST be limited to pydantic Monty crates, excluding sc-*, Tokio and serde_json.
 
