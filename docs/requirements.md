@@ -1288,7 +1288,7 @@ status 200, and the body is the `sc_command` success envelope from
 
 - MCP MUST NOT run in a separate process.
 - MCP MUST NOT run in a separate binary.
-- The MCP endpoint MUST NOT be served on a listener other than the one that serves the project routes.
+- The source of the generated `crates/daemon` MUST NOT bind a listener for the MCP endpoint other than the one listener that serves the project routes.
 - When the project gives no `.mcp(...)` closure, `/mcp` MUST NOT be served.
 
 ### Rationale
