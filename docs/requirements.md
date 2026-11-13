@@ -3415,7 +3415,7 @@ General database commands are the bootstrap. The consumer disables that public s
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the cron start, end and list request types and the shared handler of the `sc-cron-commands` crate ([REQ-CRNC-0001](sc-cron-commands/requirements.md)). Selected generation means generation with `cron_commands` set to true and cron selected ([REQ-CRNC-0002](sc-cron-commands/requirements.md)). A feature-off build is a build with the cron feature disabled, of a core crate or of a generated project.
+Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the cron start, end and list request types and the shared handler of the `sc-cron-commands` crate ([REQ-CRNC-0001](sc-cron-commands/requirements.md)). Selected generation means generation with `cron_commands` set to true and cron selected ([REQ-CRNC-0002](sc-cron-commands/requirements.md)). A feature-off build is a build with the cron feature disabled, of a core crate or of a generated project. A server dependency is a Cargo dependency on a crate that implements the HTTP or MCP server.
 
 Phase C target, planned: generation defaults `cron_commands` to false. When
 explicitly selected with cron enabled, the generated application wires the
@@ -3439,7 +3439,7 @@ free of cron/server implementation under NFR-RUN-0001.
 **MUST NOT statements:**
 
 - DTO use MUST NOT add a scheduler dependency to feature-off core or generated builds.
-- DTO use MUST NOT add a server dependency to feature-off core or generated builds.
+- DTO use MUST NOT add a server dependency to any feature-off build.
 
 ### Rationale
 
