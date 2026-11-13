@@ -1795,7 +1795,7 @@ test in [REQ-RT-0002](sc-runtime/requirements.md).
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -1808,7 +1808,7 @@ test in [REQ-RT-0002](sc-runtime/requirements.md).
   has no session store.
 - [REQ-RT-0004](sc-runtime/requirements.md): what `sc-runtime` mounts on the router; it adds
   no session state.
-- [NFR-RUN-0007](requirements.md): rmcp is pinned to a minor version in every manifest.
+- [NFR-RUN-0007](requirements.md): rmcp uses a tested floor with no upper bound.
 ### Context
 
 A REST API with an OpenAPI document and an MCP server are usually separate
@@ -1831,7 +1831,8 @@ unverified facts held in [ADR-RUN-0203](architecture.md).
 3. MCP tools MUST be defined with rmcp `#[tool]` and `#[tool_router]`.
 4. The MCP tools MUST be served by rmcp's `StreamableHttpService` in stateless
    mode, mounted with `nest_service("/mcp", ...)` on that router.
-5. Every manifest that names rmcp MUST pin it to a minor version.
+5. The rmcp version requirement in each manifest follows
+   [NFR-RUN-0007](requirements.md).
 6. `mcpkit-axum` and `aide` MUST NOT be used.
 7. If an unverified fact of [ADR-RUN-0203](architecture.md) turns out false, the
    library versions change, or the way the input struct is declared changes.
@@ -1844,7 +1845,7 @@ defines them, or `/mcp` when `.mcp(...)` was called, makes `run()` return
 `RuntimeError` with code `RUNTIME.ROUTE_CONFLICT` instead of panicking in axum.
 ### Rationale
 
-sc-runtime design, 2026-09-19: MCP inside the daemon over HTTP, same binary and same port, stated by the owner; rmcp over `mcpkit-axum`, stateless mode, `utoipa` with `utoipa-axum`, and the rmcp minor pin are design recommendations accepted for sprint planning. The two facts the design marks as unverified are held separately in ADR-RUN-0203. The manifest grep in Enforced by is decided in this document
+sc-runtime design, 2026-09-19: MCP inside the daemon over HTTP, same binary and same port, stated by the owner; rmcp over `mcpkit-axum`, stateless mode, and `utoipa` with `utoipa-axum` are design recommendations accepted for sprint planning. The two facts the design marks as unverified are held separately in ADR-RUN-0203. The manifest grep in Enforced by is decided in this document
 ### Consequences
 
 Benefits:
@@ -1863,8 +1864,8 @@ Costs:
 - A project router cannot define `GET /openapi.json`, `GET /health` or `/mcp`;
   defining one makes `run()` return `RUNTIME.ROUTE_CONFLICT`.
 - `axum`, `utoipa-axum` and `rmcp` are released independently, so a version
-  bump of any one can break the build; every rmcp bump is a minor-pin
-  change checked by the fixture matrix.
+  bump of any one can break the build; the fixture matrix checks the
+  selected rmcp version.
 
 Other Active ADRs and requirements may depend on this shape: the builder
 takes an ordinary `OpenApiRouter` and an ordinary rmcp service
@@ -1918,7 +1919,7 @@ project per answers fixture and runs `just lint` and `just test` in it, so a
 breaking rmcp, utoipa-axum or axum bump fails CI; the example test and the
 stateless-mode criterion of [REQ-RUN-0302](requirements.md) (a `tools/call` sent with no
 prior `initialize` and no session header succeeds); the one-listener test of
-[REQ-RUN-0205](requirements.md); for point 5, the grep of [NFR-RUN-0007](requirements.md); for point 6
+[REQ-RUN-0205](requirements.md); for point 5, the manifest check of [NFR-RUN-0007](requirements.md); for point 6
 (check decided in this document),
 `grep -rnE 'mcpkit|aide' --include=Cargo.toml crates template` prints
 nothing.
