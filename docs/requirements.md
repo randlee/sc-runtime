@@ -1927,7 +1927,7 @@ language. Liquid control tags are written `{% ... %}` (for example
 
 **MUST NOT statements:**
 
-- A Liquid control tag MUST NOT appear in a `.rs` file under `template/` outside the three permitted locations.
+- A Liquid control tag MUST NOT appear in a `.rs` file under `template/` unless it belongs to a tag pair that encloses only one of the three permitted locations: fields of the `Stores` struct in the `service` crate, the `mod mcp;` line of `crates/daemon/src/main.rs`, or the `.mcp(...)` line of the `Daemon::builder()` chain in `crates/daemon/src/main.rs`.
 ### Rationale
 
 Rust source threaded with template conditionals cannot be compiled, formatted,
