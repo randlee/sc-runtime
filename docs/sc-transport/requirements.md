@@ -873,7 +873,7 @@ The rule is owned by [NFR-RUN-0009](../requirements.md), which applies to every 
 
 - In `crates/sc-transport/src`, the count of public `enum` definitions named `TransportError` MUST equal 1.
 - The error type of each public function of `sc-transport` MUST be `TransportError`.
-- When a public function of `sc-transport` is called with an argument or in an environment state under which it cannot return its `Ok` value, the call MUST return `Err`.
+- When an argument or environment state prevents a public function of `sc-transport` from returning its `Ok` value—including an unparseable endpoint string, a missing path, a missing directory, a refused connection or an unreadable environment variable—the call MUST return `Err`.
 
 **MUST NOT statements:**
 
