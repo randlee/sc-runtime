@@ -451,74 +451,64 @@ crate means every SC daemon maps the same error kind to the same status.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. The crate rmcp supplies the protocol types named below. `server` is the Cargo feature enabling the server-side conversions. `T` is the serializable success value type and `OpError` is the service error type. `IntoMcp` is the extension trait whose consuming method converts a `Result<T, OpError>` into the protocol result. `Envelope<T>` is the four-key response envelope defined by REQ-CMD-0001; `Envelope::from(result)` converts the input result into that envelope. `into_response()` is the axum conversion defined by REQ-CMD-0004.
+Definitions:
 
-
-
-```rust
-pub trait IntoMcp {
-    fn into_mcp(self) -> Result<CallToolResult, McpError>;
-}
-```
-
-`CallToolResult` is `rmcp::model::CallToolResult` from rmcp. Phase C froze rmcp 3.8.0 (ADR-RUN-0203); Phase D requires rmcp >=3.9 with no upper bound ([NFR-CMD-0001](requirements.md)). `McpError`
-is `rmcp::ErrorData`, which tool handlers import under that name and which
-`sc-command` re-exports as `sc_command::McpError`. The error flag is
-`is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
-`into_mcp()` directly. The trait name `IntoMcp` is decided in this document;
-the design fixes only the method name `into_mcp()` and its use on a
-`Result<T, OpError>`.
-
-`IntoMcp` is sealed by a private supertrait and also requires `Sized`. The
-only implementation is `Result<T, OpError>`. `into_mcp` takes `self` by
-value. Dispatch is static. `dyn IntoMcp` is not a supported API. A downstream
-crate can call the method and cannot implement the trait.
-
-The error type of this signature is rmcp's, not an error enum of
-`sc-command`, because rmcp dictates the signature of a `#[tool]` function.
-This is the recorded exception to the repository rule that a fallible public
-function returns the crate's own typed error enum
-([NFR-RUN-0009](../requirements.md), restated for this crate in
-[NFR-CMD-0003](requirements.md)).
-
-| Input | Returned value |
-|---|---|
-| `Ok(value)` | `Ok(CallToolResult)` whose content is the success envelope and whose `is_error` is not `Some(true)` |
-| `Err(op_error)` | `Ok(CallToolResult)` whose content is the failure envelope and whose `is_error` is `Some(true)` |
-
-Setting `is_error` to `Some(true)` exactly when the envelope's `ok` is `false` is decided in this document.
-
-The envelope is carried as both one text content item holding the JSON
-string and as `structured_content`. Success uses `CallToolResult::structured`,
-so `is_error` is `Some(false)`. Failure uses
-`CallToolResult::structured_error`, so `is_error` is `Some(true)`.
-
-`into_mcp()` returns `Err(McpError)` only when serialising the envelope fails. That error is `ErrorData::internal_error`, and its data carries the code `ENVELOPE.SERIALIZATION`. An `OpError` is not this `Err`.
+- MCP means Model Context Protocol; JSON means JavaScript Object Notation.
+- `rmcp` is the Rust MCP crate; Phase C pins rmcp 3.8 (ADR-RUN-0203) and Phase D requires rmcp >=3.9 with no upper bound ([NFR-CMD-0001](requirements.md)).
+- A server build is a build of the `sc-command` crate (`crates/sc-command`) with the Cargo feature `server` enabled.
+- `OpError` is the service error type of `sc-command` ([REQ-CMD-0002](requirements.md)).
+- `T` is any type that implements `serde::Serialize`.
+- `CallToolResult` is the type `rmcp::model::CallToolResult`.
+- `McpError` is the type `rmcp::ErrorData`, re-exported as `sc_command::McpError`.
+- `is_error` is the `Option<bool>` field of `CallToolResult` that marks a failed tool call.
+- `structured_content` is the JSON value field of `CallToolResult`.
+- The input result is the `Result<T, OpError>` value on which `into_mcp` is called.
+- The input envelope is `Envelope::<T>::from(input result)`, where `Envelope<T>` is the response envelope of [REQ-CMD-0001](requirements.md).
+- The envelope JSON is `serde_json::to_value` of the input envelope.
+- The output is the `CallToolResult` that `into_mcp` returns inside `Ok`.
+- The HTTP body is the body of `Envelope::from(input result).into_response()` ([REQ-CMD-0004](requirements.md)) parsed as a JSON value.
+- The data code of an `McpError` is the string under the key `code` in the JSON object of its `data` field; the data code differs from the `code` field of the `McpError`.
+- A server-gated item is an item or module marked `#[cfg(feature = "server")]`, or any code nested inside one.
+- A panic is a Rust panic raised during the call, including one from `unwrap` or `expect`.
+- A serialization failure is `serde_json` returning an error while serializing the input envelope.
+- The required signature is `fn into_mcp(self) -> Result<CallToolResult, McpError>`.
+- An rmcp path is a path in `crates/sc-command/src` whose first segment is `rmcp`.
+- The serialization error is the `McpError` inside the `Err` that `into_mcp` returns on a serialization failure.
+- The required impl is an `impl` item of `IntoMcp` for `Result<T, OpError>` whose only bound on `T` is `serde::Serialize`.
+- A sealed supertrait is a trait declared in a private module of `crates/sc-command/src`, so code outside `sc-command` cannot name it.
 
 **MUST statements:**
 
-- When the `server` Cargo feature is enabled, the crate root of `sc-command` MUST expose the public extension trait `sc_command::IntoMcp`.
-- With the `server` Cargo feature enabled, `IntoMcp` MUST declare exactly one method.
-- That method MUST have the signature `fn into_mcp(self) -> Result<CallToolResult, McpError>`.
-- With the `server` Cargo feature enabled, every `Result<T, OpError>` with `T: serde::Serialize` MUST implement `sc_command::IntoMcp`.
-- `into_mcp()` MUST first form the envelope produced by `Envelope::<T>::from(result)`.
-- The `CallToolResult` returned by `into_mcp()` MUST contain one text content item.
-- That text content item MUST contain the JSON string of `Envelope::<T>::from(result)`.
+- In a server build, `sc_command::IntoMcp` MUST be a public trait.
+- In `crates/sc-command/src`, the trait `IntoMcp` MUST declare exactly one method.
+- The signature of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST be the required signature.
+- `crates/sc-command/src` MUST contain the required impl of `IntoMcp` for `Result<T, OpError>`.
+- In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include `Sized`.
+- In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include a sealed supertrait.
+- The body of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST obtain the input envelope by calling `Envelope::<T>::from` on the input result.
+- The output MUST contain exactly one text content item.
+- The text of the output's text content item, parsed as JSON, MUST equal the envelope JSON.
+- The `structured_content` field of the output MUST equal the envelope JSON.
+- The `structured_content` field of the output MUST equal the HTTP body for the same input result.
+- When the `ok` key of the envelope JSON is `false`, the `is_error` field of the output MUST be `Some(true)`.
+- On a serialization failure, `into_mcp` MUST return `Err`.
+- On a serialization failure, the `code` field of the serialization error MUST equal `rmcp::model::ErrorCode::INTERNAL_ERROR`.
+- The data code of the serialization error MUST be `ENVELOPE.SERIALIZATION`.
 
-- `into_mcp()` MUST place the JSON value of the envelope produced by `Envelope::<T>::from(result)` in the returned `CallToolResult` as `structured_content`.
-- For the same `Result<T, OpError>` input, the JSON value in `CallToolResult.structured_content` MUST equal the parsed JSON body returned by `Envelope::from(result).into_response()`.
+- The definition of `IntoMcp` in `crates/sc-command/src` MUST lie in a server-gated item.
+- Every rmcp path MUST lie in a server-gated item.
+- In `crates/sc-command/Cargo.toml`, the `rmcp` dependency MUST be declared `optional = true`.
 
 **MUST NOT statements:**
 
-- An `OpError` from the service MUST NOT be turned into `Err(McpError)`.
+- When the `ok` key of the envelope JSON is `true`, the `is_error` field of the output MUST NOT be `Some(true)`.
+- When the input result is `Err(OpError)` and no serialization failure occurs, `into_mcp` MUST NOT return `Err`.
 - `IntoMcp::into_mcp` MUST NOT panic ([NFR-CMD-0003](requirements.md)).
-- When the `server` feature is disabled the trait MUST NOT exist.
-- With the `server` Cargo feature disabled, the compiled `sc-command` crate MUST NOT reference the `rmcp` crate.
 
 ### Rationale
 
@@ -530,6 +520,14 @@ one-line axum handler. An MCP client then sees exactly the envelope a REST
 client sees, which the product requires of every surface
 ([REQ-RUN-0203](../requirements.md)), and MCP hosts that look only at
 `is_error` still learn that the call failed.
+
+The error type is rmcp's, not an `sc-command` error enum, because rmcp
+dictates the signature of a `#[tool]` function. This is the recorded exception
+to the rule that a fallible public function returns the crate's own typed
+error enum ([NFR-RUN-0009](../requirements.md), restated in
+[NFR-CMD-0003](requirements.md)). The design fixes only the method name
+`into_mcp()`; the trait name `IntoMcp`, the sealing and the `is_error` rule are
+decided here.
 
 ### Success Criteria
 
