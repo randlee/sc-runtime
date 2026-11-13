@@ -1118,7 +1118,7 @@ criterion 2 runs the real binary only on an isolated runner.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is the sc-ai-cli response object defined by [REQ-CMD-0001](sc-command/requirements.md), with the keys `version`, `ok`, `data` and `error`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is the sc-ai-cli response object defined by [REQ-CMD-0001](sc-command/requirements.md), with the keys `version`, `ok`, `data` and `error`. `OpError` is the typed error type of the `sc-command` crate, defined in `crates/sc-command/src/error.rs`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count.
 
 This is a property of a project generated from `template/`.
 
@@ -1127,7 +1127,8 @@ This is a property of a project generated from `template/`.
 **MUST statements:**
 
 - Every operation response, on every surface, MUST be an envelope.
-- The envelope MUST be a JSON object with exactly the four keys `version`, `ok`, `data` and `error`.
+- The envelope MUST be a JSON object.
+- The set of keys of the envelope MUST be exactly `version`, `ok`, `data` and `error`.
 - The envelope MUST be produced by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).
 - On success `ok` MUST be `true`.
 - On success `data` MUST hold the operation's response struct.
@@ -1135,12 +1136,14 @@ This is a property of a project generated from `template/`.
 - On failure `ok` MUST be `false`.
 - On failure `data` MUST be `null`.
 - On failure `error` MUST be an `OpError` object.
-- The HTTP response body of an operation route MUST be the envelope, serialized as JSON.
+- The HTTP response body of an operation route MUST be JSON text.
+- The HTTP response body of an operation route MUST parse to the envelope.
 - The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.
 - When the envelope's `ok` is `false`, the `CallToolResult` of the operation MCP tool MUST have `is_error` set to `Some(true)` (REQ-CMD-0005).
-- A CLI command given `--json` MUST print to stdout the envelope it received from the daemon, unchanged.
-- The text that a CLI command given `--json` prints MUST parse to a JSON value equal to the REST response body it received.
-- That equality MUST include any content inside `data` or `error.details` that the CLI's own types do not define.
+- When a CLI command is given `--json`, the CLI command MUST write the envelope to stdout.
+- When a CLI command is given `--json`, the envelope that the CLI command prints MUST be the envelope that the CLI command received from the daemon, unchanged.
+- When a CLI command is given `--json`, the text that the CLI command prints and the REST response body that the CLI command received from the daemon MUST be equal as JSON values.
+- When a CLI command is given `--json`, the text that the CLI command prints MUST include any content inside `data` or `error.details` of the received REST response body that the CLI's own types do not define.
 - For the same operation, the same input and the same daemon state, the envelope obtained through REST, through MCP and through CLI `--json` MUST be equal as JSON values.
 
 ### Rationale
