@@ -2340,10 +2340,7 @@ The problem is that one store crate cannot hold checked queries for both SQLite 
    `read_rows` and `write_rows` reject more than 10_000 rows or a payload over
    1 MiB. `EngineStore` is static dispatch. Amended 2026-10-27.
 3. Only remote-engine `store-*` crates depend on sqlx; SQLite uses `sc-runtime-db-sqlite`. A two-store layout's adaptor depends on both `store-*` crates, and `service` depends on the adaptor. A one-store layout has no adaptor, and `service` depends on that store. `daemon` and `cli` do not depend on `store-*`. Amended 2026-11-12.
-4. A SQL query is written for one backend. No layer runs one SQL string on
-   more than one engine. Stores in one application use the same schema or a
-   similar schema, and one shared trait or a different trait per store
-   ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
+4. A SQL query is written for one backend. No layer runs one SQL string on more than one engine. Stores in one application use the same schema or a similar schema ([REQ-RUN-0327](requirements.md)). Every store in an application implements the same `Storage<T>` trait ([REQ-RUN-0328](requirements.md)). Amended 2026-11-12.
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
 6. The template adaptor (`template/crates/store-adaptor`), as consumer source, is the place rows move between stores (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."). The sc-runtime crates and the framework crates do not move rows between stores. This repository does not contain a replication mechanism, an outbox, or a routing policy. This ADR binds no synchronization algorithm, schedule, direction or conflict policy (owner, 2026-11-12: "Synchronization algorithm will always be specific."). The patterns in ADR-RUN-0305 stay deferred. Amended 2026-11-12.
