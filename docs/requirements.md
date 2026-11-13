@@ -1639,6 +1639,10 @@ configuration and does not depend on the daemon crate for that type.
 **MUST NOT statements:**
 
 - Generated feature `monty` MUST NOT require generated feature `cron`.
+- The default feature set of `<project>-daemon` MUST NOT include `cron`.
+- The default feature set of `<project>-daemon` MUST NOT include `monty`.
+- A file under `template/` MUST NOT contain a numeric TCP port literal, except the registered default in `template/config/default.json` if the default-port question is decided in favour of a default.
+- The non-test source of a public crate in REQ-RUN-0002 MUST NOT contain a numeric TCP port literal.
 
 - `cli` MUST NOT depend on `service` as a normal (non-dev) dependency, directly or transitively.
 - `cli` MUST NOT depend on `store-sqlite` as a normal (non-dev) dependency, directly or transitively.
@@ -1648,7 +1652,7 @@ configuration and does not depend on the daemon crate for that type.
 - `cli` MUST NOT depend on `axum` as a normal (non-dev) dependency, directly or transitively.
 - `cli` MUST NOT depend on `rmcp` as a normal (non-dev) dependency, directly or transitively.
 - `api-types` MUST NOT depend on another crate of the generated workspace.
-- A generated crate other than a `store-*` crate MUST NOT depend directly on `sqlx`.
+- A generated crate that is not a remote-engine store MUST NOT depend directly on `sqlx`.
 - `daemon` MUST NOT depend on a `store-*` crate.
 - `cli` MUST NOT depend on a `store-*` crate.
 - `api-types` MUST NOT depend on a `store-*` crate.
