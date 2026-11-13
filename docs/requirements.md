@@ -5083,93 +5083,50 @@ Related: [REQ-RUN-0004](requirements.md) defines `just lint`; [NFR-RUN-0004](req
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. OpError is the sc-command operation error inside the JSON response envelope. Its stable code and remaining keys are the fields in REQ-CMD-0002.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. A covered crate is one of the nine Phase D crates listed in REQ-RUN-0002: sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty. A public function is a function or method that a covered crate exports in its public API. Public-reachable code is every non-test function body in a covered crate's `src` directory that a public function of that crate calls directly or indirectly. A crate-originated error is an error that the code of a covered crate itself detects. A crate result type is `Result<T, E>` where `E` is the one public typed error enum defined by the same covered crate. `[]` indexing is an `[]` index or range expression on a slice, `Vec`, string or map. A service function that implements an operation and that the REST handler, the MCP tool and the CLI command all call. An OpError envelope is the JSON response envelope whose error is an `OpError` from `sc-command` carrying a stable `code` and the other wire keys defined by REQ-CMD-0002. An opaque error type is an error type whose variants a caller cannot match, such as `anyhow::Error` or `Box<dyn std::error::Error>`.
 
-The public typed-error and no-panic obligations apply to all nine Phase D crates in REQ-RUN-0002, including sc-storage, sc-cron-commands and sc-monty. sc-monty returns typed compile/session/invoke/dump/load failures; cron maps invalid cached bytes/version/hook names to recompilation from source, while rejecting invalid source at schedule submission. Existing named ADR-RUN-0017 exception remains bounded as written.
+This item is the single owner of the error rule and the panic rule for the public API of every covered crate. Each crate's own non-functional requirement references this item and adds only strictness specific to that crate. The decision is recorded in [ADR-RUN-0006](architecture.md); the 2026-10-25 amendment added `sc-runtime-db-sqlite` and `sc-cron`.
 
-ADR-RUN-0017 permits the fixed Noop fallback literal invariant, validated against the selected tested types version, and the foreign `CanonicalLog::emit` `EventError` signature. It also defines application-only `try_log` unwind containment and its abort and hook limits. The fixed literal invariant is the only named exception to the banned-construct rule below.
+sc-monty returns typed compile, session, invoke, dump and load failures. Cron maps invalid cached bytes, version or hook names to recompilation from source, and rejects invalid source at schedule submission.
 
-This item is the single owner of the error rule and the panic rule for the
+ADR-RUN-0017 permits the fixed Noop fallback literal invariant, validated against the selected tested types version, and the foreign `CanonicalLog::emit` `EventError` signature. ADR-RUN-0017 also defines application-only `try_log` unwind containment and its abort and hook limits. The fixed literal invariant is the only exception to the banned-construct statements below, and remains bounded as ADR-RUN-0017 writes it.
 
-public API of the library crates `sc-config`, `sc-transport`,
+The sc-runtime design states the rule ("discriminated union; no panics") for `sc-config` only. Extending the rule to the other covered crates, the one-enum-per-crate rule, the ban on opaque error types and the list of banned constructs are decided in this document.
 
-`sc-command`, `sc-runtime`, and, from the 2026-10-25 amendment,
-
-`sc-runtime-db-sqlite` and `sc-cron`. Each crate's own non-functional requirement
-
-references this item and adds only strictness specific to that crate. The
-
-decision is recorded in [ADR-RUN-0006](architecture.md).
-
-The sc-runtime design states the rule ("discriminated union; no panics") for
-
-`sc-config` only. Extending it to `sc-transport`, `sc-command` and
-
-`sc-runtime`, the rule of one error enum per crate, the ban on opaque error
-
-types, and the list of banned constructs below are decided in this document.
-
-**Panic rule.** No public function or method may panic because of the input a
-
-caller passes or because of the state of the environment. Environment state
-
-includes a missing or unreadable file, malformed JSON, an unset or malformed
-
-environment variable, an endpoint nobody is listening on, a lock already held
-
-by another process, and a failed bind.
-
-There is no exception for a use that carries a comment saying why it cannot fail. Test code is exempt.
+**Panic rule.** No public function may panic because of caller input or environment state. Environment state includes a missing or unreadable file, malformed JSON, an unset or malformed environment variable, an endpoint nobody is listening on, a lock already held by another process, and a failed bind. A comment saying why a use cannot fail is not an exception.
 
 **Error rule.**
 
 | Crate | Error enum |
-
 |---|---|
-
 | `sc-config` | `ConfigError` |
-
 | `sc-transport` | `TransportError` |
-
 | `sc-runtime` | `RuntimeError` |
-
 | `sc-runtime-db-sqlite` | `SqliteWriterError` in the legacy public writer; `sc-storage::StorageError` for the Phase D `Storage<T>` contract |
-
 | `sc-cron` | `CronError` |
-
 | `sc-command` | undecided; see the scope notes below |
 
-Recorded exception: a signature dictated by a third-party trait or macro keeps the types that contract requires. The shared `Storage<T>` contract likewise requires `StorageError` for storage operations. The two third-party signatures are below.
-
-`sc_command::IntoMcp::into_mcp` returns
-
-`Result<CallToolResult, McpError>`, where `McpError` is `rmcp`'s error type,
-
-because an `rmcp` `#[tool]` function must return that type. The
-
-`axum::response::IntoResponse` implementation for `Envelope<T>` is
-
-infallible, because `into_response` returns a `Response`, not a `Result`.
-
-Neither is an error the crate itself originates.
+Recorded exception: a signature dictated by a third-party trait or macro keeps the types that contract requires, and the shared `Storage<T>` contract requires `StorageError` for storage operations. `sc_command::IntoMcp::into_mcp` returns `Result<CallToolResult, McpError>`, where `McpError` is `rmcp`'s error type, because an `rmcp` `#[tool]` function must return that type. The `axum::response::IntoResponse` implementation for `Envelope<T>` is infallible, because `into_response` returns a `Response`, not a `Result`. Neither is an error the crate itself originates.
 
 **Errors returned by a service function.** The criteria for this paragraph are those of [REQ-RUN-0203](requirements.md) (REST, MCP and CLI `--json` return the same envelope); they are not repeated here.
 
 **MUST statements:**
 
-- Except for a signature dictated by a third-party trait or macro, or by the shared `Storage<T>` contract, every public operation that can fail with an error the crate itself originates MUST return `Result<T, E>`, where `E` is a typed error enum owned by that crate, with one enum per crate.
-- When a service function returns an error and that error crosses a process boundary (daemon to CLI, daemon to MCP client), it MUST be an `OpError` from `sc-command` inside the response envelope, carrying a stable `code` and the other keys defined by [REQ-CMD-0002](sc-command/requirements.md).
+- Unless a third-party trait or macro signature or the shared `Storage<T>` contract fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
+- Each covered crate MUST define at most one public error enum.
+- When a service function returns an error, the `--json` output of the CLI command that called it MUST be an OpError envelope.
+- When a service function returns an error, the tool result that the calling MCP client receives MUST be an OpError envelope.
 
 **MUST NOT statements:**
 
-- Code reachable from a public function MUST NOT use `unwrap`.
-- Code reachable from a public function MUST NOT use `expect`.
-- Code reachable from a public function MUST NOT use `panic!`.
-- Code reachable from a public function MUST NOT use `unreachable!`.
-- Code reachable from a public function MUST NOT use `todo!`.
-- Code reachable from a public function MUST NOT use `unimplemented!`.
-- Code reachable from a public function MUST NOT use panicking `[]` indexing.
-- A public API MUST NOT return an opaque error type such as `anyhow::Error` or `Box<dyn std::error::Error>`.
+- Public-reachable code MUST NOT call `unwrap`.
+- Public-reachable code MUST NOT call `expect`.
+- Public-reachable code MUST NOT invoke `panic!`.
+- Public-reachable code MUST NOT invoke `unreachable!`.
+- Public-reachable code MUST NOT invoke `todo!`.
+- Public-reachable code MUST NOT invoke `unimplemented!`.
+- Public-reachable code MUST NOT use `[]` indexing.
+- A public function signature MUST NOT name an opaque error type.
 
 ### Rationale
 
