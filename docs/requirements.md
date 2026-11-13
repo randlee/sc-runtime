@@ -2683,7 +2683,7 @@ the owner decided that building a virtual machine is not part of v0.1.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)).
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. A split CLI command is a CLI command written as two pure functions, request construction and result rendering, with the HTTP call made between them. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)).
 
 Direction given by the owner on 2026-09-20: one purpose of sc-runtime is to
 reduce the complexity of testing a CLI that posts and gets over HTTP, and
@@ -2735,7 +2735,7 @@ The split into two functions is the whole testability mechanism.
 
 **MUST statements:**
 
-- Each CLI command MUST be written as two pure functions, request construction and result rendering, with the HTTP call between them.
+- Each CLI command MUST be a split CLI command.
 - The template MUST ship unit tests for each example command.
 - The unit tests of the example commands MUST pass when no daemon process is running.
 - Those unit tests MUST need no socket.
