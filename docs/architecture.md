@@ -867,7 +867,7 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -875,8 +875,7 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 - [REQ-RUN-0005](requirements.md): owner of the forbidden-edge table; `sc-observability`
   and `sc-observability-otlp` are forbidden for all library crates.
-- [REQ-RUN-0309](requirements.md): the generated daemon uses caret-compatible
-  initial `=1.5.0` bridge requirements; its lockfile proves registry identity.
+- [REQ-RUN-0309](requirements.md): the generated daemon uses tested observability floors of `>=1.5.0` with no upper bound; its lockfile records the versions tested.
 - [NFR-CFG-0002](sc-config/requirements.md): `sc-config` has minimal dependencies and none on
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
@@ -916,8 +915,9 @@ loaded.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
    `sc-config`; initialise `sc-observability` directly with plain values
    taken from that config; then call `sc_runtime::Daemon::builder()`.
-   Initial release uses real registry `=1.5.0` logger/types and the private
-   inline adapter under ADR-RUN-0017; future upstream cleanup removes it.
+   The initial-release bridge targets registry 1.5.0 logger/types. Phase D uses
+   tested floors `>=1.5.0` with no upper bound and retains the private inline
+   adapter under ADR-RUN-0017; future upstream cleanup is separate work.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
    `code: &'static str` (`DAEMON.NOT_RUNNING`) plus the endpoint and the

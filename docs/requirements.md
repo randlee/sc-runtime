@@ -4846,61 +4846,54 @@ rule changes from sc-lint and nothing in this repository changes.
 
 ---
 
-## NFR-RUN-0007: rmcp is pinned to a minor version
+## NFR-RUN-0007: rmcp uses a tested floor with no upper bound
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
-### Implementation Notes
-
-For Phase D, the owner's all-dependencies decision and ANC-037 supersede the
-historical minor-pin policy below: published crate and template registry
-requirements, including rmcp, use >= a tested floor with no upper bound.
-rmcp's patched tested floor is >=3.9. Consumers may pin any version in their
-own manifests/lockfiles. The normal test suite checks the selected versions;
-the generated Cargo.lock and .sc-runtime/tested-dependencies.json recommend
-the release-tested latest combination (ANC-038). This amendment states the
-approved policy, not a successful implementation or publication.
 ### Requirement Statement
 
-Definitions: The template CI fixture matrix generates a project per answers fixture and runs just lint and just test in it. rmcp is the Model Context Protocol server crate.
+Definitions: The template CI fixture matrix generates a project per answers fixture and runs just lint and just test in it. rmcp is the Model Context Protocol server crate. A tested floor is the lowest dependency version the project has tested. An upper bound excludes a later version.
 
-This covers the manifests under `crates/`, the manifests under `template/` that are rendered into generated projects, and the manifest of the throwaway spike under `examples/spike` for as long as that directory exists.
 
-Pinned to one minor version series means the version requirement admits
-patch releases of a single `MAJOR.MINOR` only. `~3.7` and
-`>=3.7.0, <3.8.0` are pinned in this sense. `"3"`, `"3.7"` (which Cargo reads
-as `^3.7` and which admits 3.8) and `"*"` are not.
-
-Sprint a-1 recorded that series as 3.7. The only spike manifest that names `rmcp` uses `~3.7` and resolves `rmcp` 3.7.0. a-6 and a-7 verify later manifests against 3.7. They do not choose a second series.
-
+This requirement covers published crate manifests under `crates/` and manifests under `template/` rendered into generated projects. Phase A used a single minor-version pin; Phase D supersedes that policy. Consumers may pin versions in their own manifests and lockfiles.
 
 
 **MUST statements:**
 
-- Every `Cargo.toml` in this repository that names the `rmcp` crate as a dependency MUST pin it to one minor version series.
-- All manifests MUST pin the same minor version series.
-- Moving to a new `rmcp` minor version MUST be a deliberate change to those manifests.
-- That change MUST be validated by the template CI fixture matrix.
+
+- Each published crate and template registry requirement for `rmcp` MUST declare a tested floor of at least 3.9.
+
+- Changes to the selected `rmcp` version MUST be validated by the normal test suite.
+
+- Changes to the selected `rmcp` version MUST be validated by the template CI fixture matrix.
+
+- The generated `Cargo.lock` MUST recommend the release-tested dependency combination.
+
+- `.sc-runtime/tested-dependencies.json` MUST record the release-tested dependency combination.
+
+
+
+**MUST NOT statements:**
+
+
+- Published crate and template registry requirements for `rmcp` MUST NOT declare an upper bound.
+
 
 ### Rationale
 
-`rmcp` shipped five versions in the 30 days to 2026-09-15. A generated
-project with an open-ended requirement would pick up a new minor version on
-its first build and could break at random, on a day nobody changed anything.
-A pin turns every upgrade into a reviewed change that CI has tested.
+
+Open tested floors let consumers take compatible dependency updates without an SDK-imposed upper bound. Normal tests and the template CI fixture matrix check the versions selected for the release.
+
 ### Success Criteria
 
-1. `grep -rn "rmcp" --include='Cargo.toml*' crates template examples` lists
-   every manifest that names `rmcp` (a missing `examples` directory is not a
-   failure). In each, the version requirement is a tilde
-   requirement on `MAJOR.MINOR` or an equivalent bounded range.
-2. All of those manifests show the same `MAJOR.MINOR`.
-3. A pull request that changes the pinned minor version runs the template CI
-   fixture matrix, and the matrix result is visible on that pull request.
+
+1. Inspect published crate and template manifests that name `rmcp`: each registry requirement declares a tested floor of at least 3.9 and no upper bound.
+2. The normal tests and template CI fixture matrix pass with the selected versions.
+3. The generated lockfile and tested-dependencies record identify the combination tested for the release.
 
 ---
 
@@ -4993,15 +4986,7 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 
 The public typed-error and no-panic obligations apply to all nine Phase D crates in REQ-RUN-0002, including sc-storage, sc-cron-commands and sc-monty. sc-monty returns typed compile/session/invoke/dump/load failures; cron maps invalid cached bytes/version/hook names to recompilation from source, while rejecting invalid source at schedule submission. Existing named ADR-RUN-0017 exception remains bounded as written.
 
-ADR-RUN-0017 defines the bounded exception: ADR-RUN-0017 explicitly permits the fixed
-
-Noop fallback literal invariant under exact types 1.5.0 and the foreign
-
-CanonicalLog::emit EventError signature. It also defines application-only
-
-try_log unwind containment and its abort/hook limits. This is the only named
-
-exception to the otherwise absolute banned-construct rule below.
+ADR-RUN-0017 permits the fixed Noop fallback literal invariant, validated against the selected tested types version, and the foreign `CanonicalLog::emit` `EventError` signature. It also defines application-only `try_log` unwind containment and its abort and hook limits. The fixed literal invariant is the only named exception to the banned-construct rule below.
 
 This item is the single owner of the error rule and the panic rule for the
 
@@ -5047,15 +5032,13 @@ There is no exception for a use that carries a comment saying why it cannot fail
 
 | `sc-runtime` | `RuntimeError` |
 
-| `sc-runtime-db-sqlite` | `SqliteWriterError` |
+| `sc-runtime-db-sqlite` | `SqliteWriterError` in the legacy public writer; `sc-storage::StorageError` for the Phase D `Storage<T>` contract |
 
 | `sc-cron` | `CronError` |
 
 | `sc-command` | undecided; see the scope notes below |
 
-Recorded exception: a signature dictated by a third-party trait or macro
-
-contract keeps the types that contract requires. There are two.
+Recorded exception: a signature dictated by a third-party trait or macro keeps the types that contract requires. The shared `Storage<T>` contract likewise requires `StorageError` for storage operations. The two third-party signatures are below.
 
 `sc_command::IntoMcp::into_mcp` returns
 
@@ -5073,7 +5056,7 @@ Neither is an error the crate itself originates.
 
 **MUST statements:**
 
-- Every public operation that can fail with an error the crate itself originates MUST return `Result<T, E>`, where `E` is a typed error enum owned by that crate, with one enum per crate: (see table above)
+- Except for a signature dictated by a third-party trait or macro, or by the shared `Storage<T>` contract, every public operation that can fail with an error the crate itself originates MUST return `Result<T, E>`, where `E` is a typed error enum owned by that crate, with one enum per crate.
 - When a service function returns an error and that error crosses a process boundary (daemon to CLI, daemon to MCP client), it MUST be an `OpError` from `sc-command` inside the response envelope, carrying a stable `code` and the other keys defined by [REQ-CMD-0002](sc-command/requirements.md).
 
 **MUST NOT statements:**
@@ -5092,8 +5075,8 @@ Neither is an error the crate itself originates.
 These crates run inside long-lived daemons and inside CLIs driven by agents.
 A panic in a daemon is an outage. A panic in a CLI is a failure no agent can
 parse or recover from, where a typed error with a code and a suggested action
-lets it branch. One owner for the rule keeps the four crates from drifting
-into four different lists of banned constructs.
+lets it branch. One owner for the rule keeps the nine Phase D crates from drifting
+into different lists of banned constructs.
 
 ### Success Criteria
 
@@ -5114,7 +5097,7 @@ into four different lists of banned constructs.
    `IntoResponse` implementation. Once the `sc-command` enum question above
    is decided: any other fallible public function returns that enum, or none
    exists.
-5. In all four crates no public signature names `anyhow::Error` or
+5. In all nine Phase D crates no public signature names `anyhow::Error` or
    `Box<dyn Error>`
    (`grep -rn "anyhow::Error\|Box<dyn .*Error" crates/*/src` prints no line
    in a `pub` signature).
@@ -5128,6 +5111,8 @@ into four different lists of banned constructs.
    [NFR-CMD-0003](sc-command/requirements.md),
    [NFR-RT-0004](sc-runtime/requirements.md)) references this item and does
    not restate a different list of banned constructs or a weaker rule.
+
+8. Inspect public fallible storage operations in `sc-storage` and the SQLite `Storage<T>` implementation: they return the typed `StorageError` required by the shared contract. Inspect the public APIs of all nine Phase D crates for typed errors and the no-panic rule.
 
 ### Implementation Notes
 
