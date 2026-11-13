@@ -181,6 +181,8 @@ equality, so key order is irrelevant.
 
 ### Requirement Statement
 
+Definitions: Silent restructuring means changing the document shape implicitly during the override key-path walk instead of applying the stated replacement or error rule.
+
 This item covers the environment layer of the `sc-config` crate
 (`crates/sc-config`). The design fixes only that JSON config files have
 environment-variable overrides. The naming scheme, the value parsing and the

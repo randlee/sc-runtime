@@ -14,6 +14,8 @@ existing no-product-API rule. It is not an ATM implementation or dependency.
 
 ### Requirement Statement
 
+Definitions: DTO means data transfer object; JSON means JavaScript Object Notation; CLI means command-line interface; MCP means Model Context Protocol; HTTP means Hypertext Transfer Protocol; SQL means Structured Query Language; ATM means agent-team-mail. A strict version-1 DTO is the request representation whose version and fields are validated before writes. Envelope and OpError are the existing sc-command result and error types. A Monty target runs the optional Monty interpreter; Rust targets use the application Job or dispatcher. Opaque payload/environment are the application JSON data and hook-environment configuration carried by the request. Bounded timeout uses the core RunTimeout type and its existing maximum, MAX_TIMEOUT of 24 hours. List continuation is ascending stable row-id pagination with a positive capped result limit and active/ended/all selection. A cursor is the prior page's exclusive row-id continuation value. Overflow means a numeric value not representable by its declared field type. An unsupported target is a target unavailable in the selected build or application bindings. Core-derived limits are the existing scheduler input limits frozen by the contract sprint. Value-free error mapping uses stable typed codes rather than raw SQL, environment, source or payload. Sensitive read fields are hook source, environment and payload. A serialized function would carry executable Rust function data in a request; a job catalog would add another job registration system. The five-field grammar is the ordinary cron syntax; supported aliases remain accepted.
+
 Provide `cron.start`, `cron.end` and `cron.list` through strict version-1 JSON
 DTOs and existing sc-command Envelope/OpError. CLI, REST and MCP projections
 use the same request, typed result and namespaced error codes. Start selects
@@ -55,7 +57,8 @@ application projection explicitly exposes them.
 - List views MUST expose id.
 - List views MUST expose generation.
 - List views MUST expose state.
-- Unknown or duplicate fields MUST be rejected before writes.
+- Unknown fields MUST be rejected before writes.
+- Duplicate fields MUST be rejected before writes.
 - Invalid version MUST be rejected before writes.
 - Invalid generation MUST be rejected before writes.
 - Invalid limits MUST be rejected before writes.
@@ -68,7 +71,8 @@ application projection explicitly exposes them.
 
 **MUST NOT statements:**
 
-- The command contract MUST NOT add a serialized function or new job catalog.
+- The command contract MUST NOT add a serialized function.
+- The command contract MUST NOT add a new job catalog.
 - Diagnostics MUST NOT expose raw SQL.
 - Diagnostics MUST NOT expose environment values.
 - Diagnostics MUST NOT expose source code.
@@ -103,7 +107,7 @@ Phase C target, planned and unimplemented.
 
 ### Requirement Statement
 
-Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build.
+Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces.
 
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
@@ -192,7 +196,7 @@ C-5 implements operations for real Scheduler; c-6 implements the executor with d
 
 ### Requirement Statement
 
-Definitions: Monty is the pydantic interpreter stack, including sc-monty, monty and monty-types. Axum is the Rust HTTP framework supplied by the axum crate.
+Definitions: Monty is the pydantic interpreter stack, including sc-monty, monty and monty-types. Axum is the Rust HTTP framework supplied by the axum crate. DTO means data transfer object. RMCP is the rmcp Model Context Protocol crate. CLI means command-line interface. DTO-only defaults are the adapter request/response types with scheduler and schema disabled. Selected daemon/service projections are the generated server interfaces using those DTOs. Owner-local schema implementations live in the crate owning Envelope<T>, OpError or ErrorKind. A foreign orphan implementation would implement a trait for a type both owned by other crates. A second wire DTO would duplicate the canonical command representation. A generic schema substitute describes a generic JSON value instead of the typed canonical request/response family. The approved scheduler/async edges are those frozen by the Phase C contract for the non-default scheduler feature, preserving its separately selected Monty capability. A dependency edge is a Cargo dependency from one named crate to another.
 
 DTO-only defaults depend on serde/serde_json and defaults-off sc-command;
 exclude cron, SQLite, Tokio, Monty, clap, Axum, RMCP and command/server. The

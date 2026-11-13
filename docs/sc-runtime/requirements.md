@@ -158,7 +158,7 @@ with default features. `DaemonConfig` embeds that type.
 
 - The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that assembles and runs a daemon.
 - It MUST implement `serde::Deserialize`.
-- `run()` MUST perform exactly the five numbered startup steps below in their listed order.
+- `run()` MUST perform exactly the five numbered startup steps above in their listed order.
 - If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT execute any later step.
 
 **MUST NOT statements:**
@@ -216,7 +216,7 @@ last so no request is accepted before it can be served.
 
 ### Requirement Statement
 
-Definitions: OS means operating system. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory.
+Definitions: OS means operating system. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory. A daemon is one running application server process. When the daemon.lock acquisition fails because another daemon holds it, the stores closure is not called and no listener is bound.
 
 `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). Tests supply a tempdir as the explicit path.
 
@@ -383,11 +383,13 @@ MCP is reachable only as `/mcp` on the one router.
 - In step 4 of `run()` (after the lock is held and the stores closure has returned, before anything is bound), `sc-runtime` MUST build one `axum::Router` containing the following. (see table above)
 - The routes closure MUST return a `utoipa_axum::OpenApiRouter`.
 - The OpenAPI document served MUST be the one generated from the project's route registrations.
-- `sc-runtime` MUST mount the project's router as given, with no wrapping in its own types.
-- `sc-runtime` MUST mount the rmcp service as given, with no wrapping in its own types.
+- `sc-runtime` MUST mount the project's router as given.
+- `sc-runtime` MUST mount the rmcp service as given.
 
 **MUST NOT statements:**
 
+- `sc-runtime` MUST NOT wrap that router in its own types.
+- `sc-runtime` MUST NOT wrap that service in its own types.
 - `sc-runtime` MUST NOT define its own router type.
 - `sc-runtime` MUST NOT require the project to register the document route itself.
 - `sc-runtime` MUST NOT add an MCP session store.
@@ -536,7 +538,7 @@ contract. Ctrl-Break is selected for Phase C; implementation is planned.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. API means application programming interface.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. API means application programming interface. The stores closure is the application-supplied async function passed to Daemon::builder().stores(...) that opens and returns its Stores value.
 
 The name is illustrative until the contract sprint pins it.
 
@@ -747,7 +749,7 @@ caller needs a variant to branch on and not a string to parse.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The additional listeners referred to by "them" are the additional endpoints reserved for a later dual-bind, absent from v0.1.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The methods referred to by "them" are instance-root resolution and endpoint resolution. The builder is Daemon::builder. The methods referred to by "them" would be methods for instance-root resolution or endpoint resolution, which stay in sc-transport.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that

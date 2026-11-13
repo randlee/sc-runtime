@@ -105,6 +105,8 @@ ADR-RUN-0012 copies the measured atm-core path: one rusqlite connection on one t
 
 ### Requirement Statement
 
+Definitions: execute is the writer call submitting one SQLite write operation. The first and second concurrent calls are ordered by their admission into the single writer queue.
+
 A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed.
 
 **MUST statements:**

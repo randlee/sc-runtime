@@ -157,7 +157,7 @@ sides agree on the shape at compile time.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation.
 
 2026-10-31 amendment: ADR-RUN-0017 temporarily replaces the caret-only
 types requirement below with exact registry `=1.5.0`. OpError wire fields and
@@ -812,7 +812,7 @@ error code and remediation types are defined there
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record.
+Definitions: HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. HTTP means Hypertext Transfer Protocol. ENVELOPE.SERIALIZATION is the stable error-code string identifying envelope serialization failure. T is the value type being serialized by the conversion.
 
 2026-10-31 explicit exception: ADR-RUN-0017 allows only the fixed
 `ServiceName::new("noop")` invariant under exact inspected types 1.5.0,

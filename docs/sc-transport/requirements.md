@@ -43,7 +43,7 @@ pair, not only sc-runtime ones.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint.
 
 In the crate's public-surface sketch these are `Endpoint::Uds(PathBuf)` and `Endpoint::Tcp(SocketAddr)`, produced by `resolve_endpoint(...)`.
 
@@ -306,6 +306,8 @@ returns `TransportError::UnsupportedEndpoint`
 (`TRANSPORT.UNSUPPORTED_ENDPOINT`). Recovery tells the caller to use a
 `tcp:` endpoint. The parent directory is not created.
 
+v0.1 `TransportConfig` describes exactly one endpoint.
+
 **MUST statements:**
 
 - When the cargo feature `server` of the crate `sc-transport` is enabled, the crate MUST expose a public function that takes a resolved endpoint (a UDS path or a TCP socket address) and returns a bound listener.
@@ -313,7 +315,8 @@ returns `TransportError::UnsupportedEndpoint`
 - For a UDS endpoint the function MUST bind a Unix domain socket at the given path.
 - For a TCP endpoint the function MUST bind the given socket address.
 - When the TCP port is `0` the listener MUST let the caller read the actual bound address.
-- One process MUST be able to hold a UDS listener and a TCP listener from this same time and serve the same router on both. v0.1 `TransportConfig` describes exactly one endpoint.
+- One process MUST be able to hold a UDS listener and a TCP listener at the same time.
+- That process MUST be able to serve the same router on both listeners.
 - A bind failure (for example the address is in use, or the directory does not exist) MUST be returned as an `Err` of the crate's error enum `TransportError`.
 
 **MUST NOT statements:**
@@ -325,7 +328,8 @@ returns `TransportError::UnsupportedEndpoint`
 - Its handlers MUST NOT need a type parameter that depends on whether the listener is UDS or TCP.
 - Its handlers MUST NOT need a wrapper that depends on whether the listener is UDS or TCP.
 - The function MUST NOT panic.
-- The function and the listener type MUST NOT exist in a build without the `server` feature.
+- The function MUST NOT exist in a build without the `server` feature.
+- The listener type MUST NOT exist in a build without the `server` feature.
 
 ### Rationale
 
@@ -410,7 +414,8 @@ a socket, `bind` returns `TransportError::NotASocket`
 
 - Failure to acquire it is a typed bind error and MUST NOT inspect, remove, or replace the socket file.
 - It MUST NOT fail with "address in use" merely because a socket file was left by a process that no longer holds the endpoint lock.
-- It MUST NOT use a connect probe or process check to infer liveness.
+- The listener MUST NOT use a connect probe to infer liveness.
+- The listener MUST NOT use a process check to infer liveness.
 - A failed competing bind or its cleanup MUST NOT remove another listener's socket.
 
 ### Rationale
@@ -454,7 +459,7 @@ instance roots may resolve to the same overridden socket path.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. SC_ENDPOINT is the environment variable carrying endpoint text. An instance root is the per-application, per-user directory for daemon run-time files.
 
 In the design sketch it is used as:
 
@@ -568,7 +573,8 @@ records the same table as the decision for `DaemonNotRunning`.
 
 - The error enum `TransportError` of the crate `sc-transport` MUST have a variant `DaemonNotRunning`.
 - The client ([REQ-TRN-0005](requirements.md): `Client::new`, `get`, `post`) MUST return `TransportError::DaemonNotRunning` from the first `get` or `post` when it cannot open a connection to the endpoint for one of these reasons: the UDS socket file does not exist; the UDS socket file exists but nothing is listening (connection refused); the TCP connection is refused.
-- `DaemonNotRunning` MUST carry `code: &'static str` with value exactly `DAEMON.NOT_RUNNING`.
+- `DaemonNotRunning` MUST carry a `code` field of type `&'static str`.
+- The `DaemonNotRunning.code` value MUST be exactly `DAEMON.NOT_RUNNING`.
 - `DaemonNotRunning` MUST carry the endpoint.
 - `DaemonNotRunning` MUST carry the cause.
 - A response body that cannot be deserialised into the requested type MUST produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`), which carries the HTTP status, the cause, and `body_preview` (a lossy UTF-8 prefix of at most 512 bytes of the body).

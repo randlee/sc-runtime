@@ -156,10 +156,10 @@ The files in `template/` contain `cargo-generate` placeholders and do not compil
 - The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.
 - The workspace members MUST be exactly these library crates. (see table above)
 - The repository root MUST also contain the directories and files in the path table above.
-- None of the directories and files in the path table MUST be a workspace member.
 
 **MUST NOT statements:**
 
+- Each directory and file in the path table MUST NOT be a workspace member.
 - `template/` MUST NOT be a workspace member.
 - `template/` MUST NOT be matched by a workspace `members` glob.
 - The repository MUST NOT contain the sc-runtime design's unused `docs/adr/` directory.
@@ -212,7 +212,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: Correct package metadata identifies the public crate itself: its name, version, description, MIT license, repository and README. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick.
+Definitions: Correct package metadata identifies the public crate itself: its name, version, description, MIT license, repository and README. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -229,7 +229,8 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST be independently publishable to crates.io.
 - Every published crate MUST declare the MIT license.
 - The repository LICENSE file MUST contain the MIT license text.
-- sc-config and sc-transport MUST remain usable without the other SDK crates or generated template.
+- `sc-config` MUST remain usable without the other SDK crates or generated template.
+- `sc-transport` MUST remain usable without the other SDK crates or generated template.
 - sc-command MUST remain usable without sc-runtime, sc-config, sc-transport or the generated template.
 - sc-storage MUST use only the Rust standard library.
 - sc-monty production dependencies MUST be limited to pydantic Monty crates.
@@ -347,7 +348,7 @@ every project. Everyone who owns a generated project is affected.
 
 ### Requirement Statement
 
-Definitions: SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below.
+Definitions: SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.
 
 That is the name `sc-lint init --just` writes. The first line stays the sc-lint init header.
 
@@ -389,7 +390,9 @@ sprint.
 
 **MUST statements:**
 
-- The file `Justfile` (capital J) at the root of the `randlee/sc-runtime` repository MUST define these three recipes. (see table above)
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `lint` with its table-specified behavior.
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `test` with its table-specified behavior.
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `new <dest>` with its table-specified behavior.
 - `just test` MUST run all of these.
 - Decided in this document: every job in `.github/workflows/` that lints, tests or generates MUST do so by calling one of these recipes, not by calling `cargo`, `python` or a lint tool directly.
 - A workflow file under `.github/workflows/` (the crate CI workflow) MUST run `just lint` and `just test` at the repository root on every pull request.
@@ -595,7 +598,7 @@ built in parallel without touching each other.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language.
+Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API.
 
 `examples/spike` in the `randlee/sc-runtime` repository is a throwaway proof,
 built before any of the four library crates exists, so it uses the third-party
@@ -680,7 +683,7 @@ four crates and a template are built on the assumption.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. ADR means architecture decision record.
+Definitions: MCP means Model Context Protocol. ADR means architecture decision record. MCP means Model Context Protocol. A surface snapshot is the tools/list dump formerly proposed as the fifth verification fact. Snapshot tooling is not part of this repository.
 
 The sc-runtime design relies on four facts it has not verified.
 
@@ -728,7 +731,8 @@ not used.
 
 **MUST statements:**
 
-- The spike sprint, named sprint a-1 (the work in `examples/spike` plus a scratch `cargo-generate` template), MUST record evidence answering row V1 as true or as false together with what was found instead.
+- For evidence row V1, the spike sprint a-1 MUST record whether the row is true.
+- If row V1 is false, sprint a-1 MUST record what was found instead.
 - For evidence row V2, the spike sprint a-1 MUST record whether the row is true.
 - If row V2 is false, sprint a-1 MUST record what was found instead.
 - For evidence row V3a, the spike sprint a-1 MUST record whether the row is true.
@@ -739,9 +743,13 @@ not used.
 - If row V4a is false, sprint a-1 MUST record what was found instead.
 - For evidence row V4b, the spike sprint a-1 MUST record whether the row is true.
 - If row V4b is false, sprint a-1 MUST record what was found instead.
-- A fifth fact once listed for verification, how to dump MCP `tools/list` for surface snapshots, MUST be recorded as closed without investigation, because snapshot tooling is not part of this repository.
+- The former fifth verification fact, how to dump MCP `tools/list` for surface snapshots, MUST be recorded as closed.
 - The spike sprint MUST also record the exact version used for each of `axum`, `utoipa`, `utoipa-axum`, `rmcp`, `sqlx`, `reqwest` and `cargo-generate`.
 - All evidence and version pins MUST be written into `docs/architecture.md`.
+
+**MUST NOT statements:**
+
+- That former fifth fact MUST NOT be investigated.
 
 ### Rationale
 
@@ -844,7 +852,7 @@ second example that nobody maintains.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. A store crate is a generated engine-specific crate containing that database engine's SQL; only the service function calls it.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -1008,7 +1016,7 @@ NFR-RUN-0001 owns the rule that a CLI links no daemon-side dependency. The reusa
 - The `cli` crate MUST NOT have any generated `store-*` crate among its normal (non-dev) dependencies.
 - The `cli` crate MUST NOT have any generated `service` crate among its normal (non-dev) dependencies.
 - Report-only commands MUST NOT start the daemon.
-- The reusable transport client MUST NOT spawn a daemon.
+- The reusable transport client MUST NOT spawn any process.
 - The reusable transport client MUST NOT retry for readiness.
 - Decided in this document: any other transport failure (a timeout, a response body that cannot be decoded) MUST NOT be reported as `DAEMON.NOT_RUNNING`.
 - A response that arrives with a non-2xx HTTP status proves a daemon is running, so it MUST NOT be reported as `DAEMON.NOT_RUNNING` either; how the `sc-transport` client presents a non-2xx response is OPEN in [REQ-TRN-0006](sc-transport/requirements.md).
@@ -1165,6 +1173,7 @@ excluded from the root workspace.
 **MUST statements:**
 
 - After the rewrite, the `main.rs` of the spike's server binary MUST be under 30 lines, that is 29 lines or fewer.
+- That `main.rs` MUST itself contain the whole start-up sequence.
 - That `main.rs` MUST itself contain the configuration loading with `sc-config`.
 - That `main.rs` MUST itself contain the whole `sc_runtime::Daemon::builder(...)` call chain with `.stores(...)`, `.routes(...)`, `.mcp(...)` and `.run().await`.
 - That `main.rs` MUST itself turn the result into the process exit code.
@@ -1281,7 +1290,7 @@ it prefers, without this project choosing one.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition.
 
 Decided by the owner on 2026-09-20. The sc-runtime design document records
 report-only as the default and leaves auto-start undecided; this item
@@ -1303,6 +1312,8 @@ explicitly supplied path; its default location is undecided
 
 The daemon.lock singleton (REQ-RT-0002) decides the winner.
 
+Auto-start starts a real daemon process.
+
 **MUST statements:**
 
 - Auto-start MUST be the default.
@@ -1315,20 +1326,23 @@ The daemon.lock singleton (REQ-RT-0002) decides the winner.
 - The started daemon process MUST use the standard output a launchd launch gives it rather than the CLI process's standard output.
 - The started daemon process MUST use the standard error a launchd launch gives it rather than the CLI process's standard error.
 - The started daemon process MUST use the session a launchd launch gives it rather than the CLI process's session.
-- Its arguments MUST be the service definition's arguments, plus only the explicit values obligation 4 adds.
+- Its arguments MUST be the service definition's arguments plus only the explicit values the daemon needs from the CLI invocation (ADR-RUN-0202 point 4).
 - The daemon's startup directory (its working directory when it starts) MUST always be the same directory, whoever starts it and from wherever, including launchd starts, CLI starts and every CLI invocation directory.
 - Every value the daemon needs from the CLI's invocation MUST be passed explicitly and visibly, never through inherited environment.
 - In particular, an endpoint or instance root that the CLI resolved from `--endpoint` or from `SC_ENDPOINT` in its own environment ([REQ-RUN-0310](requirements.md)) MUST reach the daemon as an explicit argument or configuration value; otherwise the daemon, which does not see the CLI's `SC_ENDPOINT`, would bind somewhere else and the CLI would never reach it.
 - The daemon MUST outlive the CLI command that started it.
 - Two CLI commands that auto-start at the same time MUST end with exactly one daemon.
-- When auto-start is disabled, or when the daemon the CLI started does not become reachable, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as [REQ-RUN-0202](requirements.md) states, and MUST NOT retry without bound.
+- When auto-start is disabled, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as REQ-RUN-0202 states.
+- When the daemon the CLI started does not become reachable, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as REQ-RUN-0202 states.
 - The CLI MUST still have no direct-database mode (REQ-RUN-0202).
 - Starting the daemon MUST remain the only action the CLI takes about a missing daemon.
-- Auto-start starts a real daemon process, so the tests of this item MUST run only on an isolated machine, a virtual machine or an ephemeral CI runner, and never on a developer's host ([NFR-RUN-0010](requirements.md)).
+- Tests of this item MUST run only on an isolated machine, a virtual machine or an ephemeral CI runner (NFR-RUN-0010).
 - The CLI whose daemon lost MUST connect to the daemon that won.
 
 **MUST NOT statements:**
 
+- In either case, the CLI MUST NOT retry indefinitely.
+- Tests of this item MUST NOT run on a developer's host.
 - The daemon MUST NOT be stopped by the CLI process exiting.
 - The daemon MUST NOT be stopped by its terminal closing.
 - It MUST NOT be the CLI's current directory.
@@ -1706,7 +1720,9 @@ REQ-RUN-0201 states the rule in full: one service function is the only path to S
 - `widget.create` MUST be wired through the REST surface in the table above.
 - `widget.create` MUST be wired through the MCP surface in the table above.
 - `widget.create` MUST be wired through the CLI surface in the table above.
-- `widget.get` MUST be wired through all three surfaces in the table above.
+- `widget.get` MUST be wired through the REST surface in the table above.
+- `widget.get` MUST be wired through the MCP surface in the table above.
+- `widget.get` MUST be wired through the CLI surface in the table above.
 - Every handler MUST call the service function.
 - Every handler MUST contain no SQL.
 - Every tool MUST call the service function.
@@ -2008,7 +2024,7 @@ each tool does the job it is built for and no render engine is written here.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py.
+Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py. This path means direct cargo generate from the template/ tree, without scripts/new_project.py or Wyvern. sc-compose is the agent-document renderer used by the driver, not by the direct cargo-generate path. The command referred to here is cargo generate --git https://github.com/randlee/sc-runtime template --name <project>. Files that exist only for this path are files maintained exclusively for direct generation rather than shared with the driver's template tree.
 
 The normal way to generate a project is `just new <dest>`, which runs the
 driver `scripts/new_project.py` and, by default, the Wyvern wizard. This
@@ -2034,7 +2050,8 @@ on cargo-generate 0.25.1. The syntax and pin are in Active
 
 **MUST statements:**
 
-- This command MUST generate a project, with `cargo-generate` prompting in the terminal for each option:
+- The direct cargo generate command below MUST generate a project.
+- That command MUST prompt in the terminal for each option.
 - Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.
 - Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.
 - The template tree MUST be the same one the driver uses.
@@ -2565,7 +2582,7 @@ tested in `sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface.
+Definitions: CLI means command-line interface. Plain language is the human-readable guidance about the five numbered topics below, rather than a VM definition, configuration or provisioning script.
 
 Decided by the owner on 2026-09-20. This applies to the `AGENTS.md` and
 `CLAUDE.md` files of a project generated from `template/`, which are rendered
@@ -2598,7 +2615,7 @@ The rule itself is stated in full by NFR-RUN-0010; this item requires that it re
 
 **MUST statements:**
 
-- Both rendered documents MUST state all the guidance listed below in plain language.
+- Both rendered documents MUST state all the guidance listed above in plain language.
 
 **MUST NOT statements:**
 
@@ -2830,7 +2847,7 @@ The local copy gives faster or offline access. Owner, 2026-10-25 (ADR-RUN-0305):
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The layout's engine is the selected remote SQL engine, Postgres or MySQL. sqlx is the Rust SQL access crate used for those remote engines.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -2842,7 +2859,7 @@ The host-aggregate adaptor is one SQLite database for this host and a Postgres d
 
 - The host-aggregate adaptor uses one SQLite database for this host.
 - The host-aggregate adaptor uses a Postgres database that aggregates many hosts.
-- The same shape uses MySQL when MySQL is the layout's one sqlx engine.
+- When MySQL is the layout's remote sqlx engine, the host-aggregate adaptor uses one MySQL database aggregating the hosts' SQLite databases.
 
 ### Rationale
 
@@ -2861,7 +2878,7 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database;
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The same function shape means the application-owned rollup mapping host-row inputs into aggregate-row outputs for the selected remote engine.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -2959,7 +2976,7 @@ The framework instantiates; each project wires. Published crates own daemon life
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. Generation flags are project-generation inputs naming tables or columns absent from one side of the two-store layout. A skipped table is a table present on only one of the two stores.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -2971,8 +2988,8 @@ Generation flags name tables and columns that exist on only one of the two store
 
 - Generation flags name tables that exist on only one of the two stores.
 - Generation flags name columns that exist on only one of the two stores.
-- A skipped table may be the SQLite table.
-- A skipped table may be the SQL-server table.
+- Generation flags MUST permit naming a table present only on the SQLite side.
+- Generation flags MUST permit naming a table present only on the SQL-server side.
 
 ### Rationale
 
@@ -3046,7 +3063,7 @@ A query written for both engines is forbidden by ADR-RUN-0301 point 4. One SQL s
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. Store building blocks are the engine-specific store crates and their SQL operations available to the consuming application.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -3134,7 +3151,7 @@ A cache moves rows between the two stores. Store-to-store cache sync inside the 
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The sc-runtime crates are the framework library crates in this repository, distinct from the application-owned adaptor.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -3184,7 +3201,12 @@ Phase b's existing pairing/adaptor code is historical implementation, retained a
 
 **MUST statements:**
 
-- The generation options MUST accept each of the six layouts in the table below.
+- The generation options MUST accept the `no database` layout from the table above.
+- The generation options MUST accept the `SQLite only` layout from the table above.
+- The generation options MUST accept the `Postgres only` layout from the table above.
+- The generation options MUST accept the `MySQL only` layout from the table above.
+- The generation options MUST accept the `SQLite and Postgres` layout from the table above.
+- The generation options MUST accept the `SQLite and MySQL` layout from the table above.
 - Generating a layout MUST render the stores in its table row.
 - A no-database layout MUST render no store crate.
 - Postgres stores MUST use sqlx.
@@ -3212,7 +3234,7 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates similar schemas, including tables or columns that exist on only one side; these examples do not restrict all possible schema differences.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
@@ -3323,7 +3345,7 @@ Owner, 2026-10-25 (ADR-RUN-0305): the storage plan is a generated adaptor in the
 
 ### Requirement Statement
 
-Definitions: A database layout is the selected combination of SQLite, Postgres and MySQL stores; the no-database layout selects none. General database commands are the disableable bootstrap command surface, including delete row <table> <id>.
+Definitions: A database layout is the selected combination of SQLite, Postgres and MySQL stores; the no-database layout selects none. General database commands are the disableable bootstrap command surface, including delete row <table> <id>. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. A backend operation is the single service/storage operation shared by the CLI command, MCP tool and HTTP route.
 
 The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
 
@@ -4204,7 +4226,7 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 **MUST statements:**
 
 - A GitHub Actions workflow under `.github/workflows/` in this repository MUST test the template by generating real projects.
-- For every complete answers file matching `wizard/fixtures/*.json`, the workflow MUST run the commands below in their listed order.
+- For every file matching `wizard/fixtures/*.json`, the workflow MUST run the preceding numbered commands in their listed order.
 - For every fixture, the workflow MUST fail when any listed command exits non-zero.
 - Each fixture MUST be a separate matrix entry, so that one failing variant is reported by its fixture name.
 - The list of fixtures MUST be derived from the files present in `wizard/fixtures/`.
@@ -4389,8 +4411,8 @@ is the sprint a-1 evidence record in `docs/architecture.md`.
 **MUST NOT statements:**
 
 - A command-line client built on these crates MUST NOT have `axum`, `rmcp` or `sqlx` anywhere in its normal dependency graph, directly or transitively.
-- The generated `cli` crate MUST NOT enable the `server` feature of `sc-transport`.
-- The generated `cli` crate MUST NOT enable the `server` feature of `sc-command`.
+- A command-line client built on these crates MUST NOT enable the `server` feature of `sc-transport`.
+- A command-line client built on these crates MUST NOT enable the `server` feature of `sc-command`.
 - The generated `cli` crate MUST NOT have a normal dependency on the `sc-runtime` crate.
 - The generated `cli` crate MUST NOT have a normal dependency on the `service` crate.
 - The generated `cli` crate MUST NOT have a normal dependency on the `daemon` crate.
@@ -4841,7 +4863,7 @@ as `^3.7` and which admits 3.8) and `"*"` are not.
 
 Sprint a-1 recorded that series as 3.7. The only spike manifest that names `rmcp` uses `~3.7` and resolves `rmcp` 3.7.0. a-6 and a-7 verify later manifests against 3.7. They do not choose a second series.
 
-The template CI fixture matrix generates a project per answers fixture and runs `just lint` and `just test` in it.
+
 
 **MUST statements:**
 
