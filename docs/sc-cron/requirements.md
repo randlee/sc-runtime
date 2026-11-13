@@ -642,7 +642,7 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 - The sc_compose_run adapter MUST use the same resolved environment snapshot.
 - The atm_run adapter MUST receive the resolved environment snapshot of its occurrence.
 - In SQLite schema version 1, a schedule row inserted without a `hook_environment` value MUST read back `hook_environment` as `{"dotenv":[],"variables":{}}`.
-- `SqliteScheduleStore::open` on a database whose sc-cron schedule table fails the schema version 1 semantic check MUST return `StoreErrorKind::SchemaMismatch`.
+- Opening an existing sc-cron SQLite table that fails the schema version 1 semantic check MUST return an error.
 - The error code for a dotenv file that contains a duplicate name MUST be `ENV_FILE_INVALID`.
 - The error code for a dotenv file that contains NUL MUST be `ENV_FILE_INVALID`.
 - The error code for a dotenv value that contains a backtick MUST be `ENV_FILE_INVALID`.
