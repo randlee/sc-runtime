@@ -490,6 +490,8 @@ Definitions:
 - The serialization error is the `McpError` inside the `Err` that `into_mcp` returns on a serialization failure.
 - The required impl is an `impl` item of `IntoMcp` for `Result<T, OpError>` whose only bound on `T` is `serde::Serialize`.
 - A sealed supertrait is a trait declared in a private module of `crates/sc-command/src`, so code outside `sc-command` cannot name it.
+- This release is the `sc-command` release that this record governs; per PRD-ENG-7 the record binds that release and does not forbid a later release from adding another type.
+- A type implements `IntoMcp` when an `impl` item of `IntoMcp` names that type as its self type.
 
 **MUST statements:**
 
@@ -497,6 +499,7 @@ Definitions:
 - In `crates/sc-command/src`, the trait `IntoMcp` MUST declare exactly one method.
 - The signature of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST be the required signature.
 - A file in `crates/sc-command/src` MUST define the required impl.
+- In this release, `Result<T, OpError>` MUST be the only type that implements `IntoMcp`.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include `Sized`.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include a sealed supertrait.
 - The body of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST obtain the input envelope by calling `Envelope::<T>::from` on the input result.
@@ -504,6 +507,7 @@ Definitions:
 - The text of the output's text content item, parsed as JSON, MUST equal the envelope JSON.
 - The `structured_content` field of the output MUST equal the envelope JSON.
 - The `structured_content` field of the output MUST equal the HTTP body for the same input result.
+- When the `ok` key of the envelope JSON is `true`, the `is_error` field of the output MUST be `Some(false)`.
 - When the `ok` key of the envelope JSON is `false`, the `is_error` field of the output MUST be `Some(true)`.
 - On a serialization failure, `into_mcp` MUST return `Err`.
 - On a serialization failure, the `code` field of the serialization error MUST equal `rmcp::model::ErrorCode::INTERNAL_ERROR`.
@@ -515,8 +519,7 @@ Definitions:
 
 **MUST NOT statements:**
 
-- When the `ok` key of the envelope JSON is `true`, the `is_error` field of the output MUST NOT be `Some(true)`.
-- When the input result is `Err(OpError)` and no serialization failure occurs, `into_mcp` MUST NOT return `Err`.
+- When no serialization failure occurs, `into_mcp` MUST NOT return `Err`.
 - `IntoMcp::into_mcp` MUST NOT panic ([NFR-CMD-0003](requirements.md)).
 
 ### Rationale
