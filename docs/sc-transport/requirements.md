@@ -454,12 +454,12 @@ instance roots may resolve to the same overridden socket path.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. SC_ENDPOINT is the environment variable carrying endpoint text. An instance root is the per-application, per-user directory for daemon run-time files. Configuration means application settings from configuration files or environment variables; the caller resolves the endpoint before passing it to `Client::new`.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. SC_ENDPOINT is the environment variable carrying endpoint text. An instance root is the per-application, per-user directory for daemon run-time files. Configuration means application settings from configuration files or environment variables; the caller resolves the endpoint before passing it to `Client::new`. `Client` is the public HTTP client type of `sc-transport`. The client's endpoint is the endpoint given to `Client::new`. The default build is a build with no cargo features.
 
 In the design sketch it is used as:
 
@@ -490,13 +490,14 @@ The caller chooses `T`.
 
 **MUST statements:**
 
-- The crate `sc-transport` MUST expose, in its default build (no cargo features), a public HTTP client type.
+- The crate `sc-transport` MUST expose `Client`.
+- `Client` MUST be available in the default build.
 - `Client::new(endpoint)` MUST take only the endpoint argument (a UDS path or a TCP address).
-- It MUST build a `reqwest::Client` (reqwest 0.13).
-- For a UDS endpoint it MUST configure it with `reqwest::ClientBuilder::unix_socket(path)`.
-- For a TCP endpoint it MUST use the base URL `http://<ip>:<port>`.
-- `get(path)` MUST send an HTTP `GET` to `path` on that endpoint.
-- `post(path, &body)` MUST send an HTTP `POST` to `path` on that endpoint.
+- `Client::new` MUST build a `reqwest::Client` (reqwest 0.13).
+- For a UDS endpoint `Client::new` MUST configure the `reqwest::Client` with `reqwest::ClientBuilder::unix_socket(path)`.
+- For a TCP endpoint `Client` MUST use the base URL `http://<ip>:<port>`.
+- `get(path)` MUST send an HTTP `GET` to `path` on the client's endpoint.
+- `post(path, &body)` MUST send an HTTP `POST` to `path` on the client's endpoint.
 - That POST request MUST carry `body` serialised as JSON.
 - `post(path, &body)` MUST accept any `B: serde::Serialize` as the body type.
 - `get(path)` MUST be `async`.
