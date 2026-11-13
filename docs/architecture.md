@@ -3263,9 +3263,10 @@ Acceptance: made Active, or amended, by sprint a-1. Amended again 2026-10-26.
 - [sc-lint#640](https://github.com/randlee/sc-lint/issues/640): the `sc-lint-runtime` rules that retire the grep.
 ### Context
 
-[ADR-RUN-0007](architecture.md) already forbids blocking a Tokio worker on a request path. The calls that stall a worker, or that stretch the writer's 1 ms coalesce window out to the OS timer, are not rules in `sc-lint-runtime` 0.8.0. That analyzer ships `SCB-RUNTIME-001` and `SCB-RUNTIME-002` only.
+The problem is enforcing [ADR-RUN-0007](architecture.md)’s nonblocking request path while `sc-lint-runtime` 0.8.0 lacks the required checks. That release provides only `SCB-RUNTIME-001` and `SCB-RUNTIME-002`. Blocking a Tokio worker stalls requests; sleeps can stretch the writer’s 1 ms coalesce window to the operating-system timer.
 
-`std::thread::sleep`, `sleep_until`, `tokio::time::sleep`, and `block_on` are call names a grep can see. A `std::sync::Mutex` guard held across `.await` is a lifetime. A grep cannot see it. `clippy::await_holding_lock` can, and it is not part of `cargo clippy -D warnings`.
+Grep can detect the call names `std::thread::sleep`, `sleep_until`, `tokio::time::sleep` and `block_on`. Grep cannot determine whether a `std::sync::Mutex` guard remains live across `.await`. Guard lifetime needs a separate check: `clippy::await_holding_lock`, explicitly enabled alongside `cargo clippy -D warnings`.
+
 ### Decision
 
 1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`. **Amended 2026-11-11 (PRD-STO-3, PRD-ENG-1/2):** the sole `Runtime::block_on` exception is the runtime owned and driven on the SQLite writer's dedicated OS thread, as in atm-core. Reader threads receive with `blocking_recv` and need no exception. It must never run on a Tokio request worker or turn a caller's storage API into a blocking call; callers enqueue and await a reply. No other `block_on` variant or sleep exemption is introduced.
