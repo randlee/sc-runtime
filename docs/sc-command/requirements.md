@@ -159,7 +159,7 @@ sides agree on the shape at compile time.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006).
 
 Dependency requirement: `sc-command` declares registry `sc-observability-types`
 with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002, ANC-037).
@@ -222,13 +222,16 @@ application name. `endpoint` and `cause` are stored in `details`.
 
 The CLI parses errors it receives from the daemon. REQ-CMD-0006 depends on details returning arbitrary JSON unchanged.
 
+Example: an `OpError` built with the suggestion `run my-app daemon start` serialises with `"suggested_action": "run my-app daemon start"`.
+
 The tested minimum is 1.5.0.
 
 **MUST statements:**
 
-- The crate `sc-command` MUST export a public type `sc_command::OpError` from its crate root, available with default features.
-- `OpError` MUST carry exactly these five wire keys. (see table above)
-- It MUST serialise to a JSON object whose keys are drawn from exactly these five names and no others. (see table above)
+- The crate `sc-command` MUST export the public type `OpError` from its crate root.
+- `sc_command::OpError` MUST be available with default features.
+- `OpError` MUST serialise to a JSON object that has every one of the five wire keys.
+- `OpError` MUST serialise to a JSON object that has no key other than the five wire keys.
 - `OpError` MUST implement `serde::Serialize`.
 - `OpError` MUST implement `serde::Deserialize`.
 - `ErrorKind` MUST implement `serde::Serialize`.
@@ -244,10 +247,10 @@ The tested minimum is 1.5.0.
 - `OpError` MUST implement `std::error::Error`.
 - `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`.
 - `crates/sc-command/Cargo.toml` MUST declare `sc-observability-types` with the registry requirement `">=1.5.0"`.
-- When a suggestion is supplied, `suggested_action` MUST serialise as a JSON string equal to the text supplied: an `OpError` built with the suggestion `run my-app daemon start` serialises with `"suggested_action": "run my-app daemon start"`.
-- If `OpError` carries, or is built from, structured remediation, that structure MUST be `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
-- The type chosen for `details` MUST be able to hold arbitrary JSON.
-- Re-serialising `details` MUST return its JSON unchanged ([REQ-CMD-0006](requirements.md) depends on this).
+- When a suggestion is supplied, `suggested_action` MUST serialise as a JSON string equal to the text supplied.
+- A remediation value that `OpError` holds or is built from MUST be of type `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
+- The Rust type of the `details` field MUST be `Option<serde_json::Value>`.
+- Serialising the `details` field after deserialising it as part of `OpError` MUST produce an equal JSON value.
 
 **MUST NOT statements:**
 
