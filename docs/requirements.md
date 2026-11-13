@@ -301,7 +301,7 @@ Checkout validation MAY satisfy that requirement with the same `[patch.crates-io
 **MUST statements:**
 
 - When a `Cargo.toml` rendered into a generated project depends on one of the public crates, it MUST name that crate by a crates.io version requirement.
-- The Phase B continuation extends this requirement to the optional published crate `sc-cron`: when the generated daemon enables its optional `cron` feature, every rendered dependency on `sc-cron` MUST retain a crates.io version requirement.
+- When the generated project's `daemon` crate (`crates/daemon/Cargo.toml`) enables its optional `cron` feature, every rendered `Cargo.toml` that depends on `sc-cron` MUST name `sc-cron` by a crates.io version requirement.
 
 **MUST NOT statements:**
 
