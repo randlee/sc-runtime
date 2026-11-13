@@ -38,12 +38,12 @@ pair, not only sc-runtime ones.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint. A daemon binary is an application server executable. The endpoint resolver determines the Unix domain socket path or TCP socket address at which that daemon listens.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint. A daemon binary is an application server executable. The endpoint resolver determines the Unix domain socket path or TCP socket address at which that daemon listens. The explicit-input form is `resolve_endpoint`; the convenience form is `resolve_endpoint_from_env`. The source table is headed Order, Source, How the value reaches the resolver. The platform table is headed Platform, Default endpoint. An endpoint is an `Endpoint::Uds(PathBuf)` or `Endpoint::Tcp(SocketAddr)` value.
 
 In the crate's public-surface sketch these are `Endpoint::Uds(PathBuf)` and `Endpoint::Tcp(SocketAddr)`, produced by `resolve_endpoint(...)`.
 
@@ -112,11 +112,11 @@ not decide that.
 - A daemon binary MUST call that resolver to learn where the daemon listens.
 - A CLI binary MUST call that resolver to learn where the daemon listens.
 - The resolver's result MUST be one of exactly two cases: a Unix domain socket (UDS) path, or a TCP socket address.
-- The resolver MUST pick the first source below that supplies a value. (see table above)
+- The resolver MUST use the first source, in the order of the source table, that supplies a value.
 - The resolver MUST accept the `SC_ENDPOINT` value as an explicit input, so that a caller or a test can supply it without changing the process environment.
 - The convenience form MUST read the variable with `std::env::var_os("SC_ENDPOINT")`.
-- That form MUST then call the explicit-input form.
-- The platform default MUST be: (see table above)
+- The convenience form MUST then call the explicit-input form.
+- The platform default MUST be the default endpoint that the platform table gives for the running platform.
 - The endpoint and instance-root portion of a project's configuration MUST be one public type exported by `sc-transport` with default features.
 - That type MUST implement `serde::Deserialize`.
 - A source value that cannot be parsed as an endpoint MUST produce an `Err` of the crate's error enum `TransportError`.
@@ -125,8 +125,8 @@ not decide that.
 
 **MUST NOT statements:**
 
-- That form MUST NOT use `std::env::var`.
-- That form MUST NOT use `std::env::vars`.
+- The convenience form MUST NOT use `std::env::var`.
+- The convenience form MUST NOT use `std::env::vars`.
 - The crate MUST NOT contain a literal TCP port number that it uses as a default; TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)).
 - This follows from two other binding facts: the CLI and the daemon must give the resolver the same configuration value, and a CLI MUST NOT depend on `sc-runtime`, so it cannot name `sc_runtime::DaemonConfig`.
 - The resolver MUST NOT panic in that case.
