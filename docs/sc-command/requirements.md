@@ -42,9 +42,9 @@ uses it to parse the answer and to print it for `--json`.
 
 ### Requirement Statement
 
-Definitions: `sc-command` is the crate in `crates/sc-command`. A default-feature build enables the crate's default Cargo features. A JSON round trip serializes an envelope to JSON and deserializes it back. Envelope JSON equality tests check equality of the envelope's serialized JSON representation. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
+Definitions: `sc-command` is the crate in `crates/sc-command`. A default-feature build enables the crate's default Cargo features. The success case is the `Envelope::Success` variant and the failure case is the `Envelope::Failure` variant. A JSON round trip serializes an envelope to JSON and deserializes it back. An envelope JSON equality assertion is a test assertion in `crates/sc-command` that the JSON serializations of two envelopes are equal. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
 
-It is the sc-ai-cli response envelope: the one JSON shape every REST response, MCP tool result and CLI `--json` output uses.
+`Envelope<T>` is the sc-ai-cli response envelope: the one JSON shape every REST response, MCP tool result and CLI `--json` output uses.
 
 | Key | JSON value in the success case | JSON value in the failure case |
 |---|---|---|
@@ -57,15 +57,13 @@ It is the sc-ai-cli response envelope: the one JSON shape every REST response, M
 `message`, `details` and `suggested_action`
 ([REQ-CMD-0002](requirements.md)).
 
-Neither key is ever omitted. (Present-as-`null`, as opposed to omitted, is decided in this document; the design gives only the key list.)
+The `data` key and the `error` key are never omitted; a `null` value is serialised as a present key. (Decided in this document; the design gives only the key list.)
 
 Key order in the serialised object is not significant.
 
-A `data` of `null` therefore never by itself means "failure": for `T = ()` and for `T = Option<U>` a success envelope legitimately carries `data: null`. (Decided in this document; it follows from the round-trip obligation below, which could not otherwise hold for those `T`.)
+A `data` of `null` therefore never by itself means "failure": for `T = ()` and for `T = Option<U>` a success envelope legitimately carries `data: null`, for `Option<U>` with `None`. (Decided in this document; the round-trip obligations below could not otherwise hold for those `T`.)
 
-This includes `T = ()` and `T = Option<U>`, for both `Some` and `None`.
-
-(Decided in this document; the round-trip tests below need `PartialEq` and `Debug`. The same traits are required of `OpError` by [REQ-CMD-0002](requirements.md).)
+`Envelope<T>` implements `PartialEq` and `Debug` because the round-trip tests need them. (Decided in this document; [REQ-CMD-0002](requirements.md) requires the same traits of `OpError`.)
 
 The contract version is the JSON string `"1"`. Constructors stamp that
 value. Deserialization keeps the `version` string from the input, including
@@ -91,14 +89,14 @@ It drops `version`.
 
 **MUST statements:**
 
-- `sc-command` MUST expose the public generic type `sc_command::Envelope<T>` from its crate root when built with default features.
-- For every `T` implementing `serde::Serialize`, `Envelope<T>` MUST implement `serde::Serialize`.
-- For every `T` implementing `serde::de::DeserializeOwned`, `Envelope<T>` MUST implement `serde::Deserialize`.
+- With default features, the root module of `crates/sc-command` MUST export `Envelope<T>` as a public type.
+- For every `T: serde::Serialize`, `serde_json::to_value` called on a failure `Envelope<T>` MUST return `Ok`.
+- For every `T: serde::de::DeserializeOwned`, `serde_json::from_str::<sc_command::Envelope<T>>` called on a failure envelope JSON object with `version` `"1"` and a serialised `OpError` MUST return `Ok`.
 - The JSON object produced by serialising `Envelope<T>` MUST have a key set equal to the envelope key set.
-- In the success case the `error` key MUST be present with the value `null`.
-- In the failure case the `data` key MUST be present with the value `null`.
-- Tests checking equality of serialized envelopes MUST compare parsed JSON values.
-- Deserialisation MUST discriminate on the value of `ok`.
+- In the JSON object produced by serialising a success `Envelope<T>`, the `error` key MUST map to JSON `null`.
+- In the JSON object produced by serialising a failure `Envelope<T>`, the `data` key MUST map to JSON `null`.
+- Every envelope JSON equality assertion MUST compare `serde_json::Value` values.
+- The case of an `Envelope<T>` returned by `serde_json::from_str` MUST be determined by the JSON value of the `ok` key.
 - When `ok` is `true`, the envelope deserializer MUST deserialize `data` as `T` even when `data` is JSON `null`.
 - When deserialization of an envelope with `ok: true` succeeds, the resulting `Envelope<T>` MUST be the success case.
 - When `ok` is `false`, deserialization MUST deserialize the `error` value as `OpError`.
@@ -111,7 +109,7 @@ It drops `version`.
 
 **MUST NOT statements:**
 
-- Tests checking equality of serialized envelopes MUST NOT compare byte strings.
+- An envelope JSON equality assertion MUST NOT compare byte strings.
 
 ### Rationale
 
