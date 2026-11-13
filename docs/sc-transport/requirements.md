@@ -777,10 +777,12 @@ Standard crates used the documented way mean less code to own and review.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The forbidden crate table is the table in this Requirement Statement whose first column is headed Forbidden crate. A forbidden crate is a crate name in the first column of the forbidden crate table. A dependency table is the `[dependencies]`, `[dev-dependencies]` or `[build-dependencies]` table, or any `[target.*]` dependency table, of `crates/sc-transport/Cargo.toml`. A dependency table entry names a crate when the entry key or the entry `package` value is that crate name. The boundary manifest is the TOML file `boundaries/sc-transport/sc-transport.toml` read by `sc-lint-boundary`. The lint tree is the workspace that `sc-lint lint sc-boundary --root crates/sc-transport` reads.
 
 | Forbidden crate | What it is |
 |---|---|
@@ -793,43 +795,18 @@ Standard crates used the documented way mean less code to own and review.
 | `sc-storage` | shared typed storage contract |
 | `sc-monty` | shared Monty interpreter |
 | `sc-observability` | the SC logging and telemetry crate |
-| `sc-observability-otlp` | its OpenTelemetry export crate |
-| `sc-observability-types` | its error-code crate |
+| `sc-observability-otlp` | the OpenTelemetry export crate of `sc-observability` |
+| `sc-observability-types` | the error-code crate of `sc-observability` |
 
-The crate's boundary manifest under the repository directory
-`boundaries/sc-transport/` is a TOML file. Sprint a-3 lints it as a
-single-crate workspace (`sc-lint lint sc-boundary --root crates/sc-transport`).
-sc-lint 0.8.0 lists a `forbidden_edges` target only when that target is a
-workspace member of the lint tree, and it exits 3 for a name absent from
-the workspace and from the cargo resolve
-([REQ-RUN-0005](../requirements.md)). The root workspace includes
-`sc-runtime-db-sqlite`, so `boundaries/sc-transport/sc-transport.toml` lists
-`sc-transport -> sc-runtime-db-sqlite`. Other workspace-member edges from the
-table above are listed when those targets are members of the lint tree.
-Historically, `sc-cron` was absent during sprint `b-1`; Phase D membership
-follows REQ-RUN-0002, including the three shared/adapter packages above. Crates.io names stay on the `cargo tree` check:
-no line begins with `sc-config `, `sc-command `, `sc-runtime `,
-`sc-runtime-db-sqlite `, `sc-cron `, `sc-cron-commands `,
-`sc-storage `, `sc-monty `, `sc-observability `,
-`sc-observability-types `, or `sc-observability-otlp ` (each name followed
-by a space).
-
-`allowed_dependents` is `sc-runtime`. a-5 added that name once the
-four-crate workspace existed. Naming it before it was a workspace member
-would make sc-lint 0.8.0 exit 3.
-
-`allowed_dependencies` for the default build is `tokio`, `reqwest`, `serde`,
-and `serde_json`. `axum` is absent from that list because the manifest has no
-feature key; [NFR-TRN-0001](requirements.md) checks it with `cargo tree`.
-`sc-lint-boundary` checks inter-crate edges and the public facade list only.
+sc-lint 0.8.0 exits 3 for a `forbidden_edges` target absent from the lint tree ([REQ-RUN-0005](../requirements.md)), so the boundary manifest lists only forbidden crates that are lint-tree members; `cargo tree` checks every forbidden crate. `sc-lint-boundary` checks inter-crate edges and the public facade list only; [NFR-TRN-0001](requirements.md) checks `axum` with `cargo tree`.
 
 **MUST statements:**
 
-- The list is owned by [REQ-RUN-0005](../requirements.md), which states the workspace-internal and forbidden edges of the public package set in REQ-RUN-0002; this item applies it to `sc-transport` and MUST stay identical to it.
+- The forbidden crate table MUST contain the same set of crate names as the `sc-transport` row of the `forbidden_edges` column in [REQ-RUN-0005](../requirements.md), where each name is the target crate of a forbidden edge from `sc-transport`.
 
 **MUST NOT statements:**
 
-- `crates/sc-transport/Cargo.toml` MUST NOT list any of these crates under `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]` or any target-specific dependency table, with any feature set: (see table above)
+- `crates/sc-transport/Cargo.toml` MUST NOT contain a dependency table entry that names a forbidden crate.
 
 ### Rationale
 
