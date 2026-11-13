@@ -156,7 +156,7 @@ not a field. A project's CLI cannot name `DaemonConfig`, because the CLI does
 not depend on `sc-runtime`. It uses `TransportConfig` from `sc-transport`
 with default features. `DaemonConfig` embeds that type.
 
-Definitions: A startup step is one of the five numbered steps (1 to 5) listed in this requirement statement. The startup lock is the OS exclusive lock that step 2 takes on `<instance-root>/daemon.lock`. `DaemonBuilder` is the builder, returned by `Daemon::builder`, that assembles and runs a daemon. The Phase D `run()` is the `run()` method as delivered in Phase D, and the Phase D `DaemonBuilder` is `DaemonBuilder` as delivered in Phase D. A startup extension point is any hook, callback or configuration option: a builder method, a closure argument or a `DaemonConfig` field.
+Definitions: A startup step is one of the five numbered steps (1 to 5) listed in this requirement statement. The startup lock is the OS exclusive lock that step 2 takes on `<instance-root>/daemon.lock`. `DaemonBuilder` is the builder, returned by `Daemon::builder`, that assembles and runs a daemon. The Phase D `run()` is the `run()` method as delivered in Phase D, and the Phase D `DaemonBuilder` is `DaemonBuilder` as delivered in Phase D. A startup extension point is any hook, callback or configuration option: a builder method, a closure argument or a `DaemonConfig` field. The `serde::Deserialize` trait is the serde crate's trait for building a value from a serialised document such as JSON, as Success Criteria 7 uses it for `DaemonConfig`.
 
 **MUST statements:**
 
@@ -174,8 +174,8 @@ Definitions: A startup step is one of the five numbered steps (1 to 5) listed in
 - The Phase D `run()` MUST NOT perform any startup work other than the five startup steps.
 
 - `run()` MUST NOT read an environment variable to load configuration.
-- `run()` MUST NOT call the stores closure until step 2 has taken the startup lock.
-- `run()` MUST NOT bind a listener until steps 1 to 4 have succeeded.
+- Until step 2 has taken the startup lock, `run()` MUST NOT call the stores closure.
+- Until steps 1 to 4 have succeeded, `run()` MUST NOT bind a listener.
 - The Phase D `DaemonBuilder` MUST NOT offer a startup extension point that inserts work between two startup steps.
 - The Phase D `DaemonBuilder` MUST NOT offer a startup extension point that changes the order of the startup steps.
 
@@ -1264,6 +1264,7 @@ Definitions:
 - A failure outcome of a `pub` function or `pub` method is an error that code of its own crate detects, for example invalid caller input, a held lock, a missing directory, a port in use or a stores failure.
 - A typed error enum is the error enum that one crate returns from its `pub` functions and `pub` methods that have a failure outcome.
 - The own result type of a crate is `Result<T, E>`, or an alias of it, in which `T` is any success type and `E` is the typed error enum of that crate.
+- The declared return type of a function is the type written after `->` in its signature.
 - `RuntimeError` is the typed error enum of `sc-runtime` ([REQ-RT-0007](requirements.md)).
 - Test code is code under `#[cfg(test)]` or in `tests/`.
 - Covered code is every function body, other than test code, under `crates/<crate>/src` of a crate in the public package set that is a `pub` function of that set or that such a function calls directly or indirectly.
@@ -1278,7 +1279,7 @@ Applied to `sc-runtime`: no public function or method of `sc-runtime` panics on 
 **MUST statements:**
 
 - If a `pub` function or `pub` method of `sc-runtime` has a failure outcome, its declared return type MUST be `Result<T, RuntimeError>`.
-- If a `pub` function or `pub` method of a crate in the public package set has a failure outcome, its declared return type MUST be the own result type of that crate.
+- If a `pub` function or `pub` method of a crate in the public package set has a failure outcome, its declared return type MUST be the own result type of the crate that contains the function.
 
 **MUST NOT statements:**
 
@@ -1321,3 +1322,4 @@ The application owns canonical DTO validation and arbitrary JSON payload semanti
 runtime adds no global duplicate-key rule or command registry. Requests outside
 that path return None. This accessor is the only free function that NFR-RT-0001 allows in a build without `test-util`. Normal serde_json is unnecessary and remains outside NFR-RT-0003's
 exact dependency budget; JSON parsers used only in runtime tests are dev edges.
+

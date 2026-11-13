@@ -97,11 +97,11 @@ An independently packaged scheduler can be embedded without the generated templa
 
 ### Requirement Statement
 
-Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of five whitespace-separated fields in standard crontab order: minute, hour, day of month, month and day of week. The aliases and the six-field form of ADR-RUN-0013 point 2 stay valid; this record does not exclude them.
+Definitions: sc-cron is the cron policy crate in `crates/sc-cron`; it stores its jobs as `CronRow` rows. A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of five whitespace-separated fields in standard crontab order: minute, hour, day of month, month and day of week. The aliases and the six-field form of ADR-RUN-0013 point 2 stay valid; this record does not exclude them.
 
 **MUST statements:**
 
-- sc-cron MUST accept a normal crontab string as a schedule.
+- sc-cron MUST accept a crontab string of five whitespace-separated fields as a schedule.
 
 ### Rationale
 
@@ -111,16 +111,6 @@ The beads-cache expression parser refused a five-field string; a normal crontab 
 **Acceptance Criteria:**
 
 - [ ] `*/5 * * * *` means every fifth minute.
-
-# Requirement: Rust, Python, or Monty hook
-
-**Status:** Active  
-**Version:** 1.0.0  
-**Created:** 2026-10-25  
-**Last Updated:** 2026-11-12  
-**Owner:** randlee  
-
----
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 

@@ -216,7 +216,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: A crate's README is the `README.md` file in that crate's directory. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
+Definitions: A crate's README is the `README.md` file in that crate's directory. The allowed set of a public crate is that public crate itself plus the workspace crates that REQ-RUN-0005 lists as dependencies of that public crate. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -227,15 +227,15 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST provide a README.
 - Each public crate's README MUST contain a Rust usage example.
 - Each public crate's README Rust usage example MUST compile as a doctest.
-- Each public crate's README Rust usage example MUST use no other crate of the public package set, except the workspace crates that REQ-RUN-0005 lists as that crate's dependencies.
+- Each public crate's README Rust usage example in `crates/<crate>/README.md` MUST use no crate of the public package set outside the allowed set of that public crate, as shown by the `use` lines and paths in that example's Rust code block.
 - Each public crate's `name` in `cargo metadata --no-deps` output MUST equal that crate's name in the public package set.
 - Each public crate's `version` in `cargo metadata --no-deps` output MUST equal the version the public package set is released together at.
-- Each public crate's `description` in `cargo metadata --no-deps` output MUST state what that crate provides.
+- Each public crate's `description` in `cargo metadata --no-deps` output MUST name that crate's main function in one phrase.
 - Each public crate's `license` in `cargo metadata --no-deps` output MUST be `MIT`.
 - Each public crate's `repository` in `cargo metadata --no-deps` output MUST be `https://github.com/randlee/sc-runtime`.
 - Each public crate's `readme` in `cargo metadata --no-deps` output MUST name that crate's README.
 - Each public crate MUST be independently publishable to crates.io.
-- Every published crate MUST declare the MIT license.
+- Every published crate's `crates/<crate>/Cargo.toml` MUST declare the MIT license in its `license` key.
 - The repository LICENSE file MUST contain the MIT license text.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-config` MUST pass its own default-feature tests.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-transport` MUST build with its default features.
@@ -501,10 +501,10 @@ must print no direct `sc-observability ` or `sc-observability-otlp ` line.
 - The crate dependency table in ADR-RUN-0003 MUST list the same edges as the crate graph table.
 - The crate graph in `docs/architecture.md` MUST list the same crates as the crate graph table.
 - The crate graph in `docs/architecture.md` MUST list the same edges as the crate graph table.
-- Every crate in the public package set MUST exclude sc-compose crate dependencies.
-- Every crate in the public package set MUST exclude ATM crate dependencies.
+- Every crate in the public package set MUST have no normal or build dependency, direct or transitive, on any package named `sc-compose` or `sc-compose-*`.
+- Every crate in the public package set MUST have no normal or build dependency, direct or transitive, on any ATM tool crate.
 - Every crate in the public package set MUST exclude sc-compose Rust imports.
-- Every crate in the public package set MUST exclude ATM Rust imports.
+- Every crate in the public package set MUST contain no production Rust import of an ATM tool crate, referred to by its Rust library name such as `atm_core` or `agent_team_mail`.
 - Each manifest's `allowed_dependencies` MUST equal the union of its crate graph row and its additional dependency list.
 - The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary` against the boundary manifests.
 - `just lint` MUST fail when a manifest is violated.
@@ -540,7 +540,7 @@ For each crate that ADR-RUN-0017 covers and each supported production feature co
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when the result the client receives for its request is the result that function returned for that request. An MCP client is any program that sends MCP Streamable HTTP requests over the server's Unix socket. `tools/call` is the MCP request that runs one named tool.
+Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when the result the client receives for its request is the result that function returned for that request. An MCP client is any program that sends MCP Streamable HTTP requests over the server's Unix socket. `tools/call` is the MCP request that runs one named tool. A REST route is an HTTP route that the spike registers with the `routes!` macro of `utoipa-axum` 0.2 `OpenApiRouter`.
 
 `examples/spike` in the `randlee/sc-runtime` repository is a throwaway proof,
 built before any of the four library crates exists, so it uses the third-party
@@ -575,7 +575,7 @@ The spike operation may read SQLite, write SQLite, or do both; the operation rem
 - The MCP tool MUST call the one async service function that reads or writes the SQLite database.
 - The spike MUST contain a `clap` command-line client.
 - The spike `clap` client MUST connect to the server socket using `reqwest` 0.13 `ClientBuilder::unix_socket(path)`.
-- The spike `clap` client MUST call the REST route.
+- The spike `clap` client MUST send an HTTP request to the REST route when it runs.
 - Against one running spike server process, `curl --unix-socket <path>` calling the REST route MUST reach the one async SQLite service function.
 - Against one running spike server process, the `clap` client MUST reach the one async SQLite service function.
 - Against one running spike server process, an MCP `tools/call` request sent by an MCP client to `/mcp` MUST reach the one async SQLite service function.
@@ -1053,7 +1053,7 @@ criterion 2 runs the real binary only on an isolated runner.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is the sc-ai-cli response object defined by [REQ-CMD-0001](sc-command/requirements.md), with the keys `version`, `ok`, `data` and `error`. `OpError` is the typed error type of the `sc-command` crate, defined in `crates/sc-command/src/error.rs`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is one JSON object with exactly the keys `version`, `ok`, `data` and `error`, and `Envelope<T>` is the generic Rust type of the envelope, whose type parameter `T` is the type of `data`. [REQ-CMD-0001](sc-command/requirements.md) also defines this object. `OpError` is the typed error type of the `sc-command` crate, defined in `crates/sc-command/src/error.rs`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. `is_error` is the `Option<bool>` field of `CallToolResult` that holds `Some(true)` when the envelope's `ok` is `false`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count. The daemon is the local server process that runs every operation and serves its REST routes and its `/mcp` endpoint. An operation is one service function that the daemon exposes as an operation route and as an operation MCP tool. An operation response is what an operation produces for its caller on one surface: the REST response body, the MCP content or the text a CLI command prints with `--json`. An operation MCP tool is the MCP tool that carries one operation. A CLI command is given `--json` when the `--json` option is on its command line. Stdout is the standard output stream of the process. The CLI's own types are the Rust types that the CLI crate defines to read a response, such as its `api-types` structs. The operation's response struct is the one response struct that the operation defines in the generated `api-types` crate.
 
 This is a property of a project generated from `template/`.
 
@@ -1061,10 +1061,10 @@ This is a property of a project generated from `template/`.
 
 **MUST statements:**
 
-- Every operation response, on every surface, MUST be an envelope.
+- Every operation response, on the REST, MCP and CLI `--json` surfaces, MUST be an envelope.
 - The envelope MUST be a JSON object.
 - The set of keys of the envelope MUST be exactly `version`, `ok`, `data` and `error`.
-- The envelope MUST be produced by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).
+- The envelope MUST be produced by the type `Envelope<T>` defined in a file under `crates/sc-command/src/` ([REQ-CMD-0001](sc-command/requirements.md)).
 - On success `ok` MUST be `true`.
 - On success `data` MUST hold the operation's response struct.
 - On success `error` MUST be `null`.
@@ -1854,7 +1854,7 @@ compilable as Rust.
 
 ### Requirement Statement
 
-Definitions: A Liquid control tag is a tag written `{% ... %}`. A conditional line is a line that contains a Liquid control tag, or a line that lies between an opening control tag and its closing tag. A value substitution is a tag written `{{ ... }}`. A generated variant is the project rendered from `template/` for one combination of option values. The three permitted locations are the locations listed in item 2.
+Definitions: A Liquid control tag is a tag written `{% ... %}`. A tag pair is an opening Liquid control tag and its closing tag. A permitted tag pair is a tag pair whose enclosed lines all belong to one permitted location. A conditional line is a line that contains a Liquid control tag or lies between the two tags of a tag pair. A `.rs` file is a file whose name ends in `.rs`. A value substitution is a tag written `{{ ... }}`. The template is the `template/` directory, whose files `cargo-generate` renders with the Liquid template language. An option is a `cargo-generate` variable whose value is chosen for one generated variant, such as `db` or `mcp`. A generated variant is the project rendered from `template/` for one combination of option values. A permitted location is one of these three places: the fields of the `Stores` struct in the `service` crate; the `mod mcp;` line of `crates/daemon/src/main.rs`; and the `.mcp(...)` line of the `Daemon::builder()` chain in `crates/daemon/src/main.rs`. A file-level difference is a difference between two generated variants that is not made by a value substitution and is not made by a conditional line in a permitted location. A conditional `ignore` list is an `ignore` list in `template/cargo-generate.toml` whose entries depend on option values.
 
 `cargo-generate` renders files under `template/` with the Liquid template
 language. Liquid control tags are written `{% ... %}` (for example
@@ -1876,12 +1876,12 @@ language. Liquid control tags are written `{% ... %}` (for example
 
 **MUST statements:**
 
-- Across all `.rs` files under `template/`, the number of conditional lines MUST be fewer than ten in total.
-- A difference between generated variants that is made neither by a value substitution nor by a conditional line in one of the three permitted locations MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml`.
+- The total number of conditional lines in all `.rs` files in the template MUST be fewer than ten.
+- Each file-level difference MUST be made by whole-file inclusion and exclusion through a conditional `ignore` list.
 
 **MUST NOT statements:**
 
-- A Liquid control tag MUST NOT appear in a `.rs` file under `template/` unless it belongs to a tag pair that encloses only one of the three permitted locations: fields of the `Stores` struct in the `service` crate, the `mod mcp;` line of `crates/daemon/src/main.rs`, or the `.mcp(...)` line of the `Daemon::builder()` chain in `crates/daemon/src/main.rs`.
+- A Liquid control tag MUST NOT appear in a `.rs` file in the template outside a permitted tag pair.
 ### Rationale
 
 Rust source threaded with template conditionals cannot be compiled, formatted,
@@ -3206,7 +3206,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. A store holds a row type T when it reads and writes rows of type T through `Storage<T>`. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store. Selecting cron means setting the boolean `cron` option in `wizard/answers.schema.json` to `true`. The `db` value of each layout is its `db` value in the table below: `none` for `no database`, `sqlite` for `SQLite only`, `postgres` for `Postgres only`, `mysql` for `MySQL only`, `sqlite-postgres` for `SQLite and Postgres` and `sqlite-mysql` for `SQLite and MySQL`. A layout's row is its row in the table below. A two-store layout is a layout whose row lists two stores. A store crate is the crate for a store listed in a layout's row. The generator is `scripts/new_project.py`, which runs `cargo generate` on `template/`. A request is rejected when the generator stops with an error. Migrations are the SQL files in `crates/store-sqlite/migrations/`. An empty database is a database with no tables. Opening completes when the open call returns. sqlx is the Rust SQL library that the Postgres and MySQL stores use. The writer that `sc-runtime-db-sqlite` provides is the SQLite writer.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3227,22 +3227,22 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 
 **MUST statements:**
 
-- The generation options MUST accept the `no database` layout from the table above.
-- The generation options MUST accept the `SQLite only` layout from the table above.
-- The generation options MUST accept the `Postgres only` layout from the table above.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `none`.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite`.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `postgres`.
 - The `db` enum in `wizard/answers.schema.json` MUST contain `mysql`.
-- The generation options MUST accept the `SQLite and Postgres` layout from the table above.
-- The generation options MUST accept the `SQLite and MySQL` layout from the table above.
-- Generating a layout MUST render the stores in its table row.
-- Generating the `no database` layout MUST render no store crate.
-- A generation request selecting cron with the `no database` layout MUST be rejected before template rendering.
-- Generating a two-store layout MUST render the adaptor crate.
-- Generating a layout with fewer than two stores MUST render no adaptor crate.
-- `store-postgres` MUST use `sqlx` for PostgreSQL storage.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-postgres`.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-mysql`.
+- Running `scripts/new_project.py` with `db` set to a layout's value MUST produce one store crate for each store in that layout's row of the table below.
+- Running `scripts/new_project.py` for the `no database` layout, with `db` set to `none`, MUST produce no store crate.
+- Before `template/` is rendered, the generator MUST reject a request that sets `cron` to `true` for the `no database` layout.
+- Running `scripts/new_project.py` with `db` set to the value of a two-store layout MUST produce the `store-adaptor` crate.
+- Running `scripts/new_project.py` with `db` set to the value of a layout with fewer than two stores MUST produce no `store-adaptor` crate.
+- `store-postgres` MUST use `sqlx` for Postgres storage.
 - `store-mysql` MUST use `sqlx` for MySQL storage.
-- `store-sqlite` MUST use the SQLite writer of `sc-runtime-db-sqlite`.
-- Every store MUST implement `Storage<T>` for each row type it stores.
-- When the generated `store-sqlite` store is opened on an empty database, every table that the SQL files in `crates/store-sqlite/migrations/` create MUST exist before the first read or write.
+- The `store-sqlite` crate's `src/` MUST call the SQLite writer that `sc-runtime-db-sqlite` provides for every SQLite write.
+- Each store crate's `src/` MUST contain an `impl` block of `Storage<T>` for each held row type T.
+- When the generated `store-sqlite` store is opened on an empty database, every table that the migrations in `crates/store-sqlite/migrations/` create MUST exist when opening completes.
 
 ### Rationale
 
@@ -4004,7 +4004,7 @@ is not on `PATH` without the script guessing install prefixes.
 
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record. REST means representational state transfer. A clean checkout is a checkout of this repository in which `git status --porcelain` prints nothing. `<dest>` is the directory where `just new` creates the project. The generated project is the project created at `<dest>`. The green sequence is `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, run in that order in the generated project with no file added, changed or deleted after generation. The example operation test is the template's test of `widget.create` and `widget.get` (REQ-RUN-0302). The selected dependency graph is the dependency graph of the generated project for the fixture's answers `db = sqlite` and `mcp = true`.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record. REST means representational state transfer. A clean checkout is a checkout of this repository in which `git status --porcelain` prints nothing. `<dest>` is the directory where `just new` creates the project. The generated project is the project created at `<dest>`. The green sequence is `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, run in that order in the generated project with no file added, changed or deleted after generation. The example operation test is the template's test of `widget.create` and `widget.get` (REQ-RUN-0302). The selected dependency graph is the dependency graph of the generated project for the fixture's answers `db = sqlite` and `mcp = true`. `sc_runtime::testing::DaemonFixture` is the fixture in the `sc-runtime` crate's `testing` module that starts the daemon the example operation test runs against. A crate resolves when Cargo can select a version of it that satisfies the dependency declared for it, from crates.io or from the `[patch.crates-io]` entry or git tag that supplies it.
 
 This item owns the definition of "green with no edits" and applies it to one
 answers fixture. [REQ-RUN-0701](requirements.md) applies the same sequence to
@@ -4024,7 +4024,7 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 
 **MUST statements:**
 
-- Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` from the root of a clean checkout MUST exit 0.
+- When run from the root of a clean checkout, `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` MUST exit 0.
 - Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` MUST create a project at `<dest>`.
 - Every command of the green sequence MUST exit 0.
 - `just test` in the generated project MUST run the example operation test.
@@ -4034,8 +4034,8 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 - The example operation test MUST call `widget.get` through REST.
 - The example operation test MUST call `widget.get` through MCP.
 - The example operation test MUST call `widget.get` through the CLI.
-- The example operation test MUST run against a daemon started by `sc_runtime::testing::DaemonFixture`.
-- Every crate of the public package set that is in the selected dependency graph MUST resolve during the green sequence.
+- The source of the example operation test MUST start the daemon that the test runs against with `sc_runtime::testing::DaemonFixture`.
+- When the green sequence runs, every crate of the public package set that is in the selected dependency graph MUST resolve.
 
 ### Rationale
 
@@ -5069,7 +5069,7 @@ Related: [REQ-RUN-0004](requirements.md) defines `just lint`; [NFR-RUN-0004](req
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. A covered crate is one of the nine Phase D crates listed in REQ-RUN-0002: sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty. A public function is a function or method that a covered crate exports in its public API. Public-reachable code is every non-test function body in a covered crate's `src` directory that a public function of that crate calls directly or indirectly. A crate-originated error is an error that the code of a covered crate itself detects. A crate result type is `Result<T, E>` where `E` is the one public typed error enum defined by the same covered crate. `[]` indexing is an `[]` index or range expression on a slice, `Vec`, string or map. A service function is a function that implements an operation and that the REST handler, the MCP tool and the CLI command all call. An OpError envelope is the `sc-command` JSON response envelope whose `ok` is `false` and whose `error` is an `OpError` object with a stable `code` and the keys `kind`, `code`, `message`, `details` and `suggested_action`. `CallToolResult` is the rmcp tool result type, whose content carries the response envelope. An opaque error type is an error type whose variants a caller cannot match, such as `anyhow::Error` or `Box<dyn std::error::Error>`.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. A covered crate is one of the nine Phase D crates listed in REQ-RUN-0002: sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty. A public function is a function or method that a covered crate exports in its public API. Public-reachable code is every non-test function body in a covered crate's `src` directory that a public function of that crate calls directly or indirectly. A crate-originated error is an error that the code of a covered crate itself detects. A crate result type is `Result<T, E>` where `E` is the one public typed error enum defined by the same covered crate. `[]` indexing is an `[]` index or range expression on a slice, `Vec`, string or map. A service function is a function that implements an operation and that the REST handler, the MCP tool and the CLI command all call. An OpError envelope is the `sc-command` JSON response envelope whose `ok` is `false` and whose `error` is an `OpError` object with a stable `code` and the keys `kind`, `code`, `message`, `details` and `suggested_action`. `CallToolResult` is the rmcp tool result type, whose content carries the response envelope. An opaque error type is an error type whose variants a caller cannot match, such as `anyhow::Error` or `Box<dyn std::error::Error>`. The shared `Storage<T>` contract is the Phase D storage contract under which storage operations return `StorageError`. The `sc-command` `OpError` contract is the contract of REQ-CRNC-0001 under which the commands of `sc-cron-commands` return `OpError`.
 
 This item is the single owner of the error rule and the panic rule for the public API of every covered crate. Each crate's own non-functional requirement references this item and adds only strictness specific to that crate. The decision is recorded in [ADR-RUN-0006](architecture.md); the 2026-10-25 amendment added `sc-runtime-db-sqlite` and `sc-cron`.
 
@@ -5100,7 +5100,7 @@ Recorded exception: a signature dictated by a third-party trait or macro keeps t
 
 **MUST statements:**
 
-- Unless a third-party trait or macro signature, the shared `Storage<T>` contract or the `sc-command` `OpError` contract of REQ-CRNC-0001 fixes its error type, each public function that can return a crate-originated error MUST return its crate result type.
+- Each public function that can return a crate-originated error MUST return its crate result type, unless the error type of that function is fixed by a third-party trait or macro signature, by the shared `Storage<T>` contract or by the `sc-command` `OpError` contract of REQ-CRNC-0001.
 - Each covered crate MUST define at most one public error enum.
 - When a service function returns an error, the stdout of the CLI command run with `--json` for the operation that the service function implements MUST be an OpError envelope.
 - When a service function returns an error, the content of the `CallToolResult` returned by the MCP tool that called it MUST be an OpError envelope.
