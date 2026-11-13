@@ -756,12 +756,12 @@ caller needs a variant to branch on and not a string to parse.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-24  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The methods referred to by "them" are instance-root resolution and endpoint resolution. The builder is Daemon::builder. The methods referred to by "them" would be methods for instance-root resolution or endpoint resolution, which stay in sc-transport.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The builder is `Daemon::builder`. The instance-root function and the endpoint resolver are the two public `sc-transport` functions described below. The endpoint sources are the `--endpoint` flag value, the `SC_ENDPOINT` environment variable, the configured endpoint and the platform default. The configured endpoint is `DaemonConfig.transport.endpoint`. Endpoint logic is computing a socket path, choosing a default address or port, parsing an endpoint string, or applying a precedence between endpoint sources.
 
 This item says where the daemon's lock directory and listening endpoint come
 from. `sc-transport` (`crates/sc-transport`) exposes two public functions that
@@ -804,9 +804,11 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 
 **MUST statements:**
 
-- `run()` MUST obtain the instance root only by calling the `sc-transport` instance-root function, passing the `app` name given to `Daemon::builder` and the explicit instance root if one was supplied.
+- `run()` MUST obtain the instance root only by calling the `sc-transport` instance-root function.
+- That call MUST pass the `app` name given to the builder.
+- That call MUST pass the explicit instance root when one was supplied.
 - `run()` MUST obtain the bind endpoint only by calling the `sc-transport` endpoint resolver.
-- That resolver call MUST receive the same instance root that `run()` locks.
+- The endpoint-resolver call MUST receive the same instance root that `run()` locks.
 - The `--endpoint` flag value MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
 - The configured endpoint MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
 - The explicit instance root MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
@@ -815,14 +817,16 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 
 **MUST NOT statements:**
 
-- The generated `daemon/src/main.rs` MUST NOT need to call either.
+- The generated `daemon/src/main.rs` MUST NOT need to call the instance-root function.
+- The generated `daemon/src/main.rs` MUST NOT need to call the endpoint resolver.
 - `sc-runtime` MUST NOT contain endpoint logic of its own.
 - `sc-runtime` MUST NOT compute a socket path.
 - `sc-runtime` MUST NOT choose a default address.
 - `sc-runtime` MUST NOT choose a default port.
 - `sc-runtime` MUST NOT parse an endpoint string.
 - `sc-runtime` MUST NOT apply a precedence between sources.
-- The builder MUST NOT gain a method for them.
+- The builder MUST NOT have a method for instance-root resolution.
+- The builder MUST NOT have a method for endpoint resolution.
 - `sc-runtime` MUST NOT parse the command line.
 
 ### Rationale
