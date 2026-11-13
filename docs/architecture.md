@@ -1945,7 +1945,7 @@ nothing.
   record. Sprint a-1 moved this ADR from Proposed to Active.
 - [ADR-RUN-0202](architecture.md): the accepted shape these facts sit under.
 - [ADR-RUN-0302](architecture.md): one shared `api-types` struct; no generated client.
-- [NFR-RUN-0007](requirements.md): rmcp is pinned to a minor version in every manifest.
+- [NFR-RUN-0007](requirements.md): each `rmcp` registry requirement in a covered manifest declares a tested floor of at least 3.9 with no upper bound.
 ### Context
 
 [ADR-RUN-0202](architecture.md) fixes the shape: one `axum::Router` carries
@@ -2061,7 +2061,7 @@ dump question is closed without investigation.
 
 **Negative:**
 
-- A newer `rmcp`, `utoipa` or `utoipa-axum` release needs an ADR amendment and repeat qualification before use; C-3 consumes the frozen matrix exactly.
+- In Phase C, a newer `rmcp`, `utoipa` or `utoipa-axum` release needed an ADR amendment and repeat qualification before use, and C-3 consumed the frozen matrix exactly. This restriction does not apply in Phase D, where registry requirements use the tested floors stated in the Phase D Implementation paragraph above, with no upper bound.
 ### Alternatives Considered
 
 #### Alternative 1: Treating the two facts as true and planning on them
