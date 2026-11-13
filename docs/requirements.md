@@ -5017,31 +5017,20 @@ Open tested floors let consumers take compatible dependency updates without an S
 
 ### Requirement Statement
 
-The rule comes from the `sc-lint` package, which is the source of truth for
-it; it is not stated by the sc-runtime design. This item adopts it for this
-repository.
-
-No non-test source file in this repository may exceed 1000 source lines. A
-source line is a line that is neither blank (whitespace only) nor made up
-only of a comment. Blank lines and comment-only lines are not counted.
-
-Files under a `tests/` directory are test files and are exempt.
-
-The sc-lint 0.8.4 key is `[line_counts] max_production_lines = 1000` in
-`sc-lint.toml`. `just lint` runs `sc-lint lint line-counts --config sc-lint.toml`.
-The `template/**/*.rs` half of this limit stays with a later sprint.
+Definitions: `sc-lint` is the external lint package whose `line-counts` check is the source of truth for this limit; sc-runtime adopts the rule and does not define it. A source line is a line that is neither blank (whitespace only) nor made up only of a comment. A test file is a file under a `tests/` directory. A production Rust file is a `.rs` file that is not a test file. `just lint` is the `lint` recipe of the file named `Justfile` at the repository root. `sc-lint.toml` is the `sc-lint` configuration file at the repository root. The `line-counts` check is the `[[tool.sc-lint.lint]]` entry named `line-counts` in `sc-lint.toml`.
 
 **MUST statements:**
 
-- The rule MUST apply at least to every `.rs` file under `crates/*/src/`.
-- The rule MUST apply at least to every `.rs` file under `template/`.
-- The check MUST be the one the `sc-lint` package provides.
-- That check MUST run through `just lint` at the repository root (REQ-RUN-0004).
-- `just lint` MUST fail, naming the file and its source-line count, when a file exceeds the limit.
+- `just lint` run at the repository root MUST exit non-zero when a production Rust file under `crates/*/src/` has more than 1000 source lines.
+- `just lint` run at the repository root MUST exit non-zero when a production Rust file under `template/` has more than 1000 source lines.
+- When a production Rust file has more than 1000 source lines, the `just lint` output MUST contain the path of the production Rust file.
+- When a production Rust file has more than 1000 source lines, the `just lint` output MUST contain the source-line count of the production Rust file.
+- The `line-counts` check command in `sc-lint.toml` MUST start with `sc-lint lint line-counts`.
+- The `[line_counts]` table in `sc-lint.toml` MUST set `max_production_lines = 1000`.
 
 **MUST NOT statements:**
 
-- This repository MUST NOT carry a line-counting script or program of its own for this rule ([NFR-RUN-0004](requirements.md), [ADR-RUN-0008](architecture.md)).
+- This repository MUST NOT contain code that counts source lines.
 
 ### Rationale
 
@@ -5051,6 +5040,8 @@ than 1000 lines of actual source is a module boundary that was not drawn: it
 is slow to review, and agents working on it spend their context on code
 unrelated to the change. Counting only source lines means documentation
 comments and spacing are never a reason to split a file or to strip comments.
+
+Related: [REQ-RUN-0004](requirements.md) defines `just lint`; [NFR-RUN-0004](requirements.md) and [ADR-RUN-0008](architecture.md) forbid repository-local tooling that duplicates `sc-lint`.
 ### Success Criteria
 
 1. `just lint` on an unmodified checkout exits 0, and its output shows that
