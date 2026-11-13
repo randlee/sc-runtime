@@ -433,7 +433,7 @@ The PRD §3 shared command pattern has one write path and one read path, with pr
    and serve with graceful shutdown on SIGINT and SIGTERM.
 4. The workspace library crates retain the existing repo-internal macro
    policy and ban on public wrappers/re-exports of Axum, rmcp and sqlx types.
-   Phase D builds no generator. This does not forbid the shared command path
+   Phase D builds no command registry and no generator. This does not forbid the shared command path
    or follow-up consumer-side generation against the delivered framework.
 5. The project MUST pass the builder an ordinary `utoipa_axum::OpenApiRouter`
    and, optionally, an ordinary rmcp service, each returned from a closure.
