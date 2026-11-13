@@ -2385,6 +2385,8 @@ and on a fresh clone without a database.
 This applies to `crates/daemon` of a project rendered from `template/`.
 `sc-observability` is the SC logging crate. In this record, OpenTelemetry export is the telemetry-export functionality supplied by the `sc-observability-otlp` crate mentioned below. The template omits it; a consuming project can add it to its own daemon.
 
+Definitions: The template is the `template/` directory; a rendered project is a project generated from it. `sc-config` is the SC configuration crate; `sc_config::load` reads a project's configuration into a struct. `AppConfig` is the configuration struct defined in the generated daemon crate; its `logging` field holds the logging settings. `sc-observability-types` is the SC crate of shared logging value types. A registry requirement is a Cargo dependency version requirement resolved from the crates.io registry, not from a path or git source. `daemon::observability` is the generated daemon crate's module that converts logging settings and calls `sc-observability`. `Observability` is the type in `daemon::observability` that owns the `sc-observability` logger; `Observability::build` creates it and `Observability::shutdown` consumes it. `sc_runtime::Daemon::builder` is the `sc-runtime` daemon assembly entry point; `.run().await` on the builder runs the daemon until it stops. A bridge from the `tracing` crate into `sc-observability` is any code that forwards events of the `tracing` crate to `sc-observability`.
+
 1. `crates/daemon/Cargo.toml` MUST use registry requirements
    `sc-observability = ">=1.5.0"` and
    `sc-observability-types = ">=1.5.0"`, with no upper bound (ANC-037).
@@ -2466,23 +2468,22 @@ Root/generated lock evidence proves matching registry identity.
 
 - `crates/daemon/Cargo.toml` MUST declare the registry requirement `sc-observability = ">=1.5.0"`.
 - `crates/daemon/Cargo.toml` MUST declare the registry requirement `sc-observability-types = ">=1.5.0"`.
-- Before initializing observability or assembling the daemon, `crates/daemon/src/main.rs` MUST load configuration through `sc-config` into the generated daemon's `AppConfig` struct.
-- If configuration loading fails, `crates/daemon/src/main.rs` MUST report the configuration error.
-- If configuration loading fails, `crates/daemon/src/main.rs` MUST return a failure exit code.
-- After configuration loads, `crates/daemon/src/main.rs` MUST initialize `sc-observability` through the generated `daemon::observability` module.
-- That initialization MUST pass plain values from the loaded configuration's logging section directly to `sc-observability`.
-- If initialization returns a guard, `crates/daemon/src/main.rs` MUST keep that guard bound until `main` returns.
-- After observability initializes, `crates/daemon/src/main.rs` MUST assemble the daemon using `sc_runtime::Daemon::builder(...)`.
-- After assembling the daemon, `crates/daemon/src/main.rs` MUST run that daemon.
+- In `crates/daemon/src/main.rs`, the `sc_config::load` call that produces `AppConfig` MUST come before the `Observability::build` call.
+- When the rendered daemon starts and `sc_config::load` returns an error, the daemon process MUST write the configuration error to standard error.
+- When `sc_config::load` returns an error, `crates/daemon/src/main.rs` MUST return a non-zero process exit code.
+- `crates/daemon/src/main.rs` MUST initialize `sc-observability` by calling `Observability::build`.
+- The `Observability::build` call in `crates/daemon/src/main.rs` MUST receive the `logging` field of the loaded `AppConfig` as its logging-settings argument.
+- `crates/daemon/src/main.rs` MUST keep the value returned by `Observability::build` alive until `.run().await` on the daemon builder completes.
+- In `crates/daemon/src/main.rs`, the `sc_runtime::Daemon::builder` call MUST come after the `Observability::build` call.
+- `crates/daemon/src/main.rs` MUST call `.run().await` on the builder returned by `sc_runtime::Daemon::builder`.
 
 **MUST NOT statements:**
 
-- The configuration-loading error path in `crates/daemon/src/main.rs` MUST NOT panic.
-
+- When the rendered daemon starts with a configuration file that `sc_config::load` rejects, the daemon process MUST NOT print a Rust panic message to standard error.
 - The `sc-observability` requirement in `crates/daemon/Cargo.toml` MUST NOT declare an upper bound.
 - The `sc-observability-types` requirement in `crates/daemon/Cargo.toml` MUST NOT declare an upper bound.
-- The template MUST NOT add OpenTelemetry export.
-- The template MUST NOT contain a bridge from the `tracing` crate into `sc-observability`.
+- `Cargo.toml` files under `template/` MUST NOT declare a dependency on `sc-observability-otlp`.
+- Files under `template/` MUST NOT contain a bridge from the `tracing` crate into `sc-observability`.
 
 ### Rationale
 
