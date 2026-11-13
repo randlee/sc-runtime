@@ -433,9 +433,9 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 - `sc-runtime` MUST NOT add an MCP session store.
 - `sc-runtime` MUST NOT add any other session state of its own.
 - If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`.
-- MCP MUST NOT get a listener of its own, that is, any listener other than the daemon listener.
-- MCP MUST NOT get a TCP port of its own, that is, any TCP port other than the TCP port of the daemon listener.
-- MCP MUST NOT get a process of its own, that is, any process other than the daemon process.
+- MCP MUST NOT get any listener other than the daemon listener.
+- MCP MUST NOT get any TCP port other than the TCP port of the daemon listener.
+- MCP MUST NOT get any process other than the daemon process.
 
 ### Rationale
 
