@@ -1938,10 +1938,12 @@ compilable as Rust.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: A Liquid control tag is a tag written `{% ... %}`. A conditional line is a line that contains a Liquid control tag, or a line that lies between an opening control tag and its closing tag. A value substitution is a tag written `{{ ... }}`. A generated variant is the project rendered from `template/` for one combination of option values. The three permitted locations are the locations listed in item 2.
 
 `cargo-generate` renders files under `template/` with the Liquid template
 language. Liquid control tags are written `{% ... %}` (for example
@@ -1957,18 +1959,18 @@ language. Liquid control tags are written `{% ... %}` (for example
      on option `mcp`, because `mcp.rs` is omitted when `mcp` is `false`);
    - around the `.mcp(...)` line of the `Daemon::builder()` chain in
      `crates/daemon/src/main.rs` (it depends on option `mcp`).
-3. The `ignore` mechanism is conditional on [ADR-RUN-0402](architecture.md), which sprint a-1 made Active.
+3. For example, the `ignore` list includes `crates/daemon/src/mcp.rs` when MCP is disabled. The `ignore` mechanism is conditional on [ADR-RUN-0402](architecture.md), which sprint a-1 made Active.
 5. Value substitutions `{{ ... }}`, such as the project name, are not
    conditional lines and are not limited by this requirement.
 
 **MUST statements:**
 
 - Across all `.rs` files under `template/`, the number of conditional lines MUST be fewer than ten in total.
-- Every other difference between generated variants MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml` (for example `crates/daemon/src/mcp.rs`).
+- A difference between generated variants that is made neither by a value substitution nor by a conditional line in one of the three permitted locations MUST be made by including or excluding a whole file through a conditional `ignore` list in `template/cargo-generate.toml`.
 
 **MUST NOT statements:**
 
-- Liquid control tags MUST NOT be used to vary the body of a function, a handler, a query or a test in a `.rs` file.
+- A Liquid control tag MUST NOT appear in a `.rs` file under `template/` outside the three permitted locations.
 ### Rationale
 
 Rust source threaded with template conditionals cannot be compiled, formatted,
