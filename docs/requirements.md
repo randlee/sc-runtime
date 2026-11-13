@@ -3996,6 +3996,15 @@ is not on `PATH` without the script guessing install prefixes.
    stub named `cargo` first on `PATH`, each stub recording the file its
    standard input is connected to, and asserts that every recorded file is
    `/dev/null`.
+9. When `--var-file` is given, `just new <dest>` writes no prompt: CI runs
+   `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` with stdin
+   closed (`< /dev/null`), captures its stdout and stderr, and asserts that
+   neither contains text that asks the user for input.
+10. When sc-compose is missing, `just new <dest>` exits with a non-zero
+   status: CI runs `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`
+   with `SC_COMPOSE` unset and no `sc-compose` on `PATH`, and asserts a
+   non-zero exit status and that stderr contains `sc-compose`, `SC_COMPOSE`
+   and `PATH`.
 
 ---
 
