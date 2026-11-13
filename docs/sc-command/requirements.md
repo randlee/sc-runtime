@@ -89,12 +89,12 @@ It drops `version`.
 
 **MUST statements:**
 
-- With default features, the root module of `crates/sc-command` MUST export `Envelope<T>` as a public type.
-- For every `T: serde::Serialize`, `serde_json::to_value` called on a failure `Envelope<T>` MUST return `Ok`.
-- For every `T: serde::de::DeserializeOwned`, `serde_json::from_str::<sc_command::Envelope<T>>` called on a failure envelope JSON object with `version` `"1"` and a serialised `OpError` MUST return `Ok`.
+- With default features, the root module of `crates/sc-command` MUST export `Envelope<T>`.
+- `serde_json::to_value` called on a failure `Envelope<T>` MUST return `Ok`.
+- `serde_json::from_str::<sc_command::Envelope<T>>` called on a failure envelope JSON object with `version` `"1"` and a serialised `OpError` MUST return `Ok`.
 - The JSON object produced by serialising `Envelope<T>` MUST have a key set equal to the envelope key set.
 - In the JSON object produced by serialising a success `Envelope<T>`, the `error` key MUST map to JSON `null`.
-- In the JSON object produced by serialising a failure `Envelope<T>`, the `data` key MUST map to JSON `null`.
+- When a failure `Envelope<T>` is serialised to JSON, the `data` key of the resulting object MUST map to JSON `null`.
 - Every envelope JSON equality assertion MUST compare `serde_json::Value` values.
 - The case of an `Envelope<T>` returned by `serde_json::from_str` MUST be determined by the JSON value of the `ok` key.
 - When `ok` is `true`, the envelope deserializer MUST deserialize `data` as `T` even when `data` is JSON `null`.
@@ -103,9 +103,9 @@ It drops `version`.
 - When deserialization of an envelope with `ok: false` succeeds, the resulting `Envelope<T>` MUST be the failure case.
 - For any `T: Serialize + DeserializeOwned + PartialEq`, a JSON round trip of a success `Envelope<T>` MUST yield a value equal to the original success envelope.
 - For any `T: Serialize + DeserializeOwned + PartialEq`, a JSON round trip of a failure `Envelope<T>` MUST yield a value equal to the original failure envelope.
-- `Envelope<T>` MUST implement `Debug` where `T: Debug`.
-- `Envelope<T>` MUST implement `Clone` where `T: Clone`.
-- `Envelope<T>` MUST implement `PartialEq` where `T: PartialEq`.
+- When `T` implements `Debug`, `Envelope<T>` MUST implement `Debug`.
+- When `T` implements `Clone`, `Envelope<T>` MUST implement `Clone`.
+- When `T` implements `PartialEq`, `Envelope<T>` MUST implement `PartialEq`.
 
 **MUST NOT statements:**
 
