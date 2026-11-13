@@ -517,7 +517,7 @@ The caller chooses `T`.
 - `Client::new(endpoint)` MUST take only the endpoint argument (a UDS path or a TCP address).
 - `Client::new` MUST build a `reqwest::Client` (reqwest 0.13).
 - For a UDS endpoint `Client::new` MUST configure the `reqwest::Client` with `reqwest::ClientBuilder::unix_socket(path)`.
-- For a TCP endpoint `Client` MUST use the base URL `http://<ip>:<port>`.
+- For a TCP endpoint, each request that `Client` sends MUST go to the URL `http://<ip>:<port>` followed by the request path, where `<ip>:<port>` is the endpoint's TCP address.
 - `get(path)` MUST send an HTTP `GET` to `path` on the client's endpoint.
 - `post(path, &body)` MUST send an HTTP `POST` to `path` on the client's endpoint.
 - That POST request MUST carry `body` serialised as JSON.
