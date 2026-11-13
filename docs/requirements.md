@@ -3982,7 +3982,7 @@ is not on `PATH` without the script guessing install prefixes.
 
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record. `<dest>` is the directory where `just new` creates the project. The generated project is the project created at `<dest>`. The green sequence is `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`, run in that order in the generated project with no file added, changed or deleted after generation. The example operation test is the template's test of `widget.create` and `widget.get` (REQ-RUN-0302).
 
 This item owns the definition of "green with no edits" and applies it to one
 answers fixture. [REQ-RUN-0701](requirements.md) applies the same sequence to
@@ -4004,9 +4004,16 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 
 - Running `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` from the root of a clean checkout MUST exit 0.
 - That command MUST create a project at `<dest>`.
-- In that project, with no file added, changed or deleted after generation, the next commands MUST exit 0 in this order: `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`.
-- `just test` in the generated project MUST include the template's example operation test, which calls `widget.create` and `widget.get` through REST, MCP and the CLI against a daemon started by `sc_runtime::testing::DaemonFixture`.
-- The generated project MUST resolve every public crate in its selected dependency graph without any manual step.
+- Every command of the green sequence MUST exit 0.
+- `just test` in the generated project MUST run the example operation test.
+- The example operation test MUST call `widget.create` through REST.
+- The example operation test MUST call `widget.create` through MCP.
+- The example operation test MUST call `widget.create` through the CLI.
+- The example operation test MUST call `widget.get` through REST.
+- The example operation test MUST call `widget.get` through MCP.
+- The example operation test MUST call `widget.get` through the CLI.
+- The example operation test MUST run against a daemon started by `sc_runtime::testing::DaemonFixture`.
+- The generated project MUST resolve every crate of the public package set that is in its selected dependency graph without any manual step.
 
 ### Rationale
 
