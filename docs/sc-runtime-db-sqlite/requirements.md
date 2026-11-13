@@ -145,16 +145,14 @@ ADR-RUN-0012 point 3: contiguous executes share one savepoint inside one `BEGIN 
 
 ### Requirement Statement
 
-Definitions: This crate is sc-runtime-db-sqlite; naming it means declaring a dependency on it. The listed historical statements remain nonbinding under the Superseded status and the explicit scope text.
+Definitions: sc-runtime-db-sqlite is the workspace crate at `crates/sc-runtime-db-sqlite`. A dependency entry is a key in any `[dependencies]`, `[dev-dependencies]` or `[build-dependencies]` table of a `Cargo.toml`. The listed historical statements remain nonbinding under the Superseded status and the explicit scope text.
 
 The template's SQLite store and the runtime use this writer. The text below binds nothing.
 
-Template `store-sqlite` does not name this crate. `sc-runtime` does not name it.
-
 **MUST NOT statements:**
 
-- Template `store-sqlite` does not name this crate.
-- `sc-runtime` does not name it.
+- `template/crates/store-sqlite/Cargo.toml` contains no dependency entry for `sc-runtime-db-sqlite`.
+- `crates/sc-runtime/Cargo.toml` contains no dependency entry for `sc-runtime-db-sqlite`.
 
 ### Rationale
 
