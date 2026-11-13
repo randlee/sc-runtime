@@ -64,7 +64,7 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - sc-cron's sc-observability-types requirement MUST NOT declare an upper bound.
 - `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the local facade.
 - The `crates/sc-cron` integration-test source MUST NOT lack a counterpart assertion for any assertion in the beads-cache `develop` integration-test source.
-- Each counterpart assertion under `crates/sc-cron/tests/` MUST NOT be a weakening of its beads-cache `develop` original.
+- Each counterpart assertion in the `crates/sc-cron` integration-test source MUST NOT be a weakening of its beads-cache `develop` original.
 - The `crates/sc-cron` unit-test source MUST NOT lack a counterpart assertion for any assertion in the beads-cache `develop` unit-test source.
 - Each counterpart assertion under `crates/sc-cron/src/` MUST NOT be a weakening of its beads-cache `develop` original.
 - `crates/sc-cron/Cargo.toml` MUST NOT declare a dependency on the `monty` crate.
