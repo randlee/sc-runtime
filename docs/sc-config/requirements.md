@@ -710,7 +710,7 @@ circular: logging is configured from the values this crate loads.
 
 ---
 
-# Requirement: `sc-config` API is synchronous in v0.1
+# Requirement: `sc-config` load calls are synchronous in Phase D
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -720,22 +720,20 @@ circular: logging is configured from the values this crate loads.
 
 ---
 
-## NFR-CFG-0003: `sc-config` API is synchronous in v0.1
+## NFR-CFG-0003: `sc-config` load calls are synchronous in Phase D
 
 **Status:** Active  
 
 ### Requirement Statement
 
-`sc-config` provides synchronous start-up configuration. In v0.1 it is built
+`sc-config` provides synchronous start-up configuration. The Phase D deliverable is built
 with no file watcher, no reload and no change notification. Async
 configuration and reload are deferred, not forbidden: nothing in this record
 stops a consumer or a later version from adding them, including an async
 API next to the synchronous one
 ([PRD-ENG-5, section 9](../prd/sc-runtime-prd.md)).
 
-This item binds all code under `crates/sc-config/src` for the first release
-(v0.1). A load call is a call to `load` or to `Loader::load`; it reads the
-files, applies the overrides and deserialises the result.
+This item binds `load` and `Loader::load` in `crates/sc-config/src` for the Phase D deliverable. A load call reads the files, applies the overrides and deserialises the result.
 
 **MUST statements:**
 
@@ -750,7 +748,7 @@ files, applies the overrides and deserialises the result.
 
 ### Rationale
 
-Every current user reads its configuration once at start-up, so v0.1 builds
+Every current user reads its configuration once at start-up, so Phase D builds
 only that. A synchronous function can be called from `main` before a runtime
 exists and from inside an async `main` alike. A changed file is seen only
 through a new explicit load call. The owner wants async

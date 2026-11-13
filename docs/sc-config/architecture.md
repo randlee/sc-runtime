@@ -281,7 +281,7 @@ behaviour.
 
 ---
 
-# Decision: `sc-config` v0.1 load is synchronous with two dependencies
+# Decision: `sc-config` load is synchronous with two dependencies in Phase D
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -292,7 +292,7 @@ behaviour.
 
 ---
 
-## ADR-CFG-0003: `sc-config` v0.1 load is synchronous with two dependencies
+## ADR-CFG-0003: `sc-config` load is synchronous with two dependencies in Phase D
 
 **Status:** Active  
 
@@ -303,7 +303,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 **Requirements:**
 
 - NFR-CFG-0002 — dependencies are `serde` and `serde_json` only
-- NFR-CFG-0003 — synchronous v0.1 load calls; reload, notification and async work outside the current deliverable
+- NFR-CFG-0003 — synchronous Phase D load calls; reload, notification and async work outside the current deliverable
 - REQ-RUN-0005 — owner of the workspace-internal edges and forbidden edges of the workspace library crates
 - NFR-RUN-0001 — hold the OPEN on cargo feature unification under `cargo build --workspace`
 
@@ -314,7 +314,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 
 ### Context
 
-The v0.1 `sc-config` load calls are synchronous. This deliverable adds no watcher, reload or change notification; future async and reload options remain open.
+The Phase D `sc-config` load calls are synchronous. This deliverable adds no watcher, reload or change notification; future async and reload options remain open.
 
 `sc-config` (`crates/sc-config`) is linked into every daemon and every CLI
 built on this repository, and is meant to be usable by any Rust program on its
@@ -330,9 +330,9 @@ configuration once at start-up.
 
 ### Decision
 
-1. In the v0.1 deliverable, the `[dependencies]` table of `crates/sc-config/Cargo.toml` contains exactly `serde` and `serde_json`.
-2. In the v0.1 deliverable, `sc-config` does not depend on `tokio`, `sc-observability`, `sc-observability-otlp`, or another crate of this workspace (`sc-transport`, `sc-command`, `sc-runtime`).
-3. The v0.1 `load` and `Loader::load` calls are synchronous and spawn no thread or task, as specified by [NFR-CFG-0003](requirements.md).
+1. In the Phase D deliverable, the `[dependencies]` table of `crates/sc-config/Cargo.toml` contains exactly `serde` and `serde_json`.
+2. In the Phase D deliverable, `sc-config` does not depend on `tokio`, `sc-observability`, `sc-observability-otlp`, or another crate of this workspace (`sc-transport`, `sc-command`, `sc-runtime`).
+3. The Phase D `load` and `Loader::load` calls are synchronous and spawn no thread or task, as specified by [NFR-CFG-0003](requirements.md).
 4. This deliverable builds no watcher, reload or change notification.
 5. Async configuration and reload remain open consumer and later-version options; this ADR selects neither their API nor their crate placement and creates no implementation or testing work for them.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
@@ -373,11 +373,11 @@ and binary size matter.
   this crate does not depend on `sc-observability`. The program passes the
   loaded values to `sc-observability` itself.
 - Future reload work requires an API and dependency design; its placement remains open.
-- A program that wants live reload in v0.1 must call `load` again itself.
+- A program that wants live reload in Phase D must call `load` again itself.
 
 ### Alternatives Considered
 
-#### Alternative 1: Async and reload support inside `sc-config` behind a Cargo feature in v0.1
+#### Alternative 1: Async and reload support inside `sc-config` behind a Cargo feature in Phase D
 
 **Why Rejected:**
 

@@ -1288,8 +1288,8 @@ constructs of point 3 reachable from public functions.
 
 - [NFR-RUN-0002](requirements.md): owner of the async rule, the banned blocking calls and
   their criteria.
-- [ADR-CFG-0003](sc-config/architecture.md): the v0.1 load calls are synchronous and the Phase D deliverable has two dependencies.
-- [NFR-CFG-0003](sc-config/requirements.md): the v0.1 `sc-config` load calls are synchronous.
+- [ADR-CFG-0003](sc-config/architecture.md): the Phase D load calls are synchronous and the deliverable has two dependencies.
+- [NFR-CFG-0003](sc-config/requirements.md): the Phase D `sc-config` load calls are synchronous.
 - [REQ-TRN-0004](sc-transport/requirements.md): socket-file operations at bind time, which
   are outside the request path.
 - [REQ-RT-0005](sc-runtime/requirements.md): graceful shutdown, whose file operations are
@@ -1339,7 +1339,7 @@ in a separate cleanup task, not an initial unpublished-1.5.1 prerequisite.
    `daemon.lock` lock, replacing a stale socket file when binding, removing
    the socket file on shutdown) are outside the request path and are not
    covered by point 3.
-5. `sc-config` is the deliberate exception. Its v0.1 `load` and `Loader::load` calls are synchronous. Configuration is loaded once at start-up and not on a request path. This is what is built; it forbids neither an async API nor a later `tokio` dependency (PRD-ENG-5).
+5. `sc-config` is the deliberate exception. Its `load` and `Loader::load` calls are synchronous in the Phase D deliverable. Configuration is loaded once at start-up and not on a request path. This is what is built; it forbids neither an async API nor a later `tokio` dependency (PRD-ENG-5).
 
 ### Rationale
 
@@ -1353,7 +1353,7 @@ bridge. A CLI that only needs the Phase D configuration implementation does not 
 
 **Negative:**
 
-- `sc-config` offers no reload in v0.1, so a program that wants live reload must call `load` again itself.
+- `sc-config` offers no reload in Phase D, so a program that wants live reload must call `load` again itself.
 
 ### Alternatives Considered
 
