@@ -470,6 +470,8 @@ for the tests of any program that uses it.
 
 ### Requirement Statement
 
+Definitions: The failure table is the table of five load failures in this requirement. Failure N is row N of the failure table. A failure's data is the entry in that row's third column. The five failure variants are `MissingDefault`, `Read`, `Parse`, `Override` and `Deserialize`, for failures 1 to 5 in that order.
+
 This item covers the public error enum `ConfigError` of the `sc-config` crate
 (`crates/sc-config`). It is the error type of `load` and of `Loader::load`.
 
@@ -496,23 +498,26 @@ and recovery steps are the error inventory in
 
 **MUST statements:**
 
-- `ConfigError` MUST have one distinct variant for each failure in this table. (see table above)
-- Each variant MUST carry the listed data as typed fields, not only inside a message string.
-- A `local.json` that exists but cannot be read MUST produce failure 2, not be skipped.
-- Failure 1 MUST be the distinct "file not found" variant for `default.json`.
-- Failure 2 MUST be the distinct variant for every other I/O error.
+- `ConfigError` MUST have one distinct variant for each of the five failures of the failure table.
+- Each of the five failure variants MUST carry its failure's data as typed fields of the variant.
+- A `local.json` that exists but cannot be read MUST produce failure 2.
+- Failure 1 MUST produce the variant `MissingDefault`.
+- Every I/O error on `default.json` or `local.json` other than failure 1 MUST produce the variant `Read`.
 - `ConfigError` MUST implement `std::fmt::Debug`.
 - `ConfigError` MUST implement `std::fmt::Display`.
 - `ConfigError` MUST implement `std::error::Error`.
-- The `Display` text of every variant MUST contain the file path or the variable name that the variant carries.
-- The `Display` text of failure 3 MUST contain the line.
-- The `Display` text of failure 3 MUST contain the column.
+- The `Display` text of a variant that carries a file path MUST contain that path.
+- The `Display` text of a variant that carries a variable name MUST contain that name.
+- The `Display` text of the `Parse` variant MUST contain its line number.
+- The `Display` text of the `Parse` variant MUST contain its column number.
 
 **SHOULD statements:**
 
 - The failure 2 variant SHOULD also carry the underlying `std::io::Error` or its `std::io::ErrorKind`.
 
 **MUST NOT statements:**
+
+- A `local.json` that exists but cannot be read MUST NOT be skipped.
 
 - A missing `local.json` MUST NOT produce an error.
 
