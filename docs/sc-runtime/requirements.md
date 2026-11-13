@@ -1191,37 +1191,34 @@ would reject one.
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). A typed error enum is the crate-specific error type returned by fallible public operations. Code reachable from a public function includes functions that public entry point can call.
+Definitions:
 
-An explanatory comment creates no exception. Test code is exempt. The explicitly named exceptions in NFR-RUN-0009 and ADR-RUN-0017 remain applicable; this record adds no broader exception.
+- The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` ([REQ-RUN-0002](../requirements.md)).
+- A fallible public operation is a `pub` function or `pub` method of a crate that has a failure outcome, such as invalid caller input, a held lock, a missing directory, a port in use or a stores failure.
+- A typed error enum is the error enum that one crate defines for its own fallible public operations.
+- The own result type of an operation is `Result<T, E>`, or an alias of it, in which `T` is any success type and `E` is the typed error enum of the crate containing the operation.
+- `RuntimeError` is the typed error enum of `sc-runtime` ([REQ-RT-0007](requirements.md)).
+- Covered code is non-test code under `crates/<crate>/src` of a crate in the public package set that a `pub` function of a crate in the public package set reaches through a chain of zero or more calls; test code is code under `#[cfg(test)]` or in `tests/`.
+- A panicking index expression is a `[]` index on a slice, array, `Vec` or map that panics when the index or key is absent.
 
-Applied to `sc-runtime`:
+An explanatory comment creates no exception. The explicitly named exceptions in NFR-RUN-0009 and ADR-RUN-0017 remain applicable; this record adds no broader exception. NFR-RUN-0009 owns the repo-level rule; `sc-runtime` adds no strictness beyond it.
 
-- No public function or method of `sc-runtime` may panic on caller input or
-  on the state of the environment (lock held, missing directory, port in use,
-  stores failure, signal delivery).
-- A panic raised inside a project closure is the project's; `sc-runtime` is
-  not required to catch it.
-
-`sc-runtime` adds no strictness beyond the repo-level rule.
-
-NFR-RUN-0009 owns this repo-level rule.
+Applied to `sc-runtime`: no public function or method of `sc-runtime` panics on caller input or on environment state (lock held, missing directory, port in use, stores failure, signal delivery). A panic raised inside a project closure belongs to the project; `sc-runtime` need not catch it.
 
 **MUST statements:**
 
-- Every fallible public operation MUST return `Result<_, RuntimeError>` ([REQ-RT-0007](requirements.md)).
-- In each crate in the public package set, every fallible public operation MUST return `Result<T, E>` with `E` the crate's own typed error enum.
+- Every fallible public operation of `sc-runtime` MUST declare `Result<T, RuntimeError>` as the return type.
+- Every fallible public operation of a crate in the public package set MUST declare the own result type of the operation as the return type.
 
 **MUST NOT statements:**
 
-- In each crate in the public package set, code reachable from a public function MUST NOT use `unwrap`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use `expect`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use `panic!`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use `unreachable!`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use `todo!`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use `unimplemented!`.
-- In each crate in the public package set, code reachable from a public function MUST NOT use panicking `[]` indexing.
-- Non-test code in `crates/sc-runtime/src` that is reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!` or panicking `[]` indexing.
+- Covered code MUST NOT call `unwrap`.
+- Covered code MUST NOT call `expect`.
+- Covered code MUST NOT invoke `panic!`.
+- Covered code MUST NOT invoke `unreachable!`.
+- Covered code MUST NOT invoke `todo!`.
+- Covered code MUST NOT invoke `unimplemented!`.
+- Covered code MUST NOT contain a panicking index expression.
 
 ### Rationale
 
