@@ -2228,7 +2228,7 @@ evidence records the 0.8.4 exit-3 behavior and remains unchanged.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. API means application programming interface. The crate is the template SQLite store crate described here. A write actor is a dedicated worker accepting queued writes. A queue is an intermediate collection of pending operations. The two-pool arrangement is the reader pool and single-connection writer described in the table below.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. API means application programming interface. The crate is the template SQLite store crate described here. A write actor is a dedicated worker accepting queued writes. A queue is an intermediate collection of pending operations. The two-pool arrangement is the reader pool and single-connection writer described in the table below. Custom concurrency code is code written in the crate to coordinate concurrent work, such as spawned tasks or threads, channels, or locks; the two `sqlx` pools are not custom concurrency code.
 
 The SQLite store is the atm-core writer behind `Storage<T>`, not two sqlx pools with per-table query functions. The text below is kept for history and binds nothing.
 
