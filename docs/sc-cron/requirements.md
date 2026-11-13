@@ -20,43 +20,55 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 
 ### Requirement Statement
 
-Phase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.
+Phase D retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. `sc-sha` is permitted for SHA-256 cache keys. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
 
-`crates/sc-cron` is a workspace member, ported from beads-cache
 
-`crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
+**MUST statements:**
 
-only a temporary normal `sc-command` 0.2.0 Phase C dependency (initial
 
-release 0.1.1) with
+- `crates/sc-cron` MUST be a workspace member.
 
-`default-features = false` and no features for the canonical port. Canonical
+- `sc-cron` MUST consume the single `sc-monty` implementation (the shared Monty interpreter crate).
 
-event values remain direct registry `sc-observability-types` imports.
+- Every test function under `crates/sc-cron` before its migration onto `sc-monty` and `sc-storage` MUST still exist after that migration in `crates/sc-cron` or `crates/sc-monty`.
 
-`sc-runtime` does not name it. The generated daemon may name it only as the
+- Each assertion in those test functions MUST retain its expected value and condition after that migration.
 
-optional `cron` dependency selected by the embedding application; default
+- `cron.start` MUST use the `sc-command` `storage_write` function.
 
-generated builds do not link it. Here "name" means a Cargo or other manifest
+- `cron.end` MUST use the `sc-command` `storage_write` function.
 
-dependency. Documented wiring may reference the crate in comments and schema
+- `cron.list` MUST use the `sc-command` `storage_read` function.
 
-descriptions.
+- Every `sc-observability-types` type used by `sc-cron`, including `LogEvent`, `Level` and `ServiceName`, MUST be imported directly from the registry `sc-observability-types` crate.
 
-The injection API is packaged at workspace version `0.1.1`, with cron the
+- Crates used only by tests MUST be declared under `[dev-dependencies]`.
 
-fifth public library. Registry types use compatible `1.5.0`, unified to exact
+- The unpublished `dev/observability-types-shim` package and its path/rewrite plumbing MUST be removed during implementation before initial publication.
 
-1.5.0 by command's temporary pin. Normal cron enables neither command/server
 
-nor command/test-util; test doubles use dev-dependencies only. The current
 
-local facade is removed during implementation before initial publication.
+**MUST NOT statements:**
 
-Capability-proven upstream cleanup removes cron -> command and restores the
 
-original no-sibling boundary.
+- `sc-cron` MUST NOT directly depend on `monty`.
+
+- `sc-cron` MUST NOT directly depend on `monty-types`.
+
+- `sc-cron` MUST NOT retain an independent Monty interpreter engine for compile, session, host, limits, dump or load operations.
+
+- `sc-cron-commands` MUST NOT enable the `sc-command/server` feature.
+
+- `sc-cron-commands` MUST NOT enable any other dependency feature that adds the `axum` or `rmcp` crate to its dependency graph.
+
+- `sc-runtime` MUST NOT name `sc-cron` as a dependency.
+- `template/crates/daemon/Cargo.toml` MUST NOT name `sc-cron` except as the optional `cron` dependency selected by the embedding application.
+
+- The default feature set of the generated daemon MUST NOT link `sc-cron`.
+
+- The default feature set of `sc-cron` MUST NOT enable `sc-command/server`.
+
+- The default feature set of `sc-cron` MUST NOT enable `sc-command/test-util`.
 
 ### Rationale
 
@@ -73,15 +85,18 @@ An independently packaged scheduler can be embedded without the generated templa
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
+**MUST statements:**
+
+
+- A schedule MUST use a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
 ### Rationale
 
-The beads-cache expression parser refused a five-field string; a normal crontab string is five fields, minute first (ADR-RUN-0013 Context). Owner, 2026-10-25: schedules are cron strings.
+The beads-cache expression parser refused a five-field string; a normal crontab string is five fields, minute first (ADR-RUN-0013 Context).
 ### Success Criteria
 
 **Acceptance Criteria:**
@@ -148,36 +163,34 @@ sc-cron owns CronRow for schedules and MontyBlobRow for compiled hook sessions. 
 
 **MUST statements:**
 
-- CronRow MUST be stored through Storage<CronRow> in the application database, using the application SQLite file by default.
-- The schedule row MUST preserve canonical hook_environment data with empty default {"dotenv":[],"variables":{}}.
+- CronRow (the cron-owned schedule row) MUST be stored through Storage<CronRow> in the application database, using the application SQLite file by default.
+- The schedule row MUST preserve canonical hook_environment data (the JSON document specifying the Python/Monty hook environment) with empty default {"dotenv":[],"variables":{}}.
 - The configured schedule-row limit MUST count enabled and disabled rows.
 - CronStorage MUST reject a new schedule row at the configured limit with CronError::InvalidSpec.
-- Each writer MUST use the embedding application's ScheduleLimits.
-- Schedule writes MUST reject source that sc-monty cannot compile before its first tick.
+- Each writer MUST use the embedding application's ScheduleLimits (the configuration that supplies the schedule-row limit).
+- Schedule writes MUST reject hook source that sc-monty (the shared Monty interpreter crate) cannot compile before the schedule's first tick.
 - Compiled sessions MUST be captured immediately after compilation, before any hook runs.
-- Compiled-session blobs MUST use sc-sha SHA-256 of the exact source plus Monty dump version as their key.
+- Compiled-session blobs (serialized bytes of compiled Monty hook sessions stored through `Storage<MontyBlobRow>`) MUST use the SHA-256 digest of the exact hook source computed by the sc-sha crate plus the Monty session dump version (Monty's dump format version) as their key.
 - The schedule-row source MUST remain authoritative for matching a cached blob.
-- Missing, stale, corrupt, unreadable-version or missing-hook cache entries MUST trigger recompilation from source and replacement of the pre-run blob.
-- Cache rows MUST use sc-cron-owned generic row schemas and migrations.
+- Missing, stale, corrupt, unreadable-version or missing-hook cache entries (stored compiled-session blobs) MUST trigger recompilation from source and replacement of the pre-run blob.
+- Cache rows (MontyBlobRow records for compiled hook sessions) MUST use sc-cron-owned generic row schemas (table, key and column descriptors).
+
+- Cache rows (MontyBlobRow records for compiled hook sessions) MUST use sc-cron-owned migrations.
 
 **MUST NOT statements:**
 
 - sc-cron MUST NOT create a separate cron database by default.
 - sc-cron MUST NOT persist hook run state in compiled-session blobs.
 - The configuration schema MUST NOT add a separate environment or secret table.
-- sc-cron MUST NOT migrate unrelated consumer tables.
+- sc-cron MUST NOT migrate unrelated consumer tables (application tables other than the cron-owned rows).
 
 ### Rationale
 
-configuration is one SQLite table. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration, and sc-cron must not depend on `sc-config` (ADR-RUN-0014).
+Schedules and compiled sessions use cron-owned rows in the application database. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration, and sc-cron must not depend on `sc-config` (ADR-RUN-0014).
 
 ### Success Criteria
 
 The ported cron conformance tests preserve schedule fields and row-limit behavior. Compiled-cache tests cover source/version match, invalid source at submit, pre-run snapshot timing and each cache-miss condition.
-
-### Implementation Notes
-
-The row limit is application configuration rather than stored table state; independent writers with different configured limits do not enforce one another's limits.
 
 ## REQ-CRON-0005: One error enum
 
@@ -322,27 +335,61 @@ Owner (ANC-034): "python/monty having consistent settings would be least confusi
 
 **Version:** 1.0.0  
 **Created:** 2026-10-27  
-**Last Updated:** 2026-10-27  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Status:** Active  
 
 ### Requirement Statement
 
-`rusqlite` leaves this list when the schedule store moves to `Storage<CronRow>`; until that code change lands the list below describes the code as it is.
+This item owns the third-party crates `sc-cron` may depend on. `sc-lint-boundary` accepts only workspace package names. The cargo-tree gates `sc-cron-tree-default` and `sc-cron-tree-monty` in `sc-lint.toml` enforce the optional Monty feature. CLI process invocation does not create a crate dependency.
 
-This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. Only the temporary defaults-off command contract edge in ADR-RUN-0017
 
-is allowed; no other workspace crate is allowed.
+**MUST statements:**
 
-The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
+
+- The normal dependencies of `sc-cron` MUST be `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, `tracing`, `sc-storage`, `sc-command`, `sc-monty` and `sc-sha`, subject to the feature conditions in this record.
+
+- The `monty` feature MUST remain optional.
+
+- The default dependency tree MUST have no `sc-monty` edge.
+
+- The `monty` feature MUST use `sc-monty` for the interpreter.
+
+
+
+**MUST NOT statements:**
+
+- The resolved `sc-cron` normal dependency graph with default Cargo features MUST NOT contain `monty` (the published interpreter crate).
+
+
+- `sc-cron` MUST NOT depend directly on `rusqlite` after its schedule store moves to `Storage<CronRow>`.
+
+- `sc-cron` MUST NOT depend directly on `monty`.
+
+- `sc-cron` MUST NOT depend directly on `monty-types`.
+
+- `sc-cron` MUST NOT link `monty-pool`.
+
+- `sc-cron` MUST NOT link `monty-fs`.
+
+- `sc-cron` MUST NOT link `monty-runtime`.
+
+- Production dependencies MUST NOT include a crate from the sc-compose repository other than `sc-sha`.
+
+- Imports in non-test, non-benchmark production code MUST NOT include a crate from the sc-compose repository (including `sc-compose`, `sc-composer` and `sc-composer-beads`) other than `sc-sha`.
+
+- Production dependencies MUST NOT include an agent-team-mail workspace crate (including `agent-team-mail` and `atm-core`).
+
+- Imports in non-test, non-benchmark production code MUST NOT include an agent-team-mail workspace crate (including `agent-team-mail` and `atm-core`).
+
 ### Rationale
 
-Owner (ANC-031): "sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests" `monty` runs in-process when the host controls the code; `monty-pool` runs the interpreter in worker subprocesses for untrusted code. The Monty hook target is the trusted case, and a subprocess pool would spend the process spawn the target exists to avoid. A consumer who does not enable `monty` does not link the interpreter.
+Test and benchmark references to sc-compose and ATM are permitted. `monty` runs in-process when the host controls the code; `monty-pool` runs the interpreter in worker subprocesses for untrusted code. The Monty hook target is the trusted case, and a subprocess pool would spend the process spawn the target exists to avoid. A consumer who does not enable `monty` does not link the interpreter.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] The `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml` enforce that feature `monty` stays optional: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only.
+- [ ] The `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml` enforce that feature `monty` stays optional: the default tree has no `sc-monty` edge, and `--features monty` uses the shared interpreter through `sc-monty`.
 ### Related Documents
 
 **Requirements:**

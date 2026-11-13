@@ -9,105 +9,139 @@
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-The async input needs an async channel, so `rusqlite` will not be the only dependency.
+The SQLite backend implements the shared `sc-storage` contract with asynchronous input. [REQ-RUN-0005](../requirements.md) point 4 refers to this item.
 
-`crates/sc-runtime-db-sqlite` is a workspace member. This item owns its third-party dependencies: `rusqlite` with the `bundled` feature, and no other dependency. It depends on no other workspace crate. [REQ-RUN-0005](../requirements.md) point 4 points here.
+
+**MUST statements:**
+
+
+- `crates/sc-runtime-db-sqlite` MUST be a workspace member.
+
+- The SQLite backend MUST use `rusqlite` with the `bundled` feature.
+- The generic SQLite backend MUST use only `sc-storage`, `rusqlite` and `tokio` as its normal dependencies.
+
+
+
+**MUST NOT statements:**
+
+
+- The SQLite backend MUST NOT depend on `sc-cron`.
+
+- The SQLite backend MUST NOT depend on `sqlx`.
+
+- The SQLite backend MUST NOT contain consumer table schemas or SQL.
+
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0012): copy the atm-core writer machine into a library crate; do not put it behind a SQL trait shared with sqlx. The rusqlite `bundled` feature gives zero system SQLite dependency (PRD NF-04).
+ADR-RUN-0020 places the copied writer behind the shared storage contract while keeping consumer schemas outside the engine. The `rusqlite` `bundled` feature avoids a system SQLite dependency.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] The crate's boundary manifest forbids every other workspace crate.
+- [ ] The crate's boundary manifest permits the shared `sc-storage` dependency and forbids `sc-cron`.
 - [ ] `cargo tree -p sc-runtime-db-sqlite -e normal --prefix none` prints no line `sqlx`.
 
 ## REQ-DBSQ-0002: Public items
 
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Status:** Active  
 
 ### Requirement Statement
 
-The public surface becomes the SQLite implementation of `Storage<T>` with an async input. The blocking `SqliteWriter` signatures are the code as it is, not the target.
+Definitions: `SqliteOpenOptions` names `queue_capacity` and `reader_count` with nonzero types.
 
-The public items are `SqliteWriter`, `WriterConn`, `SqlValue`, `SqliteWriterError`, `CHANNEL_CAPACITY`, `BATCH_TIME_BUDGET`, `WRITE_DEADLINE`, and `SHUTDOWN_JOIN`, with the signatures in the architecture file.
+The public surface is the SQLite implementation of the shared asynchronous `Storage<T>` contract.
+
+
+**MUST statements:**
+
+
+- `SqliteDatabase` MUST expose an inherent `open` operation.
+
+- `SqliteDatabase` MUST expose an inherent `storage` operation.
+
+- `SqliteDatabase` MUST expose an inherent `shutdown` operation.
+
+- `SqliteDatabase` MUST expose an inherent `wait_closed` operation.
+
+- `SqliteDatabase::open` MUST use `SqliteOpenOptions`.
+
+- The backend MUST expose the typed `SqliteStore<T>` implementation of `Storage<T>`.
+
+
+
+**MUST NOT statements:**
+
+
+- The backend MUST NOT expose raw connection or SQL machinery publicly.
+
+- The backend MUST NOT expose the legacy `SqliteWriter`, `WriterConn`, `SqlValue` or `SqliteWriterError` facade in version 0.3.0.
+
 ### Rationale
 
-Sprint b-1 copies the atm-core writer with these types substituted for its `WriteOp`, `WriteOpResult`, `AtmError`, and `SharedDbTarget`.
+ADR-RUN-0020 and the Phase D storage contract retain the proven writer machinery behind typed generic storage and retire the raw SQL facade.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] `sc-lint lint sc-boundary` exits 0 with the crate's boundary manifest, whose `[public] facade` lists these public types.
+- [ ] `sc-lint lint sc-boundary` exits 0 with the crate's boundary manifest matching the implemented typed public facade.
 
 ## REQ-DBSQ-0003: Reply after commit
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-The writer thread is the only caller of rusqlite. `execute` replies with the number of rows affected only after the outer commit.
+**MUST statements:**
+
+
+- The writer thread MUST exclusively own the write-mode SQLite connection.
+
+- The SQLite writer MUST send successful replies only after the outer transaction commits.
 ### Rationale
 
-ADR-RUN-0012 copies the measured atm-core path: one rusqlite connection on one thread, a bounded channel, `BEGIN IMMEDIATE`, and a reply only after commit.
+ADR-RUN-0020 preserves the measured atm-core writer path: a bounded channel, one write-mode connection on the writer thread, and successful replies only after the outer commit. Reader workers use read-only connections.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] `cargo test -p sc-runtime-db-sqlite` exits 0, covering one `execute` round-trip and two concurrent `execute` calls with reply-after-commit.
+- [ ] `cargo test -p sc-runtime-db-sqlite` exits 0, covering successful write replies after the outer commit.
 
 ## REQ-DBSQ-0004: One commit order
 
-**Status:** Active  
+**Status:** Active
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed.
+Definitions: An admitted write operation is a write accepted into the SQLite writer queue. The first and second operations are ordered by their admission to that queue.
+
+
+**MUST NOT statements:**
+
+
+- For two admitted write operations, the second reply MUST NOT be sent before the first operation has committed or failed.
+
 ### Rationale
 
-ADR-RUN-0012 point 3: contiguous executes share one savepoint inside one `BEGIN IMMEDIATE` transaction, and each caller is answered only after that transaction commits.
+ADR-RUN-0020 requires batched SQLite writes and successful replies after the outer transaction commits.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed.
-
-## REQ-DBSQ-0005: No runtime or template edge
-
-**Status:** Superseded  
-**Version:** 1.0.0  
-**Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
-**Owner:** randlee  
-
-### Requirement Statement
-
-The template's SQLite store and the runtime use this writer. The text below binds nothing.
-
-Template `store-sqlite` does not name this crate. `sc-runtime` does not name it.
-### Rationale
-
-ADR-RUN-0301 binds `template/crates/store-sqlite` to sqlx 0.9 with no write actor; a `StorageBackend` that runs the same SQL on rusqlite and on Postgres is the portable query layer that ADR rejects. `sc-runtime` does not open the writer (ADR-RUN-0012).
-### Success Criteria
-
-**Acceptance Criteria:**
-
-- [ ] `rg sc-runtime-db-sqlite template` prints nothing.
-- [ ] `sc-lint lint sc-boundary` exits 0 with `sc-runtime-db-sqlite` in the forbidden edges of `sc-runtime`.
+- [ ] A test controls admission and commit outcomes for two writes and checks their replies against the required order.
