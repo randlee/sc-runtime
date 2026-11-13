@@ -37,7 +37,7 @@ of the CLI.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-03  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -158,16 +158,12 @@ with default features. `DaemonConfig` embeds that type.
 
 - The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that assembles and runs a daemon.
 - It MUST implement `serde::Deserialize`.
-- `run()` MUST perform exactly the five steps described above.
-
-- `run()` MUST perform the five steps in the order described above.
+- `run()` MUST perform exactly these five steps, in this order:
 - If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT execute any later step.
 
 **MUST NOT statements:**
 
-- `run()` MUST NOT read a config file to load configuration.
-
-- `run()` MUST NOT read an environment variable to load configuration.
+- `run()` MUST NOT read a config file or an environment variable to load configuration.
 - `run()` MUST NOT call the stores closure before the lock is held.
 - `run()` MUST NOT bind a listener before steps 1 to 4 have succeeded.
 - The builder MUST NOT offer hooks, callbacks or configuration that insert work between steps or reorder them (decided in this document and recorded in [ADR-RT-0001](architecture.md); the design lists the five steps and says the crate is a bootstrap, not a framework layer).
@@ -214,12 +210,10 @@ last so no request is accepted before it can be served.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
-
-Definitions: The instance root, written `<instance-root>` in paths, is the per-application, per-user directory resolved by sc-transport or an explicitly supplied path. The ready state is the builder state reached after `stores` and `routes`; `run_with_cleanup` is a terminal run method in that state with once-only asynchronous application cleanup.
 
 `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). Tests supply a tempdir as the explicit path.
 
@@ -235,15 +229,9 @@ crate creates the directory it is about to lock.
 
 **MUST statements:**
 
-- `sc-runtime` MUST enforce that at most one daemon runs per instance root (the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path).
-- The mechanism MUST be an OS exclusive file lock.
-
-- The lock MUST be taken with the `fd-lock` crate.
-
-- The lock MUST be on `<instance-root>/daemon.lock`.
-- `run()` MUST take the lock before the stores closure is called.
-
-- `run()` MUST take the lock before any listener is bound.
+- `sc-runtime` MUST enforce that at most one daemon runs per instance root.
+- The mechanism MUST be an OS exclusive file lock, taken with the `fd-lock` crate, on the file `<instance-root>/daemon.lock`.
+- The lock MUST be taken by `run()` before the stores closure is called and before any listener is bound.
 - The lock MUST be held until the process exits or `run()` returns.
 - The additive ready-state `run_with_cleanup` MUST retain it until the supplied asynchronous cleanup finishes, on success and on startup errors.
 - If another process holds the lock, `run()` MUST return a `RuntimeError` whose variant means "lock held" (illustrative name `RuntimeError::LockHeld`; [REQ-RT-0007](requirements.md) defines the variants).
@@ -252,12 +240,8 @@ crate creates the directory it is about to lock.
 **MUST NOT statements:**
 
 - The attempt to lock MUST NOT block waiting for the holder: it is a non-blocking try-lock (decided in this document; the design states the exclusive lock but not whether the attempt waits).
-- If another process holds the lock, the stores closure MUST NOT be called.
-
-- If another process holds the lock, a listener MUST NOT be bound.
-- The crate MUST NOT use a PID file to detect another daemon.
-
-- The crate MUST NOT probe a port to detect another daemon.
+- In that case the stores closure MUST NOT be called and a listener MUST NOT be bound.
+- The crate MUST NOT use a PID file or probe a port to detect another daemon.
 ### Rationale
 
 The daemon is the only process allowed to open the local database; two
@@ -286,12 +270,10 @@ stale-PID file to clean up and no race between checking and claiming.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
-
-Definitions: MCP means Model Context Protocol. The receiving closures are the project routes closure and, if present, the project MCP closure.
 
 `Stores` being opaque to this crate is the current design. The shared command path needs `Storage<T>`; whether it lives in this crate or beside it is undecided.
 
@@ -308,23 +290,13 @@ Definitions: MCP means Model Context Protocol. The receiving closures are the pr
 
 - In `sc-runtime` it MUST be a generic type parameter of the builder.
 - `sc-runtime` MUST obtain the `Stores` value only from the project's stores closure.
-- `sc-runtime` MUST pass that value to the project's routes closure.
-
-- If present, `sc-runtime` MUST pass that value to the project's MCP closure.
+- `sc-runtime` MUST pass that value to the project's routes closure and, if present, the project's MCP closure, and MUST NOT do anything else with it.
 - The only bounds on the `Stores` parameter MUST be those needed to move it into the closures and across the async runtime (for example `Send`, `'static`, `Clone`).
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT use the `Stores` value for any purpose other than passing it to the receiving closures.
-
-- `sc-runtime` MUST NOT read a field of `Stores`.
-
-- `sc-runtime` MUST NOT call a method on `Stores`.
-
-- `sc-runtime` MUST NOT require a trait describing the contents of `Stores`.
-- `sc-runtime` MUST NOT open a database pool.
-
-- `sc-runtime` MUST NOT run a database migration.
+- `sc-runtime` MUST NOT read a field of, call a method on, or require a trait describing the contents of `Stores`.
+- `sc-runtime` MUST NOT open a database pool or run a migration.
 ### Rationale
 
 Which route uses which store is a project decision. If the framework knew
@@ -350,12 +322,10 @@ that in project code, and lets a project with no database use the crate.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
-
-Definitions: MCP means Model Context Protocol. Session state of `sc-runtime` is data it keeps about a client, connection or session between requests, for example an MCP session store. Project-owned state and rmcp internals are not state of `sc-runtime`.
 
 It is one `axum::Router`, served unchanged on every listener `run()` binds.
 
@@ -389,30 +359,16 @@ check happens before reserved-route mount side effects and before bind.
 
 **MUST statements:**
 
-- MCP MUST be reachable only as `/mcp` on the one router.
-
 - In step 4 of `run()` (after the lock is held and the stores closure has returned, before anything is bound), `sc-runtime` MUST build one `axum::Router` containing the following. (see table above)
-- The routes closure MUST return a `utoipa_axum::OpenApiRouter`.
-- The OpenAPI document served MUST be the one generated from the project's route registrations.
-- `sc-runtime` MUST mount the project's router as given, without wrapping it in its own type.
-
-- `sc-runtime` MUST mount the rmcp service as given, without wrapping it in its own type.
+- The routes closure MUST return a `utoipa_axum::OpenApiRouter`; `sc-runtime` MUST NOT define its own router type.
+- The OpenAPI document served MUST be the one generated from the project's route registrations; `sc-runtime` MUST NOT require the project to register the document route itself.
+- `sc-runtime` MUST mount the project's router and the rmcp service as given, without wrapping them in its own types.
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT define its own router type.
-
-- `sc-runtime` MUST NOT require the project to register the OpenAPI document route itself.
-
-- `sc-runtime` MUST NOT add an MCP session store of its own.
-
-- `sc-runtime` MUST NOT add any other session state of its own.
+- `sc-runtime` MUST NOT add an MCP session store or any other session state of its own.
 - If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`; with no project route or fallback there, axum answers HTTP 404.
-- MCP MUST NOT get a listener of its own.
-
-- MCP MUST NOT get a port of its own.
-
-- MCP MUST NOT get a process of its own.
+- MCP MUST NOT get a listener, port or process of its own; it is reachable only as `/mcp` on the one router.
 ### Rationale
 
 One route registration yields both the router and the OpenAPI document, so
@@ -542,25 +498,15 @@ contract. Ctrl-Break is selected for Phase C; implementation is planned.
 
 ---
 
-# Requirement: Test fixture `DaemonFixture` in the `testing` module
+## REQ-RT-0006: Test fixture `DaemonFixture` in the `testing` module
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-10-24  
 **Owner:** randlee  
 
----
-
-## REQ-RT-0006: Test fixture `DaemonFixture` in the `testing` module
-
-**Status:** Active  
-
 ### Requirement Statement
-
-Definitions: MCP means Model Context Protocol. The MCP closure is the application service factory supplied to the Daemon builder mcp method. A fixture is the production Daemon builder running with a temporary instance root for a test.
-
-The signal shutdown sequence stops accepting, drains in-flight requests, closes the listener, removes the socket file and releases the lock ([REQ-RT-0005](requirements.md)).
 
 The name is illustrative until the contract sprint pins it.
 
@@ -611,37 +557,21 @@ change or exposing the private fixture shutdown trigger.
 **MUST statements:**
 
 - `sc-runtime` MUST expose `sc_runtime::testing::DaemonFixture` for use in the tests of generated projects and of this workspace.
-- Starting a fixture MUST create a new temporary directory.
-- Starting a fixture MUST use that directory as the daemon's instance root (the directory that holds `daemon.lock` and, on macOS and Linux, the socket file `daemon.sock`).
-- The fixture MUST supply that directory to the daemon as an explicit instance-root path.
-- The fixture MUST start the daemon through the same `Daemon::builder()` path as production.
-- The fixture MUST use a real `daemon.lock`.
-- The fixture MUST use the project's stores closure, the application function supplied to `Daemon::builder().stores(...)` to open its stores.
-- The fixture MUST use the project's routes closure.
-- The fixture MUST use the project's MCP closure when supplied.
-- The fixture MUST use a real listener bound through `sc-transport`.
+- Starting a fixture MUST create a new temporary directory and use it as the daemon's instance root (the directory that holds `daemon.lock` and, on macOS and Linux, the socket file `daemon.sock`), supplied to the daemon as an explicit instance-root path.
+- The fixture MUST start the daemon through the same `Daemon::builder()` path as production: real `daemon.lock`, the project's stores, routes and optional MCP closures, a real listener bound through `sc-transport`.
 - The fixture MUST expose an `sc_transport::Client` already connected to that daemon's endpoint (decided in this document).
-- The fixture MUST expose its resolved endpoint.
-- The fixture MUST expose its resolved endpoint in the string form accepted by the `--endpoint` flag and the `SC_ENDPOINT` environment variable.
+- The fixture MUST expose its resolved endpoint, including in the string form accepted by the `--endpoint` flag and the `SC_ENDPOINT` environment variable, so that a test can point a plain HTTP or MCP client at the daemon, and so that an isolated-machine test can point the CLI binary at it (decided in this document).
 - The fixture MUST expose its instance-root path (decided in this document).
-- The fixture MUST stop its daemon through a crate-private trigger.
-- The crate-private trigger MUST run the same shutdown sequence a signal starts ([REQ-RT-0005](requirements.md)).
+- The fixture MUST stop its daemon through a crate-private trigger that runs the same shutdown sequence a signal starts (stop accepting, drain in-flight requests, close the listener, remove the socket file, release the lock: [REQ-RT-0005](requirements.md)).
 - Dropping the fixture MUST stop the daemon.
-- The operation a test uses to stop the fixture (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the listener is closed.
-- For a Unix domain socket endpoint, the operation a test uses to stop the fixture (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the socket file is removed.
+- The operation a test uses to stop it (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the listener is closed and, for a Unix domain socket endpoint, the socket file is removed (decided in this document).
 - On platforms whose default endpoint is a Unix domain socket (macOS and Linux), any number of fixtures MUST be able to run at the same time inside one test binary under the default parallel test runner, with no shared socket, port, lock file or database file.
 
 **MUST NOT statements:**
 
-- There MUST NOT be a public builder method for the crate-private shutdown trigger.
-- The fixture MUST NOT send a process signal.
+- There MUST NOT be a public builder method for it, and the fixture MUST NOT send a process signal, because a signal would stop every fixture in the test binary (decided in this document).
 - The fixture MUST NOT use a fixed path such as `/tmp/...` or a path under the user's home directory.
-
 ### Rationale
-
-The endpoint string lets a test point a plain HTTP or MCP client at the daemon, and an isolated-machine test point the CLI binary at it.
-
-A process signal would stop every fixture in the test binary.
 
 Every generated project tests its operations against a real daemon. Without
 an isolated fixture those tests would share one socket and one database and
@@ -653,7 +583,6 @@ fixture ([REQ-RUN-0302](../requirements.md)). That test drives an MCP client
 as well as REST, which is why the fixture must hand out its endpoint and not
 only a connected client. It does not run the CLI binary; host-run tests never
 do ([REQ-RUN-0312](../requirements.md)).
-
 ### Success Criteria
 
 A criterion below that spawns a client child process on a developer's host
@@ -687,7 +616,7 @@ spawns a test helper, never the generated CLI binary
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -724,14 +653,8 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 
 - `run()` MUST return `Result<(), RuntimeError>`.
 - Each variant MUST carry the underlying error so the caller can print it.
-- `RuntimeError` MUST implement `std::error::Error`.
-
-- `RuntimeError` MUST implement `Debug`.
-
-- `RuntimeError` MUST implement `Display`.
-- A caller MUST be able to distinguish the variants with a `match`.
-
-- "daemon already running" (`LockHeld`) MUST be distinguishable from "cannot bind" (`BindFailed`).
+- `RuntimeError` MUST implement `std::error::Error`, `Debug` and `Display`.
+- A caller MUST be able to distinguish the variants with a `match`; in particular "daemon already running" (`LockHeld`) MUST be distinguishable from "cannot bind" (`BindFailed`).
 - Every failure of `run()` MUST be returned as an `Err(RuntimeError)`.
 
 **MUST NOT statements:**
@@ -772,7 +695,7 @@ caller needs a variant to branch on and not a string to parse.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-10-24  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -819,34 +742,16 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 **MUST statements:**
 
 - `run()` MUST obtain the instance root only by calling the `sc-transport` instance-root function, passing the `app` name given to `Daemon::builder` and the explicit instance root if one was supplied.
-- `run()` MUST obtain the bind endpoint only by calling the `sc-transport` endpoint resolver.
-
-- `run()` MUST pass the same instance root it locks to the `sc-transport` endpoint resolver.
-- The `--endpoint` flag value MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-
-- The configured endpoint MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
-
-- The explicit instance root MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
+- `run()` MUST obtain the bind endpoint only by calling the `sc-transport` endpoint resolver, passing the same instance root it locks.
+- The `--endpoint` flag value, the configured endpoint and the explicit instance root MUST reach `run()` inside the `DaemonConfig` passed to `Daemon::builder`.
 - The daemon MUST honour `SC_ENDPOINT`, because a CLI started with the same variable resolves to that endpoint and the two would otherwise never meet.
 - The endpoint and instance-root portion of configuration MUST be a `serde::Deserialize` type exported by `sc-transport` with default features.
 
 **MUST NOT statements:**
 
 - The generated `daemon/src/main.rs` MUST NOT need to call either.
-- `sc-runtime` MUST NOT contain endpoint logic of its own.
-
-- `sc-runtime` MUST NOT compute a socket path.
-
-- `sc-runtime` MUST NOT choose a default address.
-
-- `sc-runtime` MUST NOT choose a default port.
-
-- `sc-runtime` MUST NOT parse an endpoint string.
-
-- `sc-runtime` MUST NOT apply a precedence between sources.
-- The builder MUST NOT gain a method for instance-root resolution.
-
-- The builder MUST NOT gain a method for endpoint resolution.
+- `sc-runtime` MUST NOT contain endpoint logic of its own: it MUST NOT compute a socket path, choose a default address or port, parse an endpoint string, or apply a precedence between sources.
+- The builder MUST NOT gain a method for them.
 - `sc-runtime` MUST NOT parse the command line.
 ### Rationale
 
@@ -913,7 +818,7 @@ machine, never on a developer's host
 
 The assembly-only scope of the sc-runtime crate does not require hand-written command paths or forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared sc-command path and default plain conversion; generator implementation remains follow-up work.
 
-The shared command path is supplied by sc-command; this does not expand sc-runtime beyond assembly. The macro clause follows the generator decision.
+The shared command path is supplied by sc-command; this does not expand sc-runtime beyond assembly.
 
 `sc-runtime` is a bootstrap, not a framework layer.
 
@@ -940,23 +845,9 @@ it, so the closed public-surface table above remains complete.
 **MUST NOT statements:**
 
 - The crate MUST NOT contain a command or operation registry (any structure in which a project registers operations for the framework to dispatch).
-- The crate MUST NOT define a procedural macro.
-
-- The crate MUST NOT export a procedural macro.
-
-- The crate MUST NOT define a declarative macro.
-
-- The crate MUST NOT export a declarative macro.
+- The crate MUST NOT define or export a procedural or declarative macro.
 - The crate MUST NOT define a public type that wraps an `axum`, `rmcp` or `sqlx` type.
-- The crate MUST NOT have any other public item.
-
-- The crate MUST NOT have a public trait.
-
-- The crate MUST NOT have a public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`.
-
-- The crate MUST NOT have a public macro.
-
-- The crate MUST NOT have a `pub use` of an item from another crate.
+- The crate MUST NOT have any other public item: no public trait, no public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`, no public macro, and no `pub use` of an item from another crate.
 
 ### Rationale
 
@@ -999,7 +890,7 @@ libraries, and would be code every project has to learn.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -1025,19 +916,9 @@ The repo-level owner of the forbidden edges of all workspace library crates is
 **MUST NOT statements:**
 
 - `sc-runtime` MUST NOT depend on `sqlx` or any `sqlx-*` crate, directly or transitively.
-- `sc-runtime` MUST NOT depend on `sc-observability`, directly or transitively.
-
-- `sc-runtime` MUST NOT depend on the OpenTelemetry (OTel) export crate `sc-observability-otlp`, directly or transitively.
-- `sc-runtime` MUST NOT initialise logging.
-
-- `sc-runtime` MUST NOT re-export `sc-observability`.
-
-- `sc-runtime` MUST NOT re-export `sc-observability-otlp`.
-- `sc-runtime` MUST NOT load configuration.
-
-- `sc-runtime` MUST NOT read a config file.
-
-- `sc-runtime` MUST NOT call `sc_config::load`.
+- `sc-runtime` MUST NOT depend on the crate `sc-observability` or on its OTel export crate `sc-observability-otlp`, directly or transitively.
+- It MUST NOT initialise logging, and MUST NOT re-export either crate.
+- `sc-runtime` MUST NOT load configuration: it MUST NOT read a config file or call `sc_config::load`.
 ### Rationale
 
 Stores are project-owned code, one crate per database backend, so sqlx
@@ -1072,12 +953,10 @@ lets the project report a config error before anything else starts.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-04  
 **Owner:** randlee  
 
 ### Requirement Statement
-
-The workspace-internal and forbidden edges are owned by [REQ-RUN-0005](../requirements.md). `sc-runtime` is the assembly crate depending on the others; cron temporarily depends only on command under ADR-RUN-0017.
 
 The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
 
@@ -1113,31 +992,9 @@ The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `s
 
 **MUST NOT statements:**
 
-- `sc-config` MUST NOT depend on `sc-runtime`.
-
-- `sc-config` MUST NOT depend on `sc-transport`.
-
-- `sc-config` MUST NOT depend on `sc-command`.
-
-- `sc-transport` MUST NOT depend on `sc-runtime`.
-
-- `sc-transport` MUST NOT depend on `sc-config`.
-
-- `sc-transport` MUST NOT depend on `sc-command`.
-
-- `sc-command` MUST NOT depend on `sc-runtime`.
-
-- `sc-command` MUST NOT depend on `sc-config`.
-
-- `sc-command` MUST NOT depend on `sc-transport`.
-- `sc-runtime` MUST NOT depend on `sc-config` ([NFR-RT-0002](requirements.md)).
-
-- `sc-runtime` MUST NOT load configuration ([NFR-RT-0002](requirements.md)).
-- `sc-runtime` MUST NOT depend on `sqlx` ([NFR-RT-0002](requirements.md)).
-
-- `sc-runtime` MUST NOT depend on `sc-observability` ([NFR-RT-0002](requirements.md)).
-
-- `sc-runtime` MUST NOT depend on `sc-observability-otlp` ([NFR-RT-0002](requirements.md)).
+- The workspace-internal edges and the forbidden edges of all workspace library crates are owned by [REQ-RUN-0005](../requirements.md): `sc-runtime` is the assembly crate depending on the others (cron temporarily depends only on command under ADR-RUN-0017), and `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on `sc-runtime` or on each other.
+- `sc-runtime` MUST NOT depend on `sc-config` and MUST NOT load configuration ([NFR-RT-0002](requirements.md)).
+- `sc-runtime` MUST NOT depend on `sqlx`, `sc-observability` or `sc-observability-otlp` ([NFR-RT-0002](requirements.md)).
 ### Rationale
 
 The CLI must not link Axum, rmcp or sqlx, yet daemon and CLI both use
@@ -1175,14 +1032,10 @@ would reject one.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-09-19  
 **Owner:** randlee  
 
 ### Requirement Statement
-
-The repo-level rule is owned by [NFR-RUN-0009](../requirements.md).
-
-- Every fallible public operation in each of the four library crates MUST return `Result<T, E>` with `E` the crate's own typed error enum.
 
 There is no exception for a use that carries an explanatory comment. Test code is exempt.
 
@@ -1202,19 +1055,7 @@ Applied to `sc-runtime`:
 
 **MUST NOT statements:**
 
-- In each of the four library crates, code reachable from a public function MUST NOT use `unwrap`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use `expect`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use `panic!`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use `unreachable!`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use `todo!`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use `unimplemented!`.
-
-- In each of the four library crates, code reachable from a public function MUST NOT use panicking `[]` indexing.
+- The repo-level rule is owned by [NFR-RUN-0009](../requirements.md): in each of the four library crates, code reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!` or panicking `[]` indexing, and every fallible public operation returns `Result<T, E>` with `E` the crate's own typed error enum.
 - Non-test code in `crates/sc-runtime/src` that is reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!` or panicking `[]` indexing.
 ### Rationale
 

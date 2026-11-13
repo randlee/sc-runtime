@@ -4339,13 +4339,6 @@
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own.",
           "replaced": false
-        },
-        {
-          "at": "2026-11-13T01:01:06+00:00",
-          "event": "excluded",
-          "item": "run-d-7",
-          "reason": "d-7 adds the Postgres backend and neither creates nor changes sc-monty or its Cargo.toml.",
-          "replaced": false
         }
       ],
       "exclude": [
@@ -4364,10 +4357,6 @@
         {
           "item": "run-d-11",
           "reason": "Composition consumes the completed interpreter and cron cache APIs; it does not change sc-monty public types/dependencies, cron compilation/cache/table definitions, command signatures or move interpreter source/tests, which d-5/d-9/d-10 own."
-        },
-        {
-          "item": "run-d-7",
-          "reason": "d-7 adds the Postgres backend and neither creates nor changes sc-monty or its Cargo.toml."
         }
       ]
     },
@@ -4769,13 +4758,6 @@
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.",
           "replaced": false
-        },
-        {
-          "at": "2026-11-13T01:01:06+00:00",
-          "event": "excluded",
-          "item": "run-d-6",
-          "reason": "d-6 implements generic SQLite storage; the sc-cron compiled-hook blob row belongs to d-9.",
-          "replaced": false
         }
       ],
       "exclude": [
@@ -4798,10 +4780,6 @@
         {
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own."
-        },
-        {
-          "item": "run-d-6",
-          "reason": "d-6 implements generic SQLite storage; the sc-cron compiled-hook blob row belongs to d-9."
         }
       ]
     },
@@ -6023,13 +6001,6 @@
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own.",
           "replaced": false
-        },
-        {
-          "at": "2026-11-13T01:01:06+00:00",
-          "event": "excluded",
-          "item": "run-d-4",
-          "reason": "d-4 amends no REQ or ADR wording; requirement-writing policy does not govern its dependency-floor implementation.",
-          "replaced": false
         }
       ],
       "exclude": [
@@ -6056,10 +6027,6 @@
         {
           "item": "run-d-12",
           "reason": "Release/migration consumes completed code; it does not move interpreter source/tests, change hook/cache compilation/loading or command-transform bodies/signatures/widgets, or amend command-path/code-generation REQ/ADRs, which d-5/d-9/d-10 own."
-        },
-        {
-          "item": "run-d-4",
-          "reason": "d-4 amends no REQ or ADR wording; requirement-writing policy does not govern its dependency-floor implementation."
         }
       ]
     },

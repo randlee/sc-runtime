@@ -288,7 +288,7 @@ behaviour.
 **Created:** 2026-09-19  
 **Last Updated:** 2026-11-12  
 **Owner:** randlee  
-**Decision Date:** 2026-11-12
+**Decision Date:** 2026-09-19  
 
 ---
 
@@ -314,7 +314,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 
 ### Context
 
-`sc-config` provides synchronous configuration. This phase adds no watcher, reload or change notification. The location of future async or reload work is not constrained by this decision.
+sc-config provides synchronous startup configuration. This phase adds no watcher, reload or change notification; consumers may add async or reload behavior around it without a framework prohibition.
 
 `sc-config` (`crates/sc-config`) is linked into every daemon and every CLI
 built on this repository, and is meant to be usable by any Rust program on its
@@ -338,7 +338,10 @@ configuration once at start-up.
 3. The public API is synchronous: no `async fn`, no returned `Future`, no
    spawned thread or task.
 4. `sc-config` does not watch files, reload, or notify callers of changes.
-5. Reload, change notification and async interop are not built in this phase. Their future location is not prescribed by this decision.
+5. If reload, change notification or async interop is built later, it goes
+   into a separate crate, possibly named `sc-config-tokio`, that depends on
+   `sc-config`. `sc-config` never depends on that crate, and these features
+   are not added to `sc-config` behind a Cargo feature.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
    list. `allowed_dependencies` is `serde` and `serde_json`.
    `forbidden_edges` lists workspace-member targets only. This lint tree's
@@ -376,7 +379,8 @@ and binary size matter.
 - Logging configuration can be read before logging is initialised, because
   this crate does not depend on `sc-observability`. The program passes the
   loaded values to `sc-observability` itself.
-- Future reload implementation may require additional dependencies and API design.
+- Adding reload later is an additive new crate, not a breaking change to this
+  one.
 - A program that wants live reload in v0.1 must call `load` again itself.
 
 ### Alternatives Considered
@@ -385,7 +389,7 @@ and binary size matter.
 
 **Why Rejected:**
 
-cargo unifies the features of a crate across all packages built in one invocation, so under `cargo build --workspace` one crate enabling the feature would pull `tokio` into every other user of `sc-config` in that build, the CLI included; it also doubles the API surface to test. The same unification applies to the `server` feature of `sc-transport` and `sc-command`. Whether workspace-wide builds are exempt from the rule that a CLI links no server-side dependency, or those crates must be split into client and server crates instead, is recorded as **OPEN** in [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md), to be measured by the spike. This phase does not add such a feature; a later design may choose its location.
+cargo unifies the features of a crate across all packages built in one invocation, so under `cargo build --workspace` one crate enabling the feature would pull `tokio` into every other user of `sc-config` in that build, the CLI included; it also doubles the API surface to test. The same unification applies to the `server` feature of `sc-transport` and `sc-command`. Whether workspace-wide builds are exempt from the rule that a CLI links no server-side dependency, or those crates must be split into client and server crates instead, is recorded as **OPEN** in [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md), to be measured by the spike. This ADR does not depend on the outcome: `sc-config` has no such feature either way.
 
 ### Implementation
 
