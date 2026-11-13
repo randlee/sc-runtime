@@ -3412,39 +3412,66 @@ General database commands are the bootstrap. The consumer disables that public s
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object. MCP means Model Context Protocol. The standard start/end/list DTO and handler are the cron start, end and list request types and the shared handler of the `sc-cron-commands` crate ([REQ-CRNC-0001](sc-cron-commands/requirements.md)). Selected generation means generation with `cron_commands` set to true and cron selected ([REQ-CRNC-0002](sc-cron-commands/requirements.md)). A feature-off build is a build with the cron feature disabled, of a core crate or of a generated project. A server dependency is a Cargo dependency on a crate that implements the HTTP or MCP server.
+Definitions:
 
-Phase C target, planned: generation defaults `cron_commands` to false. When
-explicitly selected with cron enabled, the generated application wires the
-same standard start/end/list DTO/handler into its CLI and HTTP and, only when
-MCP is selected, MCP. REQ-CRNC-0001/0002 governs JSON, errors and existing
-Rust/Python/Monty options. Feature-off core and generated builds gain no
-scheduler/server dependency from DTO use. This amends REQ-RUN-0301's optional
-cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-only
-example or DTO library does not satisfy selected generation. REQ-RUN-0702's
-shared public release includes the optional new adapter. CLI clients remain
-free of cron/server implementation under NFR-RUN-0001.
+- DTO means data transfer object.
+- MCP means Model Context Protocol.
+- The standard start/end/list DTO and handler are the cron start, end and list request types and the shared handler of the `sc-cron-commands` crate ([REQ-CRNC-0001](sc-cron-commands/requirements.md)).
+- Selected generation means generation with `cron_commands` set to true and cron selected ([REQ-CRNC-0002](sc-cron-commands/requirements.md)).
+- A feature-off build is a build with the cron feature disabled, of a core crate or of a generated project.
+- A server dependency is a Cargo dependency on a crate that implements the HTTP or MCP server.
+- CLI means command-line interface.
+- HTTP means Hypertext Transfer Protocol.
+- Generation renders template/ from the selected answers. cron_commands is the Boolean answer selecting standard cron commands; cron selects the scheduler.
+- A scheduler dependency is a Cargo dependency on the sc-cron scheduler implementation.
+- The core crates are the reusable library crates.
+- A selected interface is CLI, HTTP, or MCP when its generation option is enabled.
+- The CLI reaches the shared handler through the daemon HTTP route; using a handler does not mean linking its implementation into the CLI.
+- Generation reads option defaults from `wizard/answers.schema.json` ([REQ-RUN-0401](requirements.md)).
+- Cron is enabled when the `cron` generation answer is true. MCP is enabled when the `mcp` generation answer is true.
+- The sc-cron-commands start, end and list request types are the start, end and list request types of the standard start/end/list DTO. The shared sc-cron-commands handler is the standard handler.
+- To wire the standard handler into an interface is to make that interface's cron start, end and list projections call it.
+- An interface's cron start, end or list projection is the generated code that exposes the cron start, end or list command on that interface: a CLI subcommand, an HTTP route or an MCP tool.
 
 **MUST statements:**
 
-- Generation MUST default `cron_commands` to false.
-- When `cron_commands` is explicitly selected with cron enabled, the generated CLI MUST use the standard start/end/list DTO and handler.
-- When `cron_commands` is explicitly selected with cron enabled, the generated HTTP interface MUST use the same standard start/end/list DTO and handler.
-- When `cron_commands` is explicitly selected with cron and MCP enabled, the generated MCP interface MUST use that same standard start/end/list DTO and handler.
-- Selected generation MUST wire the standard handler into every selected interface of the generated application.
+- In `wizard/answers.schema.json`, the `default` of the `cron_commands` property MUST be `false`.
+- When cron_commands=true and cron is enabled, the generated CLI cron start projection MUST use the sc-cron-commands start request type.
+- When cron_commands=true and cron is enabled, the generated CLI cron start projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, the generated CLI cron end projection MUST use the sc-cron-commands end request type.
+- When cron_commands=true and cron is enabled, the generated CLI cron end projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, the generated CLI cron list projection MUST use the sc-cron-commands list request type.
+- When cron_commands=true and cron is enabled, the generated CLI cron list projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, the generated HTTP cron start projection MUST use the sc-cron-commands start request type.
+- When cron_commands=true and cron is enabled, the generated HTTP cron start projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, the generated HTTP cron end projection MUST use the sc-cron-commands end request type.
+- When cron_commands=true and cron is enabled, the generated HTTP cron end projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, the generated HTTP cron list projection MUST use the sc-cron-commands list request type.
+- When cron_commands=true and cron is enabled, the generated HTTP cron list projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron start projection MUST use the sc-cron-commands start request type.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron start projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron end projection MUST use the sc-cron-commands end request type.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron end projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron list projection MUST use the sc-cron-commands list request type.
+- When cron_commands=true and cron is enabled and MCP is enabled, the generated MCP cron list projection MUST invoke the shared sc-cron-commands handler.
+- When cron_commands=true and cron is enabled, generation MUST wire the standard handler into the generated CLI.
+- When cron_commands=true and cron is enabled, generation MUST wire the standard handler into the generated HTTP interface.
+- When cron_commands=true and cron is enabled and MCP is enabled, generation MUST wire the standard handler into the generated MCP interface.
 
 **MUST NOT statements:**
 
-- DTO use MUST NOT add a scheduler dependency to feature-off core or generated builds.
-- DTO use MUST NOT add a server dependency to any feature-off build.
+- Using the request types in a core build with cron disabled MUST NOT add a scheduler dependency.
+- Using the request types in a generated build with cron disabled MUST NOT add a scheduler dependency.
+- Using the sc-cron-commands request types in a feature-off build MUST NOT add a server dependency.
+
 
 ### Rationale
 
-Owner (ANC-014): "it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface." Phase C objective 4: default-off generated configuration leaves core usable alone; explicitly selected configuration wires the real shared handler into the existing UIs.
+The statements preserve the existing contract while separating independently observable obligations.
+
 ### Success Criteria
 
-1. Default-off generation has no standard commands/adapter worker, DTO-only CLI graphs remain server/cron/SQLite/Monty free, and disabled MCP stays disabled.
-2. Actual CLI, HTTP and selected MCP use the same canonical JSON start/end/list command contract across Rust, Python and explicit Monty targets; the same request yields equivalent normalized data/error across actual UI projections.
+Generate default-off and selected-cron projects with MCP both enabled and disabled. Inspect their source call paths and request types. Inspect the default option value and feature-off Cargo graphs for the stated dependency exclusions.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
