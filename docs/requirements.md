@@ -382,7 +382,7 @@ The test command list is specified in this record; the sc-runtime design names o
 6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`
    1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).
 
-The static check list is what `just lint` with no profile argument runs, through `.sc-lint/bootstrap.py` and `sc-lint.toml`, as the sc-lint full profile:
+The static check list is what `just lint` with no profile argument runs, through `.sc-lint/bootstrap.py` and `sc-lint.toml`, as the full profile of sc-lint 0.8.6 or later:
 
 - (a) `sc-lint lint sc-boundary` (the `boundary` lint).
 - (b) line-counts, with the key `[line_counts] max_production_lines` set to `1000` for non-test files under `crates/*/src`.
