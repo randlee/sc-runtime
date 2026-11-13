@@ -105,3 +105,9 @@ env = { ATM_IDENTITY = "apyr", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run
 all = ["Your role is dev-sanity under atm-bd-orchestration: read .claude/agents/dev-sanity.md now (again after every compaction) and run its Startup section",
        "Use native atm send or atm ack for messages to run-lead",
        "Use native atm read to read messages from team-members" ]
+
+[startup.pyr]
+all = ["Read .claude/agents/pyr.md for your directive"]
+
+[startup.apyr]
+all = ["Read .codex/agents/apyr.md for your directive"]
