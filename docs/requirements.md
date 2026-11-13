@@ -1632,6 +1632,8 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 - The `sc-command` dependency entry of `crates/service/Cargo.toml` MUST NOT set `default-features = false`.
 - On a no-database layout, `crates/service/Cargo.toml` MUST NOT contain a dependency entry for a crate of the generated workspace other than `api-types`.
 - `crates/daemon/Cargo.toml` MUST NOT contain a dependency entry for a store.
+- A manifest outside `crates/store-adaptor/` and `crates/service/` MUST NOT contain a dependency entry for a store.
+- On a two-store layout, `crates/service/Cargo.toml` MUST NOT contain a dependency entry for a store.
 - The output of `cargo tree -p <project>-daemon -e normal --prefix none --features monty` in a rendered project MUST NOT show a line beginning with `sc-cron `.
 - The `default` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST NOT contain `cron`.
 - The `default` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST NOT contain `monty`.
@@ -1651,7 +1653,7 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 1. For each answers file, render the project with `just new <dest> --var-file <fixture>`: every layout-tree path that applies to the layout exists, no store or adaptor directory that does not apply exists, and `crates/daemon/src/mcp.rs` exists exactly when the fixture's `mcp` is `true`.
 2. In each rendered project, `cargo metadata --format-version 1` shows exactly the packages `<project>-<role>` for the roles the layout renders: `types`, `schema`, each store, the adaptor on a two-store layout, `service`, `daemon` and `cli`.
 3. In each rendered project, `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package or `<project>-daemon `.
-4. In each rendered project, `sqlx` appears under `[dependencies]` only in remote-engine store manifests; the SQLite wiring crate depends on `sc-runtime-db-sqlite`. A two-store layout's adaptor depends on both stores and its `service` on the adaptor; a one-store layout's `service` depends on that store.
+4. In each rendered project, `sqlx` appears under `[dependencies]` only in remote-engine store manifests; the SQLite wiring crate depends on `sc-runtime-db-sqlite`. A two-store layout's adaptor depends on both stores and its `service` on the adaptor; a one-store layout's `service` depends on that store. No manifest other than the adaptor's and a one-store layout's `service` manifest has a dependency entry for a store.
 5. The rendered `.gitignore` contains the line `config/local.json`.
 6. The rendered project contains no file ending in `.j2` and no file from `wizard/` or `scripts/`.
 7. `grep -rn 'struct Stores' crates/` in a rendered project matches only under `crates/service/`.
