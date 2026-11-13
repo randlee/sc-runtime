@@ -1270,12 +1270,12 @@ it prefers, without this project choosing one.
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-09-20  
-**Last Updated:** 2026-09-21  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A CLI command finds that the daemon is not running when the `sc-transport` client returns `TransportError::DaemonNotRunning` ([REQ-TRN-0006](sc-transport/requirements.md)). A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value.
 
 Decided by the owner on 2026-09-20. The sc-runtime design document records
 report-only as the default and leaves auto-start undecided; this item
@@ -1302,7 +1302,9 @@ Auto-start starts a real daemon process.
 **MUST statements:**
 
 - Auto-start MUST be the default.
-- When a CLI command finds that the daemon is not running (the `sc-transport` client returns `TransportError::DaemonNotRunning`, [REQ-TRN-0006](sc-transport/requirements.md)), the CLI MUST start the daemon, wait until the daemon accepts a connection on the resolved endpoint, and then run the command the user asked for.
+- When a CLI command finds that the daemon is not running, the CLI MUST start the daemon.
+- After starting the daemon, the CLI MUST wait until the daemon accepts a connection on the resolved endpoint.
+- After the started daemon accepts a connection on the resolved endpoint, the CLI MUST run the command the user asked for.
 - The daemon the CLI starts MUST be started the same way it starts when launchd (the macOS service manager) launches it cleanly from its service definition.
 - The started daemon process MUST use the same program as a launchd launch.
 - The started daemon process MUST use the environment a launchd launch gives it rather than the CLI process's environment.
