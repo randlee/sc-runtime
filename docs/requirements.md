@@ -1682,7 +1682,7 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 
 ### Requirement Statement
 
-Definitions: The worked example is the pair of operations `widget.create` and `widget.get`, with the pieces listed in the worked-example table. The worked-example table is the table in this requirement headed Piece, Where in the generated project, What it MUST contain. Its three surfaces are a REST handler, an MCP tool and a CLI command. A handler is a REST handler of the worked example. A tool is an MCP tool of the worked example. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer.
+Definitions: The generated project is the project rendered from `template/`. The worked example is the pair of operations `widget.create` and `widget.get`, with the pieces listed in the worked-example table. The worked-example table is the table in this requirement headed Piece, Where in the generated project, What it MUST contain. Its three surfaces are a REST handler, an MCP tool and a CLI command. A handler is a REST handler of the worked example. A tool is an MCP tool of the worked example. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer. A piece matches a row of the worked-example table when it has every item that row's What it MUST contain cell lists for its operation. `rmcp` is the Rust crate that implements MCP, and `StreamableHttpService` is its HTTP service type. `initialize` and `tools/call` are MCP request methods; a session header is the HTTP header that identifies an MCP client session. Session state is server-owned state that tracks an MCP client session; an MCP session store is project code that keeps that state.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -1690,7 +1690,7 @@ The widget example is the interim, hand-written form of the command pattern. "Ty
 
 2026-10-25 by [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
-Related requirement: [REQ-RUN-0331](requirements. md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
+Related requirement: [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
 | Piece | Where in the generated project | What it MUST contain |
 |---|---|---|
@@ -1698,7 +1698,7 @@ Related requirement: [REQ-RUN-0331](requirements. md). The widget pair remains t
 | Storage | `crates/store-sqlite` | a migration under `migrations/` creating the widget table, and typed query functions to insert and to fetch a widget |
 | Service | `crates/service` | `pub async fn create_widget(s: &Stores, input: CreateWidget) -> Result<Widget, OpError>` and the matching function for `widget.get` |
 | REST | `crates/daemon/src/routes.rs` | `POST /ops/widget.create` and `POST /ops/widget.get`, each an `axum` handler annotated with `#[utoipa::path(...)]`, registered with `utoipa_axum` `routes!` on an `OpenApiRouter`, returning `Envelope<Widget>` |
-| MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()`. The service returned by `mcp::service` MUST be an `rmcp` `StreamableHttpService` configured in stateless mode, and the template MUST NOT contain an MCP session store |
+| MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()` |
 | CLI | `crates/cli` | one `clap` command per operation; each builds the `api-types` request struct, sends it with `sc_transport::Client::post` (method name illustrative until pinned by [REQ-TRN-0005](sc-transport/requirements.md)) to the matching `/ops/...` path, and supports `--json` and the global `--endpoint` option ([REQ-RUN-0310](requirements.md)) |
 | Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the production CLI command path, composed inside the test process without running the CLI binary. The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root ([NFR-RUN-0010](requirements.md)). This contract does not prescribe the deferred REQ-RUN-0312 helper or test-generation architecture. |
 
@@ -1716,24 +1716,27 @@ REQ-RUN-0201 states the rule in full: one service function is the only path to S
 
 **MUST statements:**
 
-- The project rendered from `template/` MUST contain exactly one worked example.
-- The worked example MUST consist of the two operations `widget.create` and `widget.get`.
-- The generated project MUST contain the REST route `POST /ops/widget.create`, built as the REST row of the worked-example table states.
-- When option `mcp` is `true`, the generated project MUST contain the MCP tool `widget_create`, built as the MCP row of the worked-example table states.
-- The generated project MUST contain a CLI command for `widget.create`, built as the CLI row of the worked-example table states.
-- The generated project MUST contain the REST route `POST /ops/widget.get`, built as the REST row of the worked-example table states.
-- When option `mcp` is `true`, the generated project MUST contain the MCP tool `widget_get`, built as the MCP row of the worked-example table states.
+- The generated project MUST contain exactly one worked example.
+- The set of operations in the worked example MUST equal the pair `widget.create`, `widget.get`.
+- `crates/daemon/src/routes.rs` in the generated project MUST contain a handler that matches the REST row of the worked-example table for operation `widget.create`.
+- When option `mcp` is `true`, `crates/daemon/src/mcp.rs` in the generated project MUST contain a tool that matches the MCP row of the worked-example table for operation `widget.create`.
+- `crates/cli` in the generated project MUST contain a `clap` command that matches the CLI row of the worked-example table for operation `widget.create`.
+- `crates/daemon/src/routes.rs` in the generated project MUST contain a handler that matches the REST row of the worked-example table for operation `widget.get`.
+- When option `mcp` is `true`, `crates/daemon/src/mcp.rs` in the generated project MUST contain a tool that matches the MCP row of the worked-example table for operation `widget.get`.
+- When option `mcp` is `true`, `mcp::service` in `crates/daemon/src/mcp.rs` MUST return a `StreamableHttpService`.
+- When option `mcp` is `true`, a `tools/call` sent to the service returned by `mcp::service` with no prior `initialize` and no session header MUST succeed.
 - The generated project MUST contain a CLI command for `widget.get`, built as the CLI row of the worked-example table states.
 - Every handler MUST call the service function of its operation.
 - Every handler MUST contain no SQL.
 - Every tool MUST call the service function of its operation.
 - Every tool MUST contain no SQL.
-- Every command MUST call the service function.
+- Every command MUST call the service function of its operation.
 - Every command MUST contain no SQL.
 
 **MUST NOT statements:**
 
 - The template MUST NOT contain a second example operation.
+- The template MUST NOT contain an MCP session store.
 
 ### Rationale
 
