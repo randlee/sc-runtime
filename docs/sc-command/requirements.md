@@ -845,12 +845,12 @@ error code and remediation types are defined there
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. HTTP means Hypertext Transfer Protocol. ENVELOPE.SERIALIZATION is the stable error-code string identifying envelope serialization failure. T is the value type being serialized by the conversion.
+Definitions: HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. ENVELOPE.SERIALIZATION is the stable error-code string identifying envelope serialization failure. T is the value type being serialized by the conversion. `into_response` converts an `Envelope<T>` to an HTTP response; `into_mcp` converts a result to an MCP tool result. `Serialize` is the serde serialization trait. `McpError` is rmcp's `ErrorData`.
 
 2026-10-31 explicit exception: ADR-RUN-0017 allows only the fixed
 `ServiceName::new("noop")` invariant under exact inspected types 1.5.0,
@@ -881,14 +881,17 @@ not add an `sc-command` error enum. No function required by
 [REQ-CMD-0001](requirements.md) through [REQ-CMD-0006](requirements.md)
 originates an error other than through serde or rmcp.
 
+The repository-wide rule is owned by [NFR-RUN-0009](../requirements.md) and applies to `crates/sc-command/src` unchanged. Its banned constructs are `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, and panicking `[]` indexing.
+
 **MUST statements:**
 
-- A failure inside `into_response`, including a `T` whose `Serialize` implementation returns an error, MUST surface as a returned HTTP 500 with code `ENVELOPE.SERIALIZATION`.
-- A failure inside `into_mcp`, including a `T` whose `Serialize` implementation returns an error, MUST surface as returned `Err(McpError)`.
+- When `into_response` fails, including when the `Serialize` implementation of `T` returns an error, it MUST return an HTTP 500 response.
+- The error code of an HTTP 500 response returned on an `into_response` failure MUST be `ENVELOPE.SERIALIZATION`.
+- When `into_mcp` fails, including when the `Serialize` implementation of `T` returns an error, it MUST return `Err(McpError)`.
 
 **MUST NOT statements:**
 
-- The repository-wide rule is owned by [NFR-RUN-0009](../requirements.md) and applies to `crates/sc-command/src` unchanged: non-test code MUST NOT contain `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]` indexing, reachable from a public function.
+- A banned construct (a construct listed in the repository-wide rule above) MUST NOT appear in non-test code in `crates/sc-command/src` reachable from a public function.
 
 ### Rationale
 
