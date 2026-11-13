@@ -777,44 +777,27 @@ daemon and the CLI share one crate.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The ADR-RUN-0017 bridge is the command-crate canonical logging contract retained in Phase D. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a caret or tilde requirement, or an explicit `<` limit.
+Definitions:
 
-The `sc-observability-types` requirement is the tested floor `>=1.5.0` with no
-upper bound (REQ-RUN-0002, ANC-037). The historical 0.1.1 release used a
-temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin does not govern
-Phase D.
+- A workspace crate is a package in the public workspace package set of [REQ-RUN-0002](../requirements.md).
+- An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a caret requirement, a tilde requirement or an explicit `<` limit.
+- A production feature combination is any set of `sc-command` cargo features, including `server`, excluding dev-dependencies.
+- The production dependency tree is every package, direct or transitive, that `cargo tree -p sc-command -e normal,build --prefix none` prints for any production feature combination.
+- A manifest dependency of `sc-command` is an entry under `[dependencies]`, `[dev-dependencies]` or `[build-dependencies]` in `crates/sc-command/Cargo.toml`.
+- `sc-observability` is the logging runtime crate; `sc-observability-otlp` is its OpenTelemetry export crate; `sc-observability-types` is the types-only crate of the same family.
 
-2026-10-31 amendment: cron is temporarily an additional contract dependent for the observability port with defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
-transitive identities for every production feature, not just direct normal edges.
-
-These rules apply to every feature combination, including `server`.
-
-`cargo tree` enforces the logging crates and the sibling crates.
-`sc-observability-types` is an allowed dependency and is not a forbidden
-edge. sc-lint 0.8.0 rejects a forbidden edge whose target is not a workspace
-member, so `forbidden_edges` does not name `sc-observability` or
-`sc-observability-otlp`. `sc-config`, `sc-transport`, `sc-runtime`, and
-`sc-runtime-db-sqlite` are workspace members, so
-`boundaries/sc-command/sc-command.toml` lists those edges under
-`forbidden_edges` ([REQ-RUN-0005](../requirements.md)). Workspace membership follows the public package set in REQ-RUN-0002. Cargo.toml inspection and
-`cargo tree` still enforce the sibling edges. `allowed_dependents` includes `sc-runtime`, `sc-cron` under ADR-RUN-0017, and `sc-cron-commands`. The shared storage command helpers consume `sc-storage` under ADR-RUN-0021. OPEN for owner decision: which feature selection carries that edge and which selection, if any, provides the envelope without a workspace dependency. REQ-RUN-0301 requires the generated service to depend on `sc-command` with default features; this record does not decide how the service obtains the shared storage helpers. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
-landed. The third-party crates
-`sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
-`sc-lint lint sc-boundary` checks inter-crate edges and the public facade
-list only; it has no cargo-feature key, so the feature-conditional
-dependencies on axum and rmcp are checked with `cargo tree`.
-
-The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc-runtime`.
+Context: the historical 0.1.1 release used an exact `=1.5.0` pin under ADR-RUN-0017; Phase D replaces the pin with the tested floor `>=1.5.0` (REQ-RUN-0002, ANC-037). Under the 2026-10-31 amendment, `sc-cron` is a temporary dependent of `sc-command` for the observability port, with default features off. `allowed_dependents` in `boundaries/sc-command/sc-command.toml` lists `sc-runtime`, `sc-cron` (ADR-RUN-0017) and `sc-cron-commands`. The shared storage command helpers of ADR-RUN-0021 consume `sc-storage`. OPEN for owner decision: which feature selection carries the `sc-storage` edge, and which selection, if any, provides the envelope without a workspace dependency. REQ-RUN-0301 requires the generated service to depend on `sc-command` with default features; this record does not decide how the service obtains the shared storage helpers. The third-party crates `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md). sc-lint 0.8.0 rejects a forbidden edge whose target is not a workspace crate, so `forbidden_edges` in `boundaries/sc-command/sc-command.toml` lists `sc-config`, `sc-transport`, `sc-runtime` and `sc-runtime-db-sqlite` but not `sc-observability` or `sc-observability-otlp`; `cargo tree` checks those two crates and the feature-gated axum and rmcp edges ([REQ-RUN-0005](../requirements.md)). Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime` landed.
 
 **MUST statements:**
 
-- `sc-command` MUST depend on the published crate `sc-observability-types` with the registry requirement `">=1.5.0"`.
+- The version requirement of the `sc-observability-types` entry under `[dependencies]` in `crates/sc-command/Cargo.toml` MUST be the string `">=1.5.0"`.
 
 **MUST NOT statements:**
 
-- `sc-command` MUST NOT depend on another workspace crate except `sc-storage` for the shared storage command helpers of ADR-RUN-0021.
-- `sc-command` MUST NOT depend, directly or transitively, on the crate `sc-observability` (the logging runtime) or on its OTel export crate `sc-observability-otlp`.
-- The `sc-observability-types` requirement of `sc-command` MUST NOT declare an upper bound.
+- A manifest dependency of `sc-command` MUST NOT name a workspace crate other than `sc-storage`.
+- The production dependency tree MUST NOT contain `sc-observability`.
+- The production dependency tree MUST NOT contain `sc-observability-otlp`.
+- The `sc-observability-types` version requirement in `crates/sc-command/Cargo.toml` MUST NOT declare an upper bound.
 
 ### Rationale
 
