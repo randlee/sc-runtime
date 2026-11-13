@@ -4332,13 +4332,13 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 7. Generic transaction handles MUST provide read, write, insert and delete operations across row types.
 
-8. Each transaction retry MUST start a fresh owned Send + 'static producer future.
+8. The rules a transaction body must satisfy, including what each retry restarts and whether a body may yield, and how those rules are checked, are open and deferred to the owner (PRD section 9).
 
 9. TransactionSpec MUST expose name and read-only/read-write mode through constructors and accessors with a non-exhaustive public shape.
 
 10. Engine configuration MUST provide finite retry and deadline defaults.
 
-11. The transaction contract MUST preserve the option of adding transaction-specific retry policy without breaking consumer construction.
+11. A transaction MUST be able to carry its own retry logic.
 
 12. Transaction observations MUST retain name, queue wait, run time, row-operation count and outcome.
 
@@ -4358,41 +4358,39 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 20. Async storage callers MUST NOT block or wrap storage submission in spawn_blocking.
 
-21. A SQLite write transaction body that yields MUST roll back with a typed error.
+21. SQLite writer failure MUST fail all admitted replies and close further admission.
 
-22. SQLite writer failure MUST fail all admitted replies and close further admission.
+22. CronStore<S> MUST keep its generic backend private behind the policy-checked CronStorage facade.
 
-23. CronStore<S> MUST keep its generic backend private behind the policy-checked CronStorage facade.
+23. CronStorage MUST enforce active-name admission, configured schedule-row limits, generation fencing and multi-row mutations through atomic domain operations implemented once in sc-cron.
 
-24. CronStorage MUST enforce active-name admission, configured schedule-row limits, generation fencing and multi-row mutations through atomic domain operations implemented once in sc-cron.
+24. SQLite application and cron rows MUST share the application database by default.
 
-25. SQLite application and cron rows MUST share the application database by default.
+25. Generation MUST reject cron when no database is selected.
 
-26. Generation MUST reject cron when no database is selected.
+26. Legacy cron import MUST preserve stored fields through an idempotent, read-only-source migration that refuses collisions atomically.
 
-27. Legacy cron import MUST preserve stored fields through an idempotent, read-only-source migration that refuses collisions atomically.
+27. sc-cron MUST store CronRow and MontyBlobRow values through Storage<T>.
 
-28. sc-cron MUST store CronRow and MontyBlobRow values through Storage<T>.
+28. Schedule writes MUST reject Monty source that sc-monty cannot compile.
 
-29. Schedule writes MUST reject Monty source that sc-monty cannot compile.
+29. sc-cron MUST capture the compiled hook-session blob immediately after compilation and before any hook runs.
 
-30. sc-cron MUST capture the compiled hook-session blob immediately after compilation and before any hook runs.
+30. sc-cron MUST key each compiled-session blob by sc-sha SHA-256 of the source and the Monty dump version.
 
-31. sc-cron MUST key each compiled-session blob by sc-sha SHA-256 of the source and the Monty dump version.
+31. sc-cron MUST use a cached blob only when its key matches the authoritative source stored in the schedule row.
 
-32. sc-cron MUST use a cached blob only when its key matches the authoritative source stored in the schedule row.
+32. A missing, stale, corrupt or unreadable-version blob, or a loaded session missing cron_stop or cron_tick, MUST cause recompilation from source and replacement of the cached pre-run blob.
 
-33. A missing, stale, corrupt or unreadable-version blob, or a loaded session missing cron_stop or cron_tick, MUST cause recompilation from source and replacement of the cached pre-run blob.
+33. sc-cron MUST NOT persist hook run state in compiled-session blobs.
 
-34. sc-cron MUST NOT persist hook run state in compiled-session blobs.
+34. Backend factories and open options MUST belong to the corresponding engine implementation.
 
-35. Backend factories and open options MUST belong to the corresponding engine implementation.
+35. Application WidgetStorage, OpenWidgetStore and StoresView extensions MUST preserve generated identifiers and existing create, read and delete behavior.
 
-36. Application WidgetStorage, OpenWidgetStore and StoresView extensions MUST preserve generated identifiers and existing create, read and delete behavior.
+36. Phase D MUST publish sc-storage, sc-runtime-db-sqlite, sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands and sc-monty together at version 0.3.0.
 
-37. Phase D MUST publish sc-storage, sc-runtime-db-sqlite, sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands and sc-monty together at version 0.3.0.
-
-38. Phase D MUST retain table-neutral Postgres and MySQL engine implementations in the generated template rather than introduce additional published engine crates.
+37. Phase D MUST retain table-neutral Postgres and MySQL engine implementations in the generated template rather than introduce additional published engine crates.
 
 ### Rationale
 
