@@ -4937,7 +4937,7 @@ Open tested floors let consumers take compatible dependency updates without an S
 
 ### Requirement Statement
 
-Definitions: `sc-lint` is the external lint package whose `line-counts` check is the source of truth for this limit; sc-runtime adopts the rule and does not define it. A source line is a line that is neither blank (whitespace only) nor made up only of a comment. A test file is a file under a `tests/` directory. A production Rust file is a `.rs` file that is not a test file. `just lint` is the `lint` recipe of the file named `Justfile` at the repository root. `sc-lint.toml` is the `sc-lint` configuration file at the repository root. The `line-counts` check is the `[[tool.sc-lint.lint]]` entry named `line-counts` in `sc-lint.toml`.
+Definitions: `sc-lint` is the external lint package whose `line-counts` check is the source of truth for this limit; sc-runtime adopts the rule and does not define it. A source line is a line that is neither blank (whitespace only) nor made up only of a comment, where a comment is the comment syntax of the file's language (in Rust, `//` and `/* */`). A test file is a file under a `tests/` directory. A production Rust file is a `.rs` file that is not a test file. `just lint` is the `lint` recipe of the file named `Justfile` at the repository root. `sc-lint.toml` is the `sc-lint` configuration file at the repository root. The `line-counts` check is the `[[tool.sc-lint.lint]]` entry named `line-counts` in `sc-lint.toml`. Line-counting code is a command, script, recipe or program that reads a file and computes its number of source lines; a command that only invokes `sc-lint` is not line-counting code.
 
 **MUST statements:**
 
@@ -4950,7 +4950,7 @@ Definitions: `sc-lint` is the external lint package whose `line-counts` check is
 
 **MUST NOT statements:**
 
-- This repository MUST NOT contain code that counts source lines.
+- Files committed to this repository MUST NOT contain line-counting code.
 
 ### Rationale
 
@@ -4971,7 +4971,7 @@ Related: [REQ-RUN-0004](requirements.md) defines `just lint`; [NFR-RUN-0004](req
 3. Adding a `.rs` file with 900 source lines plus 200 blank and comment-only
    lines (1100 physical lines) under `crates/sc-config/src/` does not make
    `just lint` fail.
-4. Inspection of the root `justfile`, `scripts/` and `.github/workflows/`
+4. Inspection of the root `Justfile`, `scripts/` and `.github/workflows/`
    finds no line-counting command or script for this rule other than the
    call into `sc-lint`.
 ### Implementation Notes
