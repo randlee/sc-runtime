@@ -4286,7 +4286,7 @@ the template, the driver or CI.
 
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). API means application programming interface. ADR means architecture decision record. A fixture is one answers JSON file under wizard/fixtures/. Postgres is the PostgreSQL database engine. A service container is the workflow database service for the generated project. Wyvern is the optional interactive wizard host.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). API means application programming interface. ADR means architecture decision record. A fixture is one answers JSON file under wizard/fixtures/. Postgres is the PostgreSQL database engine. A service container is the workflow database service for the generated project. Wyvern is the optional interactive wizard host. The workflow is the GitHub Actions workflow under `.github/workflows/` that this requirement describes. The fixture sequence is commands 1 to 6 of the numbered list in this requirement, in that order, and command 7 once the selection question of NFR-RUN-0010 is decided. The checkout under test is the commit the workflow run checked out; a crate taken from crates.io or from another commit is not resolved from it. The release run is the run required by REQ-RUN-0702.
 
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
@@ -4334,14 +4334,14 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 **MUST statements:**
 
 - A GitHub Actions workflow under `.github/workflows/` in this repository MUST test the template by generating real projects.
-- For every file matching `wizard/fixtures/*.json`, the workflow MUST run the preceding numbered commands in their listed order.
+- For every file matching `wizard/fixtures/*.json`, the workflow MUST run the fixture sequence.
 - For every fixture, the workflow MUST fail when any listed command exits non-zero.
 - Each fixture MUST be a separate matrix entry.
 - A failing matrix entry MUST be reported by its fixture name.
 - The list of fixtures MUST be derived from the files present in `wizard/fixtures/`.
 - The workflow MUST run on every pull request.
-- In every run of the workflow except the release run required by [REQ-RUN-0702](requirements.md), each generated project MUST resolve every public crate in its selected dependency graph from the checkout under test, not from crates.io and not from another commit.
-- From the release that adds the `store-postgres` crate, a fixture whose project needs PostgreSQL MUST be given a Postgres service container by the workflow.
+- In every run of the workflow except the release run, each generated project MUST resolve every crate of the public package set that is in its selected dependency graph from the checkout under test.
+- From the release that adds the `store-postgres` crate, the workflow MUST give a Postgres service container to every fixture whose `db` value is `postgres` or `sqlite-postgres`.
 
 **MUST NOT statements:**
 
