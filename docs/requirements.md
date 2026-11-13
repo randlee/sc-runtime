@@ -2169,39 +2169,43 @@ use and the path CI tests cannot drift apart.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-04  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Every SC repository exposes the same base `just` commands. sc-lint 0.8.6
-installs them. The placeholder `Justfile` and the prototype-handoff order are
-retired.
+Definitions: A generated project is the consumer repository rendered from template/.
+sc-lint is the tool installing the common SC repository commands.
+just is the command runner exposing named recipes.
+A public recipe is a command listed by just --list in the generated project.
+A recipe is a named command in the generated project’s Justfile.
+db-prepare is the consumer-owned recipe regenerating checked-in sqlx offline query data in crates/store-sqlite/.sqlx/.
+CI means continuous integration.
+A run step is a shell command in a GitHub Actions workflow run: entry.
+A linting run step executes lint checks, including formatting or clippy analysis.
+A testing run step executes automated tests.
+The rendered workflow is the generated project’s .github/workflows/ci.yml.
 
-1. The install command is `sc-lint init --just`.
-2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.6
-   and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
-   The only additional invocation wiring is the three analyzer entries below.
-3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
-4. The consumer-owned recipe `db-prepare` regenerates the checked-in `sqlx` offline query data in `crates/store-sqlite/.sqlx/`.
-5. `setup` and `upgrade` are part of the same public set.
-6. `AGENTS.md` and `CLAUDE.md` refer to those commands by name only.
-7. Tests that start the daemon as a separate process never execute on a
-   developer's host ([NFR-RUN-0010](requirements.md)). Whether `just test`
-   also runs them inside an isolated machine is the question recorded there.
-8. a-6 owns the generated consumer install. This item owns the recipe names
-   and the files the template commits. The rule that the template carries no
-   hand-written lint knowledge is [NFR-RUN-0006](requirements.md).
+The two recipe-name constraints are checked by running `just --list` in the generated project.
+
+Every SC repository exposes the common base commands installed by sc-lint 0.8.6 through `sc-lint init --just`. The placeholder `Justfile` and prototype-handoff order are retired.
+
+The template commits `template/sc-lint.toml` with `minimum_version` 0.8.6 and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` records the consumer minimum version. The only additional invocation wiring is the three analyzer entries below.
+
+The public recipes are `setup`, `lint`, `test` and `upgrade`; `lint` and `test` are the standard SC base command names. The consumer owns `db-prepare`. `AGENTS.md` and `CLAUDE.md` refer to `setup`, `lint`, `test`, `upgrade` and `db-prepare` by name only.
+
+Tests starting a separate daemon process never execute on a developer’s host ([NFR-RUN-0010](requirements.md)); whether `just test` also runs such tests inside an isolated machine remains the question recorded there. This item owns recipe names and committed template files; a-6 owns generated consumer installation. The no-hand-written-lint-knowledge rule is [NFR-RUN-0006](requirements.md).
 
 **MUST statements:**
 
-- It MUST survive a later `sc-lint init`.
-- Rendered `.github/workflows/ci.yml` MUST run lint only through `just lint`.
-- Rendered `.github/workflows/ci.yml` MUST run tests only through `just test`.
+- When a later `sc-lint init` completes in a generated project, `just db-prepare` MUST regenerate `crates/store-sqlite/.sqlx/`.
+- Every linting `run:` step in the rendered `.github/workflows/ci.yml` MUST invoke only `just lint`.
+- Every testing `run:` step in the rendered `.github/workflows/ci.yml` MUST invoke only `just test`.
 
 **MUST NOT statements:**
 
-- The recipe names `lint` and `test` are the standard SC base command names and MUST NOT be changed.
+- The generated project’s public `lint` recipe MUST NOT be renamed.
+- The generated project’s public `test` recipe MUST NOT be renamed.
 
 ### Rationale
 
