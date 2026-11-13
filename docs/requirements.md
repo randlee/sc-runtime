@@ -1015,12 +1015,19 @@ NFR-RUN-0001 owns the rule that a CLI links no daemon-side dependency. The reusa
 - That `OpError` MUST have `code` equal to `"DAEMON.NOT_RUNNING"`.
 - That `OpError` MUST have `suggested_action` equal to `"run <app> daemon start"`, with `<app>` replaced by the application name.
 - For the `DAEMON.NOT_RUNNING` `OpError`, the `suggested_action` wire field MUST serialise as a JSON string, as defined by [REQ-CMD-0002](sc-command/requirements.md).
-- In that case the CLI MUST exit with a non-zero status.
-- In that case, when the command was given `--json`, the CLI MUST print to stdout one envelope `{version, ok, data, error}` with `ok` equal to `false`, `data` equal to `null`, and `error` equal to the `OpError` of obligation 3.
+- When reporting `TransportError::DaemonNotRunning`, the CLI MUST exit with a non-zero status.
+- When reporting `TransportError::DaemonNotRunning` with `--json`, the CLI MUST print exactly one response envelope to standard output.
+- The response envelope printed by the CLI when reporting `TransportError::DaemonNotRunning` with `--json` MUST have a `version` key.
+- That envelope MUST have an `ok` key.
+- That envelope MUST have a `data` key.
+- That envelope MUST have an `error` key.
+- That envelope's `ok` MUST be `false`.
+- That envelope's `data` MUST be `null`.
+- That envelope's `error` MUST be the `OpError` specified by this record for `DAEMON.NOT_RUNNING`.
 
 **MUST NOT statements:**
 
-- It MUST NOT open the database.
+- The generated CLI MUST NOT open the application database.
 - The `cli` crate MUST NOT have `sqlx` among its normal (non-dev) dependencies.
 - The `cli` crate MUST NOT have any generated `store-*` crate among its normal (non-dev) dependencies.
 - The `cli` crate MUST NOT have any generated `service` crate among its normal (non-dev) dependencies.
