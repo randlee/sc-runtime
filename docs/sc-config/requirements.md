@@ -181,7 +181,7 @@ equality, so key order is irrelevant.
 
 ### Requirement Statement
 
-Definitions: Silent restructuring means changing the document shape implicitly during the override key-path walk instead of applying the stated replacement or error rule.
+Definitions: Silent restructuring means changing the document shape implicitly during the override key-path walk instead of applying the stated replacement or error rule. The prefix is the app name with ASCII lower-case letters upper-cased and `-` replaced by `_`, followed by `__`. A segment is one piece of the variable name after that prefix, split by `str::split("__")`. The key path `k1, k2, ..., kn` is the sequence of segments converted to ASCII lower case. The key-path walk starts at the document root and moves through keys `k1` to `k(n-1)` in order. The override value is the parsed JSON value, or the unchanged value as a JSON string when parsing fails.
 
 This item covers the environment layer of the `sc-config` crate
 (`crates/sc-config`). The design fixes only that JSON config files have
@@ -290,7 +290,7 @@ cannot be descended into.
 - The prefix MUST be the app name with every ASCII lower-case letter upper-cased and every `-` replaced by `_`, followed by `__` (two underscores).
 - A variable MUST be treated as an override if and only if its encoded name starts with that prefix.
 - Every variable whose name does not start with the prefix MUST be ignored, whatever its value.
-- The part of the name after the prefix MUST be split at every non-overlapping occurrence of `__`, scanning left to right (Rust `str::split("__")`).
+- The part of the variable name after the prefix MUST be split into segments exactly as Rust `str::split("__")` splits it.
 - Each resulting segment MUST be converted to ASCII lower case.
 - The variable's value MUST be parsed with `serde_json::from_str::<serde_json::Value>`.
 - If parsing succeeds, the parsed JSON value MUST be used.
