@@ -37,15 +37,25 @@ handler.
 
 ## ADR-CMD-0001: `OpError` is built on `sc-observability-types`
 
-**2026-10-31 amendment:** [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
-adds only the command-owned canonical port and foreign EventError signature.
-It explicitly supersedes the exact-pin rejection below for the temporary
-registry types `=1.5.0` bridge; initial locks prove 1.5.0, while 1.5.1 is
-capability-gated future cleanup. Event/error value identity remains upstream.
-
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-11-03  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, sections "The crates" and "API surface"; applies [ADR-RUN-0004](../architecture.md)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, sections "The crates" and "API surface"; applies [ADR-RUN-0004](../architecture.md)
+
+**Requirements:**
+
+- REQ-CMD-0002
+- NFR-CMD-0002
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 amendment
 
 ### Context
 
@@ -57,9 +67,9 @@ envelope `Envelope<T>`, a JSON object with keys `version`, `ok`, `data`,
 The SC logging stack already publishes the types for a stable error code and
 for remediation guidance in the crate `sc-observability-types` 1.5.0:
 `ErrorCode`, a string newtype, and `Remediation` with `RecoverableSteps`.
-Logs and diagnostics use them. If `sc-command` defined its own versions, the
-same failure could carry one code in an API response and another in the log,
-and there would be two definitions to keep in step.
+Logs and diagnostics use them. The problem is that if `sc-command` defined its
+own versions, the same failure could carry one code in an API response and
+another in the log, and there would be two definitions to keep in step.
 
 Pulling against that: the library crates in this repository do not depend on
 the logging runtime `sc-observability`, so that each stays usable in a
@@ -68,6 +78,12 @@ program with no SC logging
 observability directly).
 
 ### Decision
+
+2026-10-31 amendment: [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
+adds only the command-owned canonical port and foreign EventError signature.
+It explicitly supersedes the exact-pin rejection below for the temporary
+registry types `=1.5.0` bridge; initial locks prove 1.5.0, while 1.5.1 is
+capability-gated future cleanup. Event/error value identity remains upstream.
 
 `OpError.code` is `sc_observability_types::ErrorCode` from
 `sc-observability-types` under temporary exact registry
@@ -169,7 +185,7 @@ also depend on the types crate, but only for injected canonical logging;
 `sc-config` and `sc-transport` do not. This closes EXT-004.
 The logging runtime stays forbidden on all library crates.
 
-#### Library wire-failure inventory
+Library wire-failure inventory:
 
 These rows are `sc-command`'s own wire failures. Widget create and get, and
 every other application operation code, are not rows.
@@ -187,6 +203,12 @@ every other application operation code, are not rows.
 v0.1 does not define a crate error enum. The only fallible public function
 is `IntoMcp::into_mcp`, whose error type is rmcp's, the recorded exception.
 
+### Rationale
+
+If `sc-command` defined its own versions, the
+same failure could carry one code in an API response and another in the log,
+and there would be two definitions to keep in step.
+
 ### Consequences
 
 An error code is the same value, of the same type, in an envelope and in a
@@ -197,31 +219,45 @@ no SC logging still compiles `sc-observability-types`, which is small.
 
 ### Alternatives Considered
 
-- Local copies of the code and remediation types inside `sc-command`.
-  Rejected: two definitions of the same concepts would drift, and projects
-  would write conversions between them at every logging call.
-- Depending on the full `sc-observability` crate. Rejected: it would pull
-  the logging runtime into every CLI that only parses envelopes, and it
-  would break the rule that these crates do not wrap or depend on
-  observability.
-- Tolerating unknown envelope or error keys, or parking them in an `extra`
-  map. Rejected: [REQ-CMD-0001](requirements.md) rejects an unknown key so a
-  CLI reprint cannot drop a field the agent did not see. Payload fields
-  inside `data` and `details` stay lossless under
-  [REQ-CMD-0006](requirements.md).
-- Writing a not-recoverable justification into `suggested_action`, or adding
-  a remediation-steps key. Rejected: the justification is not an instruction,
-  and [REQ-CMD-0002](requirements.md) keeps the wire value a string or
-  `null` on the existing five keys.
-- An exact `=` pin of `sc-observability-types`. Originally rejected because
-  it narrows consumer resolution. ADR-RUN-0017 explicitly accepts that cost
-  temporarily for inspected 1.5.0 validator/identity proof; cleanup removes it.
-- A public `ErrorKind::mapping_code`. Rejected: the inventory codes above
-  are documentation and are not on the wire.
+#### Alternative 1: Local copies of the code and remediation types inside `sc-command`
+
+**Why Rejected:**
+
+two definitions of the same concepts would drift, and projects would write conversions between them at every logging call.
+
+#### Alternative 2: Depending on the full `sc-observability` crate
+
+**Why Rejected:**
+
+it would pull the logging runtime into every CLI that only parses envelopes, and it would break the rule that these crates do not wrap or depend on observability.
+
+#### Alternative 3: Tolerating unknown envelope or error keys, or parking them in an `extra` map
+
+**Why Rejected:**
+
+[REQ-CMD-0001](requirements.md) rejects an unknown key so a CLI reprint cannot drop a field the agent did not see. Payload fields inside `data` and `details` stay lossless under [REQ-CMD-0006](requirements.md).
+
+#### Alternative 4: Writing a not-recoverable justification into `suggested_action`, or adding a remediation-steps key
+
+**Why Rejected:**
+
+the justification is not an instruction, and [REQ-CMD-0002](requirements.md) keeps the wire value a string or `null` on the existing five keys.
+
+#### Alternative 5: An exact `=` pin of `sc-observability-types`
+
+**Why Rejected:**
+
+Originally rejected because it narrows consumer resolution. ADR-RUN-0017 explicitly accepts that cost temporarily for inspected 1.5.0 validator/identity proof; cleanup removes it.
+
+#### Alternative 6: A public `ErrorKind::mapping_code`
+
+**Why Rejected:**
+
+the inventory codes above are documentation and are not on the wire.
 
 ### Implementation
 
-**Enforced by:** The boundary manifest `boundaries/sc-command/sc-command.toml`,
+Enforced by: The boundary manifest `boundaries/sc-command/sc-command.toml`,
 checked by `sc-lint lint sc-boundary --root .` on the workspace.
 `allowed_dependents` temporarily includes runtime+cron under ADR-RUN-0017. `allowed_dependencies` includes
 `sc-observability-types` and does not treat it as a forbidden edge.
@@ -244,23 +280,33 @@ A test binds `OpError`'s `code` to `sc_observability_types::ErrorCode`, and
 a test asserts that a supplied suggestion serialises as a JSON string
 ([REQ-CMD-0002](requirements.md)).
 
-### Related Documents
-
-- [REQ-CMD-0002](requirements.md)
-- [NFR-CMD-0002](requirements.md)
-
 ---
 
 ## ADR-CMD-0002: REST and MCP edges are conversions, not wrappers
 
-**2026-10-31 bounded exception:** ADR-RUN-0017 allows only the neutral
-CanonicalLog event-receiver trait in `observability`. It adds no REST/MCP
-handler, extractor, middleware, router or framework dialect. All conversion
-and handler prohibitions below continue to apply.
-
 **Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "API surface"; applies [ADR-RUN-0001](../architecture.md)  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "API surface"; applies [ADR-RUN-0001](../architecture.md)
+
+**Requirements:**
+
+- REQ-CMD-0003
+- REQ-CMD-0004
+- REQ-CMD-0005
+- NFR-CMD-0003
+- NFR-RUN-0003
+- NFR-RUN-0009
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 bounded exception
 
 ### Context
 
@@ -270,16 +316,18 @@ the response envelope `Envelope<T>` (JSON keys `version`, `ok`, `data`,
 turn that result into an axum response and into an rmcp tool result.
 
 A framework could do this by supplying its own handler type, extractor,
-middleware layer or attribute macro that produces envelopes. Any of those
-would sit between the project and axum or rmcp: the project would write
-handlers in the framework's dialect, and axum and rmcp documentation would
-no longer describe the project's code. The governing principle of this
+middleware layer or attribute macro that produces envelopes. The governing principle of this
 repository is that the framework builds parts and the project wires them in
 ordinary Rust ([ADR-RUN-0001](../architecture.md)), and the repository
 admits no macro system and no wrapper around an axum or rmcp type
 ([NFR-RUN-0003](../requirements.md)).
 
 ### Decision
+
+2026-10-31 bounded exception: ADR-RUN-0017 allows only the neutral
+CanonicalLog event-receiver trait in `observability`. It adds no REST/MCP
+handler, extractor, middleware, router or framework dialect. All conversion
+and handler prohibitions below continue to apply.
 
 `sc-command` reaches both edges through three trait implementations on its
 own and standard types, and nothing else:
@@ -309,6 +357,13 @@ failure uses those two recorded signatures.
 `Service`; a procedural or declarative macro; a newtype or struct that wraps
 an axum or rmcp type; a router, registry or list of operations.
 
+### Rationale
+
+Any of those
+would sit between the project and axum or rmcp: the project would write
+handlers in the framework's dialect, and axum and rmcp documentation would
+no longer describe the project's code.
+
 ### Consequences
 
 A generated handler body is one line,
@@ -322,17 +377,21 @@ keeping the three surfaces in step is left to lint tooling.
 
 ### Alternatives Considered
 
-- An attribute macro that generates the handler and the tool from a service
-  function. Rejected: it is a macro system to maintain and to learn, and it
-  hides the axum and rmcp code the project is meant to own.
-- An envelope extractor or a middleware layer that wraps every response.
-  Rejected: it wraps axum's types, applies to routes that may not want the
-  envelope, and has no equivalent on the rmcp side, so the two edges would
-  work differently.
+#### Alternative 1: An attribute macro that generates the handler and the tool from a service function
+
+**Why Rejected:**
+
+it is a macro system to maintain and to learn, and it hides the axum and rmcp code the project is meant to own.
+
+#### Alternative 2: An envelope extractor or a middleware layer that wraps every response
+
+**Why Rejected:**
+
+it wraps axum's types, applies to routes that may not want the envelope, and has no equivalent on the rmcp side, so the two edges would work differently.
 
 ### Implementation
 
-**Enforced by:** `arch-qa` architecture review of `crates/sc-command/src`
+Enforced by: `arch-qa` architecture review of `crates/sc-command/src`
 against the MUST NOT list in the Decision: no `proc-macro = true` in
 `crates/sc-command/Cargo.toml`; no `macro_rules!`; no `impl` of
 `FromRequest`, `FromRequestParts`, `Layer`, `Service` or `Handler`; no
@@ -342,18 +401,42 @@ repository rule against wrappers and macro systems
 `daemon/src/routes.rs` and tool in `daemon/src/mcp.rs` end in `.into()` and
 `.into_mcp()` respectively.
 
-### Related Documents
-
-- [REQ-CMD-0003](requirements.md)
-- [REQ-CMD-0004](requirements.md)
-- [REQ-CMD-0005](requirements.md)
-- [NFR-CMD-0003](requirements.md)
-- [NFR-RUN-0003](../requirements.md)
-- [NFR-RUN-0009](../requirements.md)
-
 ---
 
 ## ADR-CMD-0003: The `server` feature gates axum and rmcp
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-09-19  
+**Last Updated:** 2026-09-19  
+**Owner:** randlee  
+**Decision Date:** 2026-09-19  
+
+### Related Documents
+
+Source: sc-runtime design, 2026-09-19, section "Repository layout"; applies [ADR-RUN-0003](../architecture.md)
+
+**Requirements:**
+
+- NFR-CMD-0001
+- NFR-RUN-0001
+- REQ-RUN-0301
+
+**Architecture Decisions:**
+
+- ADR-RUN-0017 — 2026-10-31 amendment
+- ADR-RUN-0303
+
+### Context
+
+Two programs use `sc-command`. The daemon needs the envelope types plus the
+conversions into an axum response and an rmcp tool result, which require
+axum and rmcp. The CLI needs only `Envelope<T>` and `OpError`, to parse the
+daemon's answer and print it for `--json`; a CLI binary must link none of
+axum, rmcp or sqlx, because that would multiply its build time and binary
+size. One published crate has to serve both.
+
+### Decision
 
 Phase C extends the existing feature separation with optional independent
 schema, using probe-frozen schemars/Utoipa identities for owner-local schema
@@ -365,28 +448,10 @@ narrow compileable declaration/manifest baseline before c-3's later migration;
 c-6 preserves/tests it and c-4 proves actual typed wire/schema parity. All
 ordinary error/conversion rules remain governed by ADR-CMD-0001/0002.
 
-**2026-10-31 amendment:** ADR-RUN-0017 adds `test-util = []`, off by default
+2026-10-31 amendment: ADR-RUN-0017 adds `test-util = []`, off by default
 and independent of `server`; it exposes std-only recorder/rejector doubles.
 The public canonical port/Noop is unconditional. Exact bridge types pin is
 `=1.5.0`; verify isolated default/test-util/cron consumers do not activate server.
-
-**Status:** Active  
-**Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19, section "Repository layout"; applies [ADR-RUN-0003](../architecture.md)  
-
-### Context
-
-Two programs use `sc-command`. The daemon needs the envelope types plus the
-conversions into an axum response and an rmcp tool result, which require
-axum and rmcp. The CLI needs only `Envelope<T>` and `OpError`, to parse the
-daemon's answer and print it for `--json`; a CLI binary must link none of
-axum, rmcp or sqlx, because that would multiply its build time and binary
-size. One published crate has to serve both. The repository-level decision
-is that server-side code in `sc-transport` and `sc-command` sits behind a
-cargo feature named `server`, off by default
-([ADR-RUN-0003](../architecture.md)).
-
-### Decision
 
 In `crates/sc-command/Cargo.toml`, `axum` and `rmcp` are `optional = true`
 dependencies enabled only by the feature `server`. `server` is not a default
@@ -420,12 +485,12 @@ generated workspace's crate graph is owned by
 The generated `service` crate takes `sc-command` (default features) as a
 direct dependency, because it may not depend on `sc-runtime`.
 
-**OPEN:** Whether the generated `daemon` crate takes `sc-command` as a direct
-dependency with `features = ["server"]`, or reaches it through a re-export
-from `sc-runtime`, is not decided. A re-export would have to be added to the
-public surface of `sc-runtime`. Once decided in
-favour of direct dependencies: the generated `daemon` is the only generated
-crate that enables `server`.
+### Rationale
+
+The repository-level decision
+is that server-side code in `sc-transport` and `sc-command` sits behind a
+cargo feature named `server`, off by default
+([ADR-RUN-0003](../architecture.md)).
 
 ### Consequences
 
@@ -437,27 +502,38 @@ links no axum or rmcp" is defined for the CLI built as its own selection
 (`cargo build -p cli`), and evidence must come from `cargo tree -p` on the
 CLI crate or on `sc-command` alone, not from a whole-workspace build.
 
-**OPEN:** Under `cargo build --workspace` cargo unifies features, so the CLI
-is built against a `server`-enabled `sc-command`. Whether workspace-wide
-builds are exempt from the property, or the crates must instead be split
-into client and server crates, is not decided; it is recorded on
-[NFR-RUN-0001](../requirements.md) and
-[ADR-RUN-0003](../architecture.md) and is to be measured by the spike.
+**Neutral:**
+
+- OPEN: Whether the generated `daemon` crate takes `sc-command` as a direct
+  dependency with `features = ["server"]`, or reaches it through a re-export
+  from `sc-runtime`, is not decided. A re-export would have to be added to the
+  public surface of `sc-runtime`. Once decided in
+  favour of direct dependencies: the generated `daemon` is the only generated
+  crate that enables `server`.
+- OPEN: Under `cargo build --workspace` cargo unifies features, so the CLI
+  is built against a `server`-enabled `sc-command`. Whether workspace-wide
+  builds are exempt from the property, or the crates must instead be split
+  into client and server crates, is not decided; it is recorded on
+  [NFR-RUN-0001](../requirements.md) and
+  [ADR-RUN-0003](../architecture.md) and is to be measured by the spike.
 
 ### Alternatives Considered
 
-- A separate `sc-command-server` crate holding the two conversions.
-  Rejected: Rust's orphan rule forbids implementing axum's `IntoResponse`
-  for `Envelope<T>` outside the crate that defines `Envelope<T>` without a
-  wrapper type, and it would double the crates to publish and version.
-  (The feature-unification OPEN above may reopen a client/server split; the
-  orphan-rule obstacle would then have to be solved first.)
-- No gating, with axum and rmcp as ordinary dependencies. Rejected: every
-  CLI would link the server stack.
+#### Alternative 1: A separate `sc-command-server` crate holding the two conversions
+
+**Why Rejected:**
+
+Rust's orphan rule forbids implementing axum's `IntoResponse` for `Envelope<T>` outside the crate that defines `Envelope<T>` without a wrapper type, and it would double the crates to publish and version. (The feature-unification OPEN above may reopen a client/server split; the orphan-rule obstacle would then have to be solved first.)
+
+#### Alternative 2: No gating, with axum and rmcp as ordinary dependencies
+
+**Why Rejected:**
+
+every CLI would link the server stack.
 
 ### Implementation
 
-**Enforced by:** `cargo tree -p sc-command -e normal --prefix none` with
+Enforced by: `cargo tree -p sc-command -e normal --prefix none` with
 default features printing no line beginning with `axum ` or `rmcp ` (name
 then a space), and with `--features server` printing a line beginning with
 each; `just test`, which runs `cargo test -p sc-command` and
@@ -466,10 +542,3 @@ each; `just test`, which runs `cargo test -p sc-command` and
 enforcement: its manifest format has no cargo-feature key, so it checks
 inter-crate edges and the public facade list only and cannot express "axum
 only with `server`".
-
-### Related Documents
-
-- [NFR-CMD-0001](requirements.md)
-- [NFR-RUN-0001](../requirements.md)
-- [REQ-RUN-0301](../requirements.md)
-- [ADR-RUN-0303](../architecture.md)

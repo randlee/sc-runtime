@@ -1,0 +1,700 @@
+{
+  "consumer": "run-lead Jev quality and independent drift reviewer",
+  "feature": "formal Phase D ADR/REQ/NFR contract before ratification/PR135 merge",
+  "observed_defect": "informal quotations/history and duplicate decision sources; legacy schema-incompatible records",
+  "deletion_condition": "after final approval ordinary record/Git history suffices",
+  "base": "aa6f328",
+  "normalized_branch": "origin/chore/raptor-inventory",
+  "normalized_commit": "553e4ae",
+  "authority": "Owner formal ADR direction and subsequent Raptor-template/whole-corpus quality directions",
+  "rewritten_records": [
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0002",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0702",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "NFR-RUN-0009",
+      "kind": "nfr"
+    },
+    {
+      "file": "docs/sc-cron/requirements.md",
+      "id": "REQ-CRON-0001",
+      "kind": "req"
+    },
+    {
+      "file": "docs/sc-cron/requirements.md",
+      "id": "REQ-CRON-0004",
+      "kind": "req"
+    },
+    {
+      "file": "docs/sc-cron/requirements.md",
+      "id": "REQ-CRON-0003",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0201",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0301",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0302",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "REQ-RUN-0318",
+      "kind": "req"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "NFR-RUN-0003",
+      "kind": "nfr"
+    },
+    {
+      "file": "docs/sc-runtime/requirements.md",
+      "id": "NFR-RT-0001",
+      "kind": "nfr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0001",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0008",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0305",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0306",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0020",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0021",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0007",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0012",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/architecture.md",
+      "id": "ADR-RUN-0017",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/requirements.md",
+      "id": "NFR-RUN-0010",
+      "kind": "nfr"
+    },
+    {
+      "file": "docs/sc-config/architecture.md",
+      "id": "ADR-CFG-0003",
+      "kind": "adr"
+    },
+    {
+      "file": "docs/sc-config/requirements.md",
+      "id": "NFR-CFG-0003",
+      "kind": "nfr"
+    }
+  ],
+  "decision_trace": {
+    "ADR-RUN-0020": [
+      {
+        "point": 1,
+        "statement": "The sc-storage crate MUST expose the shared asynchronous Storage<T> contract without dependencies outside the Rust standard library.",
+        "authority": [
+          "ANC-032",
+          "ADR-RUN-0007"
+        ]
+      },
+      {
+        "point": 2,
+        "statement": "SQLite, Postgres and MySQL MUST implement the same Storage<T> contract.",
+        "authority": [
+          "ANC-032"
+        ]
+      },
+      {
+        "point": 3,
+        "statement": "Storage<T> MUST provide read, read_all and write operations for application-defined row types.",
+        "authority": [
+          "ANC-032",
+          "ADR-RUN-0020 existing contract1"
+        ]
+      },
+      {
+        "point": 4,
+        "statement": "StorageRow MUST describe the row table, key, columns, encoding and decoding through validated row descriptors.",
+        "authority": [
+          "ANC-034",
+          "ADR-RUN-0020 existing contract1"
+        ]
+      },
+      {
+        "point": 5,
+        "statement": "Consumer row types, schemas and migrations MUST remain outside generic engine implementations.",
+        "authority": [
+          "ANC-034"
+        ]
+      },
+      {
+        "point": 6,
+        "statement": "AtomicStorage::transaction(spec, producer) MUST commit or roll back its multiple row operations as one atomic unit.",
+        "authority": [
+          "ANC-033"
+        ]
+      },
+      {
+        "point": 7,
+        "statement": "Generic transaction handles MUST provide read, write, insert and delete operations across row types.",
+        "authority": [
+          "ANC-033",
+          "ADR-RUN-0020 existing contract1"
+        ]
+      },
+      {
+        "point": 8,
+        "statement": "Each transaction retry MUST start a fresh owned Send + 'static producer future.",
+        "authority": [
+          "ANC-033"
+        ]
+      },
+      {
+        "point": 9,
+        "statement": "TransactionSpec MUST expose name and read-only/read-write mode through constructors and accessors with a non-exhaustive public shape.",
+        "authority": [
+          "ANC-033",
+          "owner requirement8 existing contract2"
+        ]
+      },
+      {
+        "point": 10,
+        "statement": "Engine configuration MUST provide finite retry and deadline defaults.",
+        "authority": [
+          "ADR-RUN-0020 existing contract2",
+          "NFR-RUN-0002"
+        ]
+      },
+      {
+        "point": 11,
+        "statement": "The transaction contract MUST preserve the option of adding transaction-specific retry policy without breaking consumer construction.",
+        "authority": [
+          "owner requirement8",
+          "PRD-ENG-5/6"
+        ]
+      },
+      {
+        "point": 12,
+        "statement": "Transaction observations MUST retain name, queue wait, run time, row-operation count and outcome.",
+        "authority": [
+          "ADR-RUN-0020 existing contract2"
+        ]
+      },
+      {
+        "point": 13,
+        "statement": "Generic engines MUST quote validated identifiers and bind row values instead of accepting consumer SQL strings.",
+        "authority": [
+          "ANC-034",
+          "ADR-RUN-0020 existing contract3"
+        ]
+      },
+      {
+        "point": 14,
+        "statement": "Storage failures MUST return typed StorageError values with stable code, retryability, source and recovery information.",
+        "authority": [
+          "ANC-035",
+          "NFR-RUN-0009"
+        ]
+      },
+      {
+        "point": 15,
+        "statement": "Public storage functions MUST NOT panic.",
+        "authority": [
+          "ANC-035",
+          "NFR-RUN-0009"
+        ]
+      },
+      {
+        "point": 16,
+        "statement": "The SQLite implementation MUST admit writes through a bounded asynchronous channel to one dedicated writer thread owning the sole write-mode connection.",
+        "authority": [
+          "ANC-022",
+          "ANC-023",
+          "ANC-024"
+        ]
+      },
+      {
+        "point": 17,
+        "statement": "The SQLite writer MUST batch admitted writes and send successful replies only after the outer transaction commits.",
+        "authority": [
+          "ADR-RUN-0012",
+          "ADR-RUN-0020 existing contract3"
+        ]
+      },
+      {
+        "point": 18,
+        "statement": "SQLite reads MUST use the reader workers of the same database implementation.",
+        "authority": [
+          "ADR-RUN-0020 existing contract3"
+        ]
+      },
+      {
+        "point": 19,
+        "statement": "Only the dedicated SQLite writer thread MAY drive Runtime::block_on; reader workers MUST receive with blocking_recv without a runtime.",
+        "authority": [
+          "ANC-025",
+          "ADR-RUN-0011"
+        ]
+      },
+      {
+        "point": 20,
+        "statement": "Async storage callers MUST NOT block or wrap storage submission in spawn_blocking.",
+        "authority": [
+          "ANC-026",
+          "ADR-RUN-0007"
+        ]
+      },
+      {
+        "point": 21,
+        "statement": "A SQLite write transaction body that yields MUST roll back with a typed error.",
+        "authority": [
+          "ANC-033",
+          "ADR-RUN-0020 existing contract3"
+        ]
+      },
+      {
+        "point": 22,
+        "statement": "SQLite writer failure MUST fail all admitted replies and close further admission.",
+        "authority": [
+          "ANC-027",
+          "ADR-RUN-0020 existing contract3"
+        ]
+      },
+      {
+        "point": 23,
+        "statement": "CronStore<S> MUST keep its generic backend private behind the policy-checked CronStorage facade.",
+        "authority": [
+          "ANC-030",
+          "ANC-031",
+          "ADR-RUN-0020 existing contract4"
+        ]
+      },
+      {
+        "point": 24,
+        "statement": "CronStorage MUST enforce active-name admission, configured schedule-row limits, generation fencing and multi-row mutations through atomic domain operations implemented once in sc-cron.",
+        "authority": [
+          "ANC-030",
+          "ANC-031",
+          "ANC-033",
+          "REQ-CRON-0020",
+          "REQ-CRON-0021"
+        ]
+      },
+      {
+        "point": 25,
+        "statement": "SQLite application and cron rows MUST share the application database by default.",
+        "authority": [
+          "ANC-021"
+        ]
+      },
+      {
+        "point": 26,
+        "statement": "Generation MUST reject cron when no database is selected.",
+        "authority": [
+          "ANC-029"
+        ]
+      },
+      {
+        "point": 27,
+        "statement": "Legacy cron import MUST preserve stored fields through an idempotent, read-only-source migration that refuses collisions atomically.",
+        "authority": [
+          "REQ-CRON-0004",
+          "ADR-RUN-0020 existing contract4"
+        ]
+      },
+      {
+        "point": 28,
+        "statement": "sc-cron MUST own CronRow and MontyBlobRow tables and migrations through generic row storage.",
+        "authority": [
+          "ANC-034",
+          "ANC-044"
+        ]
+      },
+      {
+        "point": 29,
+        "statement": "Schedule writes MUST reject Monty source that sc-monty cannot compile.",
+        "authority": [
+          "ANC-041",
+          "ANC-048"
+        ]
+      },
+      {
+        "point": 30,
+        "statement": "sc-cron MUST capture the compiled hook-session blob immediately after compilation and before any hook runs.",
+        "authority": [
+          "ANC-047"
+        ]
+      },
+      {
+        "point": 31,
+        "statement": "sc-cron MUST key each compiled-session blob by sc-sha SHA-256 of the source and the Monty dump version.",
+        "authority": [
+          "ANC-045",
+          "ANC-061"
+        ]
+      },
+      {
+        "point": 32,
+        "statement": "sc-cron MUST use a cached blob only when its key matches the authoritative source stored in the schedule row.",
+        "authority": [
+          "ANC-046"
+        ]
+      },
+      {
+        "point": 33,
+        "statement": "A missing, stale, corrupt or unreadable-version blob, or a loaded session missing cron_stop or cron_tick, MUST cause recompilation from source and replacement of the cached pre-run blob.",
+        "authority": [
+          "owner requirement2",
+          "ADR-RUN-0020 existing contract5"
+        ]
+      },
+      {
+        "point": 34,
+        "statement": "sc-cron MUST NOT persist hook run state in compiled-session blobs.",
+        "authority": [
+          "ANC-047",
+          "owner requirement2"
+        ]
+      },
+      {
+        "point": 35,
+        "statement": "Backend factories and open options MUST belong to the corresponding engine implementation.",
+        "authority": [
+          "ADR-RUN-0020 existing contract6"
+        ]
+      },
+      {
+        "point": 36,
+        "statement": "Application WidgetStorage, OpenWidgetStore and StoresView extensions MUST preserve generated identifiers and existing create, read and delete behavior.",
+        "authority": [
+          "REQ-RUN-0328",
+          "REQ-RUN-0330",
+          "ADR-RUN-0020 existing contract6"
+        ]
+      },
+      {
+        "point": 37,
+        "statement": "Phase D MUST publish sc-storage, sc-runtime-db-sqlite, sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands and sc-monty together at version 0.3.0.",
+        "authority": [
+          "REQ-RUN-0002",
+          "REQ-RUN-0702"
+        ]
+      },
+      {
+        "point": 38,
+        "statement": "Phase D MUST retain table-neutral Postgres and MySQL engine implementations in the generated template rather than introduce additional published engine crates.",
+        "authority": [
+          "ADR-RUN-0020 existing contract6"
+        ]
+      }
+    ],
+    "ADR-RUN-0021": [
+      {
+        "point": 1,
+        "statement": "CLI, MCP and HTTP interfaces MUST invoke the same application command read and write paths through the daemon.",
+        "authority": [
+          "REQ-RUN-0201",
+          "ADR-RUN-0201",
+          "ADR-RUN-0202"
+        ]
+      },
+      {
+        "point": 2,
+        "statement": "The daemon command path MUST be reachable over HTTP through a Unix-domain socket or TCP transport.",
+        "authority": [
+          "ADR-RUN-0201",
+          "ADR-TRN-0001"
+        ]
+      },
+      {
+        "point": 3,
+        "statement": "sc-command MUST provide asynchronous storage_read(store, transform, key) and storage_write(store, transform, input) functions over Storage<T>.",
+        "authority": [
+          "ADR-RUN-0021 existing contract1",
+          "PRD-CMD-3"
+        ]
+      },
+      {
+        "point": 4,
+        "statement": "Command failures MUST return typed StorageCommandError values.",
+        "authority": [
+          "NFR-RUN-0009",
+          "ADR-RUN-0021 existing contract1"
+        ]
+      },
+      {
+        "point": 5,
+        "statement": "A command with directly convertible Tcli and Tsql types MUST use built-in conversion and storage behavior without requiring an application-written transform or storage action.",
+        "authority": [
+          "ANC-056"
+        ]
+      },
+      {
+        "point": 6,
+        "statement": "Application business rules MUST enter the shared path through the open Transform seam.",
+        "authority": [
+          "PRD-CMD-3",
+          "ADR-RUN-0021 existing contract1"
+        ]
+      },
+      {
+        "point": 7,
+        "statement": "Cron command storage MUST use the sc-cron-commands policy adapter to CronStorage without exposing its raw backend or duplicating cron policy.",
+        "authority": [
+          "ANC-030",
+          "ANC-031",
+          "ADR-RUN-0021 existing contract1"
+        ]
+      },
+      {
+        "point": 8,
+        "statement": "Documentation MUST identify Transform, storage_read and storage_write as provisional in version 0.3.0.",
+        "authority": [
+          "ANC-050"
+        ]
+      },
+      {
+        "point": 9,
+        "statement": "The command seam MUST permit later addition of a second transform input, a typed Ok outcome that writes nothing distinct from Err, and a transform within an atomic transaction without breaking consumers.",
+        "authority": [
+          "ANC-051",
+          "ANC-052"
+        ]
+      },
+      {
+        "point": 10,
+        "statement": "Phase D MUST NOT implement those three deferred command-seam behaviors.",
+        "authority": [
+          "owner requirement4",
+          "PRD-ENG-6"
+        ]
+      },
+      {
+        "point": 11,
+        "statement": "The Phase D interpreter transform MUST complete before the storage transaction begins.",
+        "authority": [
+          "ADR-RUN-0021 existing contract2"
+        ]
+      },
+      {
+        "point": 12,
+        "statement": "Monty compilation, sessions, resource limits, host-function dispatch, typed interpreter errors and session dump/load MUST be implemented only in sc-monty.",
+        "authority": [
+          "ANC-041"
+        ]
+      },
+      {
+        "point": 13,
+        "statement": "sc-monty MUST expose a compiled session and value-level MontyInvoke<Tin,Tout> invocation of a script and named function with typed inputs and output.",
+        "authority": [
+          "owner requirement1",
+          "ADR-RUN-0021 existing contract3"
+        ]
+      },
+      {
+        "point": 14,
+        "statement": "At d-5 closure, sc-monty normal and build dependencies MUST be limited to pydantic Monty crates, excluding sc-*, Tokio and serde_json.",
+        "authority": [
+          "ANC-039",
+          "range9 M28 clarification"
+        ]
+      },
+      {
+        "point": 15,
+        "statement": "At d-5 closure, sc-monty source and tests MUST NOT define cron types, cron-reserved names or a copied scheduler/store implementation.",
+        "authority": [
+          "ANC-040",
+          "range9 M28 clarification"
+        ]
+      },
+      {
+        "point": 16,
+        "statement": "Interpreter extraction MUST begin with an exact copy of the current sc-cron code, dependencies and unit/integration tests that passes before any API change.",
+        "authority": [
+          "ANC-062"
+        ]
+      },
+      {
+        "point": 17,
+        "statement": "The passing baseline commit MUST remain reachable from the d-5 closing commit.",
+        "authority": [
+          "ANC-062",
+          "range10 m31 clarification"
+        ]
+      },
+      {
+        "point": 18,
+        "statement": "Interpreter separation MUST preserve every copied assertion.",
+        "authority": [
+          "ANC-042",
+          "ANC-062"
+        ]
+      },
+      {
+        "point": 19,
+        "statement": "sc-cron MUST call sc-monty for interpreter execution while retaining its own cron policy and JSON/value conversion.",
+        "authority": [
+          "ANC-041",
+          "ANC-043"
+        ]
+      },
+      {
+        "point": 20,
+        "statement": "Monty cron hooks MUST receive values rather than JSON strings.",
+        "authority": [
+          "ANC-043"
+        ]
+      },
+      {
+        "point": 21,
+        "statement": "Monty command transforms MUST call sc-monty directly with source read at invocation from an application-owned UTF-8 file configured at daemon setup.",
+        "authority": [
+          "ANC-049",
+          "ADR-RUN-0021 existing contract4"
+        ]
+      },
+      {
+        "point": 22,
+        "statement": "Transform source replacement MUST take effect without rebuilding the application.",
+        "authority": [
+          "ANC-049"
+        ]
+      },
+      {
+        "point": 23,
+        "statement": "Transform source file-read and UTF-8 errors MUST return typed transform failures.",
+        "authority": [
+          "NFR-RUN-0009",
+          "ADR-RUN-0021 existing contract4"
+        ]
+      },
+      {
+        "point": 24,
+        "statement": "The bounded interpreter execution adapter MUST keep blocking interpreter work off Tokio request workers.",
+        "authority": [
+          "NFR-RUN-0002",
+          "ADR-RUN-0021 existing contract4"
+        ]
+      },
+      {
+        "point": 25,
+        "statement": "The interpreter execution adapter MUST NOT block storage submission.",
+        "authority": [
+          "ADR-RUN-0007",
+          "ADR-RUN-0021 existing contract4"
+        ]
+      },
+      {
+        "point": 26,
+        "statement": "Generated applications MUST be able to select Monty without selecting cron.",
+        "authority": [
+          "owner requirement1",
+          "ADR-RUN-0021 existing contract4"
+        ]
+      },
+      {
+        "point": 27,
+        "statement": "The template widget create and delete commands MUST use storage_write.",
+        "authority": [
+          "ANC-059",
+          "ANC-060"
+        ]
+      },
+      {
+        "point": 28,
+        "statement": "The template widget get command MUST use storage_read.",
+        "authority": [
+          "ANC-059",
+          "ANC-063"
+        ]
+      },
+      {
+        "point": 29,
+        "statement": "cron.start and cron.end MUST use storage_write.",
+        "authority": [
+          "ANC-053"
+        ]
+      },
+      {
+        "point": 30,
+        "statement": "cron.list MUST use storage_read.",
+        "authority": [
+          "ANC-053"
+        ]
+      },
+      {
+        "point": 31,
+        "statement": "No user cron command MAY bypass the shared command path.",
+        "authority": [
+          "ANC-054"
+        ]
+      },
+      {
+        "point": 32,
+        "statement": "cron.start MUST allow the configured application transform to modify or append user JSON before schedule persistence.",
+        "authority": [
+          "ANC-055"
+        ]
+      },
+      {
+        "point": 33,
+        "statement": "Command-path requirements MUST NOT mandate hand-written code or prohibit a later consumer-side generator against the delivered framework.",
+        "authority": [
+          "ANC-057",
+          "ANC-058"
+        ]
+      }
+    ]
+  },
+  "validation": {
+    "index": "/tmp/phase-d-formal-adrs/final-index.json",
+    "files": 14,
+    "records": 176,
+    "issues": 0
+  },
+  "quality_status": "NOT CLAIMED; run-lead runs judge-jev across all176 records after push",
+  "plan_and_anchor_changes": "none",
+  "status_handling": "Raptor has no Deferred status. Deferred non-binding records use Draft and explicit non-applicability to PhaseD; partially superseded ADRs preserve the remaining active scope."
+}
