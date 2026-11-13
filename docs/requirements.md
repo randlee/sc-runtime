@@ -2697,7 +2697,7 @@ the owner decided that building a virtual machine is not part of v0.1.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. A split CLI command is a CLI command written as two pure functions, request construction and result rendering, with the HTTP call made between them. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)). The example unit tests are the unit tests of the example commands, in `template/crates/cli`. A test is for a unit-test case when it sets up the input the case gives and asserts the result the case states. A call to a function includes a call through other functions. A function opens a socket when it creates a TCP, UDP or Unix-domain socket. A function uses the network when it sends or receives data over a socket, for example through `sc_transport::Client`. A function starts a child process when it runs `std::process::Command` or `tokio::process::Command`. A testability-only abstraction is a trait whose only implementors are a real implementation and a test double, or a type or module that only test code uses.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. A mock transport is a test substitute for the real network transport. A transport trait is an interface introduced to substitute transport implementations. Request construction is the function from a command's command-line arguments to the HTTP method, route path and JSON body to be posted. Result rendering is the function from the received `sc_command::Envelope<T>` or `sc_transport::TransportError` to stdout text and process exit status, for both the `--json` and plain forms. A pure function performs no I/O, does not read the environment and does not call the network. A split CLI command is a CLI command written as two pure functions, request construction and result rendering, with the HTTP call made between them. An example command is the CLI command for `widget.create` or `widget.get`. The unit-test cases are the five cases listed in this requirement, each beginning "given". The template is the `template/` directory. A host-run test is a test that may run on a developer's host ([NFR-RUN-0010](requirements.md)). The example unit tests are the unit tests of the example commands, in `template/crates/cli`. A test is for a unit-test case when it sets up the input the case gives and asserts the result the case states. A call to a function includes a call through other functions. A function opens a socket when it creates a TCP, UDP or Unix-domain socket. A function uses the network when it sends or receives data over a socket, for example through `sc_transport::Client`. A function starts a child process when it runs `std::process::Command` or `tokio::process::Command`. A testability-only abstraction is a trait whose only implementors are a real implementation and a test double, or a type or module that only test code uses.
 
 Direction given by the owner on 2026-09-20: one purpose of sc-runtime is to
 reduce the complexity of testing a CLI that posts and gets over HTTP, and
@@ -2752,7 +2752,7 @@ The split into two functions is the whole testability mechanism.
 - Each CLI command MUST be a split CLI command.
 - `template/crates/cli` MUST contain unit tests for each example command.
 - The example unit tests MUST pass when no daemon process is running.
-- For each example command, the example unit tests MUST contain one test for each unit-test case.
+- `template/crates/cli` MUST contain a unit test for every pair of an example command and a unit-test case.
 
 **MUST NOT statements:**
 
@@ -2762,7 +2762,7 @@ The split into two functions is the whole testability mechanism.
 - A host-run test MUST NOT execute the CLI binary.
 - The template MUST NOT add a mock transport.
 - The template MUST NOT add a transport trait.
-- The template MUST NOT add any other testability-only abstraction ([NFR-RUN-0004](requirements.md)).
+- The template MUST NOT add a testability-only abstraction.
 
 ### Rationale
 
@@ -2775,7 +2775,8 @@ generated the tests are generated with it and every project starts with them.
 The parts a unit test does not reach are already proven elsewhere: the
 transport by its own crate's tests, the server by fixture tests, and the
 agreement between client and server types by the compiler. Splitting into two
-functions costs nothing and needs no mocking layer.
+functions costs nothing and needs no mocking layer. The ban on testability-only
+abstractions applies [NFR-RUN-0004](requirements.md).
 ### Success Criteria
 
 1. In a project generated from each fixture, `cargo test -p cli` passes with
