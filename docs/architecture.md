@@ -3122,14 +3122,24 @@ Amended: 2026-10-26 by sprint b-8. The post hook, `hooks/prefix_packages.py`, an
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
 ### Context
 
-[ADR-RUN-0401](architecture.md) fixes the pipeline: `cargo-generate` renders
-the Rust workspace from `template/` with no prompt, from a values file; options
-include or exclude whole files; `AGENTS.md.j2` and `CLAUDE.md.j2` reach the
-generated project unrendered so that `sc-compose` can render them. Each of
-these relies on a `cargo-generate` behaviour that sprint a-1 verified on
-cargo-generate 0.25.1. That is the pinned version.
+[ADR-RUN-0401](architecture.md) fixes a generation pipeline that renders the
+Rust workspace from `template/` using validated answers, selects whole files
+according to options, and passes `AGENTS.md.j2` and `CLAUDE.md.j2` unchanged to
+`sc-compose` for rendering.
 
-The problem is that the sc-runtime design of 2026-09-19 described these `cargo-generate` behaviours but marked them as unverified, to be confirmed by the spike before anything relied on them.
+The decision is which `cargo-generate` mechanisms satisfy that pipeline.
+Generation must run without prompting, including for array-valued options.
+File selection must operate on whole files. The Jinja agent documents must
+retain their original bytes until `sc-compose` reads them. The driver must use
+the validated answers rather than request a second set of answers. These
+constraints come from ADR-RUN-0401 and REQ-RUN-0303 through REQ-RUN-0306,
+REQ-RUN-0501 and REQ-RUN-0502.
+
+The design of 2026-09-19 left the required `cargo-generate` behaviours
+unverified, so the mechanisms could not be accepted until the spike confirmed
+them. Sprint a-1 verified them on cargo-generate 0.25.1 using the evidence rows
+V3a, V3b, V4a and V4b in REQ-RUN-0102. This ADR records those accepted mechanisms;
+0.25.1 is the pinned tool version recorded here.
 
 ### Decision
 
