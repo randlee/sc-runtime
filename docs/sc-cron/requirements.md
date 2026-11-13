@@ -352,12 +352,12 @@ Every cross-boundary failure exposes stable codes, causes, and recovery/remediat
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-28  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: Canonical plaintext schedule data is the serialized HookEnvironment configuration, including deliberate Set values, rather than secret values inherited or resolved at execution. Provider prose is text from the application reference resolver; only Denied, Unavailable, missing or a value crosses that resolver protocol. Resolved values are values supplied from daemon variables, dotenv files or references. Output assembly means composing fixed codes/recovery, outcomes, events, traces and persisted reasons. Stable text and metadata mean the fixed codes, recovery messages and non-provider metadata; they and the canonical configuration write are excluded from value replacement.
+Definitions: Canonical plaintext schedule data is the serialized HookEnvironment configuration, including deliberate Set values, rather than secret values inherited or resolved at execution. Provider prose is text from the application reference resolver; only Denied, Unavailable, missing or a value crosses that resolver protocol. Resolved values are values supplied from daemon variables, dotenv files or references. Output assembly means composing fixed codes/recovery, outcomes, events, traces and persisted reasons. Stable text and metadata mean the fixed codes, recovery messages and non-provider metadata; they and the canonical configuration write are excluded from value replacement. The resolved map is the immutable map of environment names to values resolved for a schedule run. Schedule operations are the name-keyed `Set`, `Reference` or `Clear` operations of the schedule environment. The row deadline is the deadline of the schedule row being run. The CLI adapter children are the child processes started by sc_compose_run and atm_run.
 
 Python and Monty schedule rows share one `HookEnvironment`; existing
 constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
@@ -417,9 +417,12 @@ remain outside an untrusted-code boundary.
 - Generated administrator configuration MUST expose an empty-by-default `allow_dotenv_files` array.
 - Generated administrator configuration MUST expose an empty-by-default `allow_dotenv_roots` array.
 - Generated scheduler composition MUST preserve an application-provided resolver in its prebuilt host policy.
-- Reference resolution MUST receive the schedule name, variable name, opaque reference and row deadline.
+- Reference resolution MUST receive the schedule name.
+- Reference resolution MUST receive the variable name.
+- Reference resolution MUST receive the opaque reference.
+- Reference resolution MUST receive the row deadline.
 - Reference resolution MUST be bounded by the row deadline.
-- If that deadline expires during reference resolution, the outcome MUST be `RunOutcome::TimedOut` before hook source runs.
+- If the row deadline expires during reference resolution, the run's outcome MUST be `RunOutcome::TimedOut`.
 - One immutable map MUST be resolved before cron.stop.
 - cron.tick MUST reuse the immutable map resolved for cron.stop.
 - Resolution MUST first apply allowlisted daemon values.
@@ -436,16 +439,18 @@ remain outside an untrusted-code boundary.
 - Monty Getenv MUST return the resolved-map value for a present key.
 - Monty Getenv MUST return the call's supplied default when the key is missing or cleared.
 - Monty GetEnviron MUST enumerate that same resolved map, excluding missing or cleared names.
-- Other Monty OS calls MUST remain denied.
+- Every Monty OS call other than `Getenv` and `GetEnviron` MUST be denied.
 - Both CLI adapter children MUST receive the resolved map.
 - Hook/provider-controlled failure details and stop reasons MUST replace distinct non-empty resolved values with `[REDACTED_ENV]` before byte caps and the output assembly described above.
 - Stable text, metadata and canonical environment configuration writes MUST remain exempt from resolved-value replacement.
-- `HookOutput` debug formatting MUST omit raw output contents.
+- The `Debug` formatting of `HookOutput` MUST omit the contents of its raw output fields.
 
 **MUST NOT statements:**
 
+- If the row deadline expires during reference resolution, hook source MUST NOT run.
+
 - CLI adapter children MUST NOT inherit the daemon environment.
-- The crate MUST NOT infer or capture an invoking caller environment.
+- `sc-cron` MUST NOT infer or capture the environment of an invoking caller.
 - `sc-cron` MUST NOT emit provider prose.
 - Resolved daemon values MUST NOT be persisted.
 - Resolved file values MUST NOT be persisted.
