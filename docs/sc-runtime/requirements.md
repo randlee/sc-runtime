@@ -971,7 +971,7 @@ machine, never on a developer's host
 
 Definitions:
 `axum`, `rmcp` and `sqlx` are third-party Rust library crates: `axum` serves HTTP routes, `rmcp` serves Model Context Protocol (MCP) requests and `sqlx` runs SQL queries.
-A public item is a module, struct, enum, trait or free function that `cargo doc -p sc-runtime --no-deps --features test-util` documents, or a public method of `Daemon` or `DaemonBuilder` that `cargo doc -p sc-runtime --no-deps --features test-util` documents.
+A public item is a module, struct, enum, trait or free function that other crates can name through a public path of `sc-runtime` with `test-util` enabled, whether or not it is marked `#[doc(hidden)]`, or a public method of `Daemon` or `DaemonBuilder`. The typestate markers `NeedStores`, `NeedRoutes` and `Ready` are not public items.
 The public-surface table is the table in this record that gives the kind, count and name of each public item of the Phase D deliverable.
 A free function is a function declared outside any `impl` block.
 The allowed free-function list is `mcp_request_body` and `testing::instrument_router`.
@@ -1009,8 +1009,8 @@ Scope: every rule in this record describes the Phase D deliverable of the `sc-ru
 - `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `axum` crate.
 - `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `rmcp` crate.
 - `crates/sc-runtime/src` MUST NOT declare a public data type that has a field typed from the `sqlx` crate.
-- `cargo doc -p sc-runtime --no-deps --features test-util` MUST NOT document a public item that the public-surface table does not name.
-- `cargo doc -p sc-runtime --no-deps --features test-util` MUST NOT document a public free function whose name is absent from the allowed free-function list.
+- `crates/sc-runtime/src` MUST NOT declare a public item that the public-surface table does not name.
+- `sc-runtime` MUST NOT have a public free function whose name is absent from the allowed free-function list.
 - `crates/sc-runtime/src` MUST NOT contain a `pub use` declaration that re-exports an item defined in another crate.
 
 ### Rationale
