@@ -3463,9 +3463,19 @@ Run the Monty interpreter in `monty-pool` worker subprocesses instead of in-proc
 - [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27) — Source: Owner, 2026-10-27. Recorded in [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
 ### Context
 
-The limit and its meaning stand. Cron owns the row-limit policy; `CronStorage: Storage<CronRow>` atomically checks the limit and admits the new row in the same storage operation, so independent callers cannot race a separate count and write. This replaces the old bundled SQLite store's count check without weakening the limit.
+Problem: reloading schedules loads every schedule row into memory, so an uncapped row count is unsafe when schedules come from operators or configuration.
 
-[ADR-RUN-0013](architecture.md) keeps sc-cron a general scheduler: no two-row mutex, no global in-flight lock, and no beads-specific slot shape. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration. Released applications must allow raising the ceiling without recompiling. sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)).
+Forces:
+
+- [ADR-RUN-0013](architecture.md) keeps sc-cron a general scheduler: no two-row mutex, no global in-flight lock, and no beads-specific slot shape.
+- Released applications must allow raising the ceiling without recompiling.
+- sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)).
+- Independent callers sharing one schedule database must not race a separate count and write.
+
+Definitions:
+
+- Embedder: the application process that constructs or opens the sc-cron scheduler and passes it `ScheduleLimits`.
+- Schedule row: one named schedule stored in the sc-cron schedule table, enabled or disabled.
 ### Decision
 
 1. The scheduler accepts an optional row limit at construction (`max_schedule_rows: Option<NonZeroUsize>` or equivalent). **`None`** is the library default and means no row-count enforcement.
@@ -3473,16 +3483,27 @@ The limit and its meaning stand. Cron owns the row-limit policy; `CronStorage: S
 3. When the limit is set, adding a row whose name is new while the table is already at the limit returns the existing **`CronError::InvalidSpec`** (detail names the limit and current count). No new error variant ([ADR-RUN-0013](architecture.md) point 6 stays seven variants). Lowering the limit below the current row count never deletes rows; only new names are rejected until the count is under the limit. The check runs in the same store transaction as the insert.
 4. **Generated sc-runtime applications** ship a sc-config key (name chosen by the template; default **`10`**) that the daemon reads at startup. Sentinel **`0`** or **`null`** in JSON means unlimited (`None` passed to sc-cron). The embedder maps config to the scheduler parameter; sc-cron never reads sc-config files.
 5. **v1:** the limit is applied when the embedder builds or opens the scheduler (daemon startup). **v2 (optional):** a reconfiguration API (for example `set_max_schedule_rows`) may apply a config reload without process restart.
+6. sc-cron owns the row-limit policy. `CronStorage: Storage<CronRow>` MUST check the limit and admit the new row in one storage operation; this replaces the count check of the old bundled SQLite store without weakening the limit.
 ### Rationale
 
 Owner ruling, 2026-10-27 (decision-sync-scheduling-at-api.md). The check runs inside the same store transaction as the insert, so two processes sharing one file cannot both pass it. The b-9 text that many names may each hold a blocking-pool thread is bounded for any consumer that sets the limit.
 ### Consequences
 
-Sprint **`b-12`** implements the API, store count check, template default, and doc updates in `docs/sc-cron/` ([sprint-b-12-sc-cron-schedule-row-limit.md](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md)). beads-cache may enforce its own sync semantics; that is not sc-cron's default ceiling.
+**Positive:**
+
+- A consumer that sets the limit bounds the schedule rows loaded into memory on reload and the blocking-pool threads that schedule names hold under the b-9 Monty hooks.
+- Two processes that open one schedule database with identical `ScheduleLimits` cannot both pass the limit check, because the check and the insert share one store transaction.
+- sc-cron stays free of `sc-config`; operators raise the ceiling through the application config key without recompiling.
 
 **Negative:**
 
 - Lowering the limit below the current row count leaves the table above the limit until rows are deleted, because existing rows are never removed.
+- The ceiling is not written into the schedule database; a writer opened with different `ScheduleLimits`, including unlimited, does not enforce another writer's cap.
+
+**Neutral:**
+
+- Sprint **`b-12`** implements the API, store count check, template default, and doc updates in `docs/sc-cron/` ([sprint-b-12-sc-cron-schedule-row-limit.md](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md)).
+- beads-cache enforces its own sync semantics, if any; those semantics are not sc-cron's default ceiling.
 ### Alternatives Considered
 
 #### Alternative 1: sc-cron reads the limit from sc-config
@@ -3494,6 +3515,26 @@ sc-cron reads the application's sc-config JSON itself to find the row limit.
 **Why Rejected:**
 
 sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)). The embedder reads its own config and passes the limit into the sc-cron API.
+
+#### Alternative 2: No row limit
+
+**Description:**
+
+sc-cron stores any number of schedule rows and offers no ceiling.
+
+**Why Rejected:**
+
+Reloading loads every schedule row into memory; an uncapped row count is unsafe when schedules come from operators or configuration.
+
+#### Alternative 3: Fixed ceiling compiled into sc-cron
+
+**Description:**
+
+sc-cron enforces one constant row ceiling chosen at build time.
+
+**Why Rejected:**
+
+Released applications must allow raising the ceiling without recompiling.
 
 ## ADR-RUN-0015: Benchmark campaigns in a controlled environment
 
