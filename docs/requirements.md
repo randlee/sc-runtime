@@ -1627,9 +1627,9 @@ Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-r
 
 ### Requirement Statement
 
-Definitions: The generated project is the project rendered from `template/`. The worked example is the pair of operations `widget.create` and `widget.get`, with the pieces listed in the worked-example table. The worked-example table is the table in this requirement headed Piece, Where in the generated project, What it MUST contain. Its three surfaces are a REST handler, an MCP tool and a CLI command. A handler is a REST handler of the worked example. A tool is an MCP tool of the worked example. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer. A piece matches a row of the worked-example table when it has every item that row's What it MUST contain cell lists for its operation. `rmcp` is the Rust crate that implements MCP, and `StreamableHttpService` is its HTTP service type. `initialize` and `tools/call` are MCP request methods; a session header is the HTTP header that identifies an MCP client session. Session state is server-owned state that tracks an MCP client session; an MCP session store is project code that keeps that state.
+Definitions: The generated project is the project rendered from `template/`. A stateless `tools/call` is an MCP `tools/call` request sent with no prior `initialize` request and no session header. The called tool's result is the response envelope that the tool returns through `.into_mcp()`, with `ok` equal to `true`. The worked example is the pair of operations `widget.create` and `widget.get`, with the pieces listed in the worked-example table. The worked-example table is the table in this requirement headed Piece, Where in the generated project, What it MUST contain. Its three surfaces are a REST handler, an MCP tool and a CLI command. A handler is a REST handler of the worked example. A tool is an MCP tool of the worked example. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer. A piece matches a row of the worked-example table when it has every item that row's What it MUST contain cell lists for its operation. `rmcp` is the Rust crate that implements MCP, and `StreamableHttpService` is its HTTP service type. `initialize` and `tools/call` are MCP request methods; a session header is the HTTP header that identifies an MCP client session. Session state is server-owned state that tracks an MCP client session; an MCP session store is project code that keeps that state.
 
-Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
+Command paths may be written directly. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
 The widget example is the interim, hand-written form of the command pattern. "Typed query functions" in `store-sqlite` and "one service function is the only path to SQL" describe that interim form; the target is `Tcli`, `Tsql`, a transform and `Storage<Tsql>`.
 
@@ -1650,8 +1650,8 @@ Related requirement: [REQ-RUN-0331](requirements.md). The widget pair remains th
 Which derives the struct carries, and that the same struct is the rmcp
 `Parameters<T>` input, is conditional on
 [ADR-RUN-0203](architecture.md) (spike row V2 of
-[REQ-RUN-0102](requirements.md)). Sprint a-1 made that ADR Active and
-proved V2, so these clauses stand. The rule that every surface calls one service
+[REQ-RUN-0102](requirements.md)). That ADR is Active and
+V2 is proved, so these clauses stand. The rule that every surface calls one service
 function does not depend on it.
 
 2. The route shape `POST /ops/{name}` is the example's convention only.
@@ -1669,8 +1669,8 @@ REQ-RUN-0201 states the rule in full: one service function is the only path to S
 - `crates/daemon/src/routes.rs` in the generated project MUST contain a handler that matches the REST row of the worked-example table for operation `widget.get`.
 - When option `mcp` is `true`, `crates/daemon/src/mcp.rs` in the generated project MUST contain a tool that matches the MCP row of the worked-example table for operation `widget.get`.
 - When option `mcp` is `true`, `mcp::service` in `crates/daemon/src/mcp.rs` MUST return a `StreamableHttpService`.
-- When option `mcp` is `true`, a `tools/call` sent to the service returned by `mcp::service` with no prior `initialize` and no session header MUST succeed.
-- The generated project MUST contain a CLI command for `widget.get`, built as the CLI row of the worked-example table states.
+- When option `mcp` is `true`, a stateless `tools/call` sent to the service returned by `mcp::service` MUST return the called tool's result.
+- `crates/cli` in the generated project MUST contain a `clap` command that matches the CLI row of the worked-example table for operation `widget.get`.
 - Every handler MUST call the service function of its operation.
 - Every handler MUST contain no SQL.
 - Every tool MUST call the service function of its operation.
