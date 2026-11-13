@@ -687,143 +687,75 @@ command adapter is permitted by ADR-RUN-0019.
 
 **Version:** 1.0.0  
 **Created:** 2026-11-02  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 **Status:** Approved  
 
 ### Requirement Statement
 
-Definitions: The canonical receiver is the CanonicalLog logging contract supplied by sc_command::observability and re-exported by sc_cron::observability, rather than a parallel trait. Source compatibility means existing constructor calls and legacy store implementations compile without source edits. Physical ownership retains admitted work and its resources until actual completion and join even if its async waiter disappears. Physical release occurs after that owned work finishes and its resources are released. The commit fence is the shared admission check for explicit and implicit writes against live stop/class/generation/deadline state. The four named outcome classes are confirmed committed-late, confirmed rollback, no-mutation and indeterminate. TLS means thread-local storage used for the SQLite operation context, not transport security. Uncertain connection state is a connection whose actual transaction outcome is unknown. Restoring the known hooks/TLS baseline means returning SQLite operation hooks and thread-local context to their known pre-operation state on a path that can do so safely. The live operation scope is the shared StoreOperationContext carrying current stop, deadline and cancellation state. A safe restoration path is one on which connection state permits restoring the known operation hooks and thread-local context, with uncertain state retained or quarantined rather than released as known-good.
+Definitions: The canonical receiver set is the `CanonicalLog` logging contract and its supporting values defined in `sc_command::observability`. A legacy store implementation is a `ScheduleStore` implementation that overrides neither `operation_support` nor `with_operation_context`, so `operation_support()` returns the default `StoreOperationSupport::Legacy`. A cooperative custom store is a `ScheduleStore` implementation outside sc-cron whose `operation_support()` returns `StoreOperationSupport::Cooperative`. Cooperative provider obligations are the statements of this record whose subject is a cooperative custom store. A persistence call is any read or write a store makes to its storage, including application-owned tables. Cooperative mode is the worker started by `Scheduler::spawn_worker_cooperative` together with the commands that receive its live operation scope. The live operation scope is the `StoreOperationContext` returned by `WorkerStopControl::operation_context()`, carrying the current stop, deadline and cancellation state. A live operation scope ends when it is cancelled or its deadline passes. A shortened deadline is a deadline that `WorkerStopControl::request_stop` moves earlier while an operation is already using the live operation scope. Waking an operation makes its wait return so the operation rechecks the live operation scope. Cooperative operation points are initial load, queue submission, lock acquisition, reload, decode, and every persistence, retry and end path of cooperative-mode work. G is the grace cutoff returned by `ShutdownBudget::grace()`, after which no ordinary commit is admitted. K is the cleanup cutoff returned by `ShutdownBudget::cleanup()`, after which no terminal-cleanup commit is admitted. A zero budget is a `ShutdownBudget` whose G and K both equal the instant `request_stop` is called. Ordinary work is any cooperative-mode operation other than terminal cleanup, and terminal cleanup is the generation-fenced end bookkeeping of the stopped schedule. The controller mutex is the single per-worker lock that guards stop state, earliest G and K, and commit admission decisions. The commit fence is the bundled `SqliteScheduleStore` commit hook that records `CommitAdmission::Admitted` or `CommitAdmission::Vetoed` for a write transaction. An explicit write is a transaction opened with BEGIN, and an implicit write is a single SQLite statement run in autocommit mode. Cooperative mode was added in sc-cron 0.2.0; the repository tag `v0.1.1` marks the release before it. A logging receiver trait is a trait with a method that takes a `LogEvent` from `sc_command::observability`. Expiry or drop of an operation confirms neither commit nor rollback. Uncertain connection state is a SQLite connection whose last transaction ended with `PersistenceOutcome::Indeterminate`. A stop cutoff check compares the current time with G or K. TLS means thread-local storage holding the SQLite operation context, not transport security. Restorable state is the SQLite operation hooks and TLS operation context of a bundled-store connection. The known baseline is the restorable state as it was before the operation started. A safe restoration path is any operation exit on which the connection's transaction outcome is known. A readback is a read of schedule rows to reconcile an uncertain mutation. An effect is a store write, job run or hook run that owned work starts. Owned work is each admitted worker or context-aware command task that `WorkerHandle::join_owned` must join.
 
 This target contract is written against `ScheduleStore` and `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned.
 
-The crate exposes the same nominal canonical logging receiver and supporting
-
-values through `sc_cron::observability`; no parallel trait is introduced.
-
-Existing constructors and legacy store implementations remain source compatible.
-
-The open ScheduleStore and generic Scheduler seam permits application-owned
-
-columns/tables through custom stores; bundled-schema preservation does not
-
-forbid consumer schemas or add product fields to Schedule/command DTOs.
-
-Cooperative custom providers must truthfully declare support and forward the
-
-live operation scope, fencing/query semantics and outcome/ownership contract
-
-using their own mechanisms. SQLite-specific callbacks apply to the bundled
-
-SqliteScheduleStore, not to every provider. Legacy/custom integrations may use
-
-the existing caller-owned path with explicitly documented guarantees.
-
-An opt-in cooperative mode rejects unsupported stores before starting work.
-
-It installs one shared operation context before initial load, queue submission,
-
-lock acquisition, reload, decode and all persistence/retry/end paths. Context
-
-checks and provider interruption observe directly mutable
-
-deadlines while blocked. No guard waits indefinitely before consulting context.
-
-Independent stop control closes admission, records only earlier deadlines and
-
-wakes/interrupts operations while an owning join runs. Grace and cleanup are
-
-absolute `std::time::Instant` deadlines in a real stop domain distinct from
-
-the schedule `Clock`. Equal deadlines are valid: T=0 cancels immediately and
-
-grants no cleanup-write budget. Physical joins may take time; no literal
-
-zero-duration or arbitrary native/custom-host preemption guarantee is made.
-
-All admitted worker and context-aware command tasks remain physically owned
-
-until completion even if their async waiter is cancelled. The human-approved
-
-commit admission/outcome contract forbids new ordinary commit admission at/after
-
-G and cleanup commit admission at/after K; it does not promise universal physical
-
-commit/fsync completion by those cutoffs. For bundled SQLite, final commit_hook admission briefly
-
-serializes with live stop state/class/generation/real time, releases the
-
-controller mutex before COMMIT/native I/O, and records stop-first/admission-first.
-
-Second stop remains independently callable while the commit path is blocked.
-
-Explicit and implicit writes share the fence. Confirmed committed-late,
-
-confirmed rollback, no-mutation and indeterminate outcomes are typed distinctly;
-
-expiry/Drop cannot imply rollback or not-persisted. No replay of uncertain
-
-mutations or expired-context readback. Bounded separately authorized readback
-
-may reconcile observed state without claiming exactly-once identity. Uncertain
-
-connection state remains owned/quarantined; restore known hooks/TLS baseline
-
-on safe paths. No effects occur after actual physical release. Cleanup expiry
-
-and actual persisted result are reported honestly after join; no bool false
-
-stands for unknown, no instantaneous T=0 join or universal 2T guarantee.
-
-Legacy direct calls remain
-
-caller-owned. Preserve bundled schema, generation fencing, stop-before-tick, existing
-
-Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
+Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owned columns and tables through custom stores; preserving the bundled schema does not forbid consumer schemas or add product fields to `Schedule` or command DTOs. SQLite-specific callbacks apply only to the bundled `SqliteScheduleStore`. Legacy store implementations and direct legacy calls remain caller-owned with explicitly documented guarantees. Physical joins may take time; no zero-duration join, universal 2T completion or native/custom-host preemption is promised. Commit admission is a logical fence, not a physical commit/fsync cutoff. A bounded, separately authorized readback may reconcile observed state without claiming exactly-once identity. The bundled schema, generation fencing, stop-before-tick, existing Rust/Python/Monty hooks and the REQ-CRON-0019 environment policy are preserved.
 
 **MUST statements:**
 
-- `sc_cron::observability` MUST expose the same nominal canonical logging receiver and supporting values.
-- Existing constructors and legacy store implementations MUST remain source compatible.
-- Custom cooperative providers MUST truthfully declare support.
-- Custom cooperative providers MUST forward the live operation scope.
-- Custom cooperative providers MUST honor the fencing contract.
-- Custom cooperative providers MUST honor the query contract.
-- Custom cooperative providers MUST honor the outcome contract.
-- Custom cooperative providers MUST honor the physical-ownership contract.
-- The opt-in cooperative mode MUST reject unsupported stores before starting work.
-- Cooperative work MUST install one shared operation context before initial load, queue submission, lock acquisition, reload, decode and every persistence/retry/end path.
-- Blocked context checks MUST observe directly mutable deadlines.
-- Provider interruption MUST observe directly mutable deadlines.
-- Independent stop control MUST close admission.
-- Independent stop control MUST record only earlier deadlines.
-- Independent stop control MUST wake or interrupt operations while the owning join runs.
-- Grace G MUST be an absolute std::time::Instant deadline in the real stop domain.
-- Cleanup K MUST be an absolute std::time::Instant deadline in the real stop domain.
-- The real stop domain MUST be distinct from the schedule Clock.
-- Equal G and K MUST be accepted.
-- T=0 MUST cancel immediately without a cleanup-write budget.
-- Admitted worker and context-aware command tasks MUST remain physically owned until completion even if their async waiter is cancelled.
-- The bundled SQLite final commit_hook admission decision MUST serialize with live stop state, operation class, generation and real time.
-- The bundled SQLite commit path MUST release the controller mutex before COMMIT or native I/O.
-- Second stop MUST remain independently callable while the commit path is blocked.
-- Explicit and implicit writes MUST share the commit fence.
-- Each named outcome class MUST have a typed representation distinct from the representations of the other three.
-- Uncertain connection state MUST remain owned or quarantined.
-- On safe paths, the known hooks and TLS baseline MUST be restored.
-- Cleanup expiry and actual persisted results MUST be reported honestly after join.
+- `sc_cron::observability` MUST export the canonical receiver set.
+- Every public constructor of the `sc-cron` crate MUST keep the signature it had at tag `v0.1.1`.
+- Every `ScheduleStore` method added after tag `v0.1.1` MUST have a default body.
+- Every `ScheduleStore` method at tag `v0.1.1` MUST have the same signature at the current revision.
+- Every item in `sc_cron::observability` MUST be a `pub use` of an item from `sc_command::observability`.
+- When a custom store does not meet every cooperative provider obligation, the custom store's `operation_support()` MUST return `StoreOperationSupport::Legacy`.
+- Each persistence call a cooperative custom store makes under a cancelled live operation scope MUST fail with `StoreErrorKind::Cancelled`.
+- A cooperative custom store MUST return `CronError::Fenced` without changing the row when an end request names a generation other than the stored generation.
+- A cooperative custom store's `query` MUST return no more than `ScheduleQuery::limit` rows.
+- A cooperative custom store's `query` MUST return rows in ascending id order.
+- A cooperative custom store's `query` MUST return only rows whose id is greater than `ScheduleQuery::after_id`.
+- When a cooperative custom store write fails, `StoreError::transaction_outcome()` on the returned error MUST return the `PersistenceOutcome` that matches the stored state after the write.
+- When the caller drops the future of an admitted operation, a cooperative custom store MUST continue the operation until the operation returns.
+- When the store is a legacy store implementation, `Scheduler::spawn_worker_cooperative` MUST return the `operation_context_unsupported` error.
+- Each cooperative operation point MUST run under the live operation scope.
+- When a shortened deadline passes, a context check blocked on the live operation scope MUST return `StoreErrorKind::DeadlineExceeded`.
+- When a shortened deadline passes during a bundled-store SQLite statement, the bundled store MUST interrupt the statement through the connection's `rusqlite::InterruptHandle`.
+- After `WorkerStopControl::request_stop` returns, the scheduler MUST refuse each new ordinary operation with the `operation_stopping` error.
+- When a later `request_stop` call passes a grace cutoff later than the recorded G, `WorkerStopControl` MUST keep the recorded G.
+- When a later `request_stop` call passes a cleanup cutoff later than the recorded K, `WorkerStopControl` MUST keep the recorded K.
+- While `WorkerHandle::join_owned` runs, each `request_stop` call MUST wake every operation waiting on the live operation scope.
+- `ShutdownBudget::new` MUST take G as a `std::time::Instant` value.
+- `ShutdownBudget::new` MUST take K as a `std::time::Instant` value.
+- Each stop cutoff check MUST read the current time from `std::time::Instant::now()`.
+- `ShutdownBudget::new(g, k)` MUST return `Ok` when `g` equals `k`.
+- After `request_stop` with a zero budget returns, `StoreOperationContext::check()` on the live operation scope MUST return an error.
+- When `request_stop` receives a zero budget, the commit fence MUST record `CommitAdmission::Vetoed` for each terminal-cleanup commit.
+- When `request_stop` takes the controller mutex before the commit fence, the commit fence MUST record `CommitAdmission::Vetoed`.
+- When the commit fence takes the controller mutex before `request_stop`, the commit fence MUST decide using the stop state from before the `request_stop` call.
+- When the commit fence decides an ordinary commit at or after G, the commit fence MUST record `CommitAdmission::Vetoed`.
+- When the commit fence decides a terminal-cleanup commit at or after K, the commit fence MUST record `CommitAdmission::Vetoed`.
+- While the SQLite call of an admitted bundled-store COMMIT has not returned, a second `WorkerStopControl::request_stop` call MUST return.
+- Each explicit write that cooperative-mode work makes through the bundled store MUST carry a commit fence decision in `TransactionOutcome::admission`.
+- Each implicit write that cooperative-mode work makes through the bundled store MUST carry a commit fence decision in `TransactionOutcome::admission`.
+- For a write the store confirms committed, `StoreError::transaction_outcome()` MUST return persistence `Committed`.
+- When the store confirms a commit that completed after its applicable cutoff, `StoreError::transaction_outcome()` MUST return `completed_after_cutoff` true.
+- For a write whose rollback the store confirms, `StoreError::transaction_outcome()` MUST return persistence `RolledBack`.
+- For an operation that attempted no mutation, `StoreError::transaction_outcome()` MUST return persistence `NoMutationAttempted`.
+- When the store has confirmed neither commit nor rollback of a write, the reported `PersistenceOutcome` of the write MUST be `Indeterminate`.
+- When a bundled-store operation exits on a safe restoration path, the restorable state MUST equal the known baseline.
+- `ShutdownReport::cleanup_exceeded` returned by `WorkerHandle::join_owned` MUST be true exactly when terminal cleanup exceeded K.
+- `ShutdownReport::cleanup` returned by `WorkerHandle::join_owned` MUST equal the `TransactionOutcome` of the terminal cleanup write.
 
 **MUST NOT statements:**
 
-- The crate MUST NOT introduce a parallel canonical logging trait.
-- Guards MUST NOT wait indefinitely before consulting context.
-- Ordinary commit admission MUST NOT occur at or after G.
-- Cleanup commit admission MUST NOT occur at or after K.
-- Expiry or Drop MUST NOT imply rollback or not-persisted.
-- Uncertain mutations MUST NOT be replayed.
-- Expired contexts MUST NOT perform readback.
-- Effects MUST NOT occur after actual physical release.
-- Unknown outcomes MUST NOT be represented as false.
+- Source files under `crates/sc-cron/src` MUST NOT declare a logging receiver trait.
+- When the store is a legacy store implementation, `Scheduler::spawn_worker_cooperative` MUST NOT run the job.
+- A cooperative operation blocked acquiring a lock MUST NOT stay blocked after the live operation scope ends.
+- Dropping the waiter future of owned work MUST NOT let `WorkerHandle::join_owned` return before the owned work physically completes.
+- While a bundled-store COMMIT runs, the commit fence MUST NOT hold the controller mutex.
+- The bundled store MUST NOT hand a connection in uncertain connection state to another operation before terminal cleanup completes.
+- When a mutation's `PersistenceOutcome` is `Indeterminate`, sc-cron MUST NOT re-issue the mutation.
+- When the live operation scope has ended, sc-cron MUST NOT start a readback under the live operation scope.
+- Once `WorkerHandle::join_owned` has returned, owned work MUST NOT cause an effect.
+- sc-cron MUST NOT use the `bool` value `false` to report an unknown persistence result.
 
 ### Rationale
 
