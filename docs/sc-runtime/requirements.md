@@ -156,24 +156,28 @@ not a field. A project's CLI cannot name `DaemonConfig`, because the CLI does
 not depend on `sc-runtime`. It uses `TransportConfig` from `sc-transport`
 with default features. `DaemonConfig` embeds that type.
 
+Definitions: A startup step is one of the five numbered steps (1 to 5) listed in this requirement statement. The startup lock is the OS exclusive lock that step 2 takes on `<instance-root>/daemon.lock`. `DaemonBuilder` is the builder, returned by `Daemon::builder`, that assembles and runs a daemon. The Phase D `run()` is the `run()` method as delivered in Phase D, and the Phase D `DaemonBuilder` is `DaemonBuilder` as delivered in Phase D. A startup extension point is any hook, callback or configuration option: a builder method, a closure argument or a `DaemonConfig` field.
+
 **MUST statements:**
 
-- The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that assembles and runs a daemon.
-- It MUST implement `serde::Deserialize`.
-- In Phase D, `run()` MUST perform exactly the five numbered startup steps above.
+- The crate `sc-runtime` (`crates/sc-runtime`) MUST export the public type `DaemonBuilder`.
+- The public struct `DaemonConfig` in `crates/sc-runtime` MUST implement `serde::Deserialize`.
+- The Phase D `run()` MUST perform every startup step.
 
-- In Phase D, `run()` MUST perform the five numbered startup steps above in their listed order.
+- The Phase D `run()` MUST perform the startup steps in ascending step-number order.
 - If a startup step fails, `run()` MUST return `Err(RuntimeError)`.
 
 **MUST NOT statements:**
 
 - If a startup step fails, `run()` MUST NOT execute any later startup step.
 - `run()` MUST NOT read a config file to load configuration.
+- The Phase D `run()` MUST NOT perform any startup work other than the five startup steps.
 
 - `run()` MUST NOT read an environment variable to load configuration.
-- `run()` MUST NOT call the stores closure before the lock is held.
-- `run()` MUST NOT bind a listener before steps 1 to 4 have succeeded.
-- In Phase D, the builder MUST NOT offer hooks, callbacks or configuration that insert work between steps or reorder them (decided in this document and recorded in [ADR-RT-0001](architecture.md); the design lists the five steps and says the crate is a bootstrap, not a framework layer).
+- `run()` MUST NOT call the stores closure until step 2 has taken the startup lock.
+- `run()` MUST NOT bind a listener until steps 1 to 4 have succeeded.
+- The Phase D `DaemonBuilder` MUST NOT offer a startup extension point that inserts work between two startup steps.
+- The Phase D `DaemonBuilder` MUST NOT offer a startup extension point that changes the order of the startup steps.
 
 ### Rationale
 
@@ -182,6 +186,10 @@ listener, each slightly differently. One builder makes start-up identical in
 every project. The order is the safety property: the lock comes before the
 stores so a second daemon never opens the local database, and binding comes
 last so no request is accepted before it can be served.
+The ban on hooks, callbacks or configuration that insert or reorder steps was
+decided in this document and recorded in [ADR-RT-0001](architecture.md): the
+design lists the five steps and says the crate is a bootstrap, not a framework
+layer.
 ### Success Criteria
 
 1. A test in `crates/sc-runtime` builds a daemon whose stores, routes and MCP
