@@ -4429,32 +4429,39 @@ would be tested against the old crate code.
 
 ### Requirement Statement
 
-Definitions: The SDK (software development kit) is the public crate set in REQ-RUN-0002. The qualified publishing kit is sc-publish, selected by release/sc-publish-pin.toml. Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. Archive rehearsal is the pre-upload build/test rehearsal using the exact packaged archives. Human authorization and registry credentials are the existing release permission and credential requirements. A controlled-host benchmark runs on the controlled benchmark host; an isolated daemon lifecycle test runs on an isolated machine as required by NFR-RUN-0010. The release lock is the newest-tested Cargo.lock. Registry proof is the build/test of a consumer resolving the SDK from crates.io without checkout paths, Git or patch substitutes.
+Definitions: The SDK (software development kit) is the public crate set in REQ-RUN-0002. The qualified publishing kit is sc-publish, selected by release/sc-publish-pin.toml. Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. The first publication wave is the first group of packages published in that order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. Archive rehearsal is the pre-upload build/test rehearsal using the exact packaged archives. Human authorization and registry credentials are the existing release permission and credential requirements. A controlled-host benchmark runs on the controlled benchmark host; an isolated daemon lifecycle test runs on an isolated machine as required by NFR-RUN-0010. The release lock is the newest-tested Cargo.lock. Registry proof is the build/test of a consumer resolving the SDK from crates.io without checkout paths, Git or patch substitutes. An actual SDK consumer is a consuming project built and tested against the published SDK after publication.
 
 This requirement governs the coordinated 0.3.0 release of the nine public crates identified by REQ-RUN-0002 and delivery of the generated template.
 
 **MUST statements:**
 
-- The release MUST publish all public crates at the coordinated version.
-- Publication MUST follow the dependency order of the final manifests.
-- Independent sc-storage MUST be in the first publication wave.
+- The coordinated 0.3.0 release MUST publish every public crate identified by REQ-RUN-0002 at version 0.3.0.
+- The release MUST publish packages in a topological order of the published-package dependencies declared in the final Cargo manifests.
+- `sc-storage`, the shared storage crate with no dependency on another package in this release, MUST be included in the first publication wave.
 - Independent sc-monty MUST be in the first publication wave.
-- The released template MUST resolve SDK crates from crates.io without checkout path, Git or patch substitutes.
-- The template fixture matrix MUST pass against the released registry packages.
-- The release tag MUST identify the same source used for publication and registry consumer proof.
+- The released template MUST resolve its SDK dependencies from crates.io.
+- The release run of the template fixture matrix defined by REQ-RUN-0701 MUST pass using the released crates.io SDK packages.
+- The release tag MUST identify the source revision used to build the published packages.
+- The release tag MUST identify the source revision used for the registry consumer build/test proof.
 - The release MUST use the qualified publishing kit.
-- The release MUST use that kit's existing preflight checks.
-- The release MUST use that kit's existing package checks.
+- The release MUST use the existing preflight checks of `sc-publish` selected by `release/sc-publish-pin.toml`.
+- The release MUST use the existing package checks of `sc-publish` selected by `release/sc-publish-pin.toml`.
 - Exact packaged archives MUST pass rehearsal before upload.
-- Actual post-publication consumers MUST pass with registry-only SDK resolution.
-- The release MUST preserve the existing human-authorization and credential requirements for publication.
-- Existing controlled-host benchmark and isolated daemon lifecycle requirements MUST remain release prerequisites.
+- After publication, actual SDK consumers MUST pass their build/tests while resolving SDK dependencies exclusively from crates.io.
+- Publication MUST preserve the existing human-authorization requirements.
+- Publication MUST preserve the existing registry-credential requirements.
+- The existing controlled-host benchmark requirements MUST remain prerequisites for release.
+- The existing isolated daemon lifecycle requirements MUST remain prerequisites for release.
 - Each delivered template release MUST include its newest-tested Cargo.lock.
 - Each delivered template release MUST include the matching .sc-runtime/tested-dependencies.json.
 - Generated populated repositories MUST receive the release lock.
 - Generated populated repositories MUST receive the tested-dependency metadata.
 
 **MUST NOT statements:**
+
+- The released template MUST NOT substitute a checkout-path dependency for a registry SDK dependency.
+- The released template MUST NOT substitute a Git dependency for a registry SDK dependency.
+- The released template MUST NOT substitute a patched source for a registry SDK dependency.
 
 - Checkout-patched consumer tests MUST NOT be reported as registry proof.
 - Publication MUST NOT change source or manifests between the qualified archives and the registry consumer proof.
