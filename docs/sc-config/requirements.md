@@ -554,7 +554,7 @@ Decided in this document, stricter than NFR-RUN-0009: `assert!`, `assert_eq!` an
 
 **MUST statements:**
 
-- Every fallible function MUST have the return type `Result<T, ConfigError>` for some type `T`.
+- Every fallible function, as defined in this record, MUST have the return type `Result<T, ConfigError>` for some type `T`.
 - `Loader::new` MUST have the return type `Loader`.
 - `AppName::new` MUST have the return type `Result<AppName, ConfigError>`.
 - Reachable code MUST read every element of an indexable value by checked access.
