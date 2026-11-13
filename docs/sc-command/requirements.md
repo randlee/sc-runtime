@@ -404,6 +404,8 @@ This rule is decided in this document; the design specifies that the conversion 
 
 HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The no-panic rule for this conversion is governed by [NFR-CMD-0003](requirements.md), the sc-command non-functional requirement for typed errors and panic prevention.
 
+The crate references axum when its build depends on the `axum` crate or when its source names `axum` outside an item or module gated by `#[cfg(feature = "server")]`. In `crates/sc-command/Cargo.toml`, `axum` is an optional dependency enabled only by the `server` feature.
+
 **MUST statements:**
 
 - The response body MUST be the envelope serialised as JSON, identical as a JSON value to `serde_json::to_value(&envelope)`.
