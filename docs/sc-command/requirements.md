@@ -42,7 +42,7 @@ uses it to parse the answer and to print it for `--json`.
 
 ### Requirement Statement
 
-Definitions: `sc-command` is the crate in `crates/sc-command`. A default-feature build enables the crate's default Cargo features. The success case is the `Envelope::Success` variant and the failure case is the `Envelope::Failure` variant. A JSON round trip serializes an envelope to JSON and deserializes it back. An envelope JSON equality assertion is a test assertion in `crates/sc-command` that the JSON serializations of two envelopes are equal. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
+Definitions: `sc-command` is the crate in `crates/sc-command`. A default-feature build enables the crate's default Cargo features. The success case is the `Envelope::Success` variant and the failure case is the `Envelope::Failure` variant. A JSON round trip serializes an envelope to JSON and deserializes it back. An envelope JSON equality assertion is a test assertion in `crates/sc-command` that the JSON serializations of two envelopes are equal. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below. A serde bound test is a compile test in `crates/sc-command` that uses the `serde::Serialize` or `serde::Deserialize` implementation of `Envelope<T>` with a sample `T` that implements only that serde trait and not `PartialEq`; it checks the statements below on those two implementations.
 
 `Envelope<T>` is the sc-ai-cli response envelope: the one JSON shape every REST response, MCP tool result and CLI `--json` output uses.
 
@@ -90,8 +90,8 @@ It drops `version`.
 **MUST statements:**
 
 - With default features, the root module of `crates/sc-command` MUST export `Envelope<T>`.
-- `serde_json::to_value` called on a failure `Envelope<T>` MUST return `Ok`.
-- `serde_json::from_str::<sc_command::Envelope<T>>` called on a failure envelope JSON object with `version` `"1"` and a serialised `OpError` MUST return `Ok`.
+- `Envelope<T>` MUST implement `serde::Serialize` for every `T` that implements `serde::Serialize`.
+- `Envelope<T>` MUST implement `serde::Deserialize` for every `T` that implements `serde::de::DeserializeOwned`.
 - The JSON object produced by serialising `Envelope<T>` MUST have a key set equal to the envelope key set.
 - In the JSON object produced by serialising a success `Envelope<T>`, the `error` key MUST map to JSON `null`.
 - When a failure `Envelope<T>` is serialised to JSON, the `data` key of the resulting object MUST map to JSON `null`.
@@ -110,6 +110,10 @@ It drops `version`.
 **MUST NOT statements:**
 
 - An envelope JSON equality assertion MUST NOT compare byte strings.
+- The `serde::Serialize` implementation of `Envelope<T>` MUST NOT require `T` to implement `serde::de::DeserializeOwned`.
+- The `serde::Serialize` implementation of `Envelope<T>` MUST NOT require `T` to implement `PartialEq`.
+- The `serde::Deserialize` implementation of `Envelope<T>` MUST NOT require `T` to implement `serde::Serialize`.
+- The `serde::Deserialize` implementation of `Envelope<T>` MUST NOT require `T` to implement `PartialEq`.
 
 ### Rationale
 
