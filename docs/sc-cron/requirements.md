@@ -112,6 +112,16 @@ The beads-cache expression parser refused a five-field string; a normal crontab 
 
 - [ ] `*/5 * * * *` means every fifth minute.
 
+# Requirement: Rust, Python, or Monty hook
+
+**Status:** Active  
+**Version:** 1.0.0  
+**Created:** 2026-10-25  
+**Last Updated:** 2026-11-12  
+**Owner:** randlee  
+
+---
+
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 
 **Status:** Active  

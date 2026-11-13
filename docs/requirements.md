@@ -216,7 +216,7 @@ are not valid Rust until rendered.
 
 ### Requirement Statement
 
-Definitions: A crate's README is the `README.md` file in that crate's directory. The allowed set of a public crate is that public crate itself plus the workspace crates that REQ-RUN-0005 lists as dependencies of that public crate. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
+Definitions: A crate's README is the `README.md` file in that crate's directory. A doctest is a Rust code block in documentation that `cargo test --doc` compiles. The repository LICENSE file is the file `LICENSE` at the repository root. The MIT license text is the license text the Open Source Initiative publishes as the MIT License. Tested minimum versions are the lowest dependency versions the project has tested. CLI means command-line interface. JSON means JavaScript Object Notation. API means application programming interface. The pydantic Monty crates are the pydantic interpreter packages, including monty and monty-types. A production dependency is a normal or build dependency; dev-dependencies are excluded. `tokio` is the crates.io asynchronous runtime crate of that name. Cron types are scheduler, schedule-row and cron-policy types; reserved cron names are cron_stop and cron_tick. SDK means software development kit: the public crate set named in this record. Usable without the other SDK crates or generated template means usable as a standalone library selected alone from a clean checkout, including its own default-feature build and tests. The generated template is the project template in the repository's `template/` directory. Registry dependencies are dependencies resolved from crates.io. Interpreter behavior is running scripts through the pydantic Monty crates. Shared storage behavior is storing sc-cron's rows, such as `CronRow`, through sc-storage's `Storage<T>`. A crate consumes another crate for a behavior when it lists that crate as a production dependency and calls it for that behavior. sc-* means every package whose name starts with `sc-`. A description states what a crate provides when it names the crate's main function in one phrase; sc-command's `Lossless JSON CLI/API response envelope and REST/MCP conversions.` is an example.
 
 The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands, sc-runtime-db-sqlite, sc-storage and sc-monty, released together at 0.3.0.
 
@@ -227,15 +227,15 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 - Each public crate MUST provide a README.
 - Each public crate's README MUST contain a Rust usage example.
 - Each public crate's README Rust usage example MUST compile as a doctest.
-- Each public crate's README Rust usage example in `crates/<crate>/README.md` MUST use no crate of the public package set outside the allowed set of that public crate, as shown by the `use` lines and paths in that example's Rust code block.
+- Each public crate's README Rust usage example MUST use no other crate of the public package set, except the workspace crates that REQ-RUN-0005 lists as that crate's dependencies.
 - Each public crate's `name` in `cargo metadata --no-deps` output MUST equal that crate's name in the public package set.
 - Each public crate's `version` in `cargo metadata --no-deps` output MUST equal the version the public package set is released together at.
-- Each public crate's `description` in `cargo metadata --no-deps` output MUST name that crate's main function in one phrase.
+- Each public crate's `description` in `cargo metadata --no-deps` output MUST state what that crate provides.
 - Each public crate's `license` in `cargo metadata --no-deps` output MUST be `MIT`.
 - Each public crate's `repository` in `cargo metadata --no-deps` output MUST be `https://github.com/randlee/sc-runtime`.
 - Each public crate's `readme` in `cargo metadata --no-deps` output MUST name that crate's README.
 - Each public crate MUST be independently publishable to crates.io.
-- Every published crate's `crates/<crate>/Cargo.toml` MUST declare the MIT license in its `license` key.
+- Every published crate MUST declare the MIT license.
 - The repository LICENSE file MUST contain the MIT license text.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-config` MUST pass its own default-feature tests.
 - When selected alone from a clean checkout without the other SDK crates or generated template, `sc-transport` MUST build with its default features.
@@ -1053,7 +1053,7 @@ criterion 2 runs the real binary only on an isolated runner.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is one JSON object with exactly the keys `version`, `ok`, `data` and `error`, and `Envelope<T>` is the generic Rust type of the envelope, whose type parameter `T` is the type of `data`. [REQ-CMD-0001](sc-command/requirements.md) also defines this object. `OpError` is the typed error type of the `sc-command` crate, defined in `crates/sc-command/src/error.rs`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. `is_error` is the `Option<bool>` field of `CallToolResult` that holds `Some(true)` when the envelope's `ok` is `false`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count. The daemon is the local server process that runs every operation and serves its REST routes and its `/mcp` endpoint. An operation is one service function that the daemon exposes as an operation route and as an operation MCP tool. An operation response is what an operation produces for its caller on one surface: the REST response body, the MCP content or the text a CLI command prints with `--json`. An operation MCP tool is the MCP tool that carries one operation. A CLI command is given `--json` when the `--json` option is on its command line. Stdout is the standard output stream of the process. The CLI's own types are the Rust types that the CLI crate defines to read a response, such as its `api-types` structs. The operation's response struct is the one response struct that the operation defines in the generated `api-types` crate.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. The envelope is the sc-ai-cli response object defined by [REQ-CMD-0001](sc-command/requirements.md), with the keys `version`, `ok`, `data` and `error`. `OpError` is the typed error type of the `sc-command` crate, defined in `crates/sc-command/src/error.rs`. CallToolResult is the rmcp operation tool result with content and the error flag `is_error`. An operation route is the REST route of one operation. A surface is REST, MCP or CLI `--json`. Two envelopes are equal as JSON values when they parse to the same JSON value; key order and whitespace do not count.
 
 This is a property of a project generated from `template/`.
 
@@ -1061,10 +1061,10 @@ This is a property of a project generated from `template/`.
 
 **MUST statements:**
 
-- Every operation response, on the REST, MCP and CLI `--json` surfaces, MUST be an envelope.
+- Every operation response, on every surface, MUST be an envelope.
 - The envelope MUST be a JSON object.
 - The set of keys of the envelope MUST be exactly `version`, `ok`, `data` and `error`.
-- The envelope MUST be produced by the type `Envelope<T>` defined in a file under `crates/sc-command/src/` ([REQ-CMD-0001](sc-command/requirements.md)).
+- The envelope MUST be produced by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).
 - On success `ok` MUST be `true`.
 - On success `data` MUST hold the operation's response struct.
 - On success `error` MUST be `null`.
@@ -3206,7 +3206,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. A store holds a row type T when it reads and writes rows of type T through `Storage<T>`. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store. Selecting cron means setting the boolean `cron` option in `wizard/answers.schema.json` to `true`. The `db` value of each layout is its `db` value in the table below: `none` for `no database`, `sqlite` for `SQLite only`, `postgres` for `Postgres only`, `mysql` for `MySQL only`, `sqlite-postgres` for `SQLite and Postgres` and `sqlite-mysql` for `SQLite and MySQL`. A layout's row is its row in the table below. A two-store layout is a layout whose row lists two stores. A store crate is the crate for a store listed in a layout's row. The generator is `scripts/new_project.py`, which runs `cargo generate` on `template/`. A request is rejected when the generator stops with an error. Migrations are the SQL files in `crates/store-sqlite/migrations/`. An empty database is a database with no tables. Opening completes when the open call returns. sqlx is the Rust SQL library that the Postgres and MySQL stores use. The writer that `sc-runtime-db-sqlite` provides is the SQLite writer.
+Definitions: A layout is a database-store combination in the table below. The adaptor is the `store-adaptor` crate that a two-store layout renders (REQ-RUN-0301). The synchronization algorithm is the consumer's code inside that crate; no record binds it. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language. The generation options are the template choices specified by `wizard/answers.schema.json`. Generating a layout means rendering `template/` with options that select that layout. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate; the adaptor is not a store.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3227,22 +3227,22 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 
 **MUST statements:**
 
-- The `db` enum in `wizard/answers.schema.json` MUST contain `none`.
-- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite`.
-- The `db` enum in `wizard/answers.schema.json` MUST contain `postgres`.
+- The generation options MUST accept the `no database` layout from the table above.
+- The generation options MUST accept the `SQLite only` layout from the table above.
+- The generation options MUST accept the `Postgres only` layout from the table above.
 - The `db` enum in `wizard/answers.schema.json` MUST contain `mysql`.
-- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-postgres`.
-- The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-mysql`.
-- Running `scripts/new_project.py` with `db` set to a layout's value MUST produce one store crate for each store in that layout's row of the table below.
-- Running `scripts/new_project.py` for the `no database` layout, with `db` set to `none`, MUST produce no store crate.
-- Before `template/` is rendered, the generator MUST reject a request that sets `cron` to `true` for the `no database` layout.
-- Running `scripts/new_project.py` with `db` set to the value of a two-store layout MUST produce the `store-adaptor` crate.
-- Running `scripts/new_project.py` with `db` set to the value of a layout with fewer than two stores MUST produce no `store-adaptor` crate.
-- `store-postgres` MUST use `sqlx` for Postgres storage.
+- The generation options MUST accept the `SQLite and Postgres` layout from the table above.
+- The generation options MUST accept the `SQLite and MySQL` layout from the table above.
+- Generating a layout MUST render the stores in its table row.
+- Generating the `no database` layout MUST render no store crate.
+- A generation request selecting cron with the `no database` layout MUST be rejected before template rendering.
+- Generating a two-store layout MUST render the adaptor crate.
+- Generating a layout with fewer than two stores MUST render no adaptor crate.
+- `store-postgres` MUST use `sqlx` for PostgreSQL storage.
 - `store-mysql` MUST use `sqlx` for MySQL storage.
-- The `store-sqlite` crate's `src/` MUST call the SQLite writer that `sc-runtime-db-sqlite` provides for every SQLite write.
-- Each store crate's `src/` MUST contain an `impl` block of `Storage<T>` for each held row type T.
-- When the generated `store-sqlite` store is opened on an empty database, every table that the migrations in `crates/store-sqlite/migrations/` create MUST exist when opening completes.
+- `store-sqlite` MUST use the SQLite writer of `sc-runtime-db-sqlite`.
+- Every store MUST implement `Storage<T>` for each row type it stores.
+- When the generated `store-sqlite` store is opened on an empty database, every table that the SQL files in `crates/store-sqlite/migrations/` create MUST exist before the first read or write.
 
 ### Rationale
 
@@ -4034,7 +4034,7 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 - The example operation test MUST call `widget.get` through REST.
 - The example operation test MUST call `widget.get` through MCP.
 - The example operation test MUST call `widget.get` through the CLI.
-- The source of the example operation test MUST start the daemon that the test runs against with `sc_runtime::testing::DaemonFixture`.
+- The example operation test MUST run against a daemon started by `sc_runtime::testing::DaemonFixture`.
 - When the green sequence runs, every crate of the public package set that is in the selected dependency graph MUST resolve.
 
 ### Rationale
