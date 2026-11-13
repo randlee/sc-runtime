@@ -2572,7 +2572,7 @@ invites the two to drift apart.
 4. There MUST NOT be a generated Rust client; `progenitor` is not used.
 5. A project MAY give MCP and REST different JSON shapes at the edge, provided
    both convert to the same service-function input before anything reaches
-   SQL. Nothing in the four library crates enforces either choice.
+   SQL. Nothing in the sc-runtime library crates enforces either choice.
 
 Which derives the struct carries, and that it is the rmcp `Parameters<T>`
 input, is not decided here: it rests on an unverified fact and is held in
