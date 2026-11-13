@@ -1978,7 +1978,7 @@ Liquid syntax intended for cargo-generate is markup that `cargo-generate` substi
 `exclude` is the list in `template/cargo-generate.toml` whose files `cargo-generate` copies byte-for-byte without Liquid rendering, as [ADR-RUN-0402](architecture.md) records.
 The driver is the generation script `scripts/new_project.py` that `just new` runs.
 `<dest>` is the destination directory of a driver run, into which `cargo generate` writes the generated project.
-The answers JSON is the answers file that the driver passes to `cargo generate`.
+The answers JSON of a driver run is the answers object of that run after the driver has validated it against `wizard/answers.schema.json` and filled in the schema defaults. The driver gives the values of that one object to `cargo generate` and to every `sc-compose` step.
 JSON means JavaScript Object Notation.
 ADR means architecture decision record.
 The wait call is the call in `scripts/new_project.py` that waits for the `cargo generate` process to exit.
