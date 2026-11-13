@@ -328,7 +328,7 @@ Definitions: MCP means Model Context Protocol. A migration is database schema in
 - `sc-runtime` MUST obtain the `Stores` value only from the project's stores closure.
 - `sc-runtime` MUST pass that value to the project's routes closure.
 - When the project provides an MCP closure, `sc-runtime` MUST pass the `Stores` value to the project's MCP closure.
-- The only bounds on the `Stores` parameter MUST be those needed to move it into the closures and across the async runtime (for example `Send`, `'static`, `Clone`).
+- The bounds on the `Stores` parameter MUST be exactly `Clone`, `Send`, `Sync` and `'static`, which let the builder move and share the value across the async runtime.
 
 **MUST NOT statements:**
 
