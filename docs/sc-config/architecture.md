@@ -281,7 +281,7 @@ behaviour.
 
 ---
 
-# Decision: `sc-config` is synchronous with two dependencies
+# Decision: `sc-config` v0.1 load is synchronous with two dependencies
 
 **Status:** Active  
 **Version:** 1.0.0  
@@ -292,7 +292,7 @@ behaviour.
 
 ---
 
-## ADR-CFG-0003: `sc-config` is synchronous with two dependencies
+## ADR-CFG-0003: `sc-config` v0.1 load is synchronous with two dependencies
 
 **Status:** Active  
 
@@ -303,7 +303,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 **Requirements:**
 
 - NFR-CFG-0002 — dependencies are `serde` and `serde_json` only
-- NFR-CFG-0003 — synchronous API in v0.1; reload, notification and async out of scope
+- NFR-CFG-0003 — synchronous v0.1 load calls; reload, notification and async work outside the current deliverable
 - REQ-RUN-0005 — owner of the workspace-internal edges and forbidden edges of all four crates
 - NFR-RUN-0001 — hold the OPEN on cargo feature unification under `cargo build --workspace`
 
@@ -314,7 +314,7 @@ Source: sc-runtime design, 2026-09-19 (dependency list; reload, notification and
 
 ### Context
 
-sc-config provides synchronous startup configuration. This phase adds no watcher, reload or change notification; consumers may add async or reload behavior around it without a framework prohibition.
+The v0.1 `sc-config` load calls are synchronous. This deliverable adds no watcher, reload or change notification; future async and reload options remain open.
 
 `sc-config` (`crates/sc-config`) is linked into every daemon and every CLI
 built on this repository, and is meant to be usable by any Rust program on its
@@ -330,18 +330,11 @@ configuration once at start-up.
 
 ### Decision
 
-1. The `[dependencies]` table of `crates/sc-config/Cargo.toml` contains
-   exactly `serde` and `serde_json`.
-2. `sc-config` does not depend on `tokio`, on `sc-observability`, on
-   `sc-observability-otlp`, or on any other crate of this workspace
-   (`sc-transport`, `sc-command`, `sc-runtime`).
-3. The public API is synchronous: no `async fn`, no returned `Future`, no
-   spawned thread or task.
-4. `sc-config` does not watch files, reload, or notify callers of changes.
-5. If reload, change notification or async interop is built later, it goes
-   into a separate crate, possibly named `sc-config-tokio`, that depends on
-   `sc-config`. `sc-config` never depends on that crate, and these features
-   are not added to `sc-config` behind a Cargo feature.
+1. In the v0.1 deliverable, the `[dependencies]` table of `crates/sc-config/Cargo.toml` contains exactly `serde` and `serde_json`.
+2. In the v0.1 deliverable, `sc-config` does not depend on `tokio`, `sc-observability`, `sc-observability-otlp`, or another crate of this workspace (`sc-transport`, `sc-command`, `sc-runtime`).
+3. The v0.1 `load` and `Loader::load` calls are synchronous and spawn no thread or task, as specified by [NFR-CFG-0003](requirements.md).
+4. This deliverable builds no watcher, reload or change notification.
+5. Async configuration and reload remain open consumer and later-version options; this ADR selects neither their API nor their crate placement and creates no implementation or testing work for them.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
    list. `allowed_dependencies` is `serde` and `serde_json`.
    `forbidden_edges` lists workspace-member targets only. This lint tree's
@@ -379,17 +372,16 @@ and binary size matter.
 - Logging configuration can be read before logging is initialised, because
   this crate does not depend on `sc-observability`. The program passes the
   loaded values to `sc-observability` itself.
-- Adding reload later is an additive new crate, not a breaking change to this
-  one.
+- Future reload work requires an API and dependency design; its placement remains open.
 - A program that wants live reload in v0.1 must call `load` again itself.
 
 ### Alternatives Considered
 
-#### Alternative 1: Async and reload support inside `sc-config` behind a Cargo feature
+#### Alternative 1: Async and reload support inside `sc-config` behind a Cargo feature in v0.1
 
 **Why Rejected:**
 
-cargo unifies the features of a crate across all packages built in one invocation, so under `cargo build --workspace` one crate enabling the feature would pull `tokio` into every other user of `sc-config` in that build, the CLI included; it also doubles the API surface to test. The same unification applies to the `server` feature of `sc-transport` and `sc-command`. Whether workspace-wide builds are exempt from the rule that a CLI links no server-side dependency, or those crates must be split into client and server crates instead, is recorded as **OPEN** in [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md), to be measured by the spike. This ADR does not depend on the outcome: `sc-config` has no such feature either way.
+cargo unifies the features of a crate across all packages built in one invocation, so under `cargo build --workspace` one crate enabling the feature would pull `tokio` into every other user of `sc-config` in that build, the CLI included; it also doubles the API surface to test. The same unification applies to the `server` feature of `sc-transport` and `sc-command`. Whether workspace-wide builds are exempt from the rule that a CLI links no server-side dependency, or those crates must be split into client and server crates instead, is recorded as **OPEN** in [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md), to be measured by the spike. This deliverable has no such feature; this rejection does not decide whether a later version may add one.
 
 ### Implementation
 
