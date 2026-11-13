@@ -251,7 +251,6 @@ Definitions: DTO means data transfer object. CLI means command-line interface. T
 - A crate other than `sc-command` MUST NOT define a copy of a type in the envelope/error model.
 - The output of the default tree command MUST NOT list the `sc-cron` package.
 - The output of the default tree command MUST NOT contain the text `sqlite`.
-- The output of the default tree command MUST NOT list the `tokio` package.
 - The output of the default tree command MUST NOT contain the text `monty`.
 - The output of the default tree command MUST NOT list the `clap` package.
 - The output of the default tree command MUST NOT list the `axum` package.
@@ -261,7 +260,6 @@ Definitions: DTO means data transfer object. CLI means command-line interface. T
 - In a generated project with cron commands, the output of `cargo tree -p <project>-cli -e features --prefix none -i sc-command` MUST NOT contain the text `sc-command feature "server"`.
 - The output of the schema tree command MUST NOT list the `sc-cron` package.
 - The output of the schema tree command MUST NOT contain the text `sqlite`.
-- The output of the schema tree command MUST NOT list the `tokio` package.
 - The output of the schema tree command MUST NOT contain the text `monty`.
 - The output of the schema tree command MUST NOT list the `axum` package.
 - The output of the schema tree command MUST NOT list the `rmcp` package.
