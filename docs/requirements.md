@@ -3833,7 +3833,7 @@ the rule that the driver stops at the first failure are unchanged.
 - When a step fails, the driver MUST stop.
 - If any step fails, the driver exit status MUST be non-zero.
 - When a step fails, the driver MUST write that step's name to stderr.
-- When every step succeeds the driver MUST exit with status 0.
+- When every step succeeds, running `scripts/new_project.py` MUST return exit status 0.
 - When wizard answer acquisition supplies the answers object, the driver MUST run the six-step pipeline on it.
 
 **MUST NOT statements:**
