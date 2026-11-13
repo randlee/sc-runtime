@@ -220,7 +220,8 @@ The Phase D public package set is sc-config, sc-transport, sc-command, sc-runtim
 
 **MUST statements:**
 
-- Each public crate MUST build and pass its own default-feature tests when selected alone from a clean checkout.
+- When selected alone from a clean checkout, each public crate MUST build with its default features.
+- When selected alone from a clean checkout, each public crate MUST pass its own default-feature tests.
 - Each public crate MUST provide a README whose Rust usage example compiles as a doctest.
 - Each public crate MUST provide correct package metadata for its name.
 - Each public crate MUST provide correct package metadata for its version.
