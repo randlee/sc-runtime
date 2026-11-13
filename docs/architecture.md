@@ -3784,7 +3784,7 @@ The owner (ANC-034) stated "python/monty having consistent settings would be lea
 
 Command paths need not be hand-written; default direct conversion requires no custom transform. Consumer-side generation remains permitted follow-up work.
 
-The clauses "These commands do not add a command registry" and "Framework crates do not move rows" in point 4 bind nothing: the first does not forbid the shared command path, and row movement is deferred with synchronization.
+A command registry is not built in this release; the shared command path is not a registry. Row movement is deferred with synchronization.
 
 sc-runtime is a set of crates and a template for deploying a new application that can use its database immediately.
 
@@ -3795,7 +3795,7 @@ The problem is how a new application with a store can use its database from the 
 1. A layout that has a store renders general database commands on the CLI, MCP, and HTTP. The set includes `delete row <table> <id>`. The commands are on by default.
 2. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. The worked example remains `widget.create` and `widget.get`.
 3. A flag removes the general commands from those three surfaces. A layout with no database renders none of them.
-4. Row synchronization remains deferred. General commands may use the shared command path; they impose no hand-writing or future consumer-generator restriction.
+4. Row synchronization remains deferred. These commands add no command registry in this release. General commands may use the shared command path; they impose no hand-writing or future consumer-generator restriction.
 
 ### Rationale
 
