@@ -163,10 +163,11 @@ with default features. `DaemonConfig` embeds that type.
 - In Phase D, `run()` MUST perform exactly the five numbered startup steps above.
 
 - In Phase D, `run()` MUST perform the five numbered startup steps above in their listed order.
-- If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT execute any later step.
+- If a startup step fails, `run()` MUST return `Err(RuntimeError)`.
 
 **MUST NOT statements:**
 
+- If a startup step fails, `run()` MUST NOT execute any later startup step.
 - `run()` MUST NOT read a config file to load configuration.
 
 - `run()` MUST NOT read an environment variable to load configuration.

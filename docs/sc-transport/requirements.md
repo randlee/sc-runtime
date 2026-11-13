@@ -118,7 +118,7 @@ not decide that.
 - The convenience form MUST then call the explicit-input form.
 - The platform default MUST be the default endpoint that the platform table gives for the running platform.
 - The endpoint and instance-root portion of a project's configuration MUST be one public type exported by `sc-transport` with default features.
-- That type MUST implement `serde::Deserialize`.
+- The endpoint and instance-root configuration type that `sc-transport` exports MUST implement `serde::Deserialize`.
 - A source value that cannot be parsed as an endpoint MUST produce an `Err` of the crate's error enum `TransportError`.
 - The crate MUST also provide, with default features, the reverse conversion: from a resolved endpoint to the string form accepted by `--endpoint` and `SC_ENDPOINT`.
 - Parsing the rendered string MUST yield an endpoint equal to the original.
@@ -817,7 +817,7 @@ sc-lint 0.8.0 exits 3 for a `forbidden_edges` target absent from the lint tree (
 
 **MUST NOT statements:**
 
-- `crates/sc-transport/Cargo.toml` MUST NOT contain a dependency table entry that names a forbidden crate.
+- `crates/sc-transport/Cargo.toml` MUST NOT name a forbidden crate in `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]` or any `[target.*]` dependency table.
 
 ### Rationale
 
