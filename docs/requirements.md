@@ -3777,7 +3777,7 @@ and only asserts that it was not called.
 
 ### Requirement Statement
 
-Definitions: The driver is the Python script `scripts/new_project.py`. The base driver is the driver at the template milestone, before the wizard extension of [REQ-RUN-0602](requirements.md). `<dest>` is the directory where the new project is created. Wizard answer acquisition is obtaining the answers object from the wizard instead of from `--var-file` ([REQ-RUN-0602](requirements.md)). An answers object is the generation-options JSON object validated by wizard/answers.schema.json. The six-step pipeline is the ordered table below. A failed step is a pipeline step that does not complete the action in its table row; for steps 3 to 6 this includes its command exiting with a non-zero status.
+Definitions: The driver is the Python script `scripts/new_project.py`. The base driver is the driver at the template milestone, before the wizard extension of [REQ-RUN-0602](requirements.md). `<dest>` is the directory where the new project is created. Wizard answer acquisition is obtaining the answers object from the wizard instead of from `--var-file` ([REQ-RUN-0602](requirements.md)). An answers object is the generation-options JSON object validated by wizard/answers.schema.json. The six-step pipeline is the ordered table below. A failed step is a pipeline step that does not complete the action in its table row; for steps 3 to 6 this includes its command exiting with a non-zero status. A step's name is its entry in the Step column of the table. Running the six-step pipeline means running its six steps one after another in table order. The wizard extension is the change of [REQ-RUN-0602](requirements.md) that adds wizard answer acquisition.
 
 The driver and `scripts/run_wizard.py` live under `scripts/`, outside `template/`, so they are never copied into a generated project; the repository layout that guarantees this is owned by [REQ-RUN-0001](requirements.md).
 
@@ -3789,6 +3789,8 @@ The driver and `scripts/run_wizard.py` live under `scripts/`, outside `template/
 | 4 | `sc-compose` | Runs `sc-compose` so that the new project holds `AGENTS.md` and `CLAUDE.md` and no `.j2` file. What is rendered, from which inputs, and the removal of the two `.j2` files are owned by [REQ-RUN-0305](requirements.md); this item owns only the position of the step in the order. |
 | 5 | `just lint` | Runs `just lint` in the new project. |
 | 6 | `just test` | Runs `just test` in the new project. |
+
+Template files are rendered only by `cargo generate` (step 3) and `sc-compose` (step 4).
 
 Stopping at the first failed step and naming it on stderr is decided in this document. This paragraph is the single owner of that behaviour for all six steps, the `sc-compose` step included.
 
@@ -3807,19 +3809,19 @@ the rule that the driver stops at the first failure are unchanged.
 - The repository MUST contain a Python script `scripts/new_project.py`, called here the driver.
 - The root `justfile` MUST expose the driver as `just new <dest>`.
 - The base driver MUST obtain one complete answers JSON object from the file given with `--var-file`.
-- After obtaining the answers object, the base driver MUST run the steps of the six-step pipeline in their listed order.
+- The base driver MUST run the six-step pipeline on the answers object it obtained from `--var-file`.
 - The driver MUST stop at the first step that fails.
 - If any step fails, the driver exit status MUST be non-zero.
-- At the first failed step the driver MUST write a message to stderr identifying which of the six steps failed.
+- When a step fails, the driver MUST write that step's name to stderr.
 - When every step succeeds the driver MUST exit with status 0.
-- When the answers object comes from wizard answer acquisition, the driver MUST run the same validation and six-step pipeline on that answers object.
+- The driver MUST run the six-step pipeline on an answers object obtained by wizard answer acquisition.
 
 **MUST NOT statements:**
 
-- Wizard answer acquisition MUST NOT create a second generation driver.
-- Wizard answer acquisition MUST NOT create a second owner for the six generation steps.
+- The wizard extension MUST NOT add a second generation driver.
+- The wizard extension MUST NOT add a second owner for the six generation steps.
 - After a step fails, the driver MUST NOT run any later step.
-- The driver MUST NOT render any template file itself; rendering is done only by `cargo generate` and `sc-compose`.
+- The driver MUST NOT render any template file itself.
 
 ### Rationale
 
