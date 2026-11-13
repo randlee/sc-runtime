@@ -81,19 +81,22 @@ Sprint b-1 copies the atm-core writer with these types substituted for its `Writ
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: execute is the SQLite writer operation; the outer commit commits the batch transaction containing that operation.
-
-The writer thread is the only caller of rusqlite. `execute` replies with the number of rows affected only after the outer commit.
+Definitions: `execute` is the SQLite writer operation.
+`rusqlite` is the Rust SQLite library used by `sc-runtime-db-sqlite`.
+The writer thread owns the writer's rusqlite connection and processes operations from the bounded channel.
+The outer commit commits the batch transaction containing an `execute` operation.
 
 **MUST statements:**
 
-- The writer thread MUST be the only caller of rusqlite.
-- `execute` MUST reply with the number of rows affected only after the outer commit.
+- The writer thread MUST execute every `rusqlite` call made by `sc-runtime-db-sqlite`.
+- A successful `execute` reply MUST contain the number of rows affected by that operation.
+
+- The batch transaction containing an `execute` operation MUST have completed its commit when its successful reply is sent.
 
 ### Rationale
 
@@ -102,7 +105,7 @@ ADR-RUN-0012 copies the measured atm-core path: one rusqlite connection on one t
 
 **Acceptance Criteria:**
 
-- [ ] `cargo test -p sc-runtime-db-sqlite` exits 0, covering one `execute` round-trip and two concurrent `execute` calls with reply-after-commit.
+- [ ] `cargo test -p sc-runtime-db-sqlite` exits 0, covering one `execute` round-trip and two concurrent `execute` calls with reply-after-commit. The test controls admission and commit rather than relying on sleeps or scheduling order.
 
 ## REQ-DBSQ-0004: One commit order
 
