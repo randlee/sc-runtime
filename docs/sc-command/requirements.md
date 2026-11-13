@@ -37,12 +37,12 @@ uses it to parse the answer and to print it for `--json`.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: `sc-command` is the crate in `crates/sc-command`. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
+Definitions: `sc-command` is the crate in `crates/sc-command`. A default-feature build enables the crate's default Cargo features. A JSON round trip serializes an envelope to JSON and deserializes it back. Envelope JSON equality tests check equality of the envelope's serialized JSON representation. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
 
 It is the sc-ai-cli response envelope: the one JSON shape every REST response, MCP tool result and CLI `--json` output uses.
 
@@ -91,20 +91,27 @@ It drops `version`.
 
 **MUST statements:**
 
-- With default features, `sc-command` MUST export the public generic type `sc_command::Envelope<T>` from its crate root.
-- `Envelope<T>` MUST implement `serde::Serialize` for any `T: Serialize`.
-- `Envelope<T>` MUST implement `serde::Deserialize` for any `T: DeserializeOwned`.
+- `sc-command` MUST expose the public generic type `sc_command::Envelope<T>` from its crate root when built with default features.
+- For every `T` implementing `serde::Serialize`, `Envelope<T>` MUST implement `serde::Serialize`.
+- For every `T` implementing `serde::de::DeserializeOwned`, `Envelope<T>` MUST implement `serde::Deserialize`.
 - The JSON object produced by serialising `Envelope<T>` MUST have a key set equal to the envelope key set.
 - In the success case the `error` key MUST be present with the value `null`.
 - In the failure case the `data` key MUST be present with the value `null`.
-- Tests MUST compare parsed JSON values, not byte strings.
+- Tests checking equality of serialized envelopes MUST compare parsed JSON values.
 - Deserialisation MUST discriminate on the value of `ok`.
-- With `ok: true` the `data` value, including a JSON `null`, MUST be deserialised as `T`, and the result is the success case.
-- With `ok: false` the `error` value MUST be deserialised as `OpError`, and the result is the failure case.
-- For any `T: Serialize + DeserializeOwned + PartialEq`, serialising an `Envelope<T>` to JSON and deserialising it back MUST yield a value equal to the original, in both the success case and the failure case.
+- When `ok` is `true`, the envelope deserializer MUST deserialize `data` as `T` even when `data` is JSON `null`.
+- When deserialization of an envelope with `ok: true` succeeds, the resulting `Envelope<T>` MUST be the success case.
+- When `ok` is `false`, deserialization MUST deserialize the `error` value as `OpError`.
+- When deserialization of an envelope with `ok: false` succeeds, the resulting `Envelope<T>` MUST be the failure case.
+- For any `T: Serialize + DeserializeOwned + PartialEq`, a JSON round trip of a success `Envelope<T>` MUST yield a value equal to the original success envelope.
+- For any `T: Serialize + DeserializeOwned + PartialEq`, a JSON round trip of a failure `Envelope<T>` MUST yield a value equal to the original failure envelope.
 - `Envelope<T>` MUST implement `Debug` where `T: Debug`.
 - `Envelope<T>` MUST implement `Clone` where `T: Clone`.
 - `Envelope<T>` MUST implement `PartialEq` where `T: PartialEq`.
+
+**MUST NOT statements:**
+
+- Tests checking equality of serialized envelopes MUST NOT compare byte strings.
 
 ### Rationale
 
