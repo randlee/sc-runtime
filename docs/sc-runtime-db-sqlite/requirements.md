@@ -89,24 +89,29 @@ Sprint b-1 copies the atm-core writer with these types substituted for its `Writ
 
 Definitions: `execute` is the SQLite writer operation.
 `rusqlite` is the Rust SQLite library used by `sc-runtime-db-sqlite`.
-The writer thread owns the writer's rusqlite connection and processes operations from the bounded channel.
+The write-mode connection is the single `rusqlite` connection of `sc-runtime-db-sqlite` that opens the database for writing.
+The writer thread owns the write-mode connection and processes operations from the bounded channel.
+A read is a `Storage<T>` read operation of the SQLite storage implementation.
+A reader worker is a thread of the same SQLite storage implementation that serves reads ([ADR-RUN-0020](../architecture.md) points 16 to 19).
+A reader connection is a read-only `rusqlite` connection opened by one reader worker and separate from the write-mode connection.
 The outer commit commits the batch transaction containing an `execute` operation.
 
 **MUST statements:**
 
-- The writer thread MUST execute every `rusqlite` call made by `sc-runtime-db-sqlite`.
+- The writer thread MUST execute every `rusqlite` call made on the write-mode connection.
+- Each read MUST execute on a reader worker's reader connection.
 - A successful `execute` reply MUST contain the number of rows affected by that operation.
-
 - The batch transaction containing an `execute` operation MUST have completed its commit when its successful reply is sent.
 
 ### Rationale
 
-ADR-RUN-0012 copies the measured atm-core path: one rusqlite connection on one thread, a bounded channel, `BEGIN IMMEDIATE`, and a reply only after commit.
+ADR-RUN-0012 copies the measured atm-core path: one write-mode rusqlite connection on one thread, a bounded channel, `BEGIN IMMEDIATE`, and a reply only after commit. ADR-RUN-0020 points 16 to 19 keep reads on reader workers; reply-after-commit concerns writes only (PRD-STO-3).
 ### Success Criteria
 
 **Acceptance Criteria:**
 
 - [ ] `cargo test -p sc-runtime-db-sqlite` exits 0, covering one `execute` round-trip and two concurrent `execute` calls with reply-after-commit. The test controls admission and commit rather than relying on sleeps or scheduling order.
+- [ ] `cargo test -p sc-runtime-db-sqlite` exits 0 with a test that holds the writer thread inside an uncommitted batch transaction and shows a read still returns the last committed rows, so the read did not run on the write-mode connection. The test releases the writer by an explicit signal, not by sleeps.
 
 ## REQ-DBSQ-0004: One commit order
 
