@@ -14,7 +14,7 @@
 
 ### Requirement Statement
 
-Definitions: The dependency list is the crate's normal and build dependencies in `crates/sc-runtime-db-sqlite/Cargo.toml`; dev-dependencies are not part of it. The dependency graph is every crate that the dependency list pulls in, directly or through other crates. A third-party dependency is a dependency that is not a workspace member. sc-storage is the workspace crate that defines the shared `Storage<T>` trait ([REQ-RUN-0002](../requirements.md)). Tokio is the `tokio` crate, which supplies the bounded async channel and awaited reply of the async input ([REQ-DBSQ-0002](#req-dbsq-0002-public-items), PRD-STO-3).
+Definitions: The dependency list is the crate's normal and build dependencies in `crates/sc-runtime-db-sqlite/Cargo.toml`; dev-dependencies are not part of it. The dependency graph is every crate that the dependency list pulls in, directly or through other crates. sc-storage is the workspace crate that defines the shared `Storage<T>` trait ([REQ-RUN-0002](../requirements.md)). Tokio is the `tokio` crate, which supplies the bounded async channel and awaited reply of the async input ([REQ-DBSQ-0002](#req-dbsq-0002-public-items), PRD-STO-3).
 
 `crates/sc-runtime-db-sqlite` is a workspace member. This item owns its dependency list. Implementing `Storage<T>` with an async input needs the `Storage<T>` trait and an async channel, so the list is exactly `rusqlite` with the `bundled` feature, `tokio`, and the workspace crate `sc-storage`. Until the async input lands (code-alignment STO-2), the code depends on `rusqlite` alone; the code as it is is not the target. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
@@ -28,8 +28,8 @@ Definitions: The dependency list is the crate's normal and build dependencies in
 
 **MUST NOT statements:**
 
-- The dependency list MUST NOT contain a third-party dependency other than `rusqlite` and `tokio`.
-- This crate MUST NOT depend on a workspace crate other than `sc-storage`.
+- The dependency list MUST NOT contain a crate other than `rusqlite`, `tokio` and `sc-storage`.
+- The dependency graph MUST NOT contain a workspace crate other than `sc-storage`.
 - The dependency graph MUST NOT contain `sqlx`.
 
 ### Rationale
