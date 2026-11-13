@@ -450,29 +450,18 @@ test. Routing CI through the same recipes means a green local `just lint` and
 
 ### Requirement Statement
 
-2026-10-31 amendment: ADR-RUN-0017 permits exactly cron -> command
-(defaults off/no features). All public-package (REQ-RUN-0002) normal/build
-closures must exclude full logger/OTLP by resolved identity, including aliases
-and transitive edges. Direct-depth normal-only checks below are historical
-minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The crate graph is the Phase D workspace dependency graph shown in the table below; it updates the earlier graph snapshots under REQ-RUN-0002 and ADR-RUN-0020/0021. A crate's additional dependency list is the list owned by its per-crate requirement named below. The crate graph table is the Crate graph table below. Its edges include allowed and forbidden edges with their feature and phase conditions. A crate's row is that crate's row of the crate graph table. The manifest format is the TOML key set listed below. The sc-compose crates are the packages `sc-compose` and `sc-compose-*`, and their Rust library names such as `sc_compose`. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here. The additional dependency owners are: sc-config—NFR-CFG-0002; sc-transport—NFR-TRN-0001; sc-command—NFR-CMD-0001; sc-runtime—NFR-RT-0003; sc-cron—NFR-CRON-0001; sc-runtime-db-sqlite—REQ-DBSQ-0001; sc-cron-commands—NFR-CRNC-0001; sc-storage and sc-monty—REQ-RUN-0002. These are release boundaries, not permanent restrictions on future releases. An allowed dependent is a workspace crate permitted to depend on this crate. An allowed dependency is a package this crate may depend on. A forbidden edge is a prohibited dependency from the owner package to a target package. The facade is the set of Rust items exported by the crate. A manifest violation is a dependency or public export that fails the rules encoded in that manifest. The crate dependency table in ADR-RUN-0003 is the crate table in the Decision section of ADR-RUN-0003 in `docs/architecture.md`, titled "Crate dependency graph and the server cargo feature". The crate graph in `docs/architecture.md` is the crate table under that file's `## Crate graph` heading. `just` is the command runner that runs recipes from the root `Justfile`; `just lint` runs its `lint` recipe. `sc-lint` is this repository's static check tool, and `sc-lint lint sc-boundary` runs its boundary check, which reads the boundary manifests and reports each manifest violation.
 
-The Phase D graph below follows PRD §4 and §6 and REQ-RUN-0002. Its boundary changes land with the corresponding code changes ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` when its table moves to `Storage<CronRow>`. Historical graph snapshots do not prohibit the shared-storage and interpreter edges required for Phase D. The SQLite writer is available to application storage composition; the runtime continues to accept application-owned stores without taking a concrete writer dependency.
-### Requirement Statement
+The manifest format, as observed in the sc-lint repository, is TOML with these keys: `boundary_id`, `owner_package`, a `[public]` table with `facade`, an `[implementation]` table, a `[composition]` table with `roots`, a `[dependencies]` table with `allowed_dependents`, `allowed_dependencies` and `forbidden_edges` (each forbidden edge a string of the form `"a -> b"`), and a `[references]` table.
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The crate graph is the Phase D workspace dependency graph shown in the table below; it updates the earlier graph snapshots under REQ-RUN-0002 and ADR-RUN-0020/0021. A crate's additional dependency list is the list owned by its per-crate requirement named below. The crate graph table is the table in item 3. Its edges include allowed and forbidden edges with their feature and phase conditions. A crate's row is that crate's row of the crate graph table. The manifest format is the TOML key set listed in item 2. The sc-compose crates are the packages `sc-compose` and `sc-compose-*`, and their Rust library names such as `sc_compose`. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here.
+Crate graph table (Phase D scope):
 
-This requirement is decided in this document; the sc-runtime design does not
-state it.
-
-2. The manifest format, as observed in the sc-lint repository, is TOML with these keys: `boundary_id`, `owner_package`, a `[public]` table with `facade`, an `[implementation]` table, a `[composition]` table with `roots`, a `[dependencies]` table with `allowed_dependents`, `allowed_dependencies` and `forbidden_edges` (each forbidden edge a string of the form `"a -> b"`), and a `[references]` table.
-3. This item owns the edges among all workspace library crates and the forbidden edges.
-
-   | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
+| Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | `sc-storage` for the shared storage command helpers (ADR-RUN-0021); OPEN for owner decision: the feature selection carrying this edge and any sibling-free envelope selection (NFR-CMD-0002) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
 | `sc-cron` | `sc-storage`; optional `sc-monty` for interpreter execution; temporary defaults-off/no-features `sc-command` for the contract (ADR-RUN-0017). Canonical event values use registry `sc-observability-types` | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 | `sc-cron-commands` | defaults-off `sc-command`; `sc-storage` for the shared command storage adapter; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
@@ -494,23 +483,6 @@ for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
 must print no direct `sc-observability ` or `sc-observability-otlp ` line.
 `allowed_dependents` records the reverse workspace edges of the table for the supported features. Thus sc-storage admits the listed command, SQLite and cron consumers; sc-monty admits cron when its interpreter feature is selected; command admits runtime, cron and the cron-command adapter. External consumer applications are not workspace dependents. The absent runtime -> config edge remains forbidden. Historical sprint a-1/a-5 evidence records the earlier graph, not a restriction on these Phase D edges.
 
-4. This item does not list the third-party crates each crate may depend on.
-5. The manifest format has no key for cargo features, so `sc-lint-boundary`
-   enforces only the inter-crate edges and the public facade list. The three
-   kinds of rule are enforced as follows:
-
-   | Rule | Enforced by |
-   |---|---|
-   | inter-crate edges and forbidden edges; public facade list | `sc-lint-boundary`, run by `just lint` |
-   | dependencies allowed only behind the `server` cargo feature (`axum` in `sc-transport`; `axum` and `rmcp` in `sc-command`) | the `cargo tree` criteria of [NFR-TRN-0001](sc-transport/requirements.md), [NFR-CMD-0001](sc-command/requirements.md) and [NFR-RUN-0001](requirements.md) |
-   | Phase D assembly facade adds no library-hiding wrapper ([NFR-RT-0001](sc-runtime/requirements.md)) | architecture review of the pull request |
-
-The manifest file name is `boundaries/<crate>/<crate>.toml`.
-
-The edge `sc-runtime -> sc-config` is absent. `sc-runtime` does not depend on
-`sc-config` and does not load configuration. `boundaries/sc-runtime/sc-runtime.toml`
-lists `sc-runtime -> sc-config` under `forbidden_edges`.
-
 **MUST statements:**
 
 - For each crate in the public package set, the repository MUST contain a boundary manifest.
@@ -519,7 +491,9 @@ lists `sc-runtime -> sc-config` under `forbidden_edges`.
 - Each boundary manifest MUST list its crate's allowed dependents in the `allowed_dependents` key of its `[dependencies]` table.
 - Each boundary manifest MUST list its crate's allowed dependencies in the `allowed_dependencies` key of its `[dependencies]` table.
 - Each boundary manifest MUST list its crate's forbidden edges in the `forbidden_edges` key of its `[dependencies]` table.
-- The boundary manifests MUST encode exactly the crate graph table.
+- The boundary manifests MUST encode the crate set of the crate graph table.
+- The `allowed_dependencies` keys of the boundary manifests MUST encode the allowed workspace edges of the crate graph table.
+- The `forbidden_edges` keys of the boundary manifests MUST encode the forbidden workspace edges of the crate graph table.
 - The crate dependency table in ADR-RUN-0003 MUST list the same crates as the crate graph table.
 - The crate dependency table in ADR-RUN-0003 MUST list the same edges as the crate graph table.
 - The crate graph in `docs/architecture.md` MUST list the same crates as the crate graph table.
@@ -528,56 +502,23 @@ lists `sc-runtime -> sc-config` under `forbidden_edges`.
 - Every crate in the public package set MUST exclude ATM crate dependencies.
 - Every crate in the public package set MUST exclude sc-compose Rust imports.
 - Every crate in the public package set MUST exclude ATM Rust imports.
-- The manifest's `allowed_dependencies` MUST equal the row above plus the additional list owned by that crate's own requirement: NFR-CFG-0002 for `sc-config`, NFR-TRN-0001 for `sc-transport`, NFR-CMD-0001 for `sc-command`, NFR-RT-0003 for `sc-runtime`, NFR-CRON-0001 for `sc-cron`, REQ-DBSQ-0001 for `sc-runtime-db-sqlite`, NFR-CRNC-0001 for `sc-cron-commands`, and REQ-RUN-0002 for `sc-storage` and `sc-monty`.
-- The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary` against these manifests.
+- Each manifest's `allowed_dependencies` MUST equal the union of its crate graph row and its additional dependency list.
+- The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary` against the boundary manifests.
 - `just lint` MUST fail when a manifest is violated.
+
 
 ### Rationale
 
-Two properties of the crate graph are the ones most likely to erode without
-anyone noticing: there is no dependency edge among `sc-config`,
-`sc-transport` and `sc-command`, and nothing server-side (`axum`, `rmcp`,
-`sqlx`) is reachable from a CLI build. One convenient `use` breaks either, so
-they are checked mechanically and not left to review: the first by
-`sc-lint-boundary` on every lint run, the second by `cargo tree` criteria,
-because the manifest format cannot express a cargo feature. Keeping the edge
-table in one item stops the copies in the ADR and in the crate files from
-drifting apart. The manifests also tell sprint planning which crates can be
-built in parallel without touching each other.
+The statements preserve the existing contract while separating independently observable obligations.
+
 ### Success Criteria
 
-1. For each of the nine public crates, `boundaries/<crate>/` contains at least one `.toml` file.
-2. Each manifest's `forbidden_edges` lists `"<owner> -> <target>"` strings
-   only when `<target>` is a workspace member of that crate's lint tree at
-   the sprint that creates the manifest (the inter-crate forbidden edges
-   among the workspace library crates, added as each crate lands). Names that are
-   crates.io packages (`sc-observability`, `sc-observability-otlp`,
-   `sc-observability-types`, `tokio`, `sqlx`) and any obligation-3 target
-   that is not a workspace member in that tree are not listed in
-   `forbidden_edges` on sc-lint 0.8.0; criterion 5 enforces those names with
-   `cargo tree`. The obligation-3 table states the full policy. The manifests encode the current table, including its feature-conditional dependencies and reverse allowed-dependents entries. The sc-config and sc-transport manifests allow no workspace dependencies. The `sc-command` manifest allows `sc-storage` only.
-3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
-   the default branch.
-4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
-   scratch branch makes `just lint` exit non-zero with a boundary violation
-   naming that edge.
-5. For each crate in the public package set,
-   `cargo tree -p <crate> -e normal --prefix none` prints no line beginning
-   with `<name> ` (the name followed by a space) for any `<name>` in that
-   crate's "Forbidden edges" cell. For `sc-transport` and `sc-command` the
-   same holds with `--features server` added. Direct-depth trees for
-   `sc-runtime` and `sc-cron` each contain `sc-observability-types ` and no
-   `sc-observability ` or `sc-observability-otlp ` line. `sc-config` and
-   `sc-transport` contain none of those three. Sprint b-13 records the
-   types-only edge evidence.
-6. The table in obligation 3, the crate dependency table of
-   [ADR-RUN-0003](architecture.md) and the crate graph section of
-   `docs/architecture.md` name the same workspace edges and the same
-   forbidden edges.
+Inspect boundaries/<crate>/<crate>.toml for each public crate against the local format and graph, including reverse dependent entries and the per-crate additional dependency list. Compare the graph with docs/architecture.md and ADR-RUN-0003. Inspect production Rust imports and normal/build package closures, including renamed dependencies, for the tool exclusions. Inspect the root Justfile invocation; a scratch manifest violation produces nonzero exit from just lint.
 ### Related Documents
 
 **Architecture Decisions:**
 
+- ADR-RUN-0003 — crate dependency graph and the `server` cargo feature (`docs/architecture.md`)
 - ADR-RUN-0017 — 2026-10-31 amendment
 
 ---
