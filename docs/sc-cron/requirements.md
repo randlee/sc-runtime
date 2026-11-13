@@ -39,9 +39,9 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - Phase D sc-cron MUST consume sc-storage for shared storage behavior.
 - sc-cron MUST retain cron policy.
 - sc-cron MUST retain JSON-to/from-value adaptation.
-- sc-cron MUST pass hook data to its Monty hooks as Monty values rather than as JSON strings.
-- Existing unit assertions MUST be ported.
-- Existing integration assertions MUST be ported.
+- Hook data passed by sc-cron to Monty hooks MUST be Monty values.
+- The port from beads-cache MUST preserve the existing unit-test assertions in the resulting test suites.
+- The port from beads-cache MUST preserve the existing integration-test assertions in the resulting test suites.
 - After sprint d-9 closes, sc-cron-commands MUST consume the common sc-command read/write helpers.
 - sc-cron's only normal dependency on sc-command MUST be the command contract edge.
 - The command contract edge MUST set `default-features = false`.
@@ -51,22 +51,25 @@ sc-cron's command contract edge enables neither the sc-command `server` feature 
 - Test doubles MUST use dev-dependencies only.
 - Capability-proven upstream cleanup MUST remove the command contract edge.
 
+- If the generated daemon declares an `sc-cron` manifest dependency, that dependency MUST be optional `cron` selected by the embedding application.
+
 **MUST NOT statements:**
+
+- sc-cron MUST NOT pass hook data to its Monty hooks as JSON strings.
 
 - sc-cron MUST NOT depend on any workspace library crate other than sc-command, sc-storage and sc-monty.
 - After capability-proven upstream cleanup, sc-cron MUST NOT depend on any workspace library crate other than sc-storage and sc-monty.
 - sc-cron's sc-observability-types requirement MUST NOT declare an upper bound.
 - sc-cron MUST NOT depend on the local facade.
-- Existing integration assertions MUST NOT be deleted.
-- Existing integration assertions MUST NOT be weakened.
-- Existing unit assertions MUST NOT be deleted.
-- Existing unit assertions MUST NOT be weakened.
+- The resulting integration test suites MUST NOT omit any existing beads-cache integration-test assertion.
+- The port MUST NOT weaken any existing integration-test assertion, using this record's definition of weakening.
+- The resulting unit test suites MUST NOT omit any existing beads-cache unit-test assertion.
+- The port MUST NOT weaken any existing unit-test assertion, using this record's definition of weakening.
 - sc-cron MUST NOT directly depend on monty.
 - sc-cron MUST NOT directly depend on monty-types.
 - sc-cron MUST NOT retain an independent Monty compile/session/host/limits/dump/load engine.
 - sc-cron-commands MUST NOT introduce server-feature leakage.
-- sc-runtime MUST NOT name sc-cron as a Cargo or other manifest dependency.
-- The generated daemon MUST NOT name sc-cron except as the optional cron dependency selected by the embedding application.
+- The `sc-runtime` crate MUST NOT declare `sc-cron` in any dependency manifest.
 - Default generated builds MUST NOT link sc-cron.
 - The command contract edge MUST NOT enable the sc-command `server` feature.
 - The command contract edge MUST NOT enable the sc-command `test-util` feature.
