@@ -3810,11 +3810,11 @@ the rule that the driver stops at the first failure are unchanged.
 - The root `justfile` MUST expose the driver as `just new <dest>`.
 - The base driver MUST obtain one complete answers JSON object from the file given with `--var-file`.
 - The base driver MUST run the six-step pipeline on the answers object it obtained from `--var-file`.
-- The driver MUST stop at the first step that fails.
+- When a step fails, the driver MUST stop.
 - If any step fails, the driver exit status MUST be non-zero.
 - When a step fails, the driver MUST write that step's name to stderr.
 - When every step succeeds the driver MUST exit with status 0.
-- The driver MUST run the six-step pipeline on an answers object obtained by wizard answer acquisition.
+- When wizard answer acquisition supplies the answers object, the driver MUST run the six-step pipeline on it.
 
 **MUST NOT statements:**
 
