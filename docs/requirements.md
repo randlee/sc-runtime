@@ -3280,6 +3280,7 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - The generation options MUST accept the `SQLite and MySQL` layout from the table above.
 - Generating a layout MUST render the stores in its table row.
 - Generating the `no database` layout MUST render no store crate.
+- A generation request selecting cron with the `no database` layout MUST be rejected before template rendering.
 - Generating a two-store layout MUST render the adaptor crate.
 - Generating a layout with fewer than two stores MUST render no adaptor crate.
 - `store-postgres` MUST use `sqlx` for PostgreSQL storage.
