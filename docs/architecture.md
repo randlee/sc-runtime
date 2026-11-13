@@ -880,8 +880,7 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
   `sc-observability-types`.
-- [NFR-RT-0002](sc-runtime/requirements.md): `sc-runtime` has no sqlx or observability
-  dependency and does not load configuration.
+- [NFR-RT-0002](sc-runtime/requirements.md): `sc-runtime` has no sqlx, full observability runtime or OpenTelemetry exporter dependency and does not load configuration; `sc-observability-types` is permitted.
 
 **Architecture Decisions:**
 
