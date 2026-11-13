@@ -849,7 +849,7 @@ Phase C approved target contract (planned, not implemented).
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object; adapter DTOs are the command request/response representations owned by sc-cron-commands rather than the native CronOperations port. A permit is one admission-capacity slot held by an admitted public operation. Physical completion is completion of the actual worker or command, rather than completion of its async waiter. The fixed unsupported error is the default response of a legacy store without the new capability. G is the grace deadline and K is the cleanup deadline. WorkerHandle owns framework worker joins. A transport timeout is expiry of the caller-facing request wait; it does not complete the underlying storage mutation. The earliest applicable deadline is the minimum of the parent deadline and requested child deadline.
+Definitions: DTO means data transfer object; adapter DTOs are the command request/response representations owned by sc-cron-commands rather than the native CronOperations port. A permit is one admission-capacity slot held by an admitted public operation. Physical completion is completion of the actual worker or command, rather than completion of its async waiter. The fixed unsupported error is the default response of a legacy store without the new capability. G is the grace deadline and K is the cleanup deadline. WorkerHandle owns framework worker joins. A transport timeout is expiry of the caller-facing request wait; it does not complete the underlying storage mutation. The earliest applicable deadline is the minimum of the parent deadline and requested child deadline. A live scope is the shared StoreOperationContext carrying current stop, deadline and cancellation state. StoreOperationContext is the context input to each CronOperations start, end and query operation. Ascending stable id continuation is pagination in ascending schedule-row id order, with the prior page's continuation id excluded from the next page. A positive capped query limit is an integer from 1 through 1000 specifying the maximum returned rows; a limit outside that range is rejected.
 
 The standard Scheduler path has finite shared intake for public context-aware
 start/end/query roots: default64, validated pre-start capacity 1..=65536,
@@ -894,7 +894,7 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 
 - The standard Scheduler public start/end/query intake MUST have default capacity 64.
 - A pre-start capacity override MUST be validated in 1..=65536.
-- Full intake MUST refuse immediately with the fixed typed unavailable error before registering or queuing work.
+- When intake is full, the scheduler MUST refuse the operation immediately with the fixed typed unavailable error.
 - An admitted permit MUST remain owned until actual physical completion even after its async waiter is dropped.
 - Stop/deadline/cancellation admission MUST be atomic.
 - The scheduler MUST provide async context-aware start under the tracked admission and cancellation protocol.
@@ -902,7 +902,7 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 - The scheduler MUST provide async context-aware query under the tracked admission and cancellation protocol.
 - Bounded query MUST support active selection.
 - Bounded query MUST support ended selection.
-- Bounded query MUST support all selection.
+- Bounded query MUST support selection of all schedules, active and ended.
 - Bounded query MUST support an optional name filter.
 - Bounded query MUST use ascending stable id continuation.
 - Bounded query MUST enforce a positive capped limit.
@@ -910,9 +910,13 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 - A legacy store capability default MUST return the fixed unsupported error.
 - End by name MUST resolve a specific id.
 - End by name MUST resolve that schedule incarnation's generation.
-- The object-safe CronOperations start operation MUST return a boxed Result future with StoreOperationContext.
-- The object-safe CronOperations end operation MUST return a boxed Result future with StoreOperationContext.
-- The object-safe CronOperations query operation MUST return a boxed Result future with StoreOperationContext.
+- The CronOperations port MUST be object-safe.
+- The CronOperations start operation MUST take a StoreOperationContext.
+- The CronOperations start operation MUST return a boxed future whose output is a Result.
+- The CronOperations end operation MUST take a StoreOperationContext.
+- The CronOperations end operation MUST return a boxed future whose output is a Result.
+- The CronOperations query operation MUST take a StoreOperationContext.
+- The CronOperations query operation MUST return a boxed future whose output is a Result.
 - with_deadline MUST derive a child sharing stop state.
 - The with_deadline child MUST share admission state.
 - The with_deadline child MUST use the earliest applicable deadline.
@@ -920,7 +924,8 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 - Application CronOperations implementations MUST own intake.
 - Application CronOperations implementations MUST own physical work.
 - Application CronOperations implementations MUST own joins.
-- After stop and physical join, finish_application_shutdown MUST revoke existing and newly obtained scopes even when the grace deadline is in the future.
+- After stop and physical join, finish_application_shutdown MUST revoke existing scopes, even when the grace deadline G is in the future.
+- After stop and physical join, finish_application_shutdown MUST revoke newly obtained scopes, even when the grace deadline G is in the future.
 - The Tokio runtime owning WorkerStopControl MUST remain alive.
 - ShutdownBudget MUST have private fields.
 - ShutdownBudget MUST provide a read-only grace() accessor.
@@ -930,12 +935,16 @@ K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
 
 **MUST NOT statements:**
 
+- When intake is full, the scheduler MUST NOT register work for the refused operation.
+- When intake is full, the scheduler MUST NOT queue work for the refused operation.
+
 - WorkerStopControl::new MUST NOT require a Scheduler.
 - WorkerStopControl::new MUST NOT require a framework worker.
 - WorkerStopControl::new MUST NOT require test-utils.
 - The standard path MUST NOT create a hidden capacity-wait queue.
 - The standard path MUST NOT automatically replay work.
-- Public commands MUST NOT bypass public command admission through private worker dispatch or restricted internal cleanup.
+- Public commands MUST NOT bypass public command admission through private worker dispatch.
+- Public commands MUST NOT bypass public command admission through restricted internal cleanup.
 - Transport timeout MUST NOT detach a blocking mutation.
 - End by name MUST NOT end a replacement generation.
 - CronOperations MUST NOT carry adapter DTOs.
