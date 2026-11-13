@@ -1828,7 +1828,7 @@ removed by sprint `b-8`. Amended 2026-10-25.
 
 **MUST statements:**
 
-- Whole-file selection by generation options MUST use conditional `ignore` lists in `template/cargo-generate.toml`.
+- Whole-file selection MUST be done only by the `ignore` lists in `template/cargo-generate.toml`.
 - The total number of conditional lines across all `.rs` files under `template/` MUST be fewer than ten, counted as specified in [REQ-RUN-0304](requirements.md).
 ### Rationale
 
