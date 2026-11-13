@@ -944,7 +944,7 @@ and every client gets it.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. OpError is the sc-command operation error with code and suggested_action fields. <app> is the application name.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. OpError is the sc-command operation error with code and suggested_action fields. <app> is the application name. `suggested_action` is the `OpError` wire field carrying remediation text; its Rust representation and wire form are defined by REQ-CMD-0002.
 
 This applies to the `cli` crate of a project generated from `template/`.
 `<app>` below is the project's application name.
@@ -986,7 +986,7 @@ NFR-RUN-0001 owns the rule that a CLI links no daemon-side dependency. The reusa
 - The CLI MUST map that error to an `OpError`.
 - That `OpError` MUST have `code` equal to `"DAEMON.NOT_RUNNING"`.
 - That `OpError` MUST have `suggested_action` equal to `"run <app> daemon start"`, with `<app>` replaced by the application name.
-- `suggested_action` MUST serialise as a JSON string; its Rust type is OPEN in [REQ-CMD-0002](sc-command/requirements.md), constrained to serialise as a string.
+- For the `DAEMON.NOT_RUNNING` `OpError`, the `suggested_action` wire field MUST serialise as a JSON string, as defined by [REQ-CMD-0002](sc-command/requirements.md).
 - In that case the CLI MUST exit with a non-zero status.
 - In that case, when the command was given `--json`, the CLI MUST print to stdout one envelope `{version, ok, data, error}` with `ok` equal to `false`, `data` equal to `null`, and `error` equal to the `OpError` of obligation 3.
 
