@@ -327,35 +327,23 @@ act on.
 
 ### Requirement Statement
 
-Definitions: The envelope contract version is the single version supplied by sc-command for the response object with version, ok, data and error fields. Its type and value remain the open item recorded in REQ-CMD-0001; the caller does not supply it.
-
-The crate `sc-command` MUST provide, with default features, the
-implementation
-
-```rust
-impl<T> From<Result<T, OpError>> for Envelope<T>
-```
-
-so that a service result converts with `.into()`. `Envelope<T>` is the
-response envelope with JSON keys `version`, `ok`, `data`, `error`
-([REQ-CMD-0001](requirements.md)); `OpError` is the typed error
-([REQ-CMD-0002](requirements.md)).
-
-| Input | Resulting envelope |
-|---|---|
-| `Ok(value)` | `ok` is `true`, `data` is `value`, `error` is null |
-| `Err(op_error)` | `ok` is `false`, `data` is null, `error` is `op_error` |
+Definitions: `sc-command` is the crate in `crates/sc-command`. `Envelope<T>` is the response envelope with JSON keys `version`, `ok`, `data` and `error` ([REQ-CMD-0001](requirements.md)). `OpError` is the typed error ([REQ-CMD-0002](requirements.md)). The conversion is the call `.into()` on a `Result<T, OpError>` value that yields an `Envelope<T>`. The envelope contract version is the JSON string `"1"` ([REQ-CMD-0001](requirements.md)). The serialised envelope is the JSON produced by `serde_json` from the `Envelope<T>` returned by the conversion.
 
 **MUST statements:**
 
-- The conversion MUST behave as follows: (see table above)
-- In both cases `version` MUST be the crate's single envelope contract version (its type and value are an open item recorded in [REQ-CMD-0001](requirements.md)).
+- `sc-command` built with default features MUST compile `impl<T> From<Result<T, OpError>> for Envelope<T>`.
+- For input `Ok(value)`, the serialised envelope MUST have `ok` equal to `true`.
+- For input `Ok(value)`, the serialised envelope MUST have `data` equal to the serialised `value`.
+- For input `Ok(value)`, the serialised envelope MUST have `error` equal to JSON `null`.
+- For input `Err(op_error)`, the serialised envelope MUST have `ok` equal to `false`.
+- For input `Err(op_error)`, the serialised envelope MUST have `data` equal to JSON `null`.
+- For input `Err(op_error)`, the serialised envelope MUST have `error` equal to the serialised `op_error`.
+- The serialised envelope MUST have `version` equal to the envelope contract version.
 
 **MUST NOT statements:**
 
-- The caller MUST NOT supply `version`.
-- The implementation MUST NOT require any trait bound on `T`.
-- The conversion MUST NOT alter `value` or `op_error`.
+- The conversion MUST NOT accept a `version` value from the caller.
+- `impl<T> From<Result<T, OpError>> for Envelope<T>` MUST NOT require any trait bound on `T`.
 
 ### Rationale
 
