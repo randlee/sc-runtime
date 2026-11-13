@@ -309,7 +309,7 @@ The ordering and retention clauses are checked by inspecting the startup and cle
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. A migration is database schema initialization or upgrade owned by the project's store code, rather than daemon assembly.
+Definitions: MCP means Model Context Protocol. A migration is database schema initialization or upgrade owned by the project's store code, rather than daemon assembly. A receiving closure is the project's routes closure or its MCP closure. Passing the `Stores` value includes moving or cloning it into a receiving closure.
 
 `Stores` being opaque to this crate is the current design. The shared command path needs `Storage<T>`; whether it lives in this crate or beside it is undecided.
 
@@ -332,7 +332,7 @@ Definitions: MCP means Model Context Protocol. A migration is database schema in
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT use the `Stores` value beyond passing it to the project's routes closure and its optional MCP closure.
+- Code in `crates/sc-runtime/src` MUST NOT use the `Stores` value except to pass it to a receiving closure.
 - `sc-runtime` MUST NOT read a field of `Stores`.
 - `sc-runtime` MUST NOT call a method on `Stores`.
 - `sc-runtime` MUST NOT require a trait describing the contents of `Stores`.
