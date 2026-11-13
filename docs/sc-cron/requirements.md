@@ -20,7 +20,7 @@ Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [AD
 
 ### Requirement Statement
 
-Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017.
+Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement "1.5.0", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.
 
 Phase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.
 
@@ -68,7 +68,7 @@ original no-sibling boundary.
 - sc-cron MUST retain JSON-to/from-value adaptation.
 - Hooks MUST receive values rather than JSON strings.
 - Existing unit assertions MUST be ported.
-- Existing integration assertions MUST be ported without deletion or weakening.
+- Existing integration assertions MUST be ported.
 - After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.
 - For the initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017 (initial release 0.1.1).
 - That temporary command dependency MUST set `default-features = false`.
@@ -76,7 +76,7 @@ original no-sibling boundary.
 - Canonical event values MUST remain direct registry sc-observability-types imports.
 - The injection API MUST be packaged at workspace version 0.1.1.
 - Cron MUST be the fifth public library in that release.
-- Registry types MUST use compatible 1.5.0.
+- Registry types MUST use the Cargo registry version requirement `"1.5.0"`.
 - Command's temporary pin MUST unify those registry types to exact 1.5.0.
 - Test doubles MUST use dev-dependencies only.
 - The current local facade MUST be removed during implementation before initial publication.
@@ -85,6 +85,8 @@ original no-sibling boundary.
 
 **MUST NOT statements:**
 
+- Existing integration assertions MUST NOT be deleted.
+- Existing integration assertions MUST NOT be weakened.
 - Existing unit assertions MUST NOT be deleted.
 - Existing unit assertions MUST NOT be weakened.
 - sc-cron MUST NOT directly depend on monty.
@@ -520,7 +522,8 @@ The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM 
 - Feature monty MUST remain optional.
 - The default cargo tree MUST have no monty edge.
 - The --features monty tree MUST link monty and monty-types only.
-- sc-cron-tree-default and sc-cron-tree-monty in sc-lint.toml MUST enforce those trees.
+- sc-cron-tree-default in sc-lint.toml MUST enforce the default tree.
+- sc-cron-tree-monty in sc-lint.toml MUST enforce the monty-feature tree.
 - Only the temporary defaults-off command contract edge in ADR-RUN-0017 MUST be allowed among workspace crates.
 
 **MUST NOT statements:**

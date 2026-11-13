@@ -553,6 +553,8 @@ the same JSON as a string.
 
 ### Requirement Statement
 
+Definitions: JSON means JavaScript Object Notation. T is the caller-chosen value type in Envelope<T>. error.details is the arbitrary JSON context carried by an OpError.
+
 Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
 
 This requirement does not cover a typed `T` that ignores unknown fields:
@@ -758,6 +760,8 @@ landed. The third-party crates
 list only; it has no cargo-feature key, so the feature-conditional
 dependencies on axum and rmcp are checked with `cargo tree`.
 
+The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc-runtime`.
+
 **MUST statements:**
 
 - During the ADR-RUN-0017 bridge, `sc-command` MUST depend on the published crate `sc-observability-types` at exact `=1.5.0`.
@@ -765,7 +769,7 @@ dependencies on axum and rmcp are checked with `cargo tree`.
 
 **MUST NOT statements:**
 
-- `sc-command` MUST NOT depend on any other crate of this workspace: `sc-config`, `sc-transport` or `sc-runtime`.
+- `sc-command` MUST NOT depend on any other crate of this workspace.
 - `sc-command` MUST NOT depend, directly or transitively, on the crate `sc-observability` (the logging runtime) or on its OTel export crate `sc-observability-otlp`.
 
 ### Rationale

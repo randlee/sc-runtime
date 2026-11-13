@@ -48,7 +48,7 @@ Owner, 2026-10-25 (ADR-RUN-0012): copy the atm-core writer machine into a librar
 
 ### Requirement Statement
 
-Definitions: Storage<T> is the shared typed storage trait for application row type T. The listed blocking SqliteWriter signatures describe the current implementation, not the target surface. The current public item names and signatures remain the inventory below.
+Definitions: Storage<T> is the shared typed storage trait for application row type T. The listed blocking SqliteWriter signatures describe the current implementation, not the target surface. The current public item names and signatures remain the inventory below. The public surface is the exported types and methods of sc-runtime-db-sqlite. Its target async input accepts storage work through an asynchronous channel rather than a blocking caller submission.
 
 The public surface becomes the SQLite implementation of `Storage<T>` with an async input. The blocking `SqliteWriter` signatures are the code as it is, not the target.
 

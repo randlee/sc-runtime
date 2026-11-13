@@ -442,6 +442,8 @@ versions change and this shape does not.
 
 ### Requirement Statement
 
+Definitions: The six-step sequence is the numbered shutdown sequence above. The crate-private trigger is the internal shutdown notification used by testing::DaemonFixture to stop its own daemon without sending a process signal.
+
 Phase C target amendment: on Windows Ctrl-C and Ctrl-Break trigger the same sequence. Register and poll both listeners before instance lock/store setup/bind, retaining observed state.
 
 1. Stop accepting new connections.
@@ -488,6 +490,7 @@ them but does not change them.
 
 - `run()` MUST NOT delete `daemon.lock`; releasing the lock is sufficient.
 - That trigger MUST NOT be public.
+
 ### Rationale
 
 Daemons are restarted by people, by service managers and by tests. A restart
@@ -695,6 +698,8 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
   `APP.INVALID_NAME` row. `run` does not construct `sc_transport::AppName`
   and does not use `unreachable!`.
 
+The project's `main` maps the result to a process exit code.
+
 **MUST statements:**
 
 - `run()` MUST return `Result<(), RuntimeError>`.
@@ -707,7 +712,7 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 
 **MUST NOT statements:**
 
-- `run()` MUST NOT call `std::process::exit`; mapping the result to an exit code is done by the project's `main`.
+- `run()` MUST NOT call `std::process::exit`.
 
 ### Rationale
 

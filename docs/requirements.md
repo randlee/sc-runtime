@@ -1290,7 +1290,7 @@ it prefers, without this project choosing one.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. ADR means architecture decision record. A clean launch is the launch from the service definition with that service's environment, working directory, standard streams and session, without inherited CLI state. CI means continuous integration. The winning daemon is the daemon that acquired daemon.lock; the losing daemon failed that singleton-lock acquisition. Explicit invocation values are values the daemon needs from the CLI invocation, including a resolved endpoint or instance root. The startup directory is the working directory of the daemon process at startup, held invariant across launchd and CLI starts. Retry without bound means retry indefinitely, without a finite stopping condition. A finite retry bound is a cap on readiness attempts or elapsed readiness-wait time, selected by the implementation. The requirement is to enforce a bound; it does not fix its numerical value.
 
 Decided by the owner on 2026-09-20. The sc-runtime design document records
 report-only as the default and leaves auto-start undecided; this item
@@ -1338,10 +1338,10 @@ Auto-start starts a real daemon process.
 - Starting the daemon MUST remain the only action the CLI takes about a missing daemon.
 - Tests of this item MUST run only on an isolated machine, a virtual machine or an ephemeral CI runner (NFR-RUN-0010).
 - The CLI whose daemon lost MUST connect to the daemon that won.
+- In either case, readiness retries MUST enforce a finite retry bound.
 
 **MUST NOT statements:**
 
-- In either case, the CLI MUST NOT retry indefinitely.
 - Tests of this item MUST NOT run on a developer's host.
 - The daemon MUST NOT be stopped by the CLI process exiting.
 - The daemon MUST NOT be stopped by its terminal closing.
@@ -2024,7 +2024,7 @@ each tool does the job it is built for and no render engine is written here.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py. This path means direct cargo generate from the template/ tree, without scripts/new_project.py or Wyvern. sc-compose is the agent-document renderer used by the driver, not by the direct cargo-generate path. The command referred to here is cargo generate --git https://github.com/randlee/sc-runtime template --name <project>. Files that exist only for this path are files maintained exclusively for direct generation rather than shared with the driver's template tree.
+Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py. This path means direct cargo generate from the template/ tree, without scripts/new_project.py or Wyvern. sc-compose is the agent-document renderer used by the driver, not by the direct cargo-generate path. The command referred to here is cargo generate --git https://github.com/randlee/sc-runtime template --name <project>. Files that exist only for this path are files maintained exclusively for direct generation rather than shared with the driver's template tree. The generated project is the Cargo workspace rendered from this repository's template/ subtree. <project> is the project name supplied through cargo-generate's --name option.
 
 The normal way to generate a project is `just new <dest>`, which runs the
 driver `scripts/new_project.py` and, by default, the Wyvern wizard. This
@@ -2050,7 +2050,7 @@ on cargo-generate 0.25.1. The syntax and pin are in Active
 
 **MUST statements:**
 
-- The direct cargo generate command below MUST generate a project.
+- `cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST generate a project.
 - That command MUST prompt in the terminal for each option.
 - Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.
 - Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.
@@ -3180,7 +3180,7 @@ Store-to-store cache sync inside the sc-runtime crates is out of scope; that for
 
 ### Requirement Statement
 
-Definitions: A layout is a database-store combination in the table below. Synchronization and adaptor generation remain deferred; supporting a layout does not require either. Existing adaptor code remains interim code, with no implementation or deletion obligation.
+Definitions: A layout is a database-store combination in the table below. Synchronization and adaptor generation remain deferred; supporting a layout does not require either. Existing adaptor code remains interim code, with no implementation or deletion obligation. Storage<T> is the shared storage trait for application-defined row type T. SQL means Structured Query Language.
 
 A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
@@ -3424,6 +3424,8 @@ Owner (ANC-014): "it would be optional set of standard cron commands to set up c
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: The v0.1 option set consists of project name, db, mcp and licence, exactly as listed in the Option table. An option is a property of the generation answers object; JSON Schema specifies that object.
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
@@ -3966,6 +3968,8 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
 
 ### Requirement Statement
 
+Definitions: The wizard is the Wyvern HTML user interface for collecting generation options. Page fields are option inputs and page lists are their choices. Generation options are the properties in wizard/answers.schema.json at the time the wizard is built.
+
 Wyvern is the tool that shows a wizard's HTML pages and prints the collected data as JSON on stdout when the person finishes. The wizard consists of:
 
 | Path in this repository | What it is |
@@ -4066,7 +4070,12 @@ as [ADR-RUN-0401](architecture.md).
 - The generation driver `scripts/new_project.py` (run as `just new <dest>`) MUST support exactly three ways of obtaining the answers JSON object: (see table above)
 - In all three answer-acquisition modes, the answers object MUST be validated against `wizard/answers.schema.json`.
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
-- Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`; if neither exists it MUST fail before `cargo generate`, name `wyvern`, `WYVERN_BIN`, and `PATH` on stderr, and leave no destination.
+- Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`.
+- If neither location supplies Wyvern, wizard code MUST fail before `cargo generate`.
+- If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
+- If neither location supplies Wyvern, wizard code MUST name `WYVERN_BIN` on stderr.
+- If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
+- If neither location supplies Wyvern, wizard code MUST leave no destination.
 
 **MUST NOT statements:**
 
@@ -4737,7 +4746,8 @@ starts a daemon as a separate process does not run there at all
 
 **MUST NOT statements:**
 
-- Non-test code in `crates/` and in `template/` MUST NOT contain a literal temporary-directory path (such as `/tmp`) or a literal home-directory path (such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`).
+- Non-test code in `crates/` and in `template/` MUST NOT contain a literal temporary-directory path (such as `/tmp`).
+- Non-test code in `crates/` and in `template/` MUST NOT contain a literal home-directory path (such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`).
 - A test MUST NOT use the instance root of another test.
 - A test MUST NOT use the instance root of a daemon the developer is really running.
 - A test MUST NOT bind a fixed TCP port.
