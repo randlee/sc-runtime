@@ -115,12 +115,11 @@ exactly one listener. `TransportConfig` is `#[non_exhaustive]` and has no
 
 ## Crate graph
 
-This section mirrors [REQ-RUN-0005](requirements.md), which owns the
-workspace-internal edges and the forbidden edges.
+This historical graph snapshot describes the existing workspace edges. [REQ-RUN-0005](requirements.md) owns the Phase D target graph. The `sc-config` exclusion of `tokio` in this table describes the Phase D deliverable; it does not forbid a later async configuration option.
 
 | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
 |---|---|---|
-| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
 | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
@@ -689,7 +688,7 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -709,13 +708,11 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
   `sc-command`; axum and rmcp only behind `server`.
 - [NFR-RT-0003](sc-runtime/requirements.md): allowed dependencies of `sc-runtime`, the only
   assembler.
-- [ADR-CFG-0003](sc-config/architecture.md): rejects a cargo feature in `sc-config` because
-  of feature unification. Workspace-wide builds of a generated project are
-  exempt from the CLI link rule; the feature stays.
+- [ADR-CFG-0003](sc-config/architecture.md): the current configuration deliverable has no async or reload feature; a later option remains open. Workspace-wide builds of a generated project are exempt from the CLI link rule.
 - [ADR-RUN-0303](architecture.md): the crate graph of a generated project.
 ### Context
 
-The edges in this ADR describe the code as it is and stay enforced until the code changes. Implementing PRD v2.0 changes them ([code-alignment.md](prd/code-alignment.md)).
+The edges in this ADR describe the code as it is and stay enforced until the code changes. Implementing PRD v2.0 changes them ([code-alignment.md](prd/code-alignment.md)). The `sc-config` Tokio exclusion is a Phase D deliverable constraint and does not forbid a later async configuration option (PRD-ENG-5/6).
 
 Two properties pull against each other. Each of `sc-config`, `sc-transport`
 and `sc-command` must be usable alone by programs that are not sc-runtime
@@ -733,7 +730,7 @@ as its own selection.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
