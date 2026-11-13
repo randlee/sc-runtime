@@ -341,7 +341,7 @@ process environment variables.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API is a function that creates a new, uniquely named directory on each call, such as `TempDir::new` in `crates/sc-config/tests/support`. `merge(base, overlay)` recursively merges object keys and replaces other values with the overlay, including arrays and null, as specified in [REQ-CFG-0001](requirements.md). The merged document is the result of `merge` applied to `default.json` and `local.json` read from the config directory, as specified in [REQ-CFG-0001](requirements.md). The environment-override rules are the rules of [REQ-CFG-0002](requirements.md) that select matching app-prefixed variables, decode their key paths and values, and apply them to the merged document. `ConfigError` is the error type of `sc-config`, specified in [REQ-CFG-0004](requirements.md). The default inputs of `load` are the path `config` resolved against the current working directory, passed as `config_dir`, and the pairs returned by `std::env::vars_os`, passed as `environment`. A fixed host path is a literal string that begins with `/tmp/`, `/home/` or `/Users/`. Code under `crates/sc-config` includes `src/` and test code.
+Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API is a function that creates a new, uniquely named directory on each call, such as `TempDir::new` in `crates/sc-config/tests/support`. A directory path derives from a temporary-directory API call when it is the directory that call returned or a path beneath that directory. The app name is the `sc_config::AppName` value that names the application, specified in [REQ-CFG-0001](requirements.md). `merge(base, overlay)` recursively merges object keys and replaces other values with the overlay, including arrays and null, as specified in [REQ-CFG-0001](requirements.md). The merged document is the result of `merge` applied to `default.json` and `local.json` read from the config directory, as specified in [REQ-CFG-0001](requirements.md). The environment-override rules are the rules of [REQ-CFG-0002](requirements.md) that select matching app-prefixed variables, decode their key paths and values, and apply them to the merged document. `ConfigError` is the error type of `sc-config`, specified in [REQ-CFG-0004](requirements.md). The default inputs of `load` are the path `config` resolved against the current working directory, passed as `config_dir`, and the pairs returned by `std::env::vars_os`, passed as `environment`. A fixed host path is a literal string that begins with `/tmp/`, `/home/` or `/Users/`. Code under `crates/sc-config` includes `src/` and test code.
 
 This item covers the `Loader` type and the free function `load` of the `sc-config` crate (`crates/sc-config`).
 
@@ -349,7 +349,7 @@ This item covers the `Loader` type and the free function `load` of the `sc-confi
 
 - The crate MUST export a public type `Loader`.
 - The return type of `Loader::new` MUST be `Loader`.
-- A `Loader` MUST be given the app name explicitly by the caller.
+- `Loader::new` MUST take the app name as an argument.
 - A `Loader` MUST be given the config directory (a filesystem path) explicitly by the caller.
 - `Loader::new` MUST require the caller to provide the `environment` argument.
 - The `environment` argument MUST have type `Vec<(OsString, OsString)>`.
