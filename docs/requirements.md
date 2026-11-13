@@ -1606,6 +1606,7 @@ configuration and does not depend on the daemon crate for that type.
 - `daemon` MUST NOT depend on a `store-*` crate.
 - `cli` MUST NOT depend on a `store-*` crate.
 - `api-types` MUST NOT depend on a `store-*` crate.
+- `schema` MUST NOT depend on a `store-*` crate.
 - `store-sqlite` MUST NOT depend on `service`.
 - `store-sqlite` MUST NOT depend on `daemon`.
 - `store-sqlite` MUST NOT depend on `cli`.
