@@ -3124,7 +3124,7 @@ This record is deferred, does not apply to Phase D, and creates no implementatio
 
 **MUST NOT statements:**
 
-- The source files of the consumer adaptor MUST NOT contain a timer.
+- The consumer adaptor MUST NOT start a timer.
 
 ### Rationale
 
