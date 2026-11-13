@@ -28,7 +28,7 @@ Definitions: The dependency list is the crate's normal and build dependencies in
 
 **MUST NOT statements:**
 
-- In this release, the dependency list MUST NOT contain a crate other than `rusqlite`, `tokio` and `sc-storage`.
+- In this release, the normal and build dependencies in `crates/sc-runtime-db-sqlite/Cargo.toml` MUST NOT contain a crate other than `rusqlite`, `tokio` and `sc-storage`.
 - In this release, the dependency graph MUST NOT contain a workspace crate other than `sc-storage`.
 - The dependency graph MUST NOT contain `sqlx`.
 

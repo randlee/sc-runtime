@@ -101,7 +101,7 @@ Definitions: A schedule is the cron expression string stored with an sc-cron job
 
 **MUST statements:**
 
-- sc-cron MUST accept a normal crontab string as a schedule.
+- sc-cron MUST accept a normal crontab string (five whitespace-separated fields in standard crontab order, minute first) as a schedule.
 
 ### Rationale
 

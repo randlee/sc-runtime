@@ -928,7 +928,9 @@ A child process may set `SC_ENDPOINT` when it exercises the resolver.
 - `sc-runtime` MUST NOT choose a default port.
 - `sc-runtime` MUST NOT parse an endpoint string.
 - `sc-runtime` MUST NOT apply a precedence between endpoint sources.
-- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the `--endpoint` flag value, the configured endpoint or the explicit instance root.
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the `--endpoint` flag value.
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the configured endpoint.
+- The Phase D `DaemonBuilder` MUST NOT have a method that supplies the explicit instance root.
 - `sc-runtime` MUST NOT parse the command line.
 - The `serde::Deserialize` implementation for `TransportConfig` MUST NOT be feature-gated.
 
