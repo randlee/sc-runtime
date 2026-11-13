@@ -2942,7 +2942,8 @@ Synchronization between databases is deferred. This record does not apply to Pha
 
 **MUST statements:**
 
-- After `just new` runs with a two-store layout, directory `crates/store-adaptor/src/` of the new repository MUST contain the Rust source files of the adaptor crate.
+- After `just new` runs with a two-store layout, file `crates/store-adaptor/src/lib.rs` of the new repository MUST define the copy adaptor.
+- After `just new` runs with a two-store layout, file `crates/store-adaptor/src/lib.rs` of the new repository MUST define the host-aggregate adaptor.
 - After `just new` runs with a two-store layout, file `crates/schema/src/lib.rs` of the new repository MUST define the adaptor models.
 
 ### Rationale
