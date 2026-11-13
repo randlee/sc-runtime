@@ -4633,20 +4633,13 @@ projection edges, never shared CLI defaults.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. ADR means architecture decision record. The request path is the sequence of request-processing steps in the table below. Tokio is the asynchronous Rust runtime used for those steps.
+Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. ADR means architecture decision record. Tokio is the asynchronous Rust runtime that runs daemon request handling. The request path is the code that runs from accepting a connection to writing that connection's response, in a generated project's daemon and in the `sc-runtime` and `sc-transport` library crates. A generated project is a project created from this repository's `template` directory. A REST handler is a function in a generated project's `crates/daemon/src/routes.rs` that serves an HTTP request. An MCP tool handler is a function in a generated project's `crates/daemon/src/mcp.rs` that serves an MCP tool call. A client request method is a public method of `sc_transport::Client` in `crates/sc-transport/src/client.rs` that sends a request to a daemon and returns the daemon's response, such as `Client::get` and `Client::post`. A service function is a `pub fn` in a generated project's `crates/service` crate. A store call is a request-serving method of the `Storage<T>` implementation in a generated project. A pure function is a constructor, parser or conversion that performs no I/O and never waits. A connection-serving function is a function, other than a pure function, that runs between accepting a connection and writing that connection's response.
 
-Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite work runs on dedicated threads: only the writer thread drives its own runtime with `Runtime::block_on` under ADR-RUN-0011. Reader workers receive with `blocking_recv`, have no runtime and need no exception; callers still enqueue and await without blocking.
+Storage and other I/O reached by async callers must not block their Tokio worker or use a sync-over-async bridge. This applies beyond HTTP request handlers. `sc-config` remains synchronous, with no new reload/async work (PRD-ENG-5/6); pure constructors, parsers and conversions do not become async. The bind/shutdown filesystem carve-out below remains. SQLite work runs on dedicated threads: only the writer thread drives its own runtime with `Runtime::block_on` under ADR-RUN-0011. Reader workers receive with `blocking_recv`, have no runtime and need no exception; callers still enqueue and await without blocking. A SQLite store call awaits the writer's channel reply; a Postgres or MySQL store call awaits an `sqlx::Pool` (PRD-STO-3, amended 2026-11-11).
 
 2026-10-31 clarification: ADR-RUN-0017 permits only application-adapter
 try_log admission, which has no capacity wait/sink I/O but takes internal locks.
 This is not a wait-free guarantee; all other request-path rules below apply.
-
-| Step | Where it lives in a generated project | Obligation |
-|---|---|---|
-| REST handler | `crates/daemon/src/routes.rs` | MUST be an `async fn` |
-| MCP tool | `crates/daemon/src/mcp.rs` | MUST be an `async fn` |
-| service function | `crates/service` | MUST be an `async fn` |
-| store call | the `Storage<T>` implementation | MUST be an `async fn`. SQLite awaits the writer's channel reply; Postgres and MySQL await an `sqlx::Pool` (PRD-STO-3, amended 2026-11-11) |
 
 The sc-runtime design states only that handler, service function and sqlx pool are async; this list of prohibited calls is decided in this document; it is not stated by the sc-runtime design.
 
@@ -4669,19 +4662,22 @@ The nonblocking Tokio path, with the exceptions above, is recorded in
 
 **MUST statements:**
 
-- Every step on the path of a request through a daemon built with these crates MUST be asynchronous on the Tokio runtime: (see table above)
-- The same async request-path rule MUST hold for `sc-runtime` code between accepting a connection and writing its response.
-- The same async request-path rule MUST hold for `sc-transport` code between accepting a connection and writing its response.
-- The request methods of client `sc_transport::Client` MUST be `async fn`.
+- Every REST handler MUST be declared `async fn`.
+- Every MCP tool handler MUST be declared `async fn`.
+- Every service function MUST be declared `async fn`.
+- Every store call MUST be declared `async fn`.
+- Every connection-serving function in `crates/sc-runtime/src` MUST be declared `async fn`.
+- Every connection-serving function in `crates/sc-transport/src` MUST be declared `async fn`.
+- Every client request method MUST be declared `async fn`.
 
 **MUST NOT statements:**
 
-- Code on a request path MUST NOT block a Tokio runtime thread.
-- The request-path code MUST NOT call `block_on`.
-- The request-path code MUST NOT call `std::thread::sleep`.
-- The request-path code MUST NOT call blocking `std::fs` I/O.
-- The request-path code MUST NOT call blocking `std::net` I/O.
-- The request-path code MUST NOT call `reqwest::blocking`.
+- Request-path code MUST NOT block a Tokio runtime worker thread.
+- Request-path code MUST NOT call `block_on`.
+- Request-path code MUST NOT call `std::thread::sleep`.
+- Request-path code MUST NOT call blocking `std::fs` I/O.
+- Request-path code MUST NOT call blocking `std::net` I/O.
+- Request-path code MUST NOT call `reqwest::blocking`.
 
 ### Rationale
 
