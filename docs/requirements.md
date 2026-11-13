@@ -3352,7 +3352,7 @@ Every store in an application implements the same storage trait, `Storage<T>` (P
 
 **MUST statements:**
 
-- Every store in an application MUST implement the same storage trait, `Storage<T>`.
+- Every store in an application MUST implement the same storage trait, `Storage<T>`, where `T` is the application-defined row type.
 
 ### Rationale
 
