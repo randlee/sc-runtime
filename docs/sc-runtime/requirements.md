@@ -542,15 +542,23 @@ contract. Ctrl-Break is selected for Phase C; implementation is planned.
 
 ---
 
-## REQ-RT-0006: Test fixture `DaemonFixture` in the `testing` module
+# Requirement: Test fixture `DaemonFixture` in the `testing` module
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-24  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-RT-0006: Test fixture `DaemonFixture` in the `testing` module
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: MCP means Model Context Protocol. The MCP closure is the application service factory supplied to the Daemon builder mcp method. A fixture is the production Daemon builder running with a temporary instance root for a test.
 
 The signal shutdown sequence stops accepting, drains in-flight requests, closes the listener, removes the socket file and releases the lock ([REQ-RT-0005](requirements.md)).
 
@@ -604,41 +612,31 @@ change or exposing the private fixture shutdown trigger.
 
 - `sc-runtime` MUST expose `sc_runtime::testing::DaemonFixture` for use in the tests of generated projects and of this workspace.
 - Starting a fixture MUST create a new temporary directory.
-
 - Starting a fixture MUST use that directory as the daemon's instance root (the directory that holds `daemon.lock` and, on macOS and Linux, the socket file `daemon.sock`).
-
 - The fixture MUST supply that directory to the daemon as an explicit instance-root path.
 - The fixture MUST start the daemon through the same `Daemon::builder()` path as production.
-
 - The fixture MUST use a real `daemon.lock`.
-
-- The fixture MUST use the project's stores closure.
-
+- The fixture MUST use the project's stores closure, the application function supplied to `Daemon::builder().stores(...)` to open its stores.
 - The fixture MUST use the project's routes closure.
-
 - The fixture MUST use the project's MCP closure when supplied.
-
 - The fixture MUST use a real listener bound through `sc-transport`.
 - The fixture MUST expose an `sc_transport::Client` already connected to that daemon's endpoint (decided in this document).
 - The fixture MUST expose its resolved endpoint.
-
 - The fixture MUST expose its resolved endpoint in the string form accepted by the `--endpoint` flag and the `SC_ENDPOINT` environment variable.
 - The fixture MUST expose its instance-root path (decided in this document).
 - The fixture MUST stop its daemon through a crate-private trigger.
-
 - The crate-private trigger MUST run the same shutdown sequence a signal starts ([REQ-RT-0005](requirements.md)).
 - Dropping the fixture MUST stop the daemon.
 - The operation a test uses to stop the fixture (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the listener is closed.
-
 - For a Unix domain socket endpoint, the operation a test uses to stop the fixture (drop, or an explicit async `shutdown()` if the contract sprint adds one) MUST return only after the socket file is removed.
 - On platforms whose default endpoint is a Unix domain socket (macOS and Linux), any number of fixtures MUST be able to run at the same time inside one test binary under the default parallel test runner, with no shared socket, port, lock file or database file.
 
 **MUST NOT statements:**
 
 - There MUST NOT be a public builder method for the crate-private shutdown trigger.
-
 - The fixture MUST NOT send a process signal.
 - The fixture MUST NOT use a fixed path such as `/tmp/...` or a path under the user's home directory.
+
 ### Rationale
 
 The endpoint string lets a test point a plain HTTP or MCP client at the daemon, and an isolated-machine test point the CLI binary at it.
@@ -655,6 +653,7 @@ fixture ([REQ-RUN-0302](../requirements.md)). That test drives an MCP client
 as well as REST, which is why the fixture must hand out its endpoint and not
 only a connected client. It does not run the CLI binary; host-run tests never
 do ([REQ-RUN-0312](../requirements.md)).
+
 ### Success Criteria
 
 A criterion below that spawns a client child process on a developer's host

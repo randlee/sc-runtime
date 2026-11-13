@@ -33,15 +33,25 @@ pair, not only sc-runtime ones.
 
 ---
 
-## REQ-TRN-0001: Endpoint resolution order in `sc-transport`
+# Requirement: Endpoint resolution order in `sc-transport`
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
+---
+
+## REQ-TRN-0001: Endpoint resolution order in `sc-transport`
+
+**Status:** Active  
+
 ### Requirement Statement
+
+Definitions: CLI means command-line interface.
+
+Definitions: TransportConfig is sc-transport's public configuration type with endpoint, instance_root and tcp_port fields. An endpoint is Endpoint::Uds(PathBuf) or Endpoint::Tcp(SocketAddr).
 
 In the crate's public-surface sketch these are `Endpoint::Uds(PathBuf)` and `Endpoint::Tcp(SocketAddr)`, produced by `resolve_endpoint(...)`.
 
@@ -106,22 +116,31 @@ not decide that.
 
 **MUST statements:**
 
-- The crate `sc-transport` (`crates/sc-transport`) MUST expose one public endpoint resolver that both a daemon binary and a CLI binary call to learn where the daemon listens.
+- The crate `sc-transport` (`crates/sc-transport`) MUST expose one public endpoint resolver.
+- A daemon binary MUST call that resolver to learn where the daemon listens.
+- A CLI binary MUST call that same resolver to learn where the daemon listens.
 - The resolver's result MUST be one of exactly two cases: a Unix domain socket (UDS) path, or a TCP socket address.
 - The resolver MUST pick the first source below that supplies a value. (see table above)
 - The resolver MUST accept the `SC_ENDPOINT` value as an explicit input, so that a caller or a test can supply it without changing the process environment.
-- That form MUST read it with `std::env::var_os("SC_ENDPOINT")`, MUST NOT use `std::env::var` or `std::env::vars`, and MUST then call the explicit-input form.
+- The environment-reading resolver form MUST read `SC_ENDPOINT` with `std::env::var_os("SC_ENDPOINT")`.
+- After reading the variable, that resolver form MUST call the explicit-input resolver.
 - The platform default MUST be: (see table above)
-- The endpoint and instance-root portion of a project's configuration MUST be one public type exported by `sc-transport` with default features, and that type MUST implement `serde::Deserialize`.
+- `TransportConfig` MUST be the single type for the project endpoint and instance-root configuration.
+- `sc-transport` MUST publicly export `TransportConfig`.
+- `TransportConfig` MUST be available with default features.
+- That configuration type MUST implement `serde::Deserialize`.
 - A source value that cannot be parsed as an endpoint MUST produce an `Err` of the crate's error enum `TransportError`.
 - The crate MUST also provide, with default features, the reverse conversion: from a resolved endpoint to the string form accepted by `--endpoint` and `SC_ENDPOINT`.
 - Parsing the rendered string MUST yield an endpoint equal to the original.
 
 **MUST NOT statements:**
 
+- The environment-reading resolver form MUST NOT use `std::env::var`.
+- The environment-reading resolver form MUST NOT use `std::env::vars`.
 - The crate MUST NOT contain a literal TCP port number that it uses as a default; TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)).
 - This follows from two other binding facts: the CLI and the daemon must give the resolver the same configuration value, and a CLI MUST NOT depend on `sc-runtime`, so it cannot name `sc_runtime::DaemonConfig`.
-- The resolver MUST NOT panic and MUST NOT silently fall through to the next source in that case.
+- For a source value that cannot be parsed as an endpoint, the resolver MUST NOT panic.
+- For a source value that cannot be parsed as an endpoint, the resolver MUST NOT silently fall through to the next source.
 
 ### Rationale
 
@@ -179,8 +198,6 @@ resolves the daemon's bind endpoint only through this resolver
     form, parses each string back as an explicit `--endpoint` value, and
     asserts the result equals the original endpoint, and asserts the literal
     strings `uds:<path>` and `tcp:<socket-addr>`.
-
----
 
 ## REQ-TRN-0002: Instance root directory resolution in `sc-transport`
 
