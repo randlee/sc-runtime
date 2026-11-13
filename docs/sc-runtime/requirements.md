@@ -217,7 +217,7 @@ last so no request is accepted before it can be served.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -225,8 +225,6 @@ last so no request is accepted before it can be served.
 Definitions: OS means operating system. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory. A daemon is one running application server process. When the daemon.lock acquisition fails because another daemon holds it, the stores closure is not called and no listener is bound.
 
 `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). Tests supply a tempdir as the explicit path.
-
-- Successful stores and the runtime logger also remain owned through that callback.
 
 That variant is not `LockHeld` ([REQ-RT-0007](requirements.md)).
 
@@ -238,20 +236,20 @@ crate creates the directory it is about to lock.
 
 **MUST statements:**
 
-- `sc-runtime` MUST enforce that at most one daemon runs per instance root.
+- `sc-runtime` MUST prevent a second application server process from running against the same per-application, per-user directory identified by `<instance-root>`, including an explicitly supplied directory.
 - The mechanism MUST be an OS exclusive file lock.
 - That file lock MUST be taken with the `fd-lock` crate.
 - That file lock MUST be on `<instance-root>/daemon.lock`.
 - `run()` MUST take the lock before calling the stores closure.
 - `run()` MUST take the lock before binding any listener.
-- The lock MUST be held until the process exits or `run()` returns.
-- The additive ready-state `run_with_cleanup` MUST retain it until the supplied asynchronous cleanup finishes, on success and on startup errors.
+- The acquired `daemon.lock` lock MUST remain held until the first of these two events: the process exits; `run()` returns.
+- When `run_with_cleanup` has acquired the `daemon.lock` lock, it MUST retain that lock through completion of the supplied asynchronous cleanup callback. This retention rule applies on successful startup and on startup errors after lock acquisition. Successful stores and the runtime logger remain owned through the same cleanup callback.
 - If another process holds the lock, `run()` MUST return a `RuntimeError` whose variant means "lock held" (illustrative name `RuntimeError::LockHeld`; [REQ-RT-0007](requirements.md) defines the variants).
 - A failure to open or lock `daemon.lock` that is not lock contention (for example permission denied, or the instance root is not a directory) MUST make `run()` return `Err(RuntimeError::InstanceFailed)` without calling the stores closure.
 
 **MUST NOT statements:**
 
-- The attempt to lock MUST NOT block waiting for the holder: it is a non-blocking try-lock (decided in this document; the design states the exclusive lock but not whether the attempt waits).
+- The attempt to acquire `daemon.lock` MUST NOT block waiting for the holder; it uses a non-blocking try-lock.
 - In that case the stores closure MUST NOT be called.
 - In that case a listener MUST NOT be bound.
 - The crate MUST NOT use a PID file to detect another daemon.
@@ -259,16 +257,15 @@ crate creates the directory it is about to lock.
 
 ### Rationale
 
+The design requires an exclusive lock; this record additionally chooses a non-blocking acquisition attempt so a second daemon reports contention without waiting for the lock holder.
+
 The daemon is the only process allowed to open the local database; two
 daemons on one SQLite file would mean two writers. An OS lock is released by
 the kernel whenever the process ends, including a crash, so there is no
 stale-PID file to clean up and no race between checking and claiming.
 ### Success Criteria
 
-1. A test starts one daemon on a tempdir instance root, then calls `run()` for
-   a second daemon on the same instance root, and asserts the second returns
-   the "lock held" `RuntimeError` variant without blocking (the call returns
-   within the test timeout while the first daemon is still running).
+1. A test starts the first daemon with an explicit temporary instance root and waits for an explicit startup-complete signal confirming that its instance lock is held. While that daemon remains running and holds the lock, call `run()` for a second daemon with the same instance root and assert the lock-held `RuntimeError` result. Inspect the production acquisition path to verify that it uses fd-lock's non-blocking try-lock operation. A harness watchdog may terminate a hung test, but elapsed wall time is not a pass/fail assertion for non-blocking behavior.
 2. The same test asserts the second daemon's stores closure was never called
    (a flag set by the closure stays unset) and the first daemon still answers
    a request.
