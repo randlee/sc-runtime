@@ -46,21 +46,25 @@ Owner, 2026-10-25 (ADR-RUN-0012): copy the atm-core writer machine into a librar
 
 **Version:** 1.1.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-11-12  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 **Status:** Active  
 
 ### Requirement Statement
 
-Definitions: Storage<T> is the shared typed storage trait for application row type T. The listed blocking SqliteWriter signatures describe the current implementation, not the target surface. The current public item names and signatures remain the inventory below. The public surface is the exported types and methods of sc-runtime-db-sqlite. Its target async input accepts storage work through an asynchronous channel rather than a blocking caller submission.
+Definitions: Storage<T> is the sc-storage trait for reading and writing application rows of type T.
+The public SQLite storage compile test passes the exported SQLite storage type from sc-runtime-db-sqlite to a function generic over sc-storage’s Storage<T> from a consuming Rust crate.
+An exported type is a public Rust type usable from a consuming crate.
+The SQLite storage implementation is the sc-runtime-db-sqlite implementation of Storage<T>.
+Channel submission is sending storage work to the SQLite storage implementation through an asynchronous channel.
+An asynchronous channel accepts submitted storage work without blocking the calling thread while the caller awaits a reply.
 
-The public surface becomes the SQLite implementation of `Storage<T>` with an async input. The blocking `SqliteWriter` signatures are the code as it is, not the target.
-
-The public items are `SqliteWriter`, `WriterConn`, `SqlValue`, `SqliteWriterError`, `CHANNEL_CAPACITY`, `BATCH_TIME_BUDGET`, `WRITE_DEADLINE`, and `SHUTDOWN_JOIN`, with the signatures in the architecture file.
+The current public items are `SqliteWriter`, `WriterConn`, `SqlValue`, `SqliteWriterError`, `CHANNEL_CAPACITY`, `BATCH_TIME_BUDGET`, `WRITE_DEADLINE` and `SHUTDOWN_JOIN`, with signatures in the [architecture file](architecture.md). The blocking signatures describe the current code; the required replacement is SQLite storage with asynchronous input.
 
 **MUST statements:**
 
-- The target public surface MUST be the SQLite implementation of `Storage<T>` with an async input.
+- Running `cargo test -p sc-runtime-db-sqlite` with the public SQLite storage compile test MUST exit with code 0.
+- The SQLite storage implementation MUST allow callers to await channel submission without blocking the calling thread.
 
 ### Rationale
 
