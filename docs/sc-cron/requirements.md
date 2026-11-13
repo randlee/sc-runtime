@@ -665,7 +665,6 @@ Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owne
 - When called on a custom store that does not meet every cooperative provider obligation, `operation_support()` MUST return `StoreOperationSupport::Legacy`.
 - Each persistence call a cooperative custom store makes under a cancelled live operation scope MUST fail with `StoreErrorKind::Cancelled`.
 - When an end request names a generation other than the stored generation, a cooperative custom store MUST return `CronError::Fenced`.
-- When an end request names a generation other than the stored generation, a cooperative custom store MUST NOT change the row.
 - A cooperative custom store's `query` MUST return no more than `ScheduleQuery::limit` rows.
 - A cooperative custom store's `query` MUST return rows in ascending id order.
 - When `ScheduleQuery::after_id` is set, a cooperative custom store's `query` MUST return only rows whose id is greater than `after_id`.
@@ -704,6 +703,7 @@ Scope: The `ScheduleStore` trait and generic `Scheduler` permit application-owne
 
 **MUST NOT statements:**
 
+- When an end request names a generation other than the stored generation, a cooperative custom store MUST NOT change the row.
 - Source files under `crates/sc-cron/src` MUST NOT declare a logging receiver trait.
 - When the store is a legacy store implementation, `Scheduler::spawn_worker_cooperative` MUST NOT run the job.
 - A cooperative operation blocked acquiring a lock MUST NOT stay blocked after the live operation scope ends.
