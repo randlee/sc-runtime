@@ -4206,7 +4206,8 @@ as [ADR-RUN-0401](architecture.md).
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
 - When `WYVERN_BIN` is set, wizard code MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
 - When `WYVERN_BIN` is unset or does not supply Wyvern, wizard code MUST look for Wyvern as `wyvern` on `PATH`.
-- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit with a non-zero status before it runs `cargo generate`.
+- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit with a non-zero status.
+- When no runnable Wyvern executable is available through `WYVERN_BIN` or the `PATH` lookup, `just new <dest>` in interactive or prefill mode MUST exit before it runs `cargo generate`.
 - If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
 - If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
 - If neither location supplies Wyvern, wizard code MUST name `PATH` on stderr.
