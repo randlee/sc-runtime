@@ -2897,22 +2897,21 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record.
+Definitions: The copy adaptor is the generated adaptor crate that keeps a local SQLite copy of the remote database.
+The remote schema is the table definitions of the application's remote database, each table with its columns; it does not include rows.
+Initializing the local SQLite database is the copy adaptor's setup of the local SQLite database before the copy adaptor first reads or writes rows in it.
+The local SQLite database is the SQLite database that the copy adaptor creates.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+This Draft is deferred and creates no implementation or validation obligation until reopened. Database synchronization is deferred.
 
 **MUST statements:**
 
-- The copy adaptor is a local SQLite database with the remote schema.
+- When the copy adaptor initializes the local SQLite database, the copy adaptor MUST create the remote schema in the local SQLite database.
 
 ### Rationale
 
