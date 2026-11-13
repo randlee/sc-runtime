@@ -1246,7 +1246,7 @@ not removed the hand-assembly they exist to remove.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. The daemon is a process assembled with `sc_runtime::Daemon::builder()`. The daemon router is the `axum::Router` that the builder assembles. A listener is the Unix domain socket, or the TCP address and port, that `run()` binds.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. The daemon is a process assembled with `sc_runtime::Daemon::builder()`. The daemon router is the `axum::Router` that the builder assembles. A listener is the Unix domain socket, or the TCP address and port, that `run()` binds. Serving the daemon router unchanged means each listener answers every request with the response the daemon router gives for that request.
 
 This item states the end-to-end property; what the `sc-runtime` crate merges and mounts to achieve it is [REQ-RT-0004](sc-runtime/requirements.md).
 
