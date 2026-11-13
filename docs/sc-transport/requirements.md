@@ -514,7 +514,7 @@ The caller chooses `T`.
 
 - The crate `sc-transport` MUST expose `Client`.
 - In the client source, the parameter list of `Client::new` MUST be exactly `(endpoint: Endpoint)`.
-- `Client::new` MUST build a `reqwest::Client` (reqwest 0.13).
+- `Client::new` MUST build a `reqwest::Client` from reqwest 0.13 or later.
 - For a UDS endpoint `Client::new` MUST configure the `reqwest::Client` with `reqwest::ClientBuilder::unix_socket(path)`.
 - For a TCP endpoint, each request that `Client` sends MUST go to the URL `http://<ip>:<port>` followed by the request path, where `<ip>:<port>` is the endpoint's TCP address.
 - `get(path)` MUST send its request to `path`.
