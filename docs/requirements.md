@@ -4088,7 +4088,17 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
 
 ### Requirement Statement
 
-Definitions: The wizard is the Wyvern HTML user interface for collecting generation options. Page fields are option inputs and page lists are their choices. Generation options are the properties in `wizard/answers.schema.json` at the time the wizard is built. The path table is the table headed Path in this repository and What it is. The copied wizard is the source wizard copied from `.scaffold/wizard/` into this repository's `wizard/` directory. The copied pages are the resulting HTML files under `wizard/pages/`. Matching option inputs and choices means the page fields and their lists correspond to the options and values in `wizard/answers.schema.json` at the time the wizard is built.
+Definitions:
+
+- The wizard is the Wyvern HTML user interface that collects generation options; its files are listed in the path table.
+- The path table is the table below whose first column is headed Path in this repository.
+- Generation options are the properties defined in `wizard/answers.schema.json` in the same commit as the wizard pages.
+- The source wizard is the files `.scaffold/wizard/wizard.json`, `.scaffold/wizard/pages/*.html`, `.scaffold/wizard/pages/wizard-answers.js` and `.scaffold/wizard/pages/wizard-page.css` in the repository `Radiant-Vision-Systems/p3-nuget-template` at commit `9ef4d03`.
+- The corresponding source wizard file of a path-table file is the source wizard file whose path relative to `.scaffold/wizard/` equals the path-table file's path relative to `wizard/`.
+- The copied wizard is the source wizard copied into this repository's `wizard/` directory.
+- An option-input field is an HTML element in `wizard/pages/*.html` that carries a `data-answer` attribute.
+- An option-choice list is the set of `value` attributes of the `<option>` elements inside one option-input field.
+- The schema choices of an option-input field are the `enum` values of the `wizard/answers.schema.json` property whose key equals the `data-answer` value of the option-input field.
 
 Wyvern is the tool that shows a wizard's HTML pages and prints the collected data as JSON on stdout when the person finishes. The wizard consists of:
 
@@ -4099,8 +4109,6 @@ Wyvern is the tool that shows a wizard's HTML pages and prints the collected dat
 | `wizard/pages/wizard-answers.js` | the helper script shared by the pages |
 | `wizard/pages/wizard-page.css` | the stylesheet shared by the pages |
 
-The files to copy are `.scaffold/wizard/wizard.json`, `.scaffold/wizard/pages/*.html`, `.scaffold/wizard/pages/wizard-answers.js` and `.scaffold/wizard/pages/wizard-page.css`.
-
 The number of pages and their file names are not constrained.
 
 The wizard lives under `wizard/`, outside `template/`, so no wizard file is
@@ -4110,17 +4118,17 @@ the wizard's files only (criterion 5).
 
 **MUST statements:**
 
-- The repository MUST contain the Wyvern wizard files listed in the path table.
-- The wizard MUST collect a person's generation-option choices through its HTML interface.
-- The wizard under `wizard/` MUST originate from copies of the listed `.scaffold/wizard/` files read from `Radiant-Vision-Systems/p3-nuget-template` at commit `9ef4d03`.
+- This repository MUST contain all files listed in the path table.
+- When a person runs the wizard in Wyvern, the wizard MUST collect the person's choice for each generation option through its HTML pages.
+- The path-table files MUST be created by copying the corresponding source wizard files.
 - The copied wizard MUST be edited to produce this repository's wizard.
-- When the wizard is built, the option-input fields in `wizard/pages/*.html` MUST match the generation options defined in `wizard/answers.schema.json`.
-- The copied pages' option-choice lists MUST match the corresponding choices defined in `wizard/answers.schema.json` when the wizard is built.
-- The wizard MUST provide a user input for every generation option defined in `wizard/answers.schema.json`.
+- The `data-answer` attribute values in `wizard/pages/*.html` MUST name the same options as the `properties` keys of `wizard/answers.schema.json`.
+- Every option-choice list in `wizard/pages/*.html` MUST contain exactly the schema choices of the option-input field containing the option-choice list.
+- When `just new <dest>` runs without `--var-file`, the wizard pages that Wyvern opens MUST contain one input for every generation option.
 
 **MUST NOT statements:**
 
-- The wizard MUST NOT offer an input for anything the schema does not define.
+- When `just new <dest>` runs without `--var-file`, the wizard pages that Wyvern opens MUST NOT contain an input for a value that is not a generation option.
 - The wizard MUST NOT be written from scratch.
 
 ### Rationale
