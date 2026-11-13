@@ -3437,22 +3437,25 @@ Owner, 2026-10-25 (ADR-RUN-0305 point 13): row type structs are in `<project>-sc
 
 ### Requirement Statement
 
-Definitions: A database layout is the selected combination of SQLite, Postgres and MySQL stores; the no-database layout selects none. General database commands are the disableable bootstrap command surface, including delete row <table> <id>. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. A backend operation is the single service/storage operation shared by the CLI command, MCP tool and HTTP route.
-
-The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
-
-A layout with no database renders none of these commands.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. A store layout is a generated project whose database selection names at least one of SQLite, Postgres and MySQL. A no-database layout is a generated project whose database selection is `none`. General database commands are the generated commands that take a table name as an argument, including `delete row <table> <id>`. The `general-db` feature is the Cargo feature of the generated CLI, daemon and service crates that compiles in the general database commands. A default build is a build of the generated project with its default Cargo features. The application delete command is the generated delete command for the `widgets` table only: the CLI command `widget delete <id>`, the MCP tool `widget_delete` and the HTTP route `POST /ops/widget.delete`. The backend delete operation is the service function `delete_row`. The OpenAPI document is the HTTP API description that the generated daemon builds from its HTTP router.
 
 **MUST statements:**
 
-- A generated project with a store MUST register `delete row <table> <id>` on the CLI.
-- A generated project with a store MUST register `delete row <table> <id>` on MCP.
-- A generated project with a store MUST register `delete row <table> <id>` over HTTP.
-- The consumer MUST be able to disable that general-database command surface.
-- A no-database layout MUST render none of the general database commands.
-- An application command MUST call the same backend operation through its own CLI command.
-- An application command MUST call the same backend operation through its own MCP tool.
-- An application command MUST call the same backend operation through its own HTTP route.
+- In a default build of a store layout, the generated CLI MUST accept the command `delete row <table> <id>`.
+- In a default build of a store layout, the generated daemon MUST return a tool list that contains `delete_row` when sent an MCP `tools/list` request.
+- In a default build of a store layout, the generated daemon's OpenAPI document MUST list the path `/ops/delete.row`.
+- In a build of a store layout without the `general-db` feature, the generated CLI MUST reject the command `delete row <table> <id>` as unknown.
+- In a default build of a store layout, the CLI command `widget delete <id>` MUST perform its delete by calling the backend delete operation with table `widgets`.
+- In a default build of a store layout, the MCP tool `widget_delete` MUST perform its delete by calling the backend delete operation with table `widgets`.
+- In a default build of a store layout, the HTTP route `POST /ops/widget.delete` MUST perform its delete by calling the backend delete operation with table `widgets`.
+- In a default build of a no-database layout, the generated CLI MUST reject each general database command as unknown.
+
+**MUST NOT statements:**
+
+- In a build of a store layout without the `general-db` feature, the generated daemon MUST NOT return a tool list that contains `delete_row` when sent an MCP `tools/list` request.
+- In a build of a store layout without the `general-db` feature, the generated daemon's OpenAPI document MUST NOT list the path `/ops/delete.row`.
+- In a default build of a no-database layout, the generated daemon MUST NOT return a tool list that contains a general database command, such as `delete_row`, when sent an MCP `tools/list` request.
+- In a default build of a no-database layout, the generated daemon's OpenAPI document MUST NOT list the path of a general database command, such as `/ops/delete.row`.
 
 ### Rationale
 
