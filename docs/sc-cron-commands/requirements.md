@@ -14,86 +14,91 @@ existing no-product-API rule. It is not an ATM implementation or dependency.
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object; JSON means JavaScript Object Notation; CLI means command-line interface; MCP means Model Context Protocol; HTTP means Hypertext Transfer Protocol; SQL means Structured Query Language; ATM means agent-team-mail. A strict version-1 DTO is the request representation whose version and fields are validated before writes. Envelope and OpError are the existing sc-command result and error types. A Monty target runs the optional Monty interpreter; Rust targets use the application Job or dispatcher. Opaque payload/environment are the application JSON data and hook-environment configuration carried by the request. Bounded timeout uses the core RunTimeout type and its existing maximum, MAX_TIMEOUT of 24 hours. List continuation is ascending stable row-id pagination with a positive capped result limit and active/ended/all selection. A cursor is the prior page's exclusive row-id continuation value. Overflow means a numeric value not representable by its declared field type. An unsupported target is a target unavailable in the selected build or application bindings. Core-derived limits are the existing scheduler input limits frozen by the contract sprint. Value-free error mapping uses stable typed codes rather than raw SQL, environment, source or payload. Sensitive read fields are hook source, environment and payload. A serialized function would carry executable Rust function data in a request; a job catalog would add another job registration system. The five-field grammar is the ordinary cron syntax; supported aliases remain accepted. A read view is the command response exposing schedule-row data. A separately authorized application projection is an application-owned response representation explicitly permitted to expose the named sensitive fields; this record specifies no authorization mechanism.
+Definitions: DTO means data transfer object. JSON means JavaScript Object Notation. CLI means command-line interface. HTTP means Hypertext Transfer Protocol. REST means representational state transfer, and the REST interface is the HTTP interface of the application. MCP means Model Context Protocol. SQL means Structured Query Language. ATM means agent-team-mail. The cron command contract is the three commands `cron.start`, `cron.end` and `cron.list`, with their request, result and error types, defined by the `sc-cron-commands` crate. A version-1 request is the JSON DTO of one command whose `version` field equals `1`. `Envelope` is the existing sc-command result type. `OpError` is the existing sc-command error type carried by a failed `Envelope`. A projection is one interface that exposes the cron command contract: the CLI, the REST interface or the MCP interface. A namespaced error code is an `OpError` code that starts with `CRON.`. A target is what a schedule runs. Rust, Python and Monty targets are the three target kinds that sc-cron already runs. A Monty target runs in the Monty interpreter and exists only in a build that includes Monty. The run binding is the Job or dispatcher that the application configured for Rust targets. A five-field expression is a cron expression with the fields minute, hour, day of month, month and day of week. A six-field expression is a five-field expression with a seconds field added. A supported alias is a name that the sc-cron schedule parser accepts in place of a five-field expression. `RunTimeout` is the sc-cron timeout type, whose maximum is `MAX_TIMEOUT`, 24 hours. The payload is the application JSON data carried by a `cron.start` request, which the command does not interpret. The environment is the hook-environment configuration carried by a `cron.start` request. A generation is the number that identifies one start of a named schedule. A row id is the storage identifier of a schedule row, which does not change. The limit is the number of rows a `cron.list` request asks for. The limit cap is the largest limit the contract accepts. A cursor is the row id of the last row of the prior page. A page is a `cron.list` result that holds at most the limit of rows, in ascending row-id order, only rows whose row id is greater than the cursor, and the cursor for the next page. A refused request is a request for which the command returns a failed `Envelope` and writes nothing to the schedule store. An invalid generation is a generation that is not a positive integer. An invalid limit is a limit that is zero or greater than the limit cap. An invalid cursor is a cursor that is not a positive row id. Overflow is a numeric value that its declared field type cannot represent. An unsupported target is a target unavailable in the selected build or in the application bindings. The contract sprint is the sprint that delivers the cron command contract. A core-derived size limit is an existing sc-cron scheduler input limit that the contract applies to a request field. The value-free error mapping is the table from each failure kind to one fixed namespaced error code; no entry holds raw SQL, an environment value, hook source or payload. A read view is a response of the cron command contract that shows schedule-row data. A separately authorized application projection is an application-owned response that the application explicitly permits to show hook source, environment or payload; it is not a read view, and this record specifies no authorization mechanism. A diagnostic is the message text of an `OpError` or a log line written by a command. A serialized function is executable Rust function data carried in a request. A job catalog is a job registration system other than the run binding. Hard deletion is removing a schedule row from storage. The ATM team field is a request field that holds an ATM team name. The ATM phase field is a request field that holds an ATM phase name. The ATM mandatory-until field is a request field that holds the time until which an ATM schedule is mandatory.
 
-Provide `cron.start`, `cron.end` and `cron.list` through strict version-1 JSON
-DTOs and existing sc-command Envelope/OpError. CLI, REST and MCP projections
-use the same request, typed result and namespaced error codes. Start selects
-existing Rust, Python or optional Monty targets, ordinary five-field cron or
-supported aliases, bounded timeout and opaque payload/environment. Rust uses
-the application-configured Job/dispatcher; no serialized function or new job
-catalog. End requires name and generation. List supports bounded deterministic
-active/ended/all continuation with id/generation/state views. No implicit
-end-all, hard deletion, ATM team/phase/mandatory-until or six-field-only grammar.
-
-Reject unknown/duplicate fields, invalid version/generation/limits/cursor,
-overflow and unsupported target before writes. Freeze exact core-derived size
-limits and value-free error mapping in the contract sprint. Do not expose raw
-SQL, environment values, source code or payload in diagnostics. Read views
-exclude sensitive source/environment/payload unless a separate authorized
-application projection explicitly exposes them.
+The `sc-cron-commands` crate provides `cron.start`, `cron.end` and `cron.list` as one contract that the CLI, the REST interface and the MCP interface share.
 
 **MUST statements:**
 
-- `cron.start` MUST use a strict version-1 JSON DTO.
-- `cron.end` MUST use a strict version-1 JSON DTO.
-- `cron.list` MUST use a strict version-1 JSON DTO.
-- Command results MUST use the existing sc-command Envelope/OpError.
-- CLI, REST and MCP projections MUST use the same request.
-- CLI, REST and MCP projections MUST use the same typed result.
-- CLI, REST and MCP projections MUST use the same namespaced error codes.
-- Start MUST support existing Rust targets.
-- Start MUST support existing Python targets.
-- Start MUST support optional Monty targets.
-- Start MUST support ordinary five-field cron or supported aliases.
-- Start MUST support a bounded timeout.
-- Start MUST support opaque payload/environment.
-- Rust commands MUST use the application-configured Job or dispatcher.
-- End MUST require name.
-- End MUST require generation.
-- List MUST support bounded deterministic continuation for active schedules.
-- List MUST support bounded deterministic continuation for ended schedules.
-- List MUST support bounded deterministic continuation for all schedules.
-- List views MUST expose id.
-- List views MUST expose generation.
-- List views MUST expose state.
-- Unknown fields MUST be rejected before writes.
-- Duplicate fields MUST be rejected before writes.
-- Invalid version MUST be rejected before writes.
-- Invalid generation MUST be rejected before writes.
-- Invalid limits MUST be rejected before writes.
-- Invalid cursor MUST be rejected before writes.
-- Overflow MUST be rejected before writes.
-- Unsupported targets MUST be rejected before writes.
-- The contract sprint MUST freeze core-derived size limits.
-- The contract sprint MUST freeze value-free error mapping.
-- Read views MUST exclude sensitive source unless a separately authorized application projection explicitly exposes that source.
-- Read views MUST exclude environment unless a separately authorized application projection explicitly exposes that environment.
-- Read views MUST exclude payload unless a separately authorized application projection explicitly exposes that payload.
+1. `cron.start` MUST accept its input only as a version-1 request.
+2. `cron.end` MUST accept its input only as a version-1 request.
+3. `cron.list` MUST accept its input only as a version-1 request.
+4. Every command of the cron command contract MUST return its result in an `Envelope`.
+5. Every error that a command of the cron command contract returns MUST be an `OpError`.
+6. Each command MUST have one request type that every projection uses.
+7. Each command MUST have one result type that every projection returns.
+8. Every projection MUST show the namespaced error code of a failed command unchanged.
+9. `cron.start` MUST accept a Rust target.
+10. `cron.start` MUST accept a Python target.
+11. In a build that includes Monty, `cron.start` MUST accept a Monty target.
+12. `cron.start` MUST accept a five-field expression.
+13. `cron.start` MUST accept a supported alias.
+14. `cron.start` MUST store the request timeout as a `RunTimeout`.
+15. `cron.start` MUST accept a payload.
+16. `cron.start` MUST accept an environment.
+17. A Rust target MUST run through the run binding.
+18. The `cron.end` request MUST have a required name field.
+19. The `cron.end` request MUST have a required generation field.
+20. A `cron.list` request that selects active schedules MUST return a page.
+21. A `cron.list` request that selects ended schedules MUST return a page.
+22. A `cron.list` request that selects all schedules MUST return a page.
+23. Every schedule entry of a `cron.list` result MUST contain the row id.
+24. Every schedule entry of a `cron.list` result MUST contain the generation.
+25. Every schedule entry of a `cron.list` result MUST contain the state.
+26. A request with an unknown field MUST be a refused request.
+27. A request with a duplicate field MUST be a refused request.
+28. A request whose `version` is not `1` MUST be a refused request.
+29. A request with an invalid generation MUST be a refused request.
+30. A request with an invalid limit MUST be a refused request.
+31. A request with an invalid cursor MUST be a refused request.
+32. A request with an overflow MUST be a refused request.
+33. A request with an unsupported target MUST be a refused request.
+34. The contract sprint MUST state each core-derived size limit as an exact number in the cron command contract.
+35. The contract sprint MUST state the value-free error mapping in the cron command contract.
+36. A read view MUST omit hook source.
+37. A read view MUST omit the environment.
+38. A read view MUST omit the payload.
 
 **MUST NOT statements:**
 
-- The command contract MUST NOT add a serialized function.
-- The command contract MUST NOT add a new job catalog.
-- Diagnostics MUST NOT expose raw SQL.
-- Diagnostics MUST NOT expose environment values.
-- Diagnostics MUST NOT expose source code.
-- Diagnostics MUST NOT expose payload.
-- The contract MUST NOT introduce implicit end-all.
-- The contract MUST NOT introduce hard deletion.
-- The contract MUST NOT introduce ATM team/phase/mandatory-until.
-- The contract MUST NOT introduce six-field-only grammar.
+39. The version-1 request types MUST NOT contain a field that carries a serialized function.
+40. The version-1 cron command contract MUST NOT define a job catalog.
+41. A diagnostic MUST NOT contain the text of a SQL statement.
+42. A diagnostic MUST NOT contain the value of an environment variable.
+43. A diagnostic MUST NOT contain hook source code.
+44. A diagnostic MUST NOT contain payload content.
+45. One `cron.end` request MUST NOT end more than one schedule.
+46. A command of the version-1 cron command contract MUST NOT perform hard deletion.
+47. The version-1 request types MUST NOT contain an ATM team field.
+48. The version-1 request types MUST NOT contain an ATM phase field.
+49. The version-1 request types MUST NOT contain an ATM mandatory-until field.
+50. `cron.start` MUST NOT require a six-field expression.
 
 ### Rationale
 
-This optional library reconciles the new human command requirement with the scheduler core's existing no-product-API rule.
+The cron commands are an optional library. It gives people one command contract without adding a product API to the scheduler core. One request type, one result type and one set of error codes keep the three interfaces from drifting apart. Refusing bad input before any write leaves the schedule store unchanged by a failed request. Keeping values out of diagnostics and read views keeps secrets out of logs and responses. Version 1 has no job catalog and no serialized function because Rust targets already run through the application's run binding. Statements 39, 40 and 45 to 50 describe version 1 of the contract; they do not rule out a later contract version.
 
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] Serialization/schema tests demonstrate one canonical versioned start/end/list and Envelope result/error across projection-neutral fixtures.
-- [ ] All invalid forms fail before scheduler/store work; no absent name means end-all.
+- [ ] Statements 1 to 3, 26 to 28 and 32: unit tests in `crates/sc-cron-commands/tests/contract.rs` parse one valid version-1 request per command, and one request each with an unknown field, a duplicate field, a `version` other than `1` and a number too large for its field; each bad request fails to parse.
+- [ ] Statements 4 and 5: a unit test runs each command once with valid input and once with bad input and asserts the return type is `Envelope` and the failure carries an `OpError`.
+- [ ] Statements 6 to 8: a unit test feeds one fixture file per command to the CLI, REST and MCP projections and asserts equal parsed requests, equal serialized results and equal error codes starting with `CRON.`.
+- [ ] Statements 9 to 13: unit tests start one schedule with each target kind (Monty under the Monty build feature), one with a five-field expression and one with a supported alias; each returns a successful `Envelope`.
+- [ ] Statement 14: a unit test starts a schedule and asserts the stored timeout is a `RunTimeout`; a timeout above `MAX_TIMEOUT` returns a failed `Envelope`.
+- [ ] Statements 15 and 16: a unit test starts a schedule with a payload and an environment and asserts both are stored unchanged.
+- [ ] Statement 17: a unit test with a recording run binding asserts a Rust target ran through it.
+- [ ] Statements 18 and 19: unit tests parse a `cron.end` request without a name and one without a generation; each fails to parse.
+- [ ] Statements 20 to 25: unit tests list five active and five ended schedules with limit 2 for each of active, ended and all, follow the cursor to the end, and assert ascending row ids, at most 2 rows per page, no repeated row, and a row id, generation and state in every entry.
+- [ ] Statements 29 to 31 and 33: unit tests send a generation of 0, a limit of 0, a limit above the limit cap, a cursor of 0 and a target missing from the bindings; each returns a failed `Envelope`.
+- [ ] Statements 26 to 33: each test above also asserts that the schedule store holds the same rows after the refused request as before it.
+- [ ] Statements 34 and 35: inspection of `crates/sc-cron-commands/src/contract.rs` and `crates/sc-cron-commands/src/executor/errors.rs` finds each size limit as a numeric constant and one fixed code per failure kind.
+- [ ] Statements 36 to 38 and 41 to 44: a unit test starts a schedule whose hook source, environment value and payload each hold a unique marker string, forces a store failure, and asserts no marker and no SQL text appears in any `cron.list` result, `OpError` message or captured log line.
+- [ ] Statements 39, 40 and 47 to 49: inspection of `crates/sc-cron-commands/src/contract.rs` finds no request field for function data, no job registration type and no team, phase or mandatory-until field.
+- [ ] Statement 45: a unit test with two active schedules sends one `cron.end` request and asserts exactly one schedule ended; a request without a name ends none.
+- [ ] Statement 46: a unit test ends a schedule and asserts `cron.list` for ended schedules still returns its row.
+- [ ] Statement 50: the five-field test of statement 12 passes with no seconds field.
 
 ### Implementation Notes
 
