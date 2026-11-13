@@ -4320,11 +4320,11 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 2. SQLite, Postgres and MySQL MUST implement the same Storage<T> contract.
 
-3. Storage<T> MUST provide read, read_all and write operations for application-defined row types.
+3. Storage<T> MUST read and write values of T.
 
-4. StorageRow MUST describe the row table, key, columns, encoding and decoding through validated row descriptors.
+4. The exact Storage<T> method set, the mapping of T to a table and migration ownership are open and deferred to the owner.
 
-5. Consumer row types, schemas and migrations MUST remain outside generic engine implementations.
+5. Consumer row types MUST remain outside generic engine implementations.
 
 6. AtomicStorage::transaction(spec, producer) MUST commit or roll back its multiple row operations as one atomic unit.
 
@@ -4370,7 +4370,7 @@ Applications and cron need the same typed storage contract across SQLite, Postgr
 
 27. Legacy cron import MUST preserve stored fields through an idempotent, read-only-source migration that refuses collisions atomically.
 
-28. sc-cron MUST own CronRow and MontyBlobRow tables and migrations through generic row storage.
+28. sc-cron MUST store CronRow and MontyBlobRow values through Storage<T>.
 
 29. Schedule writes MUST reject Monty source that sc-monty cannot compile.
 
