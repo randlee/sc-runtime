@@ -703,23 +703,26 @@ therefore all run with `-p sc-transport`.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol.
+Definitions: HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. The crate is `sc-transport`. `reqwest` is the HTTP client library declared with version requirement `0.13`. Hyper or tower connectors include types implementing `tower::Service<Uri>` or hyper-util's `Connect`. A raw stream is a `UnixStream` or `TcpStream` used directly to read or write HTTP messages.
 
 **MUST statements:**
 
-- The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.
-- The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.
-- For UDS, the crate `sc-transport` MUST use `reqwest::ClientBuilder::unix_socket(path)`.
+- The manifest `crates/sc-transport/Cargo.toml` MUST declare `reqwest` with version requirement `0.13`.
+
+- Every client HTTP request that `sc-transport` sends over UDS MUST use `reqwest`.
+- The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest`.
+- The crate `sc-transport` MUST configure its UDS client with `reqwest::ClientBuilder::unix_socket(path)`.
 
 **MUST NOT statements:**
 
 - The crate MUST NOT depend on `hyperlocal`.
-- It MUST NOT implement its own hyper or tower connector (for example a type implementing `tower::Service<Uri>` or hyper-util's `Connect`).
+- The crate `sc-transport` MUST NOT implement its own hyper connector.
+- The crate `sc-transport` MUST NOT implement its own tower connector.
 - The crate MUST NOT write HTTP messages on a raw `UnixStream`.
 - The crate MUST NOT write HTTP messages on a raw `TcpStream`.
 - The crate MUST NOT parse HTTP messages on a raw `UnixStream`.
