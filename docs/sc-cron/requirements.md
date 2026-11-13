@@ -475,7 +475,7 @@ The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM 
 - The default tree MUST contain no interpreter crate.
 - Every interpreter crate in the monty-feature tree MUST be a permitted interpreter crate.
 - In the monty-feature tree, every path to monty MUST pass through sc-monty.
-- In the monty-feature tree, every path to monty-types MUST pass through sc-monty.
+- Every path to monty-types in the monty-feature tree MUST pass through sc-monty.
 - sc-cron-tree-default in sc-lint.toml MUST enforce the default tree.
 - sc-cron-tree-monty in sc-lint.toml MUST enforce the monty-feature tree.
 - The sc-command dependency in `crates/sc-cron/Cargo.toml` MUST be the command contract edge.
