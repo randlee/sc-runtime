@@ -4509,7 +4509,7 @@ ADR-RUN-0017 governs the retained observability shim. Phase D uses open dependen
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. `axum`, `rmcp` and `sqlx` are Rust crates. The generated `cli` crate is the package rendered at `crates/cli` of a generated project (`<project>-cli`, REQ-RUN-0329). `api-types`, `service` and `daemon` name the generated packages `<project>-types`, `<project>-service` and `<project>-daemon`; a `store-*` crate is a generated package whose role begins `store-` (REQ-RUN-0301). The baseline CLI allowlist is `api-types`, `sc-transport`, `sc-command` and `sc-config`. `server` is the cargo feature of that name in `sc-transport` and `sc-command`. The normal dependency graph includes the direct and transitive edges followed by `cargo tree -e normal`. Statements about the generated `cli` crate are checked in the generated project using `cargo tree -p <cli package> -e normal`; statements about `sc-transport` and `sc-command` are checked in this repository using their manifests and default-feature trees.
+Definitions: CLI means command-line interface. `axum`, `rmcp` and `sqlx` are Rust crates. The generated `cli` crate is the package rendered at `crates/cli` of a generated project (`<project>-cli`, REQ-RUN-0329). `api-types`, `service` and `daemon` name the generated packages `<project>-types`, `<project>-service` and `<project>-daemon`; a `store-*` crate is a generated package whose role begins `store-` (REQ-RUN-0301). The baseline CLI allowlist is `api-types`, `sc-transport`, `sc-command` and `sc-config`. `server` is the cargo feature of that name in `sc-transport` and `sc-command`. The normal dependency graph of a package is the set of crates, direct and transitive, that `cargo tree -p <package> -e normal` prints in the workspace holding that package; dev-dependencies and build-dependencies are not in it. A client crate is a command-line client crate with a normal dependency on `sc-transport` or `sc-command`; the generated `cli` crate is a client crate. A normal dependency graph contains a crate when `cargo tree -p <package> -e normal --prefix none` prints a line beginning with that crate's name followed by a space. A client crate enables a feature of a crate when `cargo tree -p <client crate> -e normal -f '{p} {f}'` lists that feature on that crate's line. A project crate is a package of the generated project's workspace or a package of the sc-runtime public package set (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage`, `sc-monty`).
 
 Phase C planned amendment, owned by c-1: the closed generated-CLI allowlist
 below additionally permits defaults-only sc-cron-commands DTOs when standard
@@ -4526,7 +4526,7 @@ This item is the single owner of the rule that a command-line client does not
 depend on the daemon's stack. Other items that touch the rule reference this
 one and use its criteria.
 
-"Normal" means the edges `cargo tree -e normal` follows: dev-dependencies and build-dependencies are outside the rule, so a test inside the `cli` crate may use server-side crates. The rule applies to the `cli` crate of every generated project (`crates/cli` in the generated workspace).
+Dev-dependencies and build-dependencies are outside the rule, so a test inside the `cli` crate may use server-side crates. The rule applies to the `cli` crate of every generated project (`crates/cli` in the generated workspace).
 
 The rule is defined for a CLI built as its own cargo selection:
 `cargo build -p <cli package>`. In that build cargo resolves features for
@@ -4549,21 +4549,20 @@ is the sprint a-1 evidence record in `docs/architecture.md`.
 
 **MUST statements:**
 
-- In `crates/sc-transport/Cargo.toml`, `sc-transport` MUST keep its server-side dependency `axum` behind a cargo feature named `server`.
-- In `crates/sc-command/Cargo.toml`, `sc-command` MUST keep its server-side dependency `axum` behind a cargo feature named `server`.
-- In `crates/sc-command/Cargo.toml`, `sc-command` MUST keep its server-side dependency `rmcp` behind a cargo feature named `server`.
-- In `sc-transport`, `server` MUST be off by default.
-- In `sc-command`, `server` MUST be off by default.
-- Among workspace and sc-runtime crates, the generated `cli` crate MUST depend only on crates in the baseline CLI allowlist.
+- In `crates/sc-transport/Cargo.toml`, `dep:axum` MUST appear only in the `server` entry of `[features]`.
+- In `crates/sc-command/Cargo.toml`, `dep:axum` MUST appear only in the `server` entry of `[features]`.
+- In `crates/sc-command/Cargo.toml`, `dep:rmcp` MUST appear only in the `server` entry of `[features]`.
 
 **MUST NOT statements:**
 
-
-- A command-line client built on these crates MUST NOT have `axum` in its normal dependency graph.
-- A command-line client built on these crates MUST NOT have `rmcp` in its normal dependency graph.
-- A command-line client built on these crates MUST NOT have `sqlx` in its normal dependency graph.
-- A command-line client built on these crates MUST NOT enable the `server` feature of `sc-transport`.
-- A command-line client built on these crates MUST NOT enable the `server` feature of `sc-command`.
+- The `[dependencies]` table of the generated `crates/cli/Cargo.toml` MUST NOT name a project crate outside the baseline CLI allowlist.
+- In `crates/sc-transport/Cargo.toml`, the `default` entry of `[features]` MUST NOT list `server`.
+- In `crates/sc-command/Cargo.toml`, the `default` entry of `[features]` MUST NOT list `server`.
+- The normal dependency graph of a client crate MUST NOT contain `axum`.
+- The normal dependency graph of a client crate MUST NOT contain `rmcp`.
+- The normal dependency graph of a client crate MUST NOT contain `sqlx`.
+- A client crate MUST NOT enable the `server` feature of `sc-transport`.
+- A client crate MUST NOT enable the `server` feature of `sc-command`.
 - The generated `cli` crate MUST NOT have a normal dependency on the `sc-runtime` crate.
 - The generated `cli` crate MUST NOT have a normal dependency on the `service` crate.
 - The generated `cli` crate MUST NOT have a normal dependency on the `daemon` crate.
