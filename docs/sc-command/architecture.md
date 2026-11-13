@@ -40,7 +40,7 @@ handler.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -79,15 +79,9 @@ observability directly).
 
 ### Decision
 
-2026-10-31 amendment: [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
-adds only the command-owned canonical port and foreign EventError signature.
-It explicitly supersedes the exact-pin rejection below for the temporary
-registry types `=1.5.0` bridge; initial locks prove 1.5.0, while 1.5.1 is
-capability-gated future cleanup. Event/error value identity remains upstream.
+The initial 0.1.1 bridge used an exact registry types `=1.5.0` pin under [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim). Phase D replaces that historical pin with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002). The command-owned canonical port and foreign EventError signature remain; event/error value identity remains upstream.
 
-`OpError.code` is `sc_observability_types::ErrorCode` from
-`sc-observability-types` under temporary exact registry
-requirement `=1.5.0` (ADR-RUN-0017).
+`OpError.code` is `sc_observability_types::ErrorCode` from `sc-observability-types` under the tested registry floor `>=1.5.0` with no upper bound (REQ-RUN-0002).
 `sc-command` defines no error-code type and no remediation type of its own.
 `OpError.remediation` is `Option<sc_observability_types::Remediation>`.
 `None` is the empty variant. A custom serializer writes the wire key
@@ -175,10 +169,9 @@ does not write a placeholder application name. The application name and the
 daemon verb are caller policy. This closes EXT-003.
 
 `sc-command` depends on `sc-observability-types` as an ordinary,
-non-optional dependency, temporarily exact `=1.5.0` under ADR-RUN-0017.
-This inspected validator/types boundary intentionally rejects consumers that
-require newer types until coordinated cleanup; it is a conscious exception
-to the earlier caret-only decision. It does not depend on
+non-optional dependency with the tested floor `>=1.5.0` and no upper bound
+(REQ-RUN-0002). The historical initial-release exact pin does not govern Phase D.
+It does not depend on
 `sc-observability` or on `sc-observability-otlp`. `sc-command` remains the
 only library using its error/remediation surface. `sc-runtime` and `sc-cron`
 also depend on the types crate, but only for injected canonical logging;
@@ -247,7 +240,7 @@ the justification is not an instruction, and [REQ-CMD-0002](requirements.md) kee
 
 **Why Rejected:**
 
-Originally rejected because it narrows consumer resolution. ADR-RUN-0017 explicitly accepts that cost temporarily for inspected 1.5.0 validator/identity proof; cleanup removes it.
+An exact pin narrows consumer resolution. The initial-release bridge accepted it temporarily for the 1.5.0 validator/identity proof; Phase D removes it in favor of the tested open floor, independently of future upstream cleanup.
 
 #### Alternative 6: A public `ErrorKind::mapping_code`
 
@@ -270,11 +263,10 @@ is absent, so `cargo tree` enforces the logging crates. Sprint a-5 deleted
 planning metadata next to the workspace.
 `cargo tree -p sc-command -e normal --prefix none`, with default features and
 with `--features server`, may print a `sc-observability-types ` line at the
-workspace-lock resolution `1.5.0` under ADR-RUN-0017
-and no line beginning with `sc-observability ` or `sc-observability-otlp `
+version selected by the workspace lock and no line beginning with `sc-observability ` or `sc-observability-otlp `
 (name then a space). `crates/sc-command/Cargo.toml` lists
-`sc-observability-types = "=1.5.0"` under `[dependencies]` for the bridge
-without `optional`.
+`sc-observability-types = ">=1.5.0"` under `[dependencies]` without an
+upper bound and without `optional`.
 `axum` is optional at 0.8.9 with `default-features = false`.
 A test binds `OpError`'s `code` to `sc_observability_types::ErrorCode`, and
 a test asserts that a supplied suggestion serialises as a JSON string
@@ -408,7 +400,7 @@ repository rule against wrappers and macro systems
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -450,8 +442,10 @@ ordinary error/conversion rules remain governed by ADR-CMD-0001/0002.
 
 2026-10-31 amendment: ADR-RUN-0017 adds `test-util = []`, off by default
 and independent of `server`; it exposes std-only recorder/rejector doubles.
-The public canonical port/Noop is unconditional. Exact bridge types pin is
-`=1.5.0`; verify isolated default/test-util/cron consumers do not activate server.
+The public canonical port/Noop is unconditional. Phase D uses the tested
+`sc-observability-types` floor `>=1.5.0` with no upper bound; the historical
+0.1.1 exact pin does not govern Phase D. Verify isolated default/test-util/cron
+consumers do not activate server.
 
 In `crates/sc-command/Cargo.toml`, `axum` and `rmcp` are `optional = true`
 dependencies enabled only by the feature `server`. `server` is not a default
@@ -462,10 +456,11 @@ implementation are compiled only under `#[cfg(feature = "server")]`.
 Everything else (`Envelope<T>`, `OpError`, `ErrorKind`,
 `From<Result<T, OpError>>`) compiles with default features.
 
-With default features the crate's direct dependencies are `serde`,
-`serde_json`, and `sc-observability-types` at temporary exact requirement
-`=1.5.0` under ADR-RUN-0017. `server`
-adds `axum` 0.8.9 and `rmcp` `~3.7` and nothing else.
+With default features the crate's direct third-party dependencies are `serde`,
+`serde_json`, and `sc-observability-types` at the tested floor `>=1.5.0`
+with no upper bound. The shared storage command helpers also use the workspace
+crate `sc-storage` (NFR-CMD-0002). The `server` feature adds `axum` at tested
+floor `>=0.8.9` and `rmcp` at tested floor `>=3.9`, each with no upper bound.
 `axum` is declared with `default-features = false`. The conversion uses
 `IntoResponse`, `Body`, and `http`. Axum's default features stay off so a
 daemon does not enable `form`, `query`, or `tower-log` through feature
@@ -504,18 +499,8 @@ CLI crate or on `sc-command` alone, not from a whole-workspace build.
 
 **Neutral:**
 
-- OPEN: Whether the generated `daemon` crate takes `sc-command` as a direct
-  dependency with `features = ["server"]`, or reaches it through a re-export
-  from `sc-runtime`, is not decided. A re-export would have to be added to the
-  public surface of `sc-runtime`. Once decided in
-  favour of direct dependencies: the generated `daemon` is the only generated
-  crate that enables `server`.
-- OPEN: Under `cargo build --workspace` cargo unifies features, so the CLI
-  is built against a `server`-enabled `sc-command`. Whether workspace-wide
-  builds are exempt from the property, or the crates must instead be split
-  into client and server crates, is not decided; it is recorded on
-  [NFR-RUN-0001](../requirements.md) and
-  [ADR-RUN-0003](../architecture.md) and is to be measured by the spike.
+- The generated `daemon` crate takes `sc-command` directly with `features = ["server"]`; the generated CLI and service use default features (REQ-RUN-0301).
+- Under `cargo build --workspace`, Cargo unifies features, so the CLI is built against a `server`-enabled `sc-command`. The isolated CLI selection is the normative dependency check; workspace-wide builds are exempt (NFR-RUN-0001).
 
 ### Alternatives Considered
 
