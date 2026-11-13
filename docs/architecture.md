@@ -2901,19 +2901,25 @@ preserved as rejected-for-Phase-A design history and is not binding on Phase A.
 - [ADR-RUN-0402](architecture.md): the `cargo-generate` mechanics. Sprint a-1 made that ADR Active.
 ### Context
 
-A new project is generated from a set of options (project name, `db`, `mcp`,
-licence).
-The private repository `p3-nuget-template` already proved a pipeline for
-this: a Wyvern wizard emits an answers JSON file, a JSON Schema validates it,
-and a driver script renders the project. That repository uses a custom render
-engine; for Rust, `cargo-generate` already exists. The agent-facing documents
-`AGENTS.md` and `CLAUDE.md` must stay validated Jinja with frontmatter to
-match the sc-ai-cli templates, and `cargo-generate`'s Liquid and Jinja both
-use `{{ }}`, so one engine cannot render both kinds of file.
+Problem: this repository needs one pipeline that turns a set of generation
+options (project name, `db`, `mcp`, licence) into a new Rust project, and
+people, agents and CI must all be able to run that pipeline.
 
-This ADR holds the pipeline shape, which is accepted. The `cargo-generate`
-mechanics it uses are recorded in Active
-[ADR-RUN-0402](architecture.md). Sprint a-1 proved them.
+Forces:
+
+- People choose options interactively; agents and CI cannot answer prompts.
+- The private repository `p3-nuget-template` proved a pipeline in which a
+  Wyvern wizard emits an answers JSON file, a JSON Schema validates the file
+  and a driver script renders the project. `p3-nuget-template` uses a custom
+  render engine; for Rust, `cargo-generate` already exists.
+- The agent-facing documents `AGENTS.md` and `CLAUDE.md` must stay validated
+  Jinja with frontmatter to match the sc-ai-cli templates. `cargo-generate`'s
+  Liquid and Jinja both use `{{ }}`, so one engine cannot render both kinds of
+  file.
+
+Scope: this ADR holds the accepted pipeline shape. Active
+[ADR-RUN-0402](architecture.md) holds the `cargo-generate` mechanics that
+sprint a-1 proved.
 ### Decision
 
 1. `wizard/answers.schema.json` MUST be the single, versioned definition of
