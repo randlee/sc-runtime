@@ -572,7 +572,7 @@ the same JSON as a string.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. T is the caller-chosen value type in Envelope<T>. error.details is the arbitrary JSON context carried by an OpError. The round trip is deserialising a JSON envelope into `sc_command::Envelope<T>` and serialising that value again; its input is the JSON envelope and its output is the JSON produced. Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
+Definitions: JSON means JavaScript Object Notation. T is the caller-chosen value type in Envelope<T>. OpError is the error value defined in [REQ-CMD-0002](requirements.md); its `details` field carries arbitrary JSON context, written error.details inside an envelope. The details round trip is deserialising a JSON value into the `details` field of `OpError` and serialising that field again; its input is that JSON value and its output is the JSON produced. An undeclared key is a JSON key that no Rust struct in the CLI or in `sc-command` declares. A null key is a key whose value is `null`; in a success envelope `error` is a null key, and in a failure envelope `data` is a null key. A typed struct is a Rust struct with named fields used as `T`, such as `Widget` below; it ignores unknown fields when deserialising drops keys it does not declare. The round trip is deserialising a JSON envelope into `sc_command::Envelope<T>` and serialising that value again; its input is the JSON envelope and its output is the JSON produced. Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
 
 This requirement does not cover a typed `T` that ignores unknown fields:
 deserialising into `Envelope<Widget>` legitimately drops fields `Widget`
@@ -582,15 +582,15 @@ into `Envelope<serde_json::Value>`.
 **MUST statements:**
 
 - The output of the round trip MUST equal its input.
-- For `T = serde_json::Value`, the output of the round trip MUST equal its input for any JSON value inside `data`, including fields the CLI has no struct for.
-- For every `T`, the round trip MUST preserve any JSON value in `error.details` according to the defined equality.
-- The Rust type of the `details` field of `OpError` MUST preserve any JSON value through the round trip (REQ-CMD-0002).
-- A key whose value is `null` in the input (`error` in the success case, `data` in the failure case) MUST be present with the value `null` in the output.
+- For `T = serde_json::Value`, the output of the round trip MUST equal its input for any JSON value inside `data`, including undeclared keys.
+- `error.details` in the output of the round trip MUST equal `error.details` in its input, also when `T` is a typed struct that ignores unknown fields.
+- The output of the details round trip MUST equal the JSON value the details round trip started from.
+- Each null key of the input MUST be a null key of the output.
 - The `version` value in the output MUST be the value read from the input, not the version constant of the `sc-command` build doing the printing.
 
 **MUST NOT statements:**
 
-- Within this requirement's scope, the round trip MUST NOT drop a key whose value is `null` in its input.
+- The round trip MUST NOT drop a null key of its input.
 
 ### Rationale
 
