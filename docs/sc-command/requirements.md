@@ -410,7 +410,7 @@ The crate references axum when its build depends on the `axum` crate or when its
 
 - The response body MUST be the envelope serialised as JSON, identical as a JSON value to `serde_json::to_value(&envelope)`.
 - The response MUST carry the header `Content-Type: application/json`.
-- The HTTP status MUST be chosen as follows.
+- The HTTP status MUST be the one that the Envelope to HTTP status table in this record gives for the envelope.
 - The status MUST be a pure function of `kind`: two errors with the same `kind` get the same status whatever their `code`.
 - When serialising `T` fails, `into_response` MUST return HTTP 500 with a JSON envelope whose `error.code` is `ENVELOPE.SERIALIZATION`.
 
