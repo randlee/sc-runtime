@@ -1537,186 +1537,118 @@ item.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. SQL means Structured Query Language. ADR means architecture decision record. The template is the cargo-generate source tree under template/. The rendered local.json is the configuration override file listed in the generated .gitignore. sc-cron/monty is the Monty feature of the sc-cron scheduler crate. The dependency table gives the required direct dependencies of each rendered role; a role is the crate suffix in `<project>-<role>`. A bare role name in backticks (`schema`, `service`, `daemon`, `cli`, `store-sqlite`, `store-postgres`, `store-mysql`, `store-adaptor`) names the rendered package `<project>-<role>`; `api-types` names `<project>-types`. A remote-engine store is `<project>-store-postgres` or `<project>-store-mysql`.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. TCP means Transmission Control Protocol. SQL means Structured Query Language. The template is the cargo-generate source tree under `template/` in the `randlee/sc-runtime` repository. An answers file is a file in `wizard/fixtures/`. A rendered project is the directory that `just new <dest> --var-file <answers file>` writes. A layout is a database-store combination of [REQ-RUN-0326](requirements.md): a no-database layout has no store, a one-store layout has one store, and a two-store layout has `store-sqlite` and one remote-engine store. A role is the suffix in the package name `<project>-<role>` ([REQ-RUN-0329](requirements.md)); `api-types` names `<project>-types`, and every other bare role in backticks (`schema`, `service`, `daemon`, `cli`, `store-sqlite`, `store-postgres`, `store-mysql`, `store-adaptor`) names `<project>-<role>`. A store is a `store-sqlite`, `store-postgres` or `store-mysql` crate. A remote-engine store is `store-postgres` or `store-mysql`. The adaptor is the `store-adaptor` crate. A path that begins `crates/` names a file of a rendered project, and a statement about such a path applies to every rendered project. A manifest is a `Cargo.toml` file under `crates/`. A dependency entry for a crate is an entry of a manifest's `[dependencies]` table whose key or `package` value names the crate's package. A non-remote-engine manifest is a manifest outside `crates/store-postgres/` and `crates/store-mysql/`. A non-daemon manifest is a manifest outside `crates/daemon/`. A SQL crate is `sqlx` or `sc-runtime-db-sqlite`. The consumer set is `service`, `daemon` and `cli`. The CLI exclusion set is `<project>-service`, every `<project>-store-*` package, `<project>-daemon`, `sc-runtime`, `sqlx`, `axum` and `rmcp`. A generated feature is a `[features]` entry of the `daemon` manifest. The CLI tree is the output of `cargo tree -p <project>-cli -e normal --prefix none` in a rendered project. The public crates are the REQ-RUN-0002 package set: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. Non-test source is a crate's files outside `tests/` and outside `#[cfg(test)]` code. A numeric TCP port literal is a number in source or configuration text that names a TCP port. The local override file is `config/local.json`. v0.1 is the first release.
 
-Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
-
-This layout is the interim application wiring form. Phase D uses `sc-runtime-db-sqlite` for SQLite storage and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. A two-store layout renders an adaptor crate (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."). This record binds that crate and its dependency edges. It binds no synchronization algorithm, schedule, direction or conflict policy (owner, 2026-11-12: "Synchronization algorithm will always be specific.").
-
-Which crates render follows [REQ-RUN-0326](requirements.md). Package names are `<project>-<role>` ([REQ-RUN-0329](requirements.md)). "v0.1" means the first release, in which the only database option was SQLite and the package names were the role names below. 
+Scope: this layout is the interim Phase D wiring form. SQLite storage uses `sc-runtime-db-sqlite` and the shared `Storage<T>` command path (PRD §3/§4, ADR-RUN-0020/0021); the old SQLite-on-sqlx implementation is not required. Phase D command paths may be written directly, with no custom Tcli-to-Tsql transform; later consumer-side generation remains permitted. This record binds the adaptor crate and its dependency edges, and no synchronization algorithm, schedule, direction or conflict policy (owner, 2026-11-12). Which stores render follows [REQ-RUN-0326](requirements.md); v0.1 rendered `crates/store-sqlite` only. `AGENTS.md` and `CLAUDE.md` are produced by `sc-compose` from `template/AGENTS.md.j2` and `template/CLAUDE.md.j2` ([REQ-RUN-0305](requirements.md)). TCP ports come from project configuration; each project's port range is allocated in the synaptic-canvas port registry. This record and [ADR-RUN-0303](architecture.md) own the crate graph of the generated workspace. The layout tree:
 
 ```text
 <project>/
   Cargo.toml                  # workspace
   crates/
-    api-types/                # always; rendered package <project>-types
-    schema/                   # when the layout has a store; package <project>-schema
-    store-sqlite/             # SQLite application wiring over sc-runtime-db-sqlite
-    store-postgres/           # when the layout's engine is Postgres
-    store-mysql/              # when the layout's engine is MySQL
+    api-types/                # always
+    schema/                   # when the layout has a store
+    store-sqlite/             # when the layout has store-sqlite
+    store-postgres/           # when the layout's remote engine is Postgres
+    store-mysql/              # when the layout's remote engine is MySQL
     store-adaptor/            # when the layout has two stores
     service/                  # always
     daemon/                   # always; src/main.rs, src/routes.rs, src/mcp.rs
     cli/                      # always
-  config/
-    default.json
+  config/default.json
   Justfile
   AGENTS.md
   CLAUDE.md
-  .gitignore                  # lists config/local.json
+  .gitignore
   .github/workflows/ci.yml
 ```
 
-A no-database layout renders no `schema` crate, no `store-*` crate, and no adaptor. A one-store layout renders that store and no adaptor. A two-store layout renders SQLite, that layout's one sqlx engine, and the adaptor.
-
-2. The store directories a layout renders are [REQ-RUN-0326](requirements.md).
-   v0.1 rendered `crates/store-sqlite` only. 3. `config/local.json` is the developer's local override file.
-4. `AGENTS.md` and `CLAUDE.md` are produced from `template/AGENTS.md.j2` and
-   `template/CLAUDE.md.j2` by `sc-compose`, not by `cargo-generate`
-   ([REQ-RUN-0305](requirements.md)).
-5. This item and [ADR-RUN-0303](architecture.md) own the crate graph of the generated workspace.
-
-   | Crate | MUST depend on | Why it is a separate crate |
-   |---|---|---|
-   | `<project>-types` | `serde`, `schemars`, `utoipa` | shared by `daemon` and `cli`, so both compile against the same structs and no client code generator is needed |
-   | `<project>-schema`, when the layout has a store | no SQL crate | row structs |
-   | `<project>-store-sqlite`, when rendered | `sc-runtime-db-sqlite` | application wiring over the shared SQLite writer |
-   | `<project>-store-postgres` or `<project>-store-mysql`, when rendered | `sqlx` with that engine's feature | remote-engine storage remains separate from the SQLite writer |
-   | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and both store crates of the layout | the one crate where the consumer's synchronization code reaches both stores |
-   | `<project>-service` | `<project>-types`; `sc-command` with default features; the store on a one-store layout, or the adaptor on a two-store layout | the single code path to SQL, called by REST handlers and MCP tools |
-   | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron`; optional `sc-monty` behind generated feature `monty` | owns the wiring and the full-observability composition root; optional cron is embedding policy |
-   | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
-
-   A one-store layout has no adaptor row. A no-database layout has no schema row, no store row, and no adaptor row, and `service` depends on `<project>-types` and `sc-command` only.
-
-   The sc-runtime design's dependency table omits three of these edges. They
-   follow from its own code: service functions return `OpError`, which is
-   defined in `sc-command`; `daemon` handlers name `Envelope<T>`, call
-   `into_mcp()`, and take `api-types` structs as input.
-6. Service functions take `&Stores`. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on both stores, and `service` depends on the adaptor. `daemon` and `cli` do not depend on a store crate.
-
-The forbidden dependency edges are enumerated in the MUST NOT statements below.
-9. TCP ports come from project configuration. Port ranges are allocated per
-   project in the synaptic-canvas port registry. No file under `template/`
-   and none of the public crates in REQ-RUN-0002 may hard-code a TCP port.
-
-Neither generated feature `cron` nor generated feature `monty` is in the daemon's default feature set. The daemon takes `sc-observability-types` directly because its composition root names `SharedCanonicalLog`; reaching the types crate only transitively through the full logger is not sufficient for a public Rust signature.
-
-`service` takes `sc-command` directly because it may not depend on `sc-runtime` (last MUST NOT statement), so a re-export from `sc-runtime` cannot reach it.
-
-The generated `daemon` takes `sc-command` directly with
-`features = ["server"]`; `sc-runtime` does not re-export it. The generated
-daemon crate defines `AppConfig`. The CLI loads only its own client-side
-configuration and does not depend on the daemon crate for that type.
-
 **MUST statements:**
 
-- `template/` in the `randlee/sc-runtime` repository MUST be a standard `cargo-generate` template.
+- `cargo generate --path template` run in a checkout of `randlee/sc-runtime` MUST exit with status 0.
 - The template MUST be configured by `template/cargo-generate.toml`.
-- The template MUST render a Cargo workspace.
-- `crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is `true`.
-- `config/local.json` MUST be listed in the rendered `.gitignore`.
-- The required dependencies of rendered `<project>-types` MUST match its row in the dependency table.
-- When rendered, `<project>-schema` MUST satisfy its no-SQL-crate dependency row in the table.
-- When rendered, `<project>-store-sqlite` MUST use the writer dependency in its table row.
-- When rendered, each remote-engine store MUST satisfy its engine-specific dependency row in the table.
-- `<project>-service` MUST depend on `<project>-types`.
-- On a one-store layout, `<project>-service` MUST depend on that store.
-- On a two-store layout, `<project>-store-adaptor` MUST depend on `<project>-schema`.
-- On a two-store layout, `<project>-store-adaptor` MUST depend on `<project>-store-sqlite`.
-- On a two-store layout, `<project>-store-adaptor` MUST depend on that layout's remote-engine store.
-- On a two-store layout, `<project>-service` MUST depend on `<project>-store-adaptor`.
-- `<project>-daemon` MUST satisfy its dependency row in the table.
-- `<project>-cli` MUST satisfy its dependency row in the table.
-- The project's `Stores` struct MUST be defined in the `service` crate.
-- `cli` MUST use `sc-transport` with its `server` cargo feature disabled.
-- `cli` MUST use `sc-command` with its `server` cargo feature disabled.
-- Generated feature `cron` MUST enable the optional daemon dependency on `sc-cron`.
-- Generated feature `monty` MUST enable the optional daemon dependency on `sc-monty`.
-- When generated feature `cron` is also selected, generated feature `monty` MUST enable `sc-cron/monty`.
-- `<project>-service` MUST depend directly on `sc-command` with default features.
+- The root `Cargo.toml` of every rendered project MUST contain a `[workspace]` table.
+- Every rendered project whose answers file sets `mcp` to `true` MUST contain `crates/daemon/src/mcp.rs`.
+- The rendered `.gitignore` MUST contain the line `config/local.json`.
+- `crates/api-types/Cargo.toml` MUST contain a dependency entry for `serde`.
+- `crates/api-types/Cargo.toml` MUST contain a dependency entry for `schemars`.
+- `crates/api-types/Cargo.toml` MUST contain a dependency entry for `utoipa`.
+- When `crates/store-sqlite/` exists, `crates/store-sqlite/Cargo.toml` MUST contain a dependency entry for `sc-runtime-db-sqlite`.
+- When `crates/store-postgres/` exists, the `sqlx` dependency entry of `crates/store-postgres/Cargo.toml` MUST enable the `postgres` feature.
+- When `crates/store-mysql/` exists, the `sqlx` dependency entry of `crates/store-mysql/Cargo.toml` MUST enable the `mysql` feature.
+- On a two-store layout, `crates/store-adaptor/Cargo.toml` MUST contain a dependency entry for `schema`.
+- On a two-store layout, `crates/store-adaptor/Cargo.toml` MUST contain a dependency entry for `store-sqlite`.
+- On a two-store layout, `crates/store-adaptor/Cargo.toml` MUST contain a dependency entry for the layout's remote-engine store.
+- `crates/service/Cargo.toml` MUST contain a dependency entry for `api-types`.
+- `crates/service/Cargo.toml` MUST contain a dependency entry for `sc-command`.
+- On a one-store layout, `crates/service/Cargo.toml` MUST contain a dependency entry for the layout's store.
+- On a two-store layout, `crates/service/Cargo.toml` MUST contain a dependency entry for `store-adaptor`.
+- A file under `crates/service/` MUST contain the declaration `struct Stores`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `service`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `api-types`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `sc-runtime`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `sc-config`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `sc-transport`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `sc-observability`.
+- `crates/daemon/Cargo.toml` MUST contain a dependency entry for `sc-observability-types`.
+- The `sc-command` dependency entry of `crates/daemon/Cargo.toml` MUST enable the `server` feature.
+- The `sc-cron` dependency entry of `crates/daemon/Cargo.toml` MUST set `optional = true`.
+- The `sc-monty` dependency entry of `crates/daemon/Cargo.toml` MUST set `optional = true`.
+- The `cron` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST contain `dep:sc-cron`.
+- The `monty` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST contain `dep:sc-monty`.
+- The output of `cargo tree -p <project>-daemon -e normal -f '{p} {f}' --features cron,monty` in a rendered project MUST show the `monty` feature on the `sc-cron` line.
+- A file under `crates/daemon/src/` MUST contain the declaration `struct AppConfig`.
+- `crates/cli/Cargo.toml` MUST contain a dependency entry for `api-types`.
+- `crates/cli/Cargo.toml` MUST contain a dependency entry for `sc-transport`.
+- `crates/cli/Cargo.toml` MUST contain a dependency entry for `sc-command`.
+- `crates/cli/Cargo.toml` MUST contain a dependency entry for `sc-config`.
 
 **MUST NOT statements:**
 
-- Generated feature `monty` MUST NOT require generated feature `cron`.
-- The default feature set of `<project>-daemon` MUST NOT include `cron`.
-- The default feature set of `<project>-daemon` MUST NOT include `monty`.
-- A file under `template/` MUST NOT contain a numeric TCP port literal, except the registered default in `template/config/default.json` if the default-port question is decided in favour of a default.
-- The non-test source of a public crate in REQ-RUN-0002 MUST NOT contain a numeric TCP port literal.
-
-- `cli` MUST NOT depend on `service` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `store-sqlite` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `daemon` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `sc-runtime` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `sqlx` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `axum` as a normal (non-dev) dependency, directly or transitively.
-- `cli` MUST NOT depend on `rmcp` as a normal (non-dev) dependency, directly or transitively.
-- `api-types` MUST NOT depend on another crate of the generated workspace.
-- A generated crate that is not a remote-engine store MUST NOT depend directly on `sqlx`.
-- `daemon` MUST NOT depend on a `store-*` crate.
-- `cli` MUST NOT depend on a `store-*` crate.
-- `api-types` MUST NOT depend on a `store-*` crate.
-- `schema` MUST NOT depend on a `store-*` crate.
-- `store-sqlite` MUST NOT depend on `service`.
-- `store-sqlite` MUST NOT depend on `daemon`.
-- `store-sqlite` MUST NOT depend on `cli`.
-- A generated crate other than `daemon` MUST NOT depend on `sc-runtime` as a normal (non-dev) dependency.
+- On a no-database layout, `crates/schema/` MUST NOT exist.
+- On a layout with fewer than two stores, `crates/store-adaptor/` MUST NOT exist.
+- The `crates/` directory of a store that the layout does not have MUST NOT exist.
+- A rendered project whose answers file sets `mcp` to `false` MUST NOT contain `crates/daemon/src/mcp.rs`.
+- `crates/api-types/Cargo.toml` MUST NOT contain a dependency entry for a crate of the generated workspace.
+- `crates/schema/Cargo.toml` MUST NOT contain a dependency entry for a SQL crate.
+- `crates/schema/Cargo.toml` MUST NOT contain a dependency entry for a store.
+- A non-remote-engine manifest MUST NOT contain a dependency entry for `sqlx`.
+- `crates/store-sqlite/Cargo.toml` MUST NOT contain a dependency entry for a crate of the consumer set.
+- The `sc-command` dependency entry of `crates/service/Cargo.toml` MUST NOT set `default-features = false`.
+- On a no-database layout, `crates/service/Cargo.toml` MUST NOT contain a dependency entry for a crate of the generated workspace other than `api-types`.
+- `crates/daemon/Cargo.toml` MUST NOT contain a dependency entry for a store.
+- The output of `cargo tree -p <project>-daemon -e normal --prefix none --features monty` in a rendered project MUST NOT show a line beginning with `sc-cron `.
+- The `default` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST NOT contain `cron`.
+- The `default` list of the `[features]` table of `crates/daemon/Cargo.toml` MUST NOT contain `monty`.
+- The output of `cargo tree -p <project>-cli -e normal -f '{p} {f}'` in a rendered project MUST NOT show the `server` feature on the `sc-transport` line.
+- The output of `cargo tree -p <project>-cli -e normal -f '{p} {f}'` in a rendered project MUST NOT show the `server` feature on the `sc-command` line.
+- The CLI tree MUST NOT contain a line beginning with a crate name of the CLI exclusion set followed by a space.
+- A non-daemon manifest MUST NOT contain a dependency entry for `sc-runtime`.
+- A file under `template/` MUST NOT contain a numeric TCP port literal.
+- The non-test source of a public crate MUST NOT contain a numeric TCP port literal.
 
 ### Rationale
 
-The crate boundaries exist for mechanical reasons, not style. `sqlx` requires
-one crate per database for its compile-time query checks. The CLI must not
-link the daemon's dependencies, which forces `cli` and `daemon` apart and
-puts the structs they share into `api-types`. `service` is separate so that
-REST and MCP have exactly one place to call.
+`sqlx` needs one crate per database for its compile-time checks. The CLI must not link daemon dependencies, so `cli` and `daemon` are separate and share structs through `api-types`. `service`, whose functions take `&Stores`, is the one path to SQL for REST and MCP; it lists `sc-command` directly because it returns `OpError` and may not depend on `sc-runtime`. The `daemon` is the composition root: it names `SharedCanonicalLog` publicly, and `sc-runtime` does not re-export `sc-command`. Optional `cron` and `monty` are embedding policy. The adaptor is where sync code reaches both stores.
 
 ### Success Criteria
 
-1. For each answers file in `wizard/fixtures/`, render the project with the
-   driver (`just new <dest> --var-file <fixture>`) and assert
-   the paths that layout includes exist, and that the store and adaptor directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
-   present exactly when the fixture's `mcp` is `true`.
-2. In each rendered project, `cargo metadata --format-version 1` shows the
-   package names `<project>-<role>` for the roles that layout renders:
-   `types`, `schema`, each store, the adaptor when the layout has two stores, `service`, `daemon` and `cli`, and no others.
-3. In each rendered project,
-   `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
-   `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
-   `<project>-daemon ` (the name followed by a space).
-4. In each rendered project, `sqlx` appears under `[dependencies]` only in
-   remote-engine store `Cargo.toml` files; the SQLite wiring crate depends on
-   `sc-runtime-db-sqlite` instead. A two-store layout's adaptor depends on both stores, and its `service` depends on the adaptor. A one-store layout's `service` depends on that store.
+1. For each answers file, render the project with `just new <dest> --var-file <fixture>`: every layout-tree path that applies to the layout exists, no store or adaptor directory that does not apply exists, and `crates/daemon/src/mcp.rs` exists exactly when the fixture's `mcp` is `true`.
+2. In each rendered project, `cargo metadata --format-version 1` shows exactly the packages `<project>-<role>` for the roles the layout renders: `types`, `schema`, each store, the adaptor on a two-store layout, `service`, `daemon` and `cli`.
+3. In each rendered project, `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package or `<project>-daemon `.
+4. In each rendered project, `sqlx` appears under `[dependencies]` only in remote-engine store manifests; the SQLite wiring crate depends on `sc-runtime-db-sqlite`. A two-store layout's adaptor depends on both stores and its `service` on the adaptor; a one-store layout's `service` depends on that store.
 5. The rendered `.gitignore` contains the line `config/local.json`.
-6. The rendered project contains no file ending in `.j2` and no file from
-   `wizard/` or `scripts/`.
-7. `grep -rn 'struct Stores' crates/` in a rendered project matches only
-   under `crates/service/`.
-8. Inspect `template/` and the non-test source of the public crates in REQ-RUN-0002
-   in the `randlee/sc-runtime` repository: no numeric TCP port literal
-   appears (once the default-port question in Implementation Notes is decided in favour of a
-   default, the one registered value in `template/config/default.json` is
-   exempt).
-9. A rendered daemon manifest names `sc-config`, `sc-transport`,
-   `sc-command` with `server`, `sc-runtime`, `sc-observability`, and
-   `sc-observability-types` directly. With default features its normal tree
-   contains no `sc-cron`; `--features cron` adds `sc-cron` without Monty, and
-   `--features monty` adds `sc-monty` without `sc-cron`; selecting both `cron` and `monty` also enables `sc-cron/monty`.
+6. The rendered project contains no file ending in `.j2` and no file from `wizard/` or `scripts/`.
+7. `grep -rn 'struct Stores' crates/` in a rendered project matches only under `crates/service/`.
+8. `template/` and the non-test source of the public crates contain no numeric TCP port literal (if the default-port question in Implementation Notes is decided for a default, the one registered value in `template/config/default.json` is exempt).
+9. A rendered daemon manifest names `sc-config`, `sc-transport`, `sc-command` with `server`, `sc-runtime`, `sc-observability` and `sc-observability-types` directly. With default features its normal tree contains no `sc-cron`; `--features cron` adds `sc-cron` without Monty; `--features monty` adds `sc-monty` without `sc-cron`; `cron` and `monty` together enable `sc-cron/monty`.
 
 ### Implementation Notes
 
 **Key Considerations:**
 
-- Implementation scope: whether the template renders a service definition for the daemon
-  (a launchd property list on macOS, and the Linux and Windows equivalents), and
-  where in the rendered project it lives, is not decided; the question is owned
-  by [REQ-RUN-0206](requirements.md), which needs such a definition for the
-  CLI's auto-start.
-- Implementation scope: whether v0.1 renders a default TCP port into
-  `config/default.json` is not decided. If it does, the port MUST come from
-  the range registered for the project in the synaptic-canvas port registry.
-- Implementation scope: whether the template renders a `config/local.json` file, or only
-  the `.gitignore` entry for one, is not stated. The keys of
-  `config/default.json` are not stated either.
+- Implementation scope: whether the template renders a daemon service definition (launchd property list on macOS, and the Linux and Windows equivalents), and where, is not decided; [REQ-RUN-0206](requirements.md) owns the question for the CLI's auto-start.
+- Implementation scope: whether v0.1 renders a default TCP port into `config/default.json` is not decided. If it does, that one value in `template/config/default.json` is exempt from the port-literal prohibition and comes from the project's range in the synaptic-canvas port registry.
+- Implementation scope: whether the template renders a `config/local.json` file or only its `.gitignore` entry, and the keys of `config/default.json`, are not stated.
 
 # Requirement: Template example operations `widget.create`, `widget.get`
 
