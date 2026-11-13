@@ -409,7 +409,7 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 - `crates/sc-runtime/src/builder.rs` MUST show `run()` building exactly one daemon router.
 - `run()` MUST build the daemon router after the instance lock on `daemon.lock` ([REQ-RT-0002](requirements.md)) is held.
 - `run()` MUST build the daemon router after the stores closure has returned.
-- `run()` MUST build the daemon router before it binds any listener.
+- `run()` MUST build the daemon router before the daemon listener is bound.
 - The daemon router MUST contain every item of the mount table whose condition holds.
 - The routes closure MUST return a `utoipa_axum::OpenApiRouter`.
 - The OpenAPI document served MUST be the one generated from the project's route registrations.
