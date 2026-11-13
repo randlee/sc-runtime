@@ -97,7 +97,7 @@ An independently packaged scheduler can be embedded without the generated templa
 
 ### Requirement Statement
 
-Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of five whitespace-separated fields in standard crontab order: minute, hour, day of month, month and day of week. The aliases and the six-field form of ADR-RUN-0013 point 2 stay valid; this record does not exclude them.
+Definitions: A schedule is the cron expression string stored with an sc-cron job. A normal crontab string is a cron expression of five whitespace-separated fields in standard crontab order: minute, hour, day of month, month and day of week. sc-cron accepts a string as a schedule when it takes the string as a job's schedule without returning an error. The aliases and the six-field form of ADR-RUN-0013 point 2 stay valid; this record does not exclude them.
 
 **MUST statements:**
 
