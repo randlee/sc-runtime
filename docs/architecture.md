@@ -553,8 +553,11 @@ Phase D applies the package rules to the full public package set in REQ-RUN-0002
    Cargo workspace of the repository `randlee/sc-runtime`.
 2. Each crate MUST be published separately to crates.io with its own version,
    README and tests, and MUST be usable without the template.
-3. `template/` MUST live in the same repository as the crates, so that
-   template CI can test the template against the crates at the same commit.
+3. In this release, `template/` lives in the same repository as the crates,
+   so that template CI can test the template against the crates at the same
+   commit. Whether the crates and `template/` stay in one repository is not
+   decided (sc-runtime PRD v2.1 section 9, "Repository shape"); this point
+   does not bind a repository shape after this release.
    `template/` MUST NOT be a member of the root Cargo workspace, because its
    files are `cargo-generate` template sources that contain placeholders and
    are not a compilable package until rendered.
@@ -664,7 +667,7 @@ One repository per crate from day one.
 
 **Why Rejected:**
 
-Rejected because a change that touches a crate and the template together could no longer be made and tested in one commit.
+Not adopted for this release, because a change that touches a crate and the template together could no longer be made and tested in one commit. It is not ruled out later: repository shape is not decided (sc-runtime PRD v2.1 section 9, "Repository shape").
 ### Implementation
 
 Enforced by: `req-qa` on [REQ-RUN-0001](requirements.md) (points 1 and 3: the public package set
