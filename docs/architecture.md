@@ -2678,7 +2678,7 @@ function returns `Result<Widget, OpError>`, and `OpError` is defined in
 names `api-types` structs.
 ### Decision
 
-The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on `<project>-schema` and on both store crates, and `service` depends on the adaptor. `daemon`, `cli`, `api-types` and `schema` do not depend on store crates.
+The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on `<project>-schema` and on both store crates, and `service` depends on the adaptor. Only `service` and the adaptor depend on store crates; `daemon`, `cli`, `api-types` and `schema` do not.
 
 The owner of these edges and of their criteria is
 [REQ-RUN-0301](requirements.md); this ADR records the decision behind them.
@@ -2695,7 +2695,7 @@ The owner of these edges and of their criteria is
    | `daemon` | `service`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; `api-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron`; optional `sc-monty` behind generated feature `monty` | design table and composition-root contract; handler/configuration types require the direct command/transport/types edges; the embedding application owns optional cron |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
-2. Only remote-engine `store-*` crates depend on sqlx. `daemon`, `cli`, `api-types` and `schema` do not depend on `store-*` crates. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on both `store-*` crates and `service` depends on the adaptor. Amended 2026-11-12.
+2. Only remote-engine `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates; `daemon`, `cli`, `api-types` and `schema` do not. On a one-store layout, `service` depends on that store. On a two-store layout, the adaptor depends on both `store-*` crates and `service` depends on the adaptor. Amended 2026-11-12.
 3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`. The adaptor holds the store handles it uses.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
    or on any framework crate from this repository.
