@@ -814,13 +814,16 @@ four library crates exist.
 
 **MUST statements:**
 
-- Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike MUST be rewritten to use them: its server is assembled with `sc_runtime::Daemon::builder()` and loads its configuration with `sc-config`, and its `clap` client connects with `sc_transport::Client` and parses responses as `sc_command::Envelope<T>`.
+- Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike server MUST be rewritten to assemble through `sc_runtime::Daemon::builder()`.
+- Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike server MUST be rewritten to load its configuration through `sc-config`.
+- Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike `clap` client MUST be rewritten to connect through `sc_transport::Client`.
+- Once `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` exist, the spike `clap` client MUST be rewritten to parse responses as `sc_command::Envelope<T>`.
 - The rewritten spike's server `main.rs` MUST be under 30 lines; that measurement is [REQ-RUN-0204](requirements.md).
 - The directory `examples/spike` MUST be deleted before the `v0.1.0` tag is created.
 
 **MUST NOT statements:**
 
-- The tree at the `v0.1.0` tag MUST NOT contain it.
+- The Git tree referenced by `v0.1.0` MUST NOT contain the `examples/spike` directory.
 
 ### Rationale
 
