@@ -3056,25 +3056,26 @@ The framework instantiates; each project wires. Published crates own daemon life
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. Generation flags are project-generation inputs naming tables or columns absent from one side of the two-store layout. A skipped table is a table present on only one of the two stores.
+Definitions: A two-store layout pairs a local SQLite store with a SQL-server store.
+A store is a database containing tables and rows.
+Generation flags are project-generation inputs that name tables or columns absent from one store in a two-store layout.
+A SQLite-only table exists in the SQLite store but not in the SQL-server store.
+A SQL-server-only table exists in the SQL-server store but not in the SQLite store.
+A one-sided column exists in a shared table in only one store.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
-
-Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.
+This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Database synchronization is deferred.
 
 **MUST statements:**
 
-- Generation flags name tables that exist on only one of the two stores.
-- Generation flags name columns that exist on only one of the two stores.
-- Generation flags MUST permit naming a table present only on the SQLite side.
-- Generation flags MUST permit naming a table present only on the SQL-server side.
+- The project generator MUST accept without error a flag naming a table present in only one store of a two-store layout.
+- The project generator MUST accept without error a flag naming a column present in only one store of a two-store layout.
+- The project generator MUST accept without error a flag naming a SQLite-only table.
+- The project generator MUST accept without error a flag naming a SQL-server-only table.
 
 ### Rationale
 
