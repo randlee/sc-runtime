@@ -1289,9 +1289,8 @@ constructs of point 3 reachable from public functions.
 
 - [NFR-RUN-0002](requirements.md): owner of the async rule, the banned blocking calls and
   their criteria.
-- [ADR-CFG-0003](sc-config/architecture.md): `sc-config` is synchronous and has two
-  dependencies.
-- [NFR-CFG-0003](sc-config/requirements.md): `sc-config` has a synchronous API in v0.1.
+- [ADR-CFG-0003](sc-config/architecture.md): the v0.1 load calls are synchronous and the Phase D deliverable has two dependencies.
+- [NFR-CFG-0003](sc-config/requirements.md): the v0.1 `sc-config` load calls are synchronous.
 - [REQ-TRN-0004](sc-transport/requirements.md): socket-file operations at bind time, which
   are outside the request path.
 - [REQ-RT-0005](sc-runtime/requirements.md): graceful shutdown, whose file operations are
@@ -1302,8 +1301,7 @@ constructs of point 3 reachable from public functions.
 Point 5 stands as scope: `sc-config` is synchronous today and nothing more is built. It does not take the option of async or reload away from a consumer; see the note on [ADR-CFG-0003](sc-config/architecture.md).
 
 A daemon built with these crates serves REST requests and MCP tool calls on
-one Tokio runtime, and reaches SQL through an `sqlx::Pool`, which is an async
-API. A Tokio worker thread serves many requests, so one blocking call in a
+one Tokio runtime and reaches application storage through the asynchronous `Storage<T>` contract. A Tokio worker thread serves many requests, so one blocking call in a
 handler or a service function stalls every other request scheduled on that
 worker. `sc-config`, in contrast, is called once at the top of `main`, before
 any request exists, and must stay usable by programs that have no async
@@ -1331,7 +1329,7 @@ in a separate cleanup task, not an initial unpublished-1.5.1 prerequisite.
 2. Every step on the path of a request MUST be an `async fn`: the REST
    handler (`crates/daemon/src/routes.rs`), the MCP tool
    (`crates/daemon/src/mcp.rs`), the service function (`crates/service`), and
-   the store query function, which awaits an `sqlx::Pool`.
+   the store query function, which awaits the shared `Storage<T>` implementation.
 3. Code on a request path MUST NOT block a Tokio runtime thread. The list of
    banned calls is owned by [NFR-RUN-0002](requirements.md).
 4. Decided in this document; not stated by the sc-runtime design: points 2
@@ -1342,9 +1340,7 @@ in a separate cleanup task, not an initial unpublished-1.5.1 prerequisite.
    `daemon.lock` lock, replacing a stale socket file when binding, removing
    the socket file on shutdown) are outside the request path and are not
    covered by point 3.
-5. `sc-config` is the deliberate exception. Its public API MUST be
-   synchronous, and it MUST NOT depend on `tokio`. Its `load` is called once
-   at start-up and is not on a request path.
+5. `sc-config` is the deliberate exception. Its v0.1 `load` and `Loader::load` calls are synchronous. Configuration is loaded once at start-up and not on a request path. This is what is built; it forbids neither an async API nor a later `tokio` dependency (PRD-ENG-5).
 
 ### Rationale
 
@@ -1354,9 +1350,7 @@ sc-runtime design, 2026-09-19: "everything is async end to end: handler, service
 
 Latency under load is not hostage to one slow blocking call. Every service
 function can be called from a REST handler and an MCP tool alike without a
-bridge. A CLI that only needs configuration does not link an async runtime
-for it. Reload, change notification and async interop for configuration, if
-built later, go into a separate crate that depends on `sc-config`.
+bridge. A CLI that only needs the Phase D configuration implementation does not link an async runtime for it. Future reload, change notification and async configuration remain open; this decision selects no later mechanism or crate placement.
 
 **Negative:**
 
@@ -1374,7 +1368,7 @@ Synchronous service functions run through `tokio::task::spawn_blocking`.
 
 Rejected because `sqlx::Pool` is already async, so this would add a bridge at every call for no gain.
 
-#### Alternative 2: An async `sc-config` for uniformity
+#### Alternative 2: An async `sc-config` for uniformity in the current deliverable
 
 **Description:**
 
@@ -1382,14 +1376,14 @@ An async `sc-config` for uniformity.
 
 **Why Rejected:**
 
-Rejected because it would bring `tokio` into every program that reads configuration once at start-up, including small CLIs.
+Not built in this deliverable because bringing `tokio` into every program that reads configuration once at start-up would affect small CLIs. This does not prohibit a later async configuration API or decide its dependencies.
 
 ### Implementation
 
 Enforced by: the inspection and grep criteria of
 [NFR-RUN-0002](requirements.md) over `crates/*/src` and `template`, including its
 criterion for the request paths of `crates/sc-transport` and
-`crates/sc-runtime`; the `tokio` entry in the forbidden edges of the
+`crates/sc-runtime`; the Phase D `tokio` entry in the forbidden edges of the
 `sc-config` boundary manifest ([REQ-RUN-0005](requirements.md)), checked by
 `sc-lint-boundary` through `just lint`; the signature inspection of `load` and
 `Loader::load` in [NFR-CFG-0003](sc-config/requirements.md).

@@ -641,24 +641,23 @@ code.
 
 ---
 
-## NFR-CFG-0002: `sc-config` depends only on `serde` and `serde_json`
+## NFR-CFG-0002: `sc-config` Phase D dependency footprint
 
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-This item binds `crates/sc-config/Cargo.toml`. It is the owner of the list of
-third-party crates `sc-config` may depend on. The edges between the crates of
+For the Phase D deliverable, this item binds `crates/sc-config/Cargo.toml` and owns its third-party dependency list. A later async or reload option is not forbidden and creates no work in Phase D (PRD-ENG-5/6). The edges between the crates of
 this workspace, the forbidden edges, and the boundary manifest under
 `boundaries/sc-config/` that encodes them are owned by
 [REQ-RUN-0005](../requirements.md), which refers to this item for the
 third-party list.
 
-4. The forbidden edges of `sc-config` are `sc-observability`,
+4. For Phase D, the forbidden edges of `sc-config` are `sc-observability`,
    `sc-observability-otlp` (the OTel export crate of `sc-observability`),
    `tokio`, `sc-transport`, `sc-command` and `sc-runtime`. The obligation,
    and the `forbidden_edges` entries of the boundary manifest that
@@ -666,19 +665,19 @@ third-party list.
    [REQ-RUN-0005](../requirements.md). This item adds only the `cargo tree`
    check in criterion 3.
 
-Decided: `[dev-dependencies]` is empty. Tests create a private directory
+For Phase D, `[dev-dependencies]` is empty. Tests create a private directory
 under `std::env::temp_dir` and remove it when the test ends. No third test
-crate is added.
+crate is added in Phase D.
 
 **MUST statements:**
 
-- The `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain exactly two entries: `serde` and `serde_json`.
+- For Phase D, the `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain exactly two entries: `serde` and `serde_json`.
 - The `ConfigError` type MUST be written by hand.
 
 **MUST NOT statements:**
 
-- `[dependencies]` MUST NOT contain optional dependencies.
-- `[dependencies]` MUST NOT contain target-specific dependency tables that add a third crate.
+- For Phase D, `[dependencies]` MUST NOT contain optional dependencies.
+- For Phase D, `[dependencies]` MUST NOT contain target-specific dependency tables that add a third crate.
 - `thiserror` MUST NOT be added.
 - `anyhow` MUST NOT be added.
 
@@ -694,12 +693,12 @@ that only wants to read a JSON file, and would make initialisation order
 circular: logging is configured from the values this crate loads.
 ### Success Criteria
 
-1. Inspection of `crates/sc-config/Cargo.toml`: the `[dependencies]` table has
+1. For Phase D, inspection of `crates/sc-config/Cargo.toml`: the `[dependencies]` table has
    the keys `serde` and `serde_json` and no others, and the file has no
    `[target.*.dependencies]` table.
-2. `cargo tree -p sc-config -e normal --depth 1` lists `serde` and
+2. For Phase D, `cargo tree -p sc-config -e normal --depth 1` lists `serde` and
    `serde_json` as the only direct dependencies.
-3. `cargo tree -p sc-config -e normal --prefix none` prints no line beginning
+3. For Phase D, `cargo tree -p sc-config -e normal --prefix none` prints no line beginning
    with `<name> ` (the crate name followed by a space) for each of these
    names: `sc-observability`, `sc-observability-otlp`, `tokio`,
    `sc-transport`, `sc-command`, `sc-runtime`, `thiserror`, `anyhow`. The
