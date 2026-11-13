@@ -450,7 +450,7 @@ minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
 The Phase D graph below follows PRD §4 and §6 and REQ-RUN-0002. Its boundary changes land with the corresponding code changes ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` when its table moves to `Storage<CronRow>`. Historical graph snapshots do not prohibit the shared-storage and interpreter edges required for Phase D. The SQLite writer is available to application storage composition; the runtime continues to accept application-owned stores without taking a concrete writer dependency.
 ### Requirement Statement
 
-Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The crate graph is the Phase D workspace dependency graph shown in the table below; it updates the earlier graph snapshots under REQ-RUN-0002 and ADR-RUN-0020/0021. A crate's additional dependency list is the list owned by its per-crate requirement named below. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The crate graph is the Phase D workspace dependency graph shown in the table below; it updates the earlier graph snapshots under REQ-RUN-0002 and ADR-RUN-0020/0021. A crate's additional dependency list is the list owned by its per-crate requirement named below. The crate graph table is the table in item 3. Its edges include allowed and forbidden edges with their feature and phase conditions. A crate's row is that crate's row of the crate graph table. The manifest format is the TOML key set listed in item 2. The sc-compose crates are the packages `sc-compose` and `sc-compose-*`, and their Rust library names such as `sc_compose`. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here.
 
 This requirement is decided in this document; the sc-runtime design does not
 state it.
@@ -504,14 +504,17 @@ lists `sc-runtime -> sc-config` under `forbidden_edges`.
 
 **MUST statements:**
 
-- For each crate in the public package set the repository MUST contain a boundary manifest: one or more TOML files under `boundaries/<crate>/` at the repository root, in the format read by the `sc-lint-boundary` tool.
-- Each manifest MUST record the crate's public facade (the items it exports) in `[public] facade`.
-- Each manifest MUST record its allowed dependents in `[dependencies]`.
-- Each manifest MUST record its allowed dependencies in `[dependencies]`.
-- Each manifest MUST record its forbidden edges in `[dependencies]`.
-- The manifests MUST encode exactly the table above.
-- ADR-RUN-0003 MUST mirror that table.
-- The crate graph in `docs/architecture.md` MUST mirror that table.
+- For each crate in the public package set, the repository MUST contain a boundary manifest.
+- Each boundary manifest MUST use the manifest format.
+- Each boundary manifest MUST list the items its crate exports in the `facade` key of its `[public]` table.
+- Each boundary manifest MUST list its crate's allowed dependents in the `allowed_dependents` key of its `[dependencies]` table.
+- Each boundary manifest MUST list its crate's allowed dependencies in the `allowed_dependencies` key of its `[dependencies]` table.
+- Each boundary manifest MUST list its crate's forbidden edges in the `forbidden_edges` key of its `[dependencies]` table.
+- The boundary manifests MUST encode exactly the crate graph table.
+- The crate dependency table in ADR-RUN-0003 MUST list the same crates as the crate graph table.
+- The crate dependency table in ADR-RUN-0003 MUST list the same edges as the crate graph table.
+- The crate graph in `docs/architecture.md` MUST list the same crates as the crate graph table.
+- The crate graph in `docs/architecture.md` MUST list the same edges as the crate graph table.
 - Every crate in the public package set MUST exclude sc-compose crate dependencies.
 - Every crate in the public package set MUST exclude ATM crate dependencies.
 - Every crate in the public package set MUST exclude sc-compose Rust imports.
