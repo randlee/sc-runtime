@@ -1185,7 +1185,7 @@ anything.
 
 ### Requirement Statement
 
-Definitions: The rewritten spike server main file is `examples/spike/server/src/main.rs`. Its startup sequence comprises configuration loading with `sc-config`, the `sc_runtime::Daemon::builder(...)` call chain and conversion of the run result into the process exit code.
+Definitions: The rewritten spike server main file is `examples/spike/server/src/main.rs`. Its startup sequence comprises configuration loading with `sc-config`, the `sc_runtime::Daemon::builder(...)` call chain and conversion of the run result into the process exit code. The configuration-loading call to `sc-config` is the call to `sc_config::load` that reads the spike's configuration into a struct.
 
 `examples/spike` is first written directly on `axum`, `utoipa-axum`, `rmcp`
 and `sqlx`, then rewritten on the four library crates `sc-config`,
