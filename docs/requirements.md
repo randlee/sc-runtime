@@ -4967,8 +4967,7 @@ rule changes from sc-lint and nothing in this repository changes.
 
 ### Requirement Statement
 
-Definitions: The template CI fixture matrix generates a project per answers fixture and runs just lint and just test in it. rmcp is the Model Context Protocol server crate. A tested floor is the lowest dependency version the project has tested. An upper bound excludes a later version.
-
+Definitions: rmcp is the Model Context Protocol server crate. A covered manifest is a published crate manifest under `crates/` or a manifest under `template/`. A registry requirement is a dependency entry in a Cargo.toml that resolves the crate from crates.io. A tested floor is a `>=` version requirement naming the lowest dependency version the project has tested. An upper bound is a version requirement part that excludes a later version. The selected `rmcp` version is the `rmcp` version recorded in the sc-runtime `Cargo.lock`. The normal test suite is `just test` run in the sc-runtime repository. The template CI fixture matrix generates a project per answers fixture and runs `just lint` and `just test` in it. The release-tested dependency combination is the set of locked dependency versions with which the normal test suite and the template CI fixture matrix passed for the delivered release. A generated project is a project rendered from `template/`.
 
 This requirement covers published crate manifests under `crates/` and manifests under `template/` rendered into generated projects. Phase A used a single minor-version pin; Phase D supersedes that policy. Consumers may pin versions in their own manifests and lockfiles.
 
@@ -4976,22 +4975,22 @@ This requirement covers published crate manifests under `crates/` and manifests 
 **MUST statements:**
 
 
-- Each published crate and template registry requirement for `rmcp` MUST declare a tested floor of at least 3.9.
+- Each `rmcp` registry requirement in a covered manifest MUST declare a tested floor of at least 3.9.
 
-- Changes to the selected `rmcp` version MUST be validated by the normal test suite.
+- The selected `rmcp` version MUST pass the normal test suite.
 
-- Changes to the selected `rmcp` version MUST be validated by the template CI fixture matrix.
+- The selected `rmcp` version MUST pass the template CI fixture matrix.
 
-- The generated `Cargo.lock` MUST recommend the release-tested dependency combination.
+- The `Cargo.lock` of each generated project MUST list the release-tested dependency combination.
 
-- `.sc-runtime/tested-dependencies.json` MUST record the release-tested dependency combination.
+- The `.sc-runtime/tested-dependencies.json` file of each generated project MUST list the release-tested dependency combination.
 
 
 
 **MUST NOT statements:**
 
 
-- Published crate and template registry requirements for `rmcp` MUST NOT declare an upper bound.
+- Each `rmcp` registry requirement in a covered manifest MUST NOT declare an upper bound.
 
 
 ### Rationale
