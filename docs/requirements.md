@@ -3431,18 +3431,18 @@ Owner (ANC-014): "it would be optional set of standard cron commands to set up c
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: The v0.1 option set consists of project name, db, mcp and licence, exactly as listed in the Option table. An option is a property of the generation answers object; JSON Schema specifies that object.
+Definitions: The v0.1 option set consists of project name, db, mcp and licence. The Phase C option set adds cron and cron_commands. An option is a property of the generation answers object; JSON Schema specifies that object.
 
 An answers object is the JSON file that drives project generation; it is written by hand, by an agent, or by the Wyvern wizard under `wizard/`.
 
 No other file in the repository may introduce an option that is absent from the schema.
 
-This item owns the list of v0.1 options. That the v0.1 list is closed is decided in this document.
+This item owns the generation option list. The v0.1 list was closed; Phase C adds `cron` and `cron_commands` as required by [REQ-RUN-0332](requirements.md) and [REQ-CRNC-0002](sc-cron-commands/requirements.md).
 
 | Option | JSON type | Values the schema lists |
 |---|---|---|
@@ -3450,6 +3450,8 @@ This item owns the list of v0.1 options. That the v0.1 list is closed is decided
 | `db` | string | `none`, `sqlite`, `postgres`, `mysql`, `sqlite-postgres`, `sqlite-mysql` |
 | `mcp` | boolean | `true`, `false` |
 | licence | string | the licence of the generated project's crates; default `MIT` when the answers object does not supply it |
+| `cron` (Phase C) | boolean | `true`, `false`; default `false` |
+| `cron_commands` (Phase C) | boolean | `true`, `false`; default `false`; `true` requires `cron = true` |
 
 The licence option is decided by the owner on 2026-09-20. `MIT` is only the default.
 
@@ -3482,19 +3484,28 @@ The generator is used for projects that are not MIT licensed and not open source
 - In v0.1 the schema MUST define the `db` option described by its row in the Option table.
 - In v0.1 the schema MUST define the `mcp` option described by its row in the Option table.
 - In v0.1 the schema MUST define the licence option described by its row in the Option table.
+- In Phase C the schema MUST define the `cron` option described by its row in the Option table.
+
+- In Phase C the schema MUST define the `cron_commands` option described by its row in the Option table.
+
+- The schema MUST require `cron = true` when `cron_commands = true`.
 - The licence of a generated project MUST be an input.
-- The schema MUST carry a schema version, because it is a published contract: the sc-lint project reads the same answers object and the same schema to install lint and `just` infrastructure into a generated project.
+- The schema MUST carry a schema version (an identifier for the version of the published answers schema).
 - The driver MUST read option names from the schema.
 - The driver MUST read option defaults from the schema.
 
 **MUST NOT statements:**
 
-- In v0.1 the schema MUST NOT define any other option.
+- In v0.1 the schema MUST NOT define any option beyond the four v0.1 options.
+
+- In Phase C the schema MUST NOT define any generation option beyond the six options in the Option table.
 - The template MUST NOT fix the licence of a generated project.
 - The driver MUST NOT hold its own list of option names.
 - The driver MUST NOT hold its own list of option defaults.
 
 ### Rationale
+
+The schema is a published contract: the sc-lint project reads the same answers object and schema to install lint and `just` infrastructure into a generated project.
 
 The wizard, the driver, `template/cargo-generate.toml` and sc-lint all need
 the option set. One definition is the only way they cannot disagree. The
@@ -3512,10 +3523,12 @@ and sc-lint, so the schema is versioned like any other published contract.
    name exists, and that a string property for the licence exists whose
    default is `MIT` (its key name follows the licence OPEN above). Amended
    2026-10-25.
-3. The same test asserts that the top-level `properties` object has exactly
-   four keys: `db`, `mcp`, the project-name key and the licence key. Once the
-   way the schema version is carried is decided: if it is carried as a
-   property, that key is the only permitted fifth key.
+3. For v0.1, the test asserts that the top-level `properties` object has exactly
+   four option keys: `db`, `mcp`, the project-name key and the licence key.
+   For Phase C, it asserts those four keys plus `cron` and `cron_commands`,
+   and checks both defaults and the `cron_commands` dependency on `cron`.
+   If the schema version is carried as a property, its key is the only
+   additional permitted key.
 4. The same test asserts that the schema version is present and non-empty.
 5. Inspection: `scripts/new_project.py` contains no list of option names or
    option defaults of its own; it reads both from the schema. Sprint `b-8`
