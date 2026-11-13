@@ -168,7 +168,7 @@ sides agree on the shape at compile time.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006). A suggestion is the non-empty recovery text an `OpError` is built with. Default features are the Cargo features of `sc-command` that are on when a dependent gives no `features` or `default-features` key. A type implements a trait when a compile-time check in a test that requires the bound `Type: Trait` compiles; a macro-generated impl satisfies it the same way. The crate root exports `OpError` when a compile-time check in a test containing `use sc_command::OpError;` compiles, and `OpError` is available with default features when that check compiles in a build with default features. The remediation value of an `OpError` is the value inside `Some` of its `remediation` field. `Remediation` and `RecoverableSteps` are the `sc-observability-types` remediation types that Success Criterion 6 names.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006). A suggestion is the non-empty recovery text an `OpError` is built with. Default features are the Cargo features of `sc-command` that are on when a dependent gives no `features` or `default-features` key. A type implements a trait when a compile-time check in a test that requires the bound `Type: Trait` compiles; a macro-generated impl satisfies it the same way. The crate root exports `OpError` when a compile-time check in a test containing `use sc_command::OpError;` compiles, and `OpError` is available with default features when that check compiles in a build with default features. The remediation value of an `OpError` is the value inside `Some` of its `remediation` field. `Remediation` and `RecoverableSteps` are the `sc-observability-types` remediation types that Success Criterion 6 names. A statement about what a generated CLI, daemon or function returns is verified by a unit test; a statement about the contents of a file is verified by reading that file. A round trip of a `details` value is deserialising it as part of `OpError` and then serialising it.
 
 Dependency requirement: `sc-command` declares registry `sc-observability-types`
 with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002, ANC-037).
@@ -237,7 +237,7 @@ The tested minimum is 1.5.0.
 
 **MUST statements:**
 
-- `OpError` MUST be a public type, as declared in `crates/sc-command/src/`.
+- The declaration of `OpError` in `crates/sc-command/src/` MUST be `pub`.
 - The crate `sc-command` MUST export `OpError` from its crate root.
 - `sc_command::OpError` MUST be available with default features.
 - `OpError` MUST serialise to a JSON object whose key set contains the five wire keys.
@@ -262,7 +262,7 @@ The tested minimum is 1.5.0.
 - When an `OpError` is built with a suggestion, the JSON string value of `suggested_action` MUST equal the suggestion.
 - A remediation value that `OpError` holds or is built from, as declared in `crates/sc-command/src/`, MUST be of type `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
 - The Rust type of the `details` field of `OpError`, as declared in `crates/sc-command/src/`, MUST be `Option<serde_json::Value>`.
-- Serialising the `details` field after deserialising it as part of `OpError` MUST produce an equal JSON value.
+- A round trip of a `details` value MUST produce an equal JSON value.
 
 **MUST NOT statements:**
 
