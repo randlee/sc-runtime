@@ -847,106 +847,71 @@ Phase C approved target contract (planned, not implemented).
 
 ### Requirement Statement
 
-Definitions: DTO means data transfer object; adapter DTOs are the command request/response representations owned by sc-cron-commands rather than the native CronOperations port. A permit is one admission-capacity slot held by an admitted public operation. Physical completion is completion of the actual worker or command, rather than completion of its async waiter. The fixed unsupported error is the default response of a legacy store without the new capability. G is the grace deadline and K is the cleanup deadline. WorkerHandle owns framework worker joins. A transport timeout is expiry of the caller-facing request wait; it does not complete the underlying storage mutation. The earliest applicable deadline is the minimum of the parent deadline and requested child deadline. A live scope is the shared StoreOperationContext carrying current stop, deadline and cancellation state. StoreOperationContext is the context input to each CronOperations start, end and query operation. Ascending stable id continuation is pagination in ascending schedule-row id order, with the prior page's continuation id excluded from the next page. A positive capped query limit is an integer from 1 through 1000 specifying the maximum returned rows; a limit outside that range is rejected.
-
-The standard Scheduler path has finite shared intake for public context-aware
-start/end/query roots: default64, validated pre-start capacity 1..=65536,
-immediate fixed typed unavailable refusal before registered/queued work when
-full. One permit remains owned through actual physical completion even when
-its async waiter is dropped. Stop/deadline/cancellation admission is atomic;
-no hidden capacity-wait queue or automatic replay. Worker dispatch and restricted
-internal cleanup retain separate existing ownership and cannot serve as a
-public-command bypass. This completes REQ-CRON-0020's admission promise under
-NFR-RUN-0002 and ADR-RUN-0018; it does not alter embedder row limits or impose
-this mechanism on custom CronOperations/CronExecutor policy. The Phase C
-contract defines exact configuration, reason mapping and causal proof owners.
-
-The scheduler provides async context-aware start, generation-fenced stop and
-query operations using the same tracked admission and cancellation protocol.
-They are required by standard command execution; transport timeout cannot detach
-a blocking mutation. A bounded query supports active/ended/all selection,
-optional name, ascending stable id continuation and a positive capped limit.
-It reads the existing table; `list_active` alone cannot satisfy this contract.
-A legacy store's new capability defaults to a fixed unsupported error. End by
-name resolves a specific id/generation and cannot end a replacement generation.
-The public object-safe native CronOperations port returns boxed Result futures
-for start/end/query with StoreOperationContext; it carries no adapter DTOs.
-Scheduler's real implementation belongs to c-5. with_deadline derives a child
-sharing stop/admission state and the earliest deadline; no independent registry.
-No new job kind, job registry, second database or arbitrary hard-delete command
-is implied. Ordinary registration continues through REQ-CRON-0003 APIs.
-
-C1 application-owned control construction:
-
-The ordinary-feature `WorkerStopControl::new()` factory creates a live
-operation scope inside its owning Tokio runtime, without a Scheduler,
-framework worker or test-utils. Applications implementing CronOperations own
-intake, physical work and joins. After requesting stop and physically joining
-that work, `finish_application_shutdown()` acknowledges completion and
-revokes existing and newly obtained scopes even when G was in the future.
-The runtime must remain alive for independent status notifications. A checked
-ShutdownBudget has private fields and read-only grace()/cleanup() accessors;
-K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.
+Definitions: `sc-cron` is the crate in `crates/sc-cron`. The Scheduler is `sc_cron::Scheduler`. A public operation is one call of `Scheduler::start_with_context`, `Scheduler::stop_with_context` or `Scheduler::query_with_context`. Command capacity is the maximum number of public operations on one Scheduler that hold a permit at the same time. A permit is one command-capacity slot, taken when a public operation is admitted and released once when its store work physically completes. Physical completion is the return of the store work a public operation started, independent of whether the future awaiting the operation is still polled or has been dropped. The capacity refusal is `CronError::Store` with `StoreErrorKind::Unavailable` and reason `command_capacity_exhausted`. The fixed unsupported error is `CronError::Store` with `StoreErrorKind::Unavailable` and reason `schedule_query_unsupported`. A legacy store is a `ScheduleStore` implementation that does not override `ScheduleStore::query`. Admission is the single step of a public operation that checks stop, deadline, cancellation and a free permit before the operation registers or queues work. Atomic admission means no stop request, deadline expiry or cancellation can take effect between the admission check and the permit being taken. Registering work is inserting the operation into the Scheduler's operation registry; queuing work is submitting it to the blocking pool. A capacity-wait queue is any structure that holds a refused public operation until a permit frees. Automatic replay is re-running an admitted mutation without a new caller request. Private worker dispatch is the path a Scheduler worker uses for scheduled jobs and its own load, reload and bookkeeping store calls. Restricted internal cleanup is the terminal cleanup run by `WorkerStopControl` after stop is requested. A transport timeout is expiry of the caller-facing wait on a public operation; it does not complete the underlying store mutation. A blocking mutation is store write work queued by a public start or stop. `StoreOperationContext` is the `sc-cron` type carrying the shared stop, deadline and cancellation state passed to each operation. `ScheduleQuery` is the query input with fields `selection` (`Active`, `Ended` or `All`), `name: Option<ScheduleName>`, `after_id: Option<ScheduleId>` and `limit: u32`. A generation is the `Generation` value that identifies one incarnation of a schedule name; the active generation is the latest incarnation that has not ended. `CronOperations` is the public `sc-cron` trait with methods `start`, `end` and `query`. `CronOperationFuture<'a, T>` is `Pin<Box<dyn Future<Output = Result<T, CronError>> + Send + 'a>>`. `sc-cron-commands` is the command adapter crate in `crates/sc-cron-commands`. G is the grace deadline passed to `ShutdownBudget::new` as `grace`, and K is the cleanup deadline passed as `cleanup`. `WorkerHandle` is the `sc-cron` handle returned by `Scheduler::spawn_worker`; a framework worker is a worker started by `Scheduler::spawn_worker`. An application `CronOperations` implementation is a type outside this repository that implements `CronOperations`. A Tokio runtime is a `tokio::runtime::Runtime` executing async tasks. `test-utils` is the `sc-cron` Cargo feature that enables `ManualClock` and `SeqJitter` for tests. Dyn-compatible means usable as a `dyn` trait object type under the Rust reference's dyn-compatibility rules.
 
 **MUST statements:**
 
-- The standard Scheduler public start/end/query intake MUST have default capacity 64.
-- A pre-start capacity override MUST be validated in 1..=65536.
-- When intake is full, the scheduler MUST refuse the operation immediately with the fixed typed unavailable error.
-- An admitted permit MUST remain owned until actual physical completion even after its async waiter is dropped.
-- Stop/deadline/cancellation admission MUST be atomic.
-- The scheduler MUST provide async context-aware start under the tracked admission and cancellation protocol.
-- The scheduler MUST provide async generation-fenced stop under the tracked admission and cancellation protocol.
-- The scheduler MUST provide async context-aware query under the tracked admission and cancellation protocol.
-- Bounded query MUST support active selection.
-- Bounded query MUST support ended selection.
-- Bounded query MUST support selection of all schedules, active and ended.
-- Bounded query MUST support an optional name filter.
-- Bounded query MUST use ascending stable id continuation.
-- Bounded query MUST enforce a positive capped limit.
-- Query MUST read the existing table.
-- A legacy store capability default MUST return the fixed unsupported error.
-- End by name MUST resolve a specific id.
-- End by name MUST resolve that schedule incarnation's generation.
-- The CronOperations port MUST be object-safe.
-- The CronOperations start operation MUST take a StoreOperationContext.
-- The CronOperations start operation MUST return a boxed future whose output is a Result.
-- The CronOperations end operation MUST take a StoreOperationContext.
-- The CronOperations end operation MUST return a boxed future whose output is a Result.
-- The CronOperations query operation MUST take a StoreOperationContext.
-- The CronOperations query operation MUST return a boxed future whose output is a Result.
-- with_deadline MUST derive a child sharing stop state.
-- The with_deadline child MUST share admission state.
-- The with_deadline child MUST use the earliest applicable deadline.
-- WorkerStopControl::new MUST create a live scope within its owning Tokio runtime.
-- Application CronOperations implementations MUST own intake.
-- Application CronOperations implementations MUST own physical work.
-- Application CronOperations implementations MUST own joins.
-- After stop and physical join, finish_application_shutdown MUST revoke existing scopes, even when the grace deadline G is in the future.
-- After stop and physical join, finish_application_shutdown MUST revoke newly obtained scopes, even when the grace deadline G is in the future.
-- The Tokio runtime owning WorkerStopControl MUST remain alive.
-- ShutdownBudget MUST have private fields.
-- ShutdownBudget MUST provide a read-only grace() accessor.
-- ShutdownBudget MUST provide a read-only cleanup() accessor.
-- ShutdownBudget MUST reject K before G.
-- Framework workers MUST retain WorkerHandle-owned joins.
+- The Scheduler MUST start with command capacity 64 when `Scheduler::with_command_capacity` is not called.
+- When `Scheduler::with_command_capacity` receives a capacity outside 1..=65536, `Scheduler::with_command_capacity` MUST return an error.
+- When every permit is held, a public operation MUST return the capacity refusal.
+- A permit MUST stay held until physical completion of its public operation after the future awaiting that operation is dropped.
+- Admission MUST be atomic.
+- `Scheduler::start_with_context` MUST have the signature `async fn start_with_context(&self, spec: ScheduleSpec, context: StoreOperationContext) -> Result<Schedule, CronError>`.
+- `Scheduler::stop_with_context` MUST have the signature `async fn stop_with_context(&self, id: ScheduleId, generation: Generation, reason: String, context: StoreOperationContext) -> Result<Schedule, CronError>`.
+- When the given `Generation` is not the active generation of the schedule with the given `ScheduleId`, `Scheduler::stop_with_context` MUST return `CronError::Fenced`.
+- `Scheduler::query_with_context` MUST have the signature `async fn query_with_context(&self, query: ScheduleQuery, context: StoreOperationContext) -> Result<SchedulePage, CronError>`.
+- When `ScheduleQuery::selection` is `Active`, `Scheduler::query_with_context` MUST return only rows of schedules that have not ended.
+- When `ScheduleQuery::selection` is `Ended`, `Scheduler::query_with_context` MUST return only rows of ended schedules.
+- When `ScheduleQuery::selection` is `All`, `Scheduler::query_with_context` MUST return rows without filtering on whether a schedule has ended.
+- When `ScheduleQuery::name` is set, `Scheduler::query_with_context` MUST return only rows with that `ScheduleName`.
+- `Scheduler::query_with_context` MUST return rows in ascending `ScheduleId` order.
+- When `ScheduleQuery::after_id` is set, `Scheduler::query_with_context` MUST return only rows whose `ScheduleId` is greater than `after_id`.
+- When `ScheduleQuery::limit` is outside 1..=1000, `Scheduler::query_with_context` MUST return an error.
+- `Scheduler::query_with_context` MUST return at most `ScheduleQuery::limit` rows.
+- `Scheduler::query_with_context` MUST read the existing schedule table.
+- When called on a legacy store, `ScheduleStore::query` MUST return the fixed unsupported error.
+- When `CronOperations::end` returns `Ok`, `EndedSchedule::id` MUST equal the id of the schedule row with name `EndSchedule::name` and generation `EndSchedule::generation`.
+- When `CronOperations::end` returns `Ok`, `EndedSchedule::generation` MUST equal `EndSchedule::generation`.
+- The `CronOperations` trait definition MUST be dyn-compatible.
+- `CronOperations::start` MUST take a `StoreOperationContext` argument.
+- `CronOperations::start` MUST return `CronOperationFuture<'_, Schedule>`.
+- `CronOperations::end` MUST take a `StoreOperationContext` argument.
+- `CronOperations::end` MUST return `CronOperationFuture<'_, EndedSchedule>`.
+- `CronOperations::query` MUST take a `StoreOperationContext` argument.
+- `CronOperations::query` MUST return `CronOperationFuture<'_, SchedulePage>`.
+- When stop is requested on a parent `StoreOperationContext`, `stop_requested()` on a child returned by the parent's `with_deadline` MUST return true.
+- When `StoreOperationContext::with_deadline(deadline)` is called, `deadline()` on the returned child MUST return the earlier of the parent deadline and `deadline`.
+- When called inside a Tokio runtime, `WorkerStopControl::new()` MUST return `Ok`.
+- When `WorkerStopControl::new()` has returned `Ok`, `check()` on a `StoreOperationContext` from `WorkerStopControl::operation_context()` MUST return `Ok`.
+- When no Scheduler exists, `WorkerStopControl::new()` called inside a Tokio runtime MUST return `Ok`.
+- When no framework worker is running, `WorkerStopControl::new()` called inside a Tokio runtime MUST return `Ok`.
+- An application `CronOperations` implementation MUST perform admission of calls made to the implementation.
+- An application `CronOperations` implementation MUST execute the store work of calls made to the implementation.
+- Before calling `WorkerStopControl::finish_application_shutdown()`, an application MUST join all store work started by the application's `CronOperations` implementation.
+- After `WorkerStopControl::finish_application_shutdown()` returns `Ok`, `check()` on every `StoreOperationContext` returned by `WorkerStopControl::operation_context()` before the call MUST return an error.
+- After `WorkerStopControl::finish_application_shutdown()` returns `Ok`, `check()` on every `StoreOperationContext` returned by `WorkerStopControl::operation_context()` after the call MUST return an error.
+- While a receiver from `WorkerStopControl::subscribe_status()` is read, the Tokio runtime that called `WorkerStopControl::new()` MUST stay running.
+- `ShutdownBudget` MUST have only private fields.
+- `ShutdownBudget::grace()` MUST return the `grace` value passed to `ShutdownBudget::new`.
+- `ShutdownBudget::cleanup()` MUST return the `cleanup` value passed to `ShutdownBudget::new`.
+- `ShutdownBudget::new` MUST return an error when K is earlier than G.
+- Joins of framework workers MUST go through `WorkerHandle`.
 
 **MUST NOT statements:**
 
-- When intake is full, the scheduler MUST NOT register work for the refused operation.
-- When intake is full, the scheduler MUST NOT queue work for the refused operation.
-
-- WorkerStopControl::new MUST NOT require a Scheduler.
-- WorkerStopControl::new MUST NOT require a framework worker.
-- WorkerStopControl::new MUST NOT require test-utils.
-- The standard path MUST NOT create a hidden capacity-wait queue.
-- The standard path MUST NOT automatically replay work.
-- Public commands MUST NOT bypass public command admission through private worker dispatch.
-- Public commands MUST NOT bypass public command admission through restricted internal cleanup.
-- Transport timeout MUST NOT detach a blocking mutation.
-- End by name MUST NOT end a replacement generation.
-- CronOperations MUST NOT carry adapter DTOs.
-- with_deadline MUST NOT create an independent registry.
+- When every permit is held, a refused public operation MUST NOT register work.
+- When every permit is held, a refused public operation MUST NOT queue work.
+- `WorkerStopControl::new()` MUST NOT be gated by the `test-utils` feature.
+- `ShutdownBudget` MUST NOT have a method that takes `&mut self`.
+- The Scheduler MUST NOT hold a refused public operation in a capacity-wait queue.
+- The Scheduler MUST NOT perform automatic replay of an admitted mutation.
+- When every permit is held, private worker dispatch MUST NOT perform store work for a refused public operation.
+- When every permit is held, restricted internal cleanup MUST NOT perform store work for a refused public operation.
+- A transport timeout MUST NOT release the permit of a blocking mutation before physical completion.
+- When `EndSchedule::generation` is older than the active generation of the schedule named `EndSchedule::name`, `CronOperations::end` MUST NOT change the schedule row of the active generation.
+- `CronOperations` method signatures MUST NOT contain a type defined in `sc-cron-commands`.
+- Calls made with a child returned by `StoreOperationContext::with_deadline` MUST NOT take a permit in addition to the parent's permit.
+- `StoreOperationContext::with_deadline` MUST NOT create a registry separate from the parent's registry.
 
 ### Rationale
 
@@ -960,3 +925,5 @@ This completes the existing pre-submission admission/physical-ownership promise 
 ### Implementation Notes
 
 Phase C approved target contract (planned, not implemented).
+
+Scope: Standard command execution requires these operations. `list_active` alone does not satisfy the query obligations. Command capacity does not change embedder row limits and does not apply to application `CronOperations` or `CronExecutor` implementations. No new job kind, job registry, second database or arbitrary hard-delete command is implied. Ordinary registration continues through REQ-CRON-0003 APIs. The Phase C compatibility contract defines exact configuration, reason mapping and causal proof owners; the Scheduler implementation belongs to sprint c-5.
