@@ -3234,9 +3234,9 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-postgres`.
 - The `db` enum in `wizard/answers.schema.json` MUST contain `sqlite-mysql`.
 - Generating a layout MUST create a `crates/<store>` directory for each store in its table row.
-- Every no-database project MUST contain no store directory.
+- When a project is rendered with the `no database` layout, the project MUST contain no store directory.
 - A generation request with cron enabled and the `no database` layout MUST be rejected before template rendering.
-- Every two-store project MUST contain a `crates/store-adaptor` directory.
+- When a project is rendered with a two-store layout, the project MUST contain a `crates/store-adaptor` directory.
 - A rendered project of a layout with fewer than two stores MUST contain no `crates/store-adaptor` directory.
 - `store-postgres` MUST use `sqlx` for PostgreSQL storage.
 - `store-mysql` MUST use `sqlx` for MySQL storage.
