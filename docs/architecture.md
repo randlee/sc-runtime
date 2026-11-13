@@ -284,8 +284,9 @@ with it.
 Permit only cron's normal `sc-command` 0.2.0 Phase C edge (initial-release
 0.1.1 retained as historical evidence) with defaults disabled and no
 features. Command allowed_dependents becomes exactly runtime+cron. Runtime
-uses its existing server-enabled command edge. Restore the original cron
-forbidden edge and runtime-only command dependent at cleanup. All other
+uses its existing server-enabled command edge. Cleanup does not forbid
+cron's edges to other workspace crates (PRD section 10 line 4, PRD-MONTY-2,
+PRD-CRON-2). All other
 workspace boundaries, all five SDK normal/build/transitive full-runtime/OTLP
 exclusions, and absolute sc-compose/ATM package/import exclusions remain.
 The neutral event receiver is the sole exception to command's handler-trait
@@ -326,15 +327,14 @@ indeterminate discovery fails release closed. A published matching 1.5.1 pair
 must pass an isolated registry signature/direct `Arc<Logger>` to upstream
 SharedCanonicalLog probe. Published incompatibility blocks release for
 remediation; working capability makes shim mode fail until cleanup removes the
-local trait, inline adapter, exact pins and cron-command edge and restores the
-original boundary. A version number alone never proves capability.
+local trait, the inline adapter and any exact pins. A version number alone never proves capability.
 
 The local and upstream traits are nominally different. Retain a command source
 path re-export only if representative current-consumer/custom-impl and new
 upstream probes prove the supported selection and an explicit version strategy
 requires it. No old/new SDK identity promise follows from a re-export. Choose
-a coordinated breaking SDK minor if compatibility requires it; no permanent
-adapter, second contract or cron edge may remain. The bounded owned paths,
+a coordinated breaking SDK minor if compatibility requires it; after cleanup,
+no second contract and no shim adapter remain. The bounded owned paths,
 commands and proof order are in the [implementation plan](plans/phase-b/initial-release-observability-shim.md).
 This documentation amendment claims no implementation, QA or publication pass.
 
@@ -347,8 +347,8 @@ ANC-037); an exact `=` pin, a tilde requirement or an explicit `<` limit is an
 upper bound. The normal build and test suite checks compatibility at the
 selected versions, including the fixed `"noop"` ServiceName invariant, and the
 release lock records the versions tested. The registry-availability,
-signature and forced-cleanup probes above gate only the historical 0.1.1
-release and do not gate Phase D. The two panic-policy changes and the foreign
+signature and forced-cleanup probes above apply at each Phase D readiness run,
+as they did for the 0.1.1 release. The two panic-policy changes and the foreign
 EventError exception above apply unchanged in Phase D.
 
 ### Rationale
