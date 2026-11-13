@@ -220,6 +220,7 @@ Application-supplied hooks and value adapters let the reusable scheduler execute
 ## REQ-CRON-0004: Application schedule storage and compiled-session cache
 
 **Status:** Active  
+**Last Updated:** 2026-11-12
 
 ### Requirement Statement
 
