@@ -2068,7 +2068,7 @@ each tool does the job it is built for and no render engine is written here.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py. This path means direct cargo generate from the template/ tree, without scripts/new_project.py or Wyvern. sc-compose is the agent-document renderer used by the driver, not by the direct cargo-generate path. The command referred to here is cargo generate --git https://github.com/randlee/sc-runtime template --name <project>. Files that exist only for this path are files maintained exclusively for direct generation rather than shared with the driver's template tree. The generated project is the Cargo workspace rendered from this repository's template/ subtree. <project> is the project name supplied through cargo-generate's --name option.
+Definitions: ADR means architecture decision record. The direct path is the cargo generate command below, run without the generation driver. The template tree is template/, also used by scripts/new_project.py. This path means direct cargo generate from the template/ tree, without scripts/new_project.py or Wyvern. sc-compose is the agent-document renderer used by the driver, not by the direct cargo-generate path. The direct command is `cargo generate --git https://github.com/randlee/sc-runtime template --name <project>`. An option is a choice the template offers, declared as a placeholder in `template/cargo-generate.toml`. Wyvern is the wizard that `just new` runs by default. Files that exist only for this path are files maintained exclusively for direct generation rather than shared with the driver's template tree. The generated project is the Cargo workspace rendered from this repository's template/ subtree. <project> is the project name supplied through cargo-generate's --name option.
 
 The normal way to generate a project is `just new <dest>`, which runs the
 driver `scripts/new_project.py` and, by default, the Wyvern wizard. This
@@ -2094,10 +2094,11 @@ on cargo-generate 0.25.1. The syntax and pin are in Active
 
 **MUST statements:**
 
-- `cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST render the `template/` subtree as a Cargo workspace named `<project>`.
-- That command MUST prompt in the terminal for each option.
+- The direct command MUST render the `template/` subtree as a Cargo workspace named `<project>`.
+- The direct command MUST prompt in the terminal for each option.
 - Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.
-- Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.
+- Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`.
+- Where an option has a default, its placeholder `default` in `template/cargo-generate.toml` MUST be identical to that option's default in `wizard/answers.schema.json`.
 - The template tree MUST be the same one the driver uses.
 - Accepting every default MUST produce a project in which `cargo build --workspace` exits 0.
 
@@ -2110,7 +2111,7 @@ on cargo-generate 0.25.1. The syntax and pin are in Active
 - The direct `cargo generate` path MUST NOT require any file under `scripts/`.
 - There MUST NOT be a second template that exists only for this path.
 - There MUST NOT be a branch that exists only for this path.
-- There MUST NOT be files that exist only for this path.
+- The repository MUST NOT contain a file that exists only for the direct path.
 
 ### Rationale
 
