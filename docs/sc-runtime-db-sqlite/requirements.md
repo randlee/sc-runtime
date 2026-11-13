@@ -7,42 +7,46 @@
 ## REQ-DBSQ-0001: Workspace member
 
 **Status:** Active  
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-The async input needs an async channel, so `rusqlite` will not be the only dependency.
+Definitions: The dependency list is the crate's normal and build dependencies in `crates/sc-runtime-db-sqlite/Cargo.toml`; dev-dependencies are not part of it. A third-party dependency is a dependency that is not a workspace member. sc-storage is the workspace crate that defines the shared `Storage<T>` trait ([REQ-RUN-0002](../requirements.md)). Tokio is the `tokio` crate, which supplies the bounded async channel and awaited reply of the async input ([REQ-DBSQ-0002](#req-dbsq-0002-public-items), PRD-STO-3).
 
-`crates/sc-runtime-db-sqlite` is a workspace member. This item owns its third-party dependencies: `rusqlite` with the `bundled` feature, and no other dependency. It depends on no other workspace crate. [REQ-RUN-0005](../requirements.md) point 4 points here.
+`crates/sc-runtime-db-sqlite` is a workspace member. This item owns its dependency list. Implementing `Storage<T>` with an async input needs the `Storage<T>` trait and an async channel, so the list is exactly `rusqlite` with the `bundled` feature, `tokio`, and the workspace crate `sc-storage`. Until the async input lands (code-alignment STO-2), the code depends on `rusqlite` alone; that is the code as it is, not the target. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
 **MUST statements:**
 
 - `crates/sc-runtime-db-sqlite` MUST be a workspace member.
-- The dependency list described here MUST contain `rusqlite` with the `bundled` feature.
+- The dependency list MUST contain `rusqlite` with the `bundled` feature.
+- The dependency list MUST contain `tokio`.
+- The dependency list MUST contain the workspace crate `sc-storage`.
 
 **MUST NOT statements:**
 
-- The dependency list described here MUST NOT contain any other third-party dependency.
-- This crate MUST NOT depend on another workspace crate.
+- The dependency list MUST NOT contain a third-party dependency other than `rusqlite` and `tokio`.
+- This crate MUST NOT depend on a workspace crate other than `sc-storage`.
+- The dependency list MUST NOT contain `sqlx`, directly or transitively.
 
 ### Rationale
 
-Owner, 2026-10-25 (ADR-RUN-0012): copy the atm-core writer machine into a library crate; do not put it behind a SQL trait shared with sqlx. The rusqlite `bundled` feature gives zero system SQLite dependency (PRD NF-04).
+Owner, 2026-10-25 (ADR-RUN-0012): copy the atm-core writer machine into a library crate; do not put it behind a SQL trait shared with sqlx. The rusqlite `bundled` feature gives zero system SQLite dependency (PRD NF-04). Owner, 2026-11-11 (PRD-STO-3): the writer is the SQLite implementation behind `Storage<T>` with atm-core's async channel input, which brings in exactly `sc-storage` and `tokio`; nothing else is added.
 ### Success Criteria
 
 **Acceptance Criteria:**
 
-- [ ] The crate's boundary manifest forbids every other workspace crate.
+- [ ] The crate's boundary manifest lists `sc-storage` as its only allowed workspace dependency and forbids every other workspace crate.
+- [ ] `cargo tree -p sc-runtime-db-sqlite -e normal,build --depth 1 --prefix none` prints, after the crate's own line, exactly one line each for `rusqlite`, `tokio` and `sc-storage`.
 - [ ] `cargo tree -p sc-runtime-db-sqlite -e normal --prefix none` prints no line `sqlx`.
 
 ## REQ-DBSQ-0002: Public items
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12  
 **Owner:** randlee  
 **Status:** Active  
 
@@ -65,7 +69,8 @@ Sprint b-1 copies the atm-core writer with these types substituted for its `Writ
 
 **Acceptance Criteria:**
 
-- [ ] `sc-lint lint sc-boundary` exits 0 with the crate's boundary manifest, whose `[public] facade` lists these public types.
+- [ ] `sc-lint lint sc-boundary` exits 0 with the crate's boundary manifest, whose `[public] facade` lists exactly the crate's exported items: the inventory above for the code as it is, and the SQLite `Storage<T>` implementation and its async input once the target lands (code-alignment STO-8).
+- [ ] Once the target lands, `cargo test -p sc-runtime-db-sqlite` exits 0 with a test that uses the SQLite implementation through a function generic over sc-storage's `Storage<T>` and awaits its replies without a blocking call on the caller.
 
 ## REQ-DBSQ-0003: Reply after commit
 
