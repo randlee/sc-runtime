@@ -3206,14 +3206,14 @@ A new application is created with no database, with SQLite only, with one sqlx S
 
 Postgres and MySQL are the SQL engines and use sqlx. SQLite uses the writer of `sc-runtime-db-sqlite`, the atm-core design (PRD-STO-3). Every store implements `Storage<T>` (PRD-STO-2). Amended 2026-11-11. The layouts are:
 
-| Layout | Stores |
-|---|---|
-| no database | none |
-| SQLite only | `store-sqlite` |
-| Postgres only | `store-postgres` |
-| MySQL only | `store-mysql` |
-| SQLite and Postgres | `store-sqlite` and `store-postgres` |
-| SQLite and MySQL | `store-sqlite` and `store-mysql` |
+| Layout | `db` value | Stores |
+|---|---|---|
+| no database | `none` | none |
+| SQLite only | `sqlite` | `store-sqlite` |
+| Postgres only | `postgres` | `store-postgres` |
+| MySQL only | `mysql` | `store-mysql` |
+| SQLite and Postgres | `sqlite-postgres` | `store-sqlite` and `store-postgres` |
+| SQLite and MySQL | `sqlite-mysql` | `store-sqlite` and `store-mysql` |
 
 A layout renders the stores in its row. A layout with two stores also renders the adaptor (owner, 2026-11-12: "The synchronization adapter will be necessary in early products."). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
 
@@ -3224,7 +3224,7 @@ Phase b's adaptor crate is the adaptor a two-store layout renders. The row-movin
 - The generation options MUST accept the `no database` layout from the table above.
 - The generation options MUST accept the `SQLite only` layout from the table above.
 - The generation options MUST accept the `Postgres only` layout from the table above.
-- The generation options MUST accept the `MySQL only` layout from the table above.
+- The `db` enum in `wizard/answers.schema.json` MUST contain `mysql`.
 - The generation options MUST accept the `SQLite and Postgres` layout from the table above.
 - The generation options MUST accept the `SQLite and MySQL` layout from the table above.
 - Generating a layout MUST render the stores in its table row.
