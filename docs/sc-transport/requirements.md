@@ -609,7 +609,7 @@ live. a-6 maps the string and chooses `suggested_action`, including any
 2. A test on Unix does the same against a stale socket file (a listener
    bound and dropped without removing the file) and asserts
    `DaemonNotRunning`.
-3. Through a test-controlled connector, drive the production client connection-failure handling with a TCP endpoint and a connection-refused result on its first connection attempt. Assert that the first get or post returns `TransportError::DaemonNotRunning`. Do not rely on connecting to a port after releasing its listener.
+3. A test gives the production client's connection-failure handling a controlled connection-refused result for a TCP endpoint and asserts `TransportError::DaemonNotRunning`. The test does not connect to a port after releasing its listener. How the result is supplied is not bound here and adds no hyper or tower connector (NFR-TRN-0002).
 4. Each of tests 1 to 3 asserts the code equals `DAEMON.NOT_RUNNING`, the
    endpoint equals the endpoint passed to `Client::new`, and the cause is
    present. The matched fields are `code`, `endpoint`, and `cause`.
