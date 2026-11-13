@@ -881,9 +881,9 @@ machine, never on a developer's host
 
 ### Requirement Statement
 
-The assembly-only scope of the sc-runtime crate does not require hand-written command paths or forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared sc-command path and default plain conversion; generator implementation remains follow-up work.
+Scope: every rule in this record applies to the `sc-runtime` crate (`crates/sc-runtime`) only. The rules do not restrict `sc-command`, which supplies the shared command path of PRD §3 (one shared write path and one shared read path, to which a project supplies `Tcli`, `Tsql` and the transform), or `sc-storage`, whose `Storage<T>` trait PRD-STO-1 and PRD-STO-2 require. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is outside this crate and is not restricted by this record.
 
-The shared command path is supplied by sc-command; this does not expand sc-runtime beyond assembly.
+The assembly-only scope of the `sc-runtime` crate does not require hand-written command paths and does not forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared `sc-command` path and default plain conversion and builds no generator; code generation for the command pattern is undecided (PRD §9). Supplying the shared command path from `sc-command` does not expand `sc-runtime` beyond assembly.
 
 `sc-runtime` is a bootstrap, not a framework layer.
 
@@ -909,7 +909,7 @@ it, so the closed public-surface table above remains complete.
 
 **MUST NOT statements:**
 
-- The crate MUST NOT contain a command or operation registry (any structure in which a project registers operations for the framework to dispatch).
+- The crate MUST NOT contain a command or operation registry.
 - The crate MUST NOT define a procedural macro.
 - The crate MUST NOT define a declarative macro.
 - The crate MUST NOT export a procedural macro.

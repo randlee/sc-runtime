@@ -4615,9 +4615,11 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 
 Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.
 
-No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.
+No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. Phase D builds no generator.
 
-The prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) "A command or operation registry" does not forbid the shared command path of PRD §3. (2) "A portable query layer" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) "A macro system" and "a code generator of its own" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD §9). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.
+The shared command path is the one shared write path and one shared read path of PRD §3, to which a project supplies `Tcli`, `Tsql` and the transform. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is not a registry under this record. A portable query layer is any abstraction that lets one SQL query run on more than one database backend; `Storage<T>` (PRD-STO-1, PRD-STO-2) carries no SQL and is not a portable query layer. An operation-defining declarative macro is a `macro_rules!` macro that defines operations, routes or tools. A wrapper type is a public newtype, struct or trait that wraps an `axum`, `rmcp` or `sqlx` type so that callers use it in place of that type. The project passes `sc_runtime::Daemon::builder()` an ordinary `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.
+
+Code generation for the command pattern, including an sc-compose or syn-based generator, a procedural or declarative macro, and a generated Rust HTTP client, is undecided (PRD §9): not built and not forbidden. Phase D builds no crate with `proc-macro = true` and no operation-defining declarative macro; this is Phase D scope, checked by success criteria 1 and 4, and forbids neither.
 
 The Job/Crate table lists the chosen crates:
 
@@ -4631,27 +4633,19 @@ The Job/Crate table lists the chosen crates:
 | HTTP client | `reqwest` 0.13 |
 | template rendering | `cargo-generate` |
 
-- a command or operation registry;
-- a macro system of its own: no crate with `proc-macro = true`, and no
-  `macro_rules!` macro that defines operations, routes or tools;
-- a code generator of its own, including a generated Rust HTTP client;
-- a portable query layer, meaning any abstraction that lets one query run on
-  more than one database backend;
-- a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The
-  project passes `sc_runtime::Daemon::builder()` an ordinary
-  `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.
-
 **MUST statements:**
 
 - For each job in the Job/Crate table, `crates/` and `template/` MUST reuse the listed crate's capability through its documented API, except where a governing requirement or explicit amendment specifies another implementation.
 
 **MUST NOT statements:**
 
-- The repository MUST NOT contain, in `crates/` or in `template/`, the items in the prohibited list in this record’s Requirement Statement, subject to the amendments stated there.
+- `crates/` and `template/` MUST NOT contain a command or operation registry.
+- `crates/` and `template/` MUST NOT contain a portable query layer.
+- A public API in `crates/` or `template/` MUST NOT contain a wrapper type.
 
 ### Rationale
 
-Each item in the prohibited list would be code this project has to maintain
+Each prohibited item would be code this project has to maintain
 and every generated project has to learn, where a standard crate already does
 the job and is already documented. Standard designs are preferred over
 hand-rolled pieces throughout. The decision that standard designs are
@@ -4660,17 +4654,20 @@ is recorded in [ADR-RUN-0008](architecture.md).
 
 ### Success Criteria
 
-1. `grep -rn "proc-macro" --include=Cargo.toml crates template` prints
+1. Phase D scope check: at the end of Phase D,
+   `grep -rn "proc-macro" --include=Cargo.toml crates template` prints
    nothing.
-2. The `arch-qa` architecture review checks the public API of each of the
-   four crates against [ADR-RUN-0001](architecture.md), which states that the
-   framework builds the parts and the project wires them in ordinary Rust. It
-   reports no registry type, no generator and no public newtype or trait
-   whose only purpose is to hide an `axum`, `rmcp` or `sqlx` type.
+2. The `arch-qa` architecture review checks the public API of each library
+   crate in `crates/` against [ADR-RUN-0001](architecture.md), which states
+   that the framework builds the parts and the project wires them in ordinary
+   Rust. It reports no registry type (the shared command path is not one), no
+   portable query layer, no code generator built in Phase D and no wrapper
+   type.
 3. Inspection of the template: the example routes are registered with
    `utoipa_axum::routes!` on an `OpenApiRouter`, the example MCP tools use
    `#[tool]` and `#[tool_router]`, and the CLI uses `clap` derive.
-4. `grep -rn "macro_rules!" crates/*/src template` prints nothing, or every
+4. Phase D scope check: at the end of Phase D,
+   `grep -rn "macro_rules!" crates/*/src template` prints nothing, or every
    match is reviewed and found not to define operations, routes or tools.
 
 ## NFR-RUN-0004: Requirements must mean less code
