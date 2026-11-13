@@ -277,8 +277,7 @@ Generated project licensing remains an independent generation option. Consumers 
 ### Requirement Statement
 
 "Generated project" means the Cargo workspace that `cargo generate` renders
-from `template/`. "The four crates" means `sc-config`, `sc-transport`,
-`sc-command` and `sc-runtime`.
+from `template/`. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002).
 
 3. This obligation does not apply to a `[patch.crates-io]` table, whose entries are normally `path` or `git` entries. (Path dependencies between the generated project's own crates, such as `daemon` on `service`, are unaffected.)
 4. Before a crate's first crates.io publish, and when testing unreleased
@@ -288,21 +287,21 @@ from `template/`. "The four crates" means `sc-config`, `sc-transport`,
    obligation 1 stays in place when a `[patch.crates-io]` entry is used. When
    the git form is used, the dependency names the repository URL and a `tag`
    in place of the version requirement.
-5. Which generated crate depends on which of the four crates is not stated
+5. Which generated crate depends on which of the public crates is not stated
    here. It is owned by [REQ-RUN-0301](requirements.md), which holds the
    dependency table of the generated workspace.
 
-Checkout validation MAY satisfy that requirement with the same `[patch.crates-io]` mechanism above; release-mode generation MUST resolve all five crates from the registry without a path or git override.
+Checkout validation MAY satisfy that requirement with the same `[patch.crates-io]` mechanism above; release-mode generation MUST resolve all public crates in its dependency graph from the registry without a path or git override.
 
 **MUST statements:**
 
-- Every `Cargo.toml` rendered into a generated project that depends on one of the four crates MUST name it by a crates.io version requirement (a `version = "..."` key or the bare-string form).
-- The Phase B continuation extends this requirement to the fifth published crate, `sc-cron`: when the generated daemon enables its optional `cron` feature, every rendered dependency on `sc-cron` MUST retain a crates.io version requirement.
+- Every `Cargo.toml` rendered into a generated project that depends on one of the public crates MUST name it by a crates.io version requirement (a `version = "..."` key or the bare-string form).
+- The Phase B continuation extends this requirement to the optional published crate `sc-cron`: when the generated daemon enables its optional `cron` feature, every rendered dependency on `sc-cron` MUST retain a crates.io version requirement.
 
 **MUST NOT statements:**
 
-- The source of the four crates MUST NOT be copied into a generated project.
-- A rendered `Cargo.toml` MUST NOT contain a `path = ...` dependency on any of the four crates in a dependency table (`[dependencies]`, `[dev-dependencies]`, `[build-dependencies]`, `[workspace.dependencies]` or a `[target.*]` form of these).
+- The source of the public crates MUST NOT be copied into a generated project.
+- A rendered `Cargo.toml` MUST NOT contain a `path = ...` dependency on any of the public crates in a dependency table (`[dependencies]`, `[dev-dependencies]`, `[build-dependencies]`, `[workspace.dependencies]` or a `[target.*]` form of these).
 ### Rationale
 
 Generated code cannot be upgraded after it is created; a versioned dependency
@@ -312,18 +311,16 @@ every project. Everyone who owns a generated project is affected.
 ### Success Criteria
 
 1. For every answers file in `wizard/fixtures/`, render the project and
-   inspect every rendered `Cargo.toml`: each dependency on `sc-config`,
-   `sc-transport`, `sc-command` or `sc-runtime` has a version requirement,
+   inspect every rendered `Cargo.toml`: each dependency on a public crate has a version requirement,
    or, where the git form of obligation 4 is in use, a `git` URL of
    `https://github.com/randlee/sc-runtime` with a `tag`.
 2. In the same rendered files, `grep -n 'path *='` finds no line belonging
-   to a dependency on any of the four crates outside a `[patch.crates-io]`
+   to a dependency on any of the public crates outside a `[patch.crates-io]`
    table.
-3. The rendered project contains no directory named `sc-config`,
-   `sc-transport`, `sc-command` or `sc-runtime`.
+3. The rendered project contains no directory named for any public crate and no copy of its source.
 4. A release-mode render with generated feature `cron` names `sc-cron` by
-   version, contains no path/git override for any of the five crates, and
-   resolves all five from the registry.
+   version, contains no path/git override for any selected public crate, and
+   resolves all public crates in its dependency graph from the registry.
 ### Implementation Notes
 
 **Key Considerations:**
@@ -333,8 +330,7 @@ every project. Everyone who owns a generated project is affected.
   is not decided. The same undecided mechanism is what would let template CI
   build a generated project against the crates of the checkout under test
   ([REQ-RUN-0701](requirements.md)).
-- OPEN: the form of the version requirement (for example caret on the
-  minor version) is not decided.
+- Registry requirements use tested minimum versions without upper bounds (REQ-RUN-0002).
 
 ---
 
@@ -449,10 +445,10 @@ closures must exclude full logger/OTLP by resolved identity, including aliases
 and transitive edges. Direct-depth normal-only checks below are historical
 minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
 
-The following scope follows PRD §4 and §6: The edge tables below describe the code as it is and stay enforced until the code changes. PRD v2.0 changes these edges when it is implemented ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` and stores its table through `Storage<CronRow>`, and the SQLite writer is no longer forbidden to the template and the runtime.
+The Phase D graph below follows PRD §4 and §6 and REQ-RUN-0002. Its boundary changes land with the corresponding code changes ([code-alignment.md](prd/code-alignment.md)): `sc-cron` drops `rusqlite` when its table moves to `Storage<CronRow>`. Historical graph snapshots do not prohibit the shared-storage and interpreter edges required for Phase D. The SQLite writer is available to application storage composition; the runtime continues to accept application-owned stores without taking a concrete writer dependency.
 ### Requirement Statement
 
-Definitions: The crate graph is the workspace dependency graph shown in the table below. A crate's additional dependency list is the list owned by its per-crate requirement named below. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The crate graph is the Phase D workspace dependency graph shown in the table below; it updates the earlier graph snapshots under REQ-RUN-0002 and ADR-RUN-0020/0021. A crate's additional dependency list is the list owned by its per-crate requirement named below. ATM tool crates are agent-team-mail and its atm-* tool packages and Rust imports. CLI means command-line interface. TOML is the Cargo manifest data format. ADR means architecture decision record. A boundary manifest is one or more TOML files under boundaries/<crate>/ read by sc-lint-boundary, where <crate> is the workspace crate name. ATM means agent-team-mail; its tool crates and imports are the exclusions named here.
 
 This requirement is decided in this document; the sc-runtime design does not
 state it.
@@ -462,13 +458,15 @@ state it.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-command` | `sc-storage` when providing the shared storage command helpers (ADR-RUN-0021); the standalone envelope build has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
-| `sc-cron-commands` (Phase C target) | defaults-off `sc-command`; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+| `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | `sc-storage`; optional `sc-monty` for interpreter execution; temporary defaults-off/no-features `sc-command` for the contract (ADR-RUN-0017). Canonical event values use registry `sc-observability-types` | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron-commands` | defaults-off `sc-command`; `sc-storage` for the shared command storage adapter; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+| `sc-storage` | none; Rust standard library only | every other workspace crate and every external crate |
+| `sc-monty` | none; production dependencies limited to pydantic Monty crates | every `sc-*` production dependency, Tokio and serde_json |
 
 Phase C also forbids sc-command→sc-cron-commands and
 sc-runtime→sc-cron-commands. The adapter is an allowed dependent of command
@@ -483,12 +481,7 @@ criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,
 so b-13's types-only rule is measured with direct-depth `cargo tree` checks
 for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
 must print no direct `sc-observability ` or `sc-observability-otlp ` line.
-`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
-`sc-transport`, and temporarily runtime+cron for `sc-command` under ADR-RUN-0017. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
-`allowed_dependents` entry and it is a `forbidden_edges` entry
-`sc-runtime -> sc-config`. The measurement is the sprint a-1 evidence record
-for the other edges, and sprint a-5 for this absent edge.
+`allowed_dependents` records the reverse workspace edges of the table for the supported features. Thus sc-storage admits the listed command, SQLite and cron consumers; sc-monty admits cron when its interpreter feature is selected; command admits runtime, cron and the cron-command adapter. External consumer applications are not workspace dependents. The absent runtime -> config edge remains forbidden. Historical sprint a-1/a-5 evidence records the earlier graph, not a restriction on these Phase D edges.
 
 4. This item does not list the third-party crates each crate may depend on.
 5. The manifest format has no key for cargo features, so `sc-lint-boundary`
@@ -509,7 +502,7 @@ lists `sc-runtime -> sc-config` under `forbidden_edges`.
 
 **MUST statements:**
 
-- For each workspace crate (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and, from the 2026-10-25 amendment, `sc-runtime-db-sqlite` and `sc-cron`) the repository MUST contain a boundary manifest: one or more TOML files under `boundaries/<crate>/` at the repository root, in the format read by the `sc-lint-boundary` tool.
+- For each crate in the public package set the repository MUST contain a boundary manifest: one or more TOML files under `boundaries/<crate>/` at the repository root, in the format read by the `sc-lint-boundary` tool.
 - Each manifest MUST record the crate's public facade (the items it exports) in `[public] facade`.
 - Each manifest MUST record its allowed dependents in `[dependencies]`.
 - Each manifest MUST record its allowed dependencies in `[dependencies]`.
@@ -517,11 +510,11 @@ lists `sc-runtime -> sc-config` under `forbidden_edges`.
 - The manifests MUST encode exactly the table above.
 - ADR-RUN-0003 MUST mirror that table.
 - The crate graph in `docs/architecture.md` MUST mirror that table.
-- Every production release crate (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude sc-compose crate dependencies.
-- Every production release crate (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude ATM crate dependencies.
-- Every production release crate (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude sc-compose Rust imports.
-- Every production release crate (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude ATM Rust imports.
-- The manifest's `allowed_dependencies` MUST equal the row above plus the additional list owned by that crate's own requirement: NFR-CFG-0002 for `sc-config`, NFR-TRN-0001 for `sc-transport`, NFR-CMD-0001 for `sc-command`, NFR-RT-0003 for `sc-runtime`, NFR-CRON-0001 for `sc-cron`, and REQ-DBSQ-0001 for `sc-runtime-db-sqlite`.
+- Every crate in the public package set MUST exclude sc-compose crate dependencies.
+- Every crate in the public package set MUST exclude ATM crate dependencies.
+- Every crate in the public package set MUST exclude sc-compose Rust imports.
+- Every crate in the public package set MUST exclude ATM Rust imports.
+- The manifest's `allowed_dependencies` MUST equal the row above plus the additional list owned by that crate's own requirement: NFR-CFG-0002 for `sc-config`, NFR-TRN-0001 for `sc-transport`, NFR-CMD-0001 for `sc-command`, NFR-RT-0003 for `sc-runtime`, NFR-CRON-0001 for `sc-cron`, REQ-DBSQ-0001 for `sc-runtime-db-sqlite`, NFR-CRNC-0001 for `sc-cron-commands`, and REQ-RUN-0002 for `sc-storage` and `sc-monty`.
 - The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary` against these manifests.
 - `just lint` MUST fail when a manifest is violated.
 
@@ -539,12 +532,7 @@ drifting apart. The manifests also tell sprint planning which crates can be
 built in parallel without touching each other.
 ### Success Criteria
 
-1. `boundaries/sc-config/`, `boundaries/sc-transport/`,
-   `boundaries/sc-command/`, `boundaries/sc-runtime/`,
-   `boundaries/sc-runtime-db-sqlite/`, and `boundaries/sc-cron/` each exist
-   and contain at least one `.toml` file. The six workspace members are
-   `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`,
-   `sc-runtime-db-sqlite`, and `sc-cron`.
+1. For each of the nine public crates, `boundaries/<crate>/` contains at least one `.toml` file.
 2. Each manifest's `forbidden_edges` lists `"<owner> -> <target>"` strings
    only when `<target>` is a workspace member of that crate's lint tree at
    the sprint that creates the manifest (the inter-crate forbidden edges
@@ -553,21 +541,13 @@ built in parallel without touching each other.
    `sc-observability-types`, `tokio`, `sqlx`) and any obligation-3 target
    that is not a workspace member in that tree are not listed in
    `forbidden_edges` on sc-lint 0.8.0; criterion 5 enforces those names with
-   `cargo tree`. The obligation-3 table states the full policy. No manifest of
-   `sc-config`, `sc-transport` or `sc-command` lists another workspace crate
-   under `allowed_dependencies`. `allowed_dependents` is empty for `sc-config`,
-   `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime`
-   only for `sc-transport` and `sc-command`. The absent `sc-runtime` →
-   `sc-config` edge is not copied into
-   `allowed_dependents`. Sprint a-1 recorded this split in
-   `docs/architecture.md`.
+   `cargo tree`. The obligation-3 table states the full policy. The manifests encode the current table, including its feature-conditional dependencies and reverse allowed-dependents entries. The sc-config and sc-transport manifests allow no workspace dependencies; the standalone command build remains sibling-free.
 3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
    the default branch.
 4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
    scratch branch makes `just lint` exit non-zero with a boundary violation
    naming that edge.
-5. For each of the six workspace members `sc-config`, `sc-transport`,
-   `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`,
+5. For each crate in the public package set,
    `cargo tree -p <crate> -e normal --prefix none` prints no line beginning
    with `<name> ` (the name followed by a space) for any `<name>` in that
    crate's "Forbidden edges" cell. For `sc-transport` and `sc-command` the
@@ -3919,7 +3899,7 @@ is not on `PATH` without the script guessing install prefixes.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). CLI means command-line interface. MCP means Model Context Protocol. API means application programming interface. ADR means architecture decision record.
 
 This item owns the definition of "green with no edits" and applies it to one
 answers fixture. [REQ-RUN-0701](requirements.md) applies the same sequence to
@@ -3943,7 +3923,7 @@ and V4b of [REQ-RUN-0102](requirements.md)).
 - That command MUST create a project at `<dest>`.
 - In that project, with no file added, changed or deleted after generation, the next commands MUST exit 0 in this order: `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon`.
 - `just test` in the generated project MUST include the template's example operation test, which calls `widget.create` and `widget.get` through REST, MCP and the CLI against a daemon started by `sc_runtime::testing::DaemonFixture`.
-- The generated project MUST resolve the crates `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` without any manual step.
+- The generated project MUST resolve every public crate in its selected dependency graph without any manual step.
 
 ### Rationale
 
@@ -3965,7 +3945,7 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    between that writes to that directory, and it exits 0.
 4. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
    `just test` includes the observability grep: `crates/daemon` requires
-   `sc-observability` at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and
+   `sc-observability` with the registry requirement `>=1.5.0` and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
@@ -4215,7 +4195,7 @@ the template, the driver or CI.
 
 ### Requirement Statement
 
-Definitions: API means application programming interface. ADR means architecture decision record. A fixture is one answers JSON file under wizard/fixtures/. Postgres is the PostgreSQL database engine. A service container is the workflow database service for the generated project. Wyvern is the optional interactive wizard host.
+Definitions: The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). API means application programming interface. ADR means architecture decision record. A fixture is one answers JSON file under wizard/fixtures/. Postgres is the PostgreSQL database engine. A service container is the workflow database service for the generated project. Wyvern is the optional interactive wizard host.
 
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
@@ -4224,7 +4204,7 @@ Definitions: API means application programming interface. ADR means architecture
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
-   at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
+   with the registry requirement `>=1.5.0` and no upper bound under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
@@ -4265,10 +4245,11 @@ and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
 - A GitHub Actions workflow under `.github/workflows/` in this repository MUST test the template by generating real projects.
 - For every file matching `wizard/fixtures/*.json`, the workflow MUST run the preceding numbered commands in their listed order.
 - For every fixture, the workflow MUST fail when any listed command exits non-zero.
-- Each fixture MUST be a separate matrix entry, so that one failing variant is reported by its fixture name.
+- Each fixture MUST be a separate matrix entry.
+- A failing matrix entry MUST be reported by its fixture name.
 - The list of fixtures MUST be derived from the files present in `wizard/fixtures/`.
 - The workflow MUST run on every pull request.
-- In every run of the workflow except the release run required by [REQ-RUN-0702](requirements.md), each generated project MUST resolve the four crates `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` from the checkout under test, not from crates.io and not from another commit.
+- In every run of the workflow except the release run required by [REQ-RUN-0702](requirements.md), each generated project MUST resolve every public crate in its selected dependency graph from the checkout under test, not from crates.io and not from another commit.
 - From the release that adds the `store-postgres` crate, a fixture whose project needs PostgreSQL MUST be given a Postgres service container by the workflow.
 
 **MUST NOT statements:**
@@ -4307,11 +4288,11 @@ would be tested against the old crate code.
 5. `grep -ri "wyvern" .github/workflows/` prints nothing, and the matrix job
    contains no `uses:` line naming `cargo-generate-action`.
 6. In a pull-request run, the `Cargo.lock` of each generated project lists
-   the packages `sc-config`, `sc-transport`, `sc-command` and `sc-runtime`
+   every public package selected by that fixture
    with no `source` line (a package resolved from a path has none; one
    resolved from crates.io has
    `source = "registry+https://github.com/rust-lang/crates.io-index"`).
-7. A pull request that renames a public function in one of the four crates
+7. A pull request that renames a public function in one of the public crates
    and updates the template's call to it, with no other change, produces a
    green matrix.
 ### Implementation Notes

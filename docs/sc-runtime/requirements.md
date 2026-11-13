@@ -1129,9 +1129,9 @@ would reject one.
 
 ### Requirement Statement
 
-Definitions: HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. The four library crates are sc-config, sc-transport, sc-command and sc-runtime. A typed error enum is the crate-specific error type returned by fallible public operations. Code reachable from a public function includes functions that public entry point can call.
+Definitions: HTTP means Hypertext Transfer Protocol. TCP means Transmission Control Protocol. JSON means JavaScript Object Notation. API means application programming interface. ADR means architecture decision record. The public package set is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty` (REQ-RUN-0002). A typed error enum is the crate-specific error type returned by fallible public operations. Code reachable from a public function includes functions that public entry point can call.
 
-There is no exception for a use that carries an explanatory comment. Test code is exempt.
+An explanatory comment creates no exception. Test code is exempt. The explicitly named exceptions in NFR-RUN-0009 and ADR-RUN-0017 remain applicable; this record adds no broader exception.
 
 Applied to `sc-runtime`:
 
@@ -1148,17 +1148,17 @@ NFR-RUN-0009 owns this repo-level rule.
 **MUST statements:**
 
 - Every fallible public operation MUST return `Result<_, RuntimeError>` ([REQ-RT-0007](requirements.md)).
-- In each of the four library crates, every fallible public operation MUST return `Result<T, E>` with `E` the crate's own typed error enum.
+- In each crate in the public package set, every fallible public operation MUST return `Result<T, E>` with `E` the crate's own typed error enum.
 
 **MUST NOT statements:**
 
-- In each of the four library crates, code reachable from a public function MUST NOT use `unwrap`.
-- In each of the four library crates, code reachable from a public function MUST NOT use `expect`.
-- In each of the four library crates, code reachable from a public function MUST NOT use `panic!`.
-- In each of the four library crates, code reachable from a public function MUST NOT use `unreachable!`.
-- In each of the four library crates, code reachable from a public function MUST NOT use `todo!`.
-- In each of the four library crates, code reachable from a public function MUST NOT use `unimplemented!`.
-- In each of the four library crates, code reachable from a public function MUST NOT use panicking `[]` indexing.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `unwrap`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `expect`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `panic!`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `unreachable!`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `todo!`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use `unimplemented!`.
+- In each crate in the public package set, code reachable from a public function MUST NOT use panicking `[]` indexing.
 - Non-test code in `crates/sc-runtime/src` that is reachable from a public function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!` or panicking `[]` indexing.
 
 ### Rationale

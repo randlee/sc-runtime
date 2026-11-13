@@ -752,15 +752,15 @@ daemon and the CLI share one crate.
 
 ### Requirement Statement
 
-Definitions: ADR means architecture decision record. The ADR-RUN-0017 bridge is the command-crate canonical logging contract retained in Phase D. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
+Definitions: ADR means architecture decision record. The ADR-RUN-0017 bridge is the command-crate canonical logging contract retained in Phase D. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a caret or tilde requirement, or an explicit `<` limit.
 
 The `sc-observability-types` requirement is the tested floor `>=1.5.0` with no
 upper bound (REQ-RUN-0002, ANC-037). The historical 0.1.1 release used a
 temporary exact `=1.5.0` pin under ADR-RUN-0017; that pin does not govern
 Phase D.
 
-2026-10-31 amendment: command remains a sibling-free leaf; its sole
-additional dependent is temporarily cron for the observability port with
+2026-10-31 amendment: the standalone envelope build remains a sibling-free leaf; its
+additional contract dependent is temporarily cron for the observability port with
 defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
 transitive identities for every production feature, not just direct normal edges.
 
@@ -773,10 +773,8 @@ member, so `forbidden_edges` does not name `sc-observability` or
 `sc-observability-otlp`. `sc-config`, `sc-transport`, `sc-runtime`, and
 `sc-runtime-db-sqlite` are workspace members, so
 `boundaries/sc-command/sc-command.toml` lists those edges under
-`forbidden_edges` ([REQ-RUN-0005](../requirements.md)). `sc-cron` stays off
-that list until it is a workspace member. Cargo.toml inspection and
-`cargo tree` still enforce the sibling edges. `allowed_dependents` is temporarily
-`sc-runtime` plus `sc-cron` under ADR-RUN-0017; command remains a leaf. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
+`forbidden_edges` ([REQ-RUN-0005](../requirements.md)). Workspace membership follows the public package set in REQ-RUN-0002. Cargo.toml inspection and
+`cargo tree` still enforce the sibling edges. `allowed_dependents` includes `sc-runtime`, `sc-cron` under ADR-RUN-0017, and `sc-cron-commands`. The shared storage command helpers consume `sc-storage` under ADR-RUN-0021; that edge does not enter the standalone envelope build. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
 landed. The third-party crates
 `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
 `sc-lint lint sc-boundary` checks inter-crate edges and the public facade
@@ -791,7 +789,7 @@ The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc
 
 **MUST NOT statements:**
 
-- `sc-command` MUST NOT depend on any other crate of this workspace.
+- `sc-command` MUST NOT depend on another workspace crate except `sc-storage` for the shared storage command helpers of ADR-RUN-0021.
 - `sc-command` MUST NOT depend, directly or transitively, on the crate `sc-observability` (the logging runtime) or on its OTel export crate `sc-observability-otlp`.
 - The `sc-observability-types` requirement of `sc-command` MUST NOT declare an upper bound.
 
@@ -800,8 +798,7 @@ The forbidden workspace dependencies include `sc-config`, `sc-transport` and `sc
 Each library crate in this repository is an independent deliverable,
 published to crates.io and usable without the others
 ([REQ-RUN-0002](../requirements.md)); an edge to a sibling crate would force
-every user of the envelope to take that sibling too. The three standalone
-crates have no edges among them and only `sc-runtime` knows the others
+every user of the envelope to take that sibling too. The original standalone configuration, transport and envelope capabilities have no edges among them; the shared storage command path adds only its `sc-storage` edge
 ([ADR-RUN-0003](../architecture.md)). Observability is initialised directly
 by each project and is not wrapped by these crates; the single permitted
 observability dependency is the types-only crate, because the envelope's
@@ -815,7 +812,7 @@ error code and remediation types are defined there
    `sc-observability-otlp` appears in `[dependencies]`,
    `[dev-dependencies]` or `[build-dependencies]`;
    `sc-observability-types` appears in `[dependencies]` with requirement
-   `">=1.5.0"` and no `=`, `~`, `<` or `<=` bound.
+   `">=1.5.0"` and no exact `=` pin, caret, tilde or explicit upper bound.
 2. `cargo tree -p sc-command -e normal --prefix none` (default features)
    prints no line beginning with `sc-config `, `sc-transport `,
    `sc-runtime `, `sc-observability ` or `sc-observability-otlp ` (each name
@@ -825,8 +822,7 @@ error code and remediation types are defined there
 3. `cargo tree -p sc-command -e normal --prefix none --features server`
    gives the same result as criterion 2.
 4. This sprint's boundary check is `sc-lint lint sc-boundary --root .` on
-   `boundaries/sc-command/sc-command.toml`. Root `just lint` across all four
-   manifests stays with sprint a-5.
+   `boundaries/sc-command/sc-command.toml`. Root `just lint` checks all public-package boundary manifests under REQ-RUN-0005.
 
 ---
 
