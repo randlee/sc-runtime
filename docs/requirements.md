@@ -3069,7 +3069,9 @@ Each database engine's SQL is in that engine's store crate.
 
 **MUST statements:**
 
-- Each database engine's SQL MUST reside in that engine's store crate.
+- SQL for SQLite MUST reside in the store crate `store-sqlite`.
+- SQL for Postgres MUST reside in the store crate `store-postgres`.
+- SQL for MySQL MUST reside in the store crate `store-mysql`.
 
 ### Rationale
 
