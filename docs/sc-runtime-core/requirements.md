@@ -172,6 +172,8 @@ through the normal PR process.
 
 ### NF-CORE-02 — No Std Runtime Assumptions
 
+**Applicability:** Historical constraint for the earlier `sc-runtime-core` foundation design. This crate is outside the nine-package Phase D set in REQ-RUN-0002; the following runtime-neutrality text is retained as historical context, not a requirement on those packages. The current `sc-runtime` application uses Tokio under PRD-ENG-1. This note creates no new crate, implementation or test obligation.
+
 `sc-runtime-core` must not assume a specific async runtime. `tokio` must not
 be a direct dependency. `CancellationToken` from `tokio-util` is permitted
 because it carries no tokio runtime requirement at the type level.
