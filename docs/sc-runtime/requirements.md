@@ -222,47 +222,58 @@ last so no request is accepted before it can be served.
 
 ### Requirement Statement
 
-Definitions: sc-runtime is the Rust crate that assembles application daemons. OS means operating system. `fd-lock` is the third-party Rust crate used for operating-system file locking. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory. A daemon is one running application server process. The lock is the OS exclusive file lock on `<instance-root>/daemon.lock`. Lock contention is the lock being held by another daemon when `run()` tries to take it. The lock-release point is the earlier of two events: `run()` returns, or the process exits. The stores closure is the project-supplied asynchronous `.stores(...)` closure that opens stores and returns the project's `Stores` value. Successfully opened stores are that returned value. The runtime logger is the `sc_command::observability::SharedCanonicalLog` handle carried by the daemon builder. The cleanup callback is the asynchronous application cleanup supplied to `run_with_cleanup`; cleanup completion means that the future produced by that callback has resolved. A listener is the Unix-domain-socket or TCP listener bound through `sc-transport`. RuntimeError is the public sc-runtime startup and serving error enum. LockHeld is its variant for another process holding the instance lock; InstanceFailed is its variant for instance-root or lock preparation failure without lock contention (REQ-RT-0007). A retained resource remains owned and is not dropped before the stated completion event. Successful startup is completion of the fixed startup sequence through listener binding. `run_with_cleanup` is the daemon builder's terminal run method that awaits the supplied asynchronous application cleanup before returning. The instance root is in use when another daemon holds its instance lock.
+Definitions:
 
-`<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). Tests supply a tempdir as the explicit path.
+- sc-runtime is the Rust crate in `crates/sc-runtime` that assembles application daemons.
+- A daemon is one running application server process built with sc-runtime.
+- The instance root is the per-application, per-user directory resolved by sc-transport, or a directory the caller supplies explicitly; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+- The lock file is the file `daemon.lock` in the instance root.
+- The instance lock is an operating-system exclusive file lock on the lock file.
+- `fd-lock` is the third-party Rust crate for operating-system file locks.
+- `run()` is the daemon builder's terminal method that starts and serves a daemon.
+- `run_with_cleanup` is the daemon builder's terminal method that runs like `run()` and then awaits the cleanup callback before returning.
+- The cleanup callback is the asynchronous application cleanup passed to `run_with_cleanup`.
+- Cleanup completion is the moment the future returned by the cleanup callback resolves.
+- Lock contention is the case where another daemon holds the instance lock when `run()` tries to take the instance lock.
+- A lock-file failure is a failure to open or lock the lock file without lock contention, such as permission denied or an instance root that is an existing file.
+- The lock-release point is the earlier of two events: `run()` returns, or the process exits.
+- The stores closure is the project-supplied asynchronous `.stores(...)` closure that opens stores and returns the project's `Stores` value.
+- The runtime logger is the `sc_command::observability::SharedCanonicalLog` handle held by the daemon builder.
+- A listener is a Unix-domain-socket or TCP listener bound through sc-transport.
+- Successful startup is completion of the startup sequence through listener binding.
+- A startup error is an error that startup returns after `run_with_cleanup` holds the instance lock.
+- `RuntimeError` is the public sc-runtime startup and serving error enum; [REQ-RT-0007](requirements.md) defines its variants `LockHeld` and `InstanceFailed`.
+- A PID file is a file that stores a process id.
 
-Examples of a failure that is not lock contention are permission denied and an instance root that is not a directory. Such a failure returns `InstanceFailed`, not `LockHeld` (REQ-RT-0007).
-
-`run()` creates the instance root when the path is absent. It rejects an
-existing file as `InstanceFailed` and then calls `create_dir_all` before it
-opens `daemon.lock`. Whether `sc_transport::instance_root` itself creates a
-directory stays with [REQ-TRN-0002](../sc-transport/requirements.md). This
-crate creates the directory it is about to lock.
+`run()` creates the instance root when the path is absent; whether sc-transport creates it stays with [REQ-TRN-0002](../sc-transport/requirements.md). Tests supply a temporary directory as the instance root.
 
 **MUST statements:**
 
-- For each instance root, `sc-runtime` MUST permit at most one running daemon.
-- The mechanism MUST be an OS exclusive file lock.
-- The OS exclusive file lock on `<instance-root>/daemon.lock` MUST be acquired with the `fd-lock` crate.
-- That file lock MUST be on `<instance-root>/daemon.lock`.
-- At invocation of the project's stores closure, `run()` MUST already hold the OS exclusive lock on `<instance-root>/daemon.lock`.
-- At each listener bind, `run()` MUST already hold the lock.
-- The OS exclusive file lock MUST remain held continuously from its acquisition until the lock-release point.
-- When `run_with_cleanup` has acquired the lock, it MUST retain the lock until the supplied asynchronous cleanup callback completes.
-- When startup succeeds, `run_with_cleanup` MUST retain the acquired lock until cleanup completion.
-- After a startup error following lock acquisition, `run_with_cleanup` MUST retain the acquired lock until the supplied asynchronous cleanup callback completes.
-- When the project's stores closure has succeeded, the returned `Stores` value MUST remain owned until cleanup completion.
-- The daemon builder's `SharedCanonicalLog` handle MUST be retained through completion of the application cleanup callback.
-- When another daemon holds the instance lock, `run()` MUST return `Err(RuntimeError::LockHeld)` (REQ-RT-0007).
-- When opening `daemon.lock` fails without contention, `run()` MUST return `Err(RuntimeError::InstanceFailed)`.
-- When locking `daemon.lock` fails without contention, `run()` MUST return `Err(RuntimeError::InstanceFailed)`.
-
-- The attempt to take the lock MUST be a non-blocking try-lock.
+- For each instance root, at most one daemon started through `run()` MUST be running at any time.
+- The lock code in `crates/sc-runtime/src/lock.rs` MUST take the instance lock as an exclusive (write) operating-system file lock.
+- sc-runtime MUST take the instance lock through the `fd-lock` crate.
+- sc-runtime MUST place the instance lock on `<instance-root>/daemon.lock`.
+- `run()` MUST hold the instance lock when `run()` calls the stores closure.
+- `run()` MUST hold the instance lock when `run()` binds each listener.
+- `run()` MUST hold the instance lock without a gap from acquisition until the lock-release point.
+- `run_with_cleanup` MUST hold the instance lock until cleanup completion.
+- After successful startup, `run_with_cleanup` MUST hold the instance lock until cleanup completion.
+- After a startup error, `run_with_cleanup` MUST hold the instance lock until cleanup completion.
+- After the stores closure succeeds, `run_with_cleanup` MUST keep the returned `Stores` value alive until cleanup completion.
+- `run_with_cleanup` MUST keep the runtime logger alive until cleanup completion.
+- On lock contention, `run()` MUST return `RuntimeError::LockHeld`.
+- When opening the lock file fails without lock contention, `run()` MUST return `RuntimeError::InstanceFailed`.
+- When locking the lock file fails without lock contention, `run()` MUST return `RuntimeError::InstanceFailed`.
+- The lock code in `crates/sc-runtime/src/lock.rs` MUST take the instance lock by calling the non-blocking `fd-lock` method `try_write`.
 
 **MUST NOT statements:**
 
-- After a failure to open or lock `daemon.lock` that is not lock contention, the stores closure MUST NOT be called.
-
-- The attempt to take the lock MUST NOT block waiting for the holder.
-- On lock contention the stores closure MUST NOT be called.
-- For a startup attempt whose lock acquisition fails because the instance lock is held, `run()` MUST NOT execute its listener-binding step.
-- The crate MUST NOT use a PID file to detect another daemon.
-- The crate MUST NOT probe a port to detect another daemon.
+- On a lock-file failure, `run()` MUST NOT call the stores closure.
+- The lock code in `crates/sc-runtime/src/lock.rs` MUST NOT call a blocking `fd-lock` lock method.
+- On lock contention, `run()` MUST NOT call the stores closure.
+- On lock contention, `run()` MUST NOT bind a listener.
+- sc-runtime MUST NOT use a PID file to detect another daemon.
+- sc-runtime MUST NOT probe a network port to detect another daemon.
 
 ### Rationale
 
