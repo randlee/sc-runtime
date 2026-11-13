@@ -414,7 +414,7 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 
 **MUST statements:**
 
-- `crates/sc-runtime/src/builder.rs` MUST show `run()` building exactly one daemon router.
+- `run()` MUST build exactly one daemon router.
 - `run()` MUST build the daemon router after the instance lock on `daemon.lock` ([REQ-RT-0002](requirements.md)) is held.
 - `run()` MUST build the daemon router after the stores closure has returned.
 - `run()` MUST build the daemon router before the daemon listener is bound.
@@ -433,9 +433,9 @@ MCP is reachable only as `/mcp` on the one router. With no project route or fall
 - `sc-runtime` MUST NOT add an MCP session store.
 - `sc-runtime` MUST NOT add any other session state of its own.
 - If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`.
-- `crates/sc-runtime/src` MUST NOT contain code that binds a listener for MCP other than the daemon listener.
-- `crates/sc-runtime/src` MUST NOT contain code that binds a TCP port for MCP other than the TCP port of the daemon listener.
-- `crates/sc-runtime/src` MUST NOT contain code that starts a process for MCP other than the daemon process.
+- MCP MUST NOT get a listener of its own, that is, any listener other than the daemon listener.
+- MCP MUST NOT get a TCP port of its own, that is, any TCP port other than the TCP port of the daemon listener.
+- MCP MUST NOT get a process of its own, that is, any process other than the daemon process.
 
 ### Rationale
 
@@ -467,6 +467,11 @@ versions change and this shape does not.
    one router on one listener.
 6. Inspection of `crates/sc-runtime/src` finds no MCP session manager, session
    store or session identifier handling.
+7. Inspection of `run()` in `crates/sc-runtime/src/builder.rs` finds exactly
+   one construction of the daemon router.
+8. Inspection of `crates/sc-runtime/src` finds no listener bound, TCP port
+   bound or process started for MCP other than the daemon listener, its TCP
+   port and the daemon process.
 
 ---
 
