@@ -260,13 +260,19 @@ those sources with its own code, they could disagree and never meet.
 
 ### Consequences
 
-Agreement between daemon and CLI is structural, not a convention to
-remember. An override works identically on both sides, which tests and
-multi-instance setups rely on. The crate does not parse command lines or
-load configuration, so it needs neither `clap` nor `sc-config`; the calling
-binary passes those values in. A user who sets `SC_ENDPOINT` for the CLI but
-not for the daemon will still get a mismatch; the resolver cannot prevent
-different inputs.
+**Positive:**
+
+- Agreement between daemon and CLI is structural, not a convention to
+  remember.
+- An override works identically on both sides, which tests and
+  multi-instance setups rely on.
+- The crate does not parse command lines or load configuration, so it needs
+  neither `clap` nor `sc-config`; the calling binary passes those values in.
+
+**Negative:**
+
+- A user who sets `SC_ENDPOINT` for the CLI but not for the daemon will still
+  get a mismatch; the resolver cannot prevent different inputs.
 
 **Neutral:**
 
