@@ -1185,6 +1185,8 @@ anything.
 
 ### Requirement Statement
 
+Definitions: The rewritten spike server main file is `examples/spike/server/src/main.rs`. Its startup sequence comprises configuration loading with `sc-config`, the `sc_runtime::Daemon::builder(...)` call chain and conversion of the run result into the process exit code.
+
 `examples/spike` is first written directly on `axum`, `utoipa-axum`, `rmcp`
 and `sqlx`, then rewritten on the four library crates `sc-config`,
 `sc-transport`, `sc-command` and `sc-runtime`.
@@ -1203,9 +1205,9 @@ excluded from the root workspace.
 **MUST statements:**
 
 - After the rewrite, the `main.rs` of the spike's server binary MUST be under 30 lines, that is 29 lines or fewer.
-- That `main.rs` MUST itself contain the whole start-up sequence.
-- That `main.rs` MUST itself contain the configuration loading with `sc-config`.
-- That `main.rs` MUST itself contain the whole `sc_runtime::Daemon::builder(...)` call chain with `.stores(...)`, `.routes(...)`, `.mcp(...)` and `.run().await`.
+- The rewritten `examples/spike/server/src/main.rs` MUST contain the complete daemon startup sequence described in this record.
+- The rewritten `examples/spike/server/src/main.rs` MUST contain the configuration-loading call to `sc-config`.
+- The rewritten `examples/spike/server/src/main.rs` MUST contain the complete `sc_runtime::Daemon::builder(...)` call chain, including `.stores(...)`, `.routes(...)`, `.mcp(...)` and `.run().await`.
 - That `main.rs` MUST itself turn the result into the process exit code.
 
 **MUST NOT statements:**
