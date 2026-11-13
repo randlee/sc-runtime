@@ -402,7 +402,7 @@ There is exactly one recorded exception to the recipe-step statements: the plain
 4. Running `just test` MUST behave as the `just test` row of the recipe table describes.
 5. The root `Justfile` MUST define a recipe named `new`.
 6. Running `just new <dest>` MUST behave as the `just new <dest>` row of the recipe table describes.
-7. Running `just test` MUST run every command in the test command list.
+7. Running `just test` MUST run the whole test command list.
 8. Each lint step MUST run its checks by calling `just lint`.
 9. Each test step MUST run its tests by calling `just test`.
 10. Each generation step MUST generate its project by calling `just new`.
