@@ -155,7 +155,7 @@ The files in `template/` contain `cargo-generate` placeholders and do not compil
 
 - The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.
 - The workspace members MUST be exactly these library crates. (see table above)
-- The repository root MUST also contain the directories and files in the path table above.
+- The repository root MUST contain each directory and file listed in the second table in the Requirement Statement (the table headed `Path | Contents`), except that `examples/spike/` is exempt at and after the `v0.1.0` tag.
 
 **MUST NOT statements:**
 
@@ -350,7 +350,7 @@ every project. Everyone who owns a generated project is affected.
 
 Definitions: SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.
 
-That is the name `sc-lint init --just` writes. The first line stays the sc-lint init header.
+The SC base command names `lint` and `test` are the recipe names that `sc-lint init --just` writes. The first line stays the sc-lint initialization header.
 
 | Recipe | Behaviour |
 |---|---|
@@ -358,7 +358,7 @@ That is the name `sc-lint init --just` writes. The first line stays the sc-lint 
 | `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |
 | `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |
 
-The list is decided in this document; the sc-runtime design names only the recipe.
+The test command list is specified in this record; the sc-runtime design names only the recipe.
 
 1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.96; see items 2 and 6).
 2. `cargo test -p sc-cron` with default features.
@@ -390,17 +390,17 @@ sprint.
 
 **MUST statements:**
 
-- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `lint` with its table-specified behavior.
-- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `test` with its table-specified behavior.
-- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `new <dest>` with its table-specified behavior.
-- `just test` MUST run all of these.
-- Decided in this document: every job in `.github/workflows/` that lints, tests or generates MUST do so by calling one of these recipes, not by calling `cargo`, `python` or a lint tool directly.
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `lint` recipe with the behavior specified in the `just lint` table row.
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `test` recipe with the behavior specified in the `just test` table row.
+- The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `new <dest>` recipe with the behavior specified in the `just new <dest>` table row.
+- `just test` MUST execute all six numbered entries in this record's test command list.
+- Decided in this document: every job in `.github/workflows/` that lints, tests or generates MUST do so by calling one of the `lint`, `test` or `new` recipes, not by calling `cargo`, `python` or a lint tool directly.
 - A workflow file under `.github/workflows/` (the crate CI workflow) MUST run `just lint` and `just test` at the repository root on every pull request.
 
 **MUST NOT statements:**
 
-- The standard SC base command name `lint` MUST NOT be renamed or aliased to another primary name.
-- The standard SC base command name `test` MUST NOT be renamed or aliased to another primary name.
+- `lint` is a standard SC base command name; it MUST NOT be renamed or aliased to another primary name.
+- `test` is a standard SC base command name; it MUST NOT be renamed or aliased to another primary name.
 
 ### Rationale
 
@@ -1090,8 +1090,12 @@ This is a property of a project generated from `template/`.
 **MUST statements:**
 
 - Every operation response, on every surface, MUST be the sc-ai-cli envelope: a JSON object with exactly the four keys `version`, `ok`, `data` and `error`, implemented by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).
-- On success `ok` MUST be `true`, `data` MUST hold the operation's response struct, and `error` MUST be `null`.
-- On failure `ok` MUST be `false`, `data` MUST be `null`, and `error` MUST be an `OpError` object.
+- On success `ok` MUST be `true`.
+- On success `data` MUST hold the operation's response struct.
+- On success `error` MUST be `null`.
+- On failure `ok` MUST be `false`.
+- On failure `data` MUST be `null`.
+- On failure `error` MUST be an `OpError` object.
 - REST: the HTTP response body of an operation route MUST be that envelope as JSON.
 - The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.
 - When `ok` is `false`, that `CallToolResult` MUST be flagged as an error result (REQ-CMD-0005).
@@ -1597,7 +1601,7 @@ configuration and does not depend on the daemon crate for that type.
 - The template MUST be configured by `template/cargo-generate.toml`.
 - The template MUST render a Cargo workspace.
 - `crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is `true`.
-- It MUST be listed in the rendered `.gitignore`.
+- `config/local.json` MUST be listed in the rendered `.gitignore`.
 - The rendered crates MUST have these dependencies: (see table above)
 - The project's `Stores` struct MUST be defined in the `service` crate.
 - `cli` MUST use `sc-transport` with its `server` cargo feature disabled.
@@ -2050,7 +2054,7 @@ on cargo-generate 0.25.1. The syntax and pin are in Active
 
 **MUST statements:**
 
-- `cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST generate a project.
+- `cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST render the `template/` subtree as a Cargo workspace named `<project>`.
 - That command MUST prompt in the terminal for each option.
 - Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.
 - Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.
@@ -3236,17 +3240,17 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, similar schemas permit tables or columns that exist on only one side, as specified by this record's success criterion.
+Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, tables or columns may exist on only one side, as specified by this record's success criterion.
 
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
 
-Two stores in one application use the same schema or a similar schema.
-
 **MUST statements:**
 
-- Two stores in one application use the same schema or a similar schema.
+- In the copy pattern, generation MUST produce the same schema on both stores.
+- In the host-aggregate pattern, generation MUST support tables present on only one side.
+- In the host-aggregate pattern, generation MUST support columns present on only one side.
 
 ### Rationale
 
@@ -4138,7 +4142,7 @@ The generated-tree comparison is an automated test. The test stubs Wyvern, so
 CI does not need the real binary. It runs the driver once with that stub
 returning the answers in one fixture, and once with `--var-file` on the same
 fixture, then compares the two generated trees. The comparison excludes
-`target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/` (the
+`target/`, the `[patch.crates-io]` checkout patch (the generated root `Cargo.toml` section mapping SDK crate names to local checkout paths), `.sc-lint/venv/` (the
 local sc-lint install embeds the destination path), and `.sc-compose/logs/`
 (the generator log contains timestamps). Success criteria 1 to 3 remain the
 check that a machine with Wyvern emits that fixture.
@@ -4146,13 +4150,14 @@ check that a machine with Wyvern emits that fixture.
 **MUST statements:**
 
 - The answers JSON object produced by the Wyvern wizard under `wizard/` MUST validate against `wizard/answers.schema.json`.
-- When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the wizard's answers object MUST equal that fixture.
-- A project generated from the wizard's answers MUST be identical, file for file, to the project generated from the equal fixture with `--var-file`.
+- When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the parsed JSON answers object produced by the wizard MUST equal the parsed JSON fixture: both have the same keys, and each corresponding value is equal with the same JSON type. Object key order and whitespace do not affect equality.
+- A project generated from the wizard's answers MUST have the same file paths and byte-for-byte file contents as the project generated from the equal fixture with `--var-file`, excluding `target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/`, and `.sc-compose/logs/` from the generated-tree comparison.
 
 **MUST NOT statements:**
 
 - The wizard MUST NOT emit a key that the schema does not define.
 - It MUST NOT omit a key that the schema requires.
+
 ### Rationale
 
 Because the wizard and a hand-written answers file produce the same JSON,
@@ -4603,13 +4608,13 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.
 
 No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.
 
 The prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) "A command or operation registry" does not forbid the shared command path of PRD §3. (2) "A portable query layer" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) "A macro system" and "a code generator of its own" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD §9). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.
 
-The chosen crates are:
+The Job/Crate table lists the chosen crates:
 
 | Job | Crate |
 |---|---|
@@ -4631,16 +4636,13 @@ The chosen crates are:
   project passes `sc_runtime::Daemon::builder()` an ordinary
   `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.
 
-The existing Job/Crate table identifies the standard, widely used crates selected for the jobs in this record.
-
 **MUST statements:**
 
-- Every building block of the four library crates and of the template MUST be a standard, widely used crate.
-- Every such building-block crate MUST be used the way its own documentation shows.
+- For each job in the Job/Crate table, `crates/` and `template/` MUST reuse the listed crate's capability through its documented API, except where a governing requirement or explicit amendment specifies another implementation.
 
 **MUST NOT statements:**
 
-- The repository MUST NOT contain any of the following, in `crates/` or in `template/`:
+- The repository MUST NOT contain, in `crates/` or in `template/`, the items in the prohibited list in this record’s Requirement Statement, subject to the amendments stated there.
 
 ### Rationale
 

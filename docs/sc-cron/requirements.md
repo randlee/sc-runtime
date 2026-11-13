@@ -24,17 +24,7 @@ Definitions: sc-monty is the shared Monty interpreter implementation. The port p
 
 Phase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.
 
-`crates/sc-cron` is a workspace member, ported from beads-cache
-
-`crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
-
-only a temporary normal `sc-command` 0.2.0 Phase C dependency (initial
-
-release 0.1.1) with
-
-`default-features = false` and no features for the canonical port. Canonical
-
-event values remain direct registry `sc-observability-types` imports.
+`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`. The historical `0.1.1` initial release has five independently versioned public release artifacts: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. For that initial release, ADR-RUN-0017 permits only a temporary normal `sc-command` 0.2.0 Phase C dependency with `default-features = false` and no features for the canonical port. Canonical event values remain direct registry `sc-observability-types` imports.
 
 `sc-runtime` does not name it. The generated daemon may name it only as the
 
@@ -46,11 +36,7 @@ dependency. Documented wiring may reference the crate in comments and schema
 
 descriptions.
 
-The injection API is packaged at workspace version `0.1.1`, with cron the
-
-fifth public library. Registry types use compatible `1.5.0`, unified to exact
-
-1.5.0 by command's temporary pin. Normal cron enables neither command/server
+The injection API is packaged at workspace version `0.1.1`. In the historical `0.1.1` release, the five public library artifacts are `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. Registry types use compatible `1.5.0`, unified to exact 1.5.0 by command's temporary pin. Normal cron enables neither command/server
 
 nor command/test-util; test doubles use dev-dependencies only. The current
 
@@ -70,12 +56,12 @@ original no-sibling boundary.
 - Existing unit assertions MUST be ported.
 - Existing integration assertions MUST be ported.
 - After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.
-- For the initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017 (initial release 0.1.1).
+- For the historical `0.1.1` initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017.
 - That temporary command dependency MUST set `default-features = false`.
 - That temporary command dependency MUST enable no features.
 - Canonical event values MUST remain direct registry sc-observability-types imports.
 - The injection API MUST be packaged at workspace version 0.1.1.
-- Cron MUST be the fifth public library in that release.
+- The historical `0.1.1` initial release MUST have the five public library artifacts `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`.
 - Registry types MUST use the Cargo registry version requirement `"1.5.0"`.
 - Command's temporary pin MUST unify those registry types to exact 1.5.0.
 - Test doubles MUST use dev-dependencies only.

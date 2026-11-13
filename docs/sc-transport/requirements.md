@@ -713,8 +713,9 @@ Definitions: HTTP means Hypertext Transfer Protocol. UDS means Unix domain socke
 
 **MUST statements:**
 
-- The crate `sc-transport` MUST make every client HTTP request, over UDS and over TCP, through `reqwest` 0.13.
-- For UDS it MUST use `reqwest::ClientBuilder::unix_socket(path)`.
+- The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.
+- The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.
+- For UDS, the crate `sc-transport` MUST use `reqwest::ClientBuilder::unix_socket(path)`.
 
 **MUST NOT statements:**
 

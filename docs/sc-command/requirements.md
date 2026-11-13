@@ -333,10 +333,11 @@ response envelope with JSON keys `version`, `ok`, `data`, `error`
 **MUST statements:**
 
 - The conversion MUST behave as follows: (see table above)
-- In both cases `version` MUST be the crate's single envelope contract version (its type and value are an open item recorded in [REQ-CMD-0001](requirements.md)); the caller does not supply it.
+- In both cases `version` MUST be the crate's single envelope contract version (its type and value are an open item recorded in [REQ-CMD-0001](requirements.md)).
 
 **MUST NOT statements:**
 
+- The caller MUST NOT supply `version`.
 - The implementation MUST NOT require any trait bound on `T`.
 - The conversion MUST NOT alter `value` or `op_error`.
 

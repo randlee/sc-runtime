@@ -1,0 +1,456 @@
+[
+  {
+    "id": "NFR-RUN-0003",
+    "field": "must",
+    "old": [
+      "Every building block of the four library crates and of the template MUST be a standard, widely used crate.",
+      "Every such building-block crate MUST be used the way its own documentation shows."
+    ],
+    "new": [
+      "For each job in the Job/Crate table, `crates/` and `template/` MUST reuse the listed crate's capability through its documented API, except where a governing requirement or explicit amendment specifies another implementation."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": true
+  },
+  {
+    "id": "NFR-RUN-0003",
+    "field": "definitions",
+    "old": null,
+    "new": "CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.",
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": true
+  },
+  {
+    "id": "NFR-RUN-0003",
+    "field": "requirement_statement",
+    "old": "Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record.\n\nNo command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.\n\nThe prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) \"A command or operation registry\" does not forbid the shared command path of PRD \u00a73. (2) \"A portable query layer\" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) \"A macro system\" and \"a code generator of its own\" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD \u00a79). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.\n\nThe chosen crates are:\n\n| Job | Crate |\n|---|---|\n| HTTP server and router | `axum` 0.8 |\n| MCP server | `rmcp` 3.x (`StreamableHttpService`, `#[tool]`, `#[tool_router]`) |\n| OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |\n| SQL | `sqlx` 0.9 |\n| CLI parsing | `clap` derive |\n| HTTP client | `reqwest` 0.13 |\n| template rendering | `cargo-generate` |\n\n- a command or operation registry;\n- a macro system of its own: no crate with `proc-macro = true`, and no\n  `macro_rules!` macro that defines operations, routes or tools;\n- a code generator of its own, including a generated Rust HTTP client;\n- a portable query layer, meaning any abstraction that lets one query run on\n  more than one database backend;\n- a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The\n  project passes `sc_runtime::Daemon::builder()` an ordinary\n  `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.\n\nThe existing Job/Crate table identifies the standard, widely used crates selected for the jobs in this record.",
+    "new": "No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.\n\nThe prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) \"A command or operation registry\" does not forbid the shared command path of PRD \u00a73. (2) \"A portable query layer\" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) \"A macro system\" and \"a code generator of its own\" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD \u00a79). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.\n\nThe chosen crates are:\n\n| Job | Crate |\n|---|---|\n| HTTP server and router | `axum` 0.8 |\n| MCP server | `rmcp` 3.x (`StreamableHttpService`, `#[tool]`, `#[tool_router]`) |\n| OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |\n| SQL | `sqlx` 0.9 |\n| CLI parsing | `clap` derive |\n| HTTP client | `reqwest` 0.13 |\n| template rendering | `cargo-generate` |\n\n- a command or operation registry;\n- a macro system of its own: no crate with `proc-macro = true`, and no\n  `macro_rules!` macro that defines operations, routes or tools;\n- a code generator of its own, including a generated Rust HTTP client;\n- a portable query layer, meaning any abstraction that lets one query run on\n  more than one database backend;\n- a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The\n  project passes `sc_runtime::Daemon::builder()` an ordinary\n  `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.",
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": true
+  },
+  {
+    "id": "NFR-TRN-0002",
+    "field": "must",
+    "old": [
+      "The crate `sc-transport` MUST make every client HTTP request, over UDS and over TCP, through `reqwest` 0.13.",
+      "For UDS it MUST use `reqwest::ClientBuilder::unix_socket(path)`."
+    ],
+    "new": [
+      "The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.",
+      "The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.",
+      "For UDS it MUST use `reqwest::ClientBuilder::unix_socket(path)`."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-CMD-0003",
+    "field": "must",
+    "old": [
+      "The conversion MUST behave as follows: (see table above)",
+      "In both cases `version` MUST be the crate's single envelope contract version (its type and value are an open item recorded in [REQ-CMD-0001](requirements.md)); the caller does not supply it."
+    ],
+    "new": [
+      "The conversion MUST behave as follows: (see table above)",
+      "In both cases `version` MUST be the crate's single envelope contract version (its type and value are an open item recorded in [REQ-CMD-0001](requirements.md)).",
+      "The caller MUST NOT supply `version`."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-CRON-0001",
+    "field": "must",
+    "old": [
+      "`crates/sc-cron` MUST be a workspace member ported from beads-cache.",
+      "Phase D sc-cron MUST consume the single sc-monty implementation.",
+      "sc-cron MUST retain cron policy.",
+      "sc-cron MUST retain JSON-to/from-value adaptation.",
+      "Hooks MUST receive values rather than JSON strings.",
+      "Existing unit assertions MUST be ported.",
+      "Existing integration assertions MUST be ported.",
+      "After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.",
+      "For the initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017 (initial release 0.1.1).",
+      "That temporary command dependency MUST set `default-features = false`.",
+      "That temporary command dependency MUST enable no features.",
+      "Canonical event values MUST remain direct registry sc-observability-types imports.",
+      "The injection API MUST be packaged at workspace version 0.1.1.",
+      "Cron MUST be the fifth public library in that release.",
+      "Registry types MUST use the Cargo registry version requirement `\"1.5.0\"`.",
+      "Command's temporary pin MUST unify those registry types to exact 1.5.0.",
+      "Test doubles MUST use dev-dependencies only.",
+      "The current local facade MUST be removed during implementation before initial publication.",
+      "Capability-proven upstream cleanup MUST remove cron -> command."
+    ],
+    "new": [
+      "`crates/sc-cron` MUST be a workspace member ported from beads-cache.",
+      "Phase D sc-cron MUST consume the single sc-monty implementation.",
+      "sc-cron MUST retain cron policy.",
+      "sc-cron MUST retain JSON-to/from-value adaptation.",
+      "Hooks MUST receive values rather than JSON strings.",
+      "Existing unit assertions MUST be ported.",
+      "Existing integration assertions MUST be ported.",
+      "After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.",
+      "For the historical `0.1.1` initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017.",
+      "That temporary command dependency MUST set `default-features = false`.",
+      "That temporary command dependency MUST enable no features.",
+      "Canonical event values MUST remain direct registry sc-observability-types imports.",
+      "The injection API MUST be packaged at workspace version 0.1.1.",
+      "In the historical `0.1.1` initial release, `sc-cron` MUST be the fifth named public library artifact in the five-artifact set described in this record.",
+      "Registry types MUST use the Cargo registry version requirement `\"1.5.0\"`.",
+      "Command's temporary pin MUST unify those registry types to exact 1.5.0.",
+      "Test doubles MUST use dev-dependencies only.",
+      "The current local facade MUST be removed during implementation before initial publication.",
+      "Capability-proven upstream cleanup MUST remove cron -> command."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-CRON-0001",
+    "field": "requirement_statement",
+    "old": "Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement \"1.5.0\", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.\n\nPhase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.\n\n`crates/sc-cron` is a workspace member, ported from beads-cache\n\n`crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits\n\nonly a temporary normal `sc-command` 0.2.0 Phase C dependency (initial\n\nrelease 0.1.1) with\n\n`default-features = false` and no features for the canonical port. Canonical\n\nevent values remain direct registry `sc-observability-types` imports.\n\n`sc-runtime` does not name it. The generated daemon may name it only as the\n\noptional `cron` dependency selected by the embedding application; default\n\ngenerated builds do not link it. Here \"name\" means a Cargo or other manifest\n\ndependency. Documented wiring may reference the crate in comments and schema\n\ndescriptions.\n\nThe injection API is packaged at workspace version `0.1.1`, with cron the\n\nfifth public library. Registry types use compatible `1.5.0`, unified to exact\n\n1.5.0 by command's temporary pin. Normal cron enables neither command/server\n\nnor command/test-util; test doubles use dev-dependencies only. The current\n\nlocal facade is removed during implementation before initial publication.\n\nCapability-proven upstream cleanup removes cron -> command and restores the\n\noriginal no-sibling boundary.",
+    "new": "Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement \"1.5.0\", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.\n\nPhase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.\n\n`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`. The historical `0.1.1` initial release has five independently versioned public release artifacts: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. For that initial release, ADR-RUN-0017 permits only a temporary normal `sc-command` 0.2.0 Phase C dependency with `default-features = false` and no features for the canonical port. Canonical event values remain direct registry `sc-observability-types` imports.\n\n`sc-runtime` does not name it. The generated daemon may name it only as the\n\noptional `cron` dependency selected by the embedding application; default\n\ngenerated builds do not link it. Here \"name\" means a Cargo or other manifest\n\ndependency. Documented wiring may reference the crate in comments and schema\n\ndescriptions.\n\nThe injection API is packaged at workspace version `0.1.1`. In the historical `0.1.1` release, `sc-cron` is the fifth named artifact in the five-artifact set `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. Registry types use compatible `1.5.0`, unified to exact 1.5.0 by command's temporary pin. Normal cron enables neither command/server\n\nnor command/test-util; test doubles use dev-dependencies only. The current\n\nlocal facade is removed during implementation before initial publication.\n\nCapability-proven upstream cleanup removes cron -> command and restores the\n\noriginal no-sibling boundary.",
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0001",
+    "field": "must",
+    "old": [
+      "The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.",
+      "The workspace members MUST be exactly these library crates. (see table above)",
+      "The repository root MUST also contain the directories and files in the path table above."
+    ],
+    "new": [
+      "The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.",
+      "The workspace members MUST be exactly these library crates. (see table above)",
+      "The repository root MUST contain each directory and file listed in the second table in the Requirement Statement (the table headed `Path | Contents`)."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0004",
+    "field": "must_not",
+    "old": [
+      "The standard SC base command name `lint` MUST NOT be renamed or aliased to another primary name.",
+      "The standard SC base command name `test` MUST NOT be renamed or aliased to another primary name."
+    ],
+    "new": [
+      "`lint` is a standard SC base command name; it MUST NOT be renamed or aliased to another primary name.",
+      "`test` is a standard SC base command name; it MUST NOT be renamed or aliased to another primary name."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0004",
+    "field": "must",
+    "old": [
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `lint` with its table-specified behavior.",
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `test` with its table-specified behavior.",
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define `new <dest>` with its table-specified behavior.",
+      "`just test` MUST run all of these.",
+      "Decided in this document: every job in `.github/workflows/` that lints, tests or generates MUST do so by calling one of these recipes, not by calling `cargo`, `python` or a lint tool directly.",
+      "A workflow file under `.github/workflows/` (the crate CI workflow) MUST run `just lint` and `just test` at the repository root on every pull request."
+    ],
+    "new": [
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `lint` recipe with the behavior specified in the `just lint` table row.",
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `test` recipe with the behavior specified in the `just test` table row.",
+      "The file `Justfile` (capital J) at the root of `randlee/sc-runtime` MUST define the `new <dest>` recipe with the behavior specified in the `just new <dest>` table row.",
+      "`just test` MUST execute all six numbered entries in this record's test command list.",
+      "Decided in this document: every job in `.github/workflows/` that lints, tests or generates MUST do so by calling one of the `lint`, `test` or `new` recipes, not by calling `cargo`, `python` or a lint tool directly.",
+      "A workflow file under `.github/workflows/` (the crate CI workflow) MUST run `just lint` and `just test` at the repository root on every pull request."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0004",
+    "field": "requirement_statement",
+    "old": "Definitions: SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.\n\nThat is the name `sc-lint init --just` writes. The first line stays the sc-lint init header.\n\n| Recipe | Behaviour |\n|---|---|\n| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. It MUST include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |\n| `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |\n| `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |\n\nThe list is decided in this document; the sc-runtime design names only the recipe.\n\n1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.96; see items 2 and 6).\n2. `cargo test -p sc-cron` with default features.\n3. `cargo test -p sc-config`, `cargo test -p sc-transport`,\n   `cargo test -p sc-command` and `cargo test -p sc-runtime`, each with\n   default cargo features. These are needed because `cargo test --workspace`\n   builds `sc-transport` and `sc-command` once with their `server` feature\n   on (`sc-runtime` enables it, and cargo unifies features across the\n   packages it builds together), so it never tests their default-feature\n   build.\n4. `cargo test -p sc-transport --features server` and\n   `cargo test -p sc-command --features server`.\n5. The generator contract tests under `tests/unit/`.\n6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`\n   1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).\n\nThere is exactly one recorded exception: the job required by [REQ-RUN-0306](requirements.md), which proves that plain `cargo generate` works without the driver, and therefore runs `cargo generate --path template ...` and `cargo build --workspace` directly.\n\n`just lint` with no profile runs the sc-lint 0.8.6 full profile through\n`.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the\n`boundary` lint), line-counts, `cargo fmt --all -- --check`,\n`cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and\n`cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on\n**rustc 1.96**. `just lint gates`\nis the early profile of boundary plus line-counts. The line-counts key is\n`[line_counts] max_production_lines` and its value is `1000` for non-test\nfiles under `crates/*/src`. `template/**/*.rs` is not configured in this\nsprint.",
+    "new": "Definitions: SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.\n\nThe SC base command names `lint` and `test` are the recipe names that `sc-lint init --just` writes. The first line stays the sc-lint initialization header.\n\n| Recipe | Behaviour |\n|---|---|\n| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. It MUST include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |\n| `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |\n| `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |\n\nThe test command list is specified in this record; the sc-runtime design names only the recipe.\n\n1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.96; see items 2 and 6).\n2. `cargo test -p sc-cron` with default features.\n3. `cargo test -p sc-config`, `cargo test -p sc-transport`,\n   `cargo test -p sc-command` and `cargo test -p sc-runtime`, each with\n   default cargo features. These are needed because `cargo test --workspace`\n   builds `sc-transport` and `sc-command` once with their `server` feature\n   on (`sc-runtime` enables it, and cargo unifies features across the\n   packages it builds together), so it never tests their default-feature\n   build.\n4. `cargo test -p sc-transport --features server` and\n   `cargo test -p sc-command --features server`.\n5. The generator contract tests under `tests/unit/`.\n6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`\n   1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).\n\nThere is exactly one recorded exception: the job required by [REQ-RUN-0306](requirements.md), which proves that plain `cargo generate` works without the driver, and therefore runs `cargo generate --path template ...` and `cargo build --workspace` directly.\n\n`just lint` with no profile runs the sc-lint 0.8.6 full profile through\n`.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the\n`boundary` lint), line-counts, `cargo fmt --all -- --check`,\n`cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and\n`cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on\n**rustc 1.96**. `just lint gates`\nis the early profile of boundary plus line-counts. The line-counts key is\n`[line_counts] max_production_lines` and its value is `1000` for non-test\nfiles under `crates/*/src`. `template/**/*.rs` is not configured in this\nsprint.",
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0203",
+    "field": "must",
+    "old": [
+      "Every operation response, on every surface, MUST be the sc-ai-cli envelope: a JSON object with exactly the four keys `version`, `ok`, `data` and `error`, implemented by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).",
+      "On success `ok` MUST be `true`, `data` MUST hold the operation's response struct, and `error` MUST be `null`.",
+      "On failure `ok` MUST be `false`, `data` MUST be `null`, and `error` MUST be an `OpError` object.",
+      "REST: the HTTP response body of an operation route MUST be that envelope as JSON.",
+      "The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.",
+      "When `ok` is `false`, that `CallToolResult` MUST be flagged as an error result (REQ-CMD-0005).",
+      "CLI: a command given `--json` MUST print to stdout the envelope it received from the daemon, unchanged: parsing the printed text yields a JSON value equal to the REST response body, including any content inside `data` or `error.details` that the CLI's own types do not know about.",
+      "For the same operation, the same input and the same daemon state, the envelope obtained through REST, through MCP and through CLI `--json` MUST be equal as JSON values."
+    ],
+    "new": [
+      "Every operation response, on every surface, MUST be the sc-ai-cli envelope: a JSON object with exactly the four keys `version`, `ok`, `data` and `error`, implemented by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).",
+      "On success `ok` MUST be `true`.",
+      "On success `data` MUST hold the operation's response struct.",
+      "On success `error` MUST be `null`.",
+      "On failure `ok` MUST be `false`, `data` MUST be `null`, and `error` MUST be an `OpError` object.",
+      "REST: the HTTP response body of an operation route MUST be that envelope as JSON.",
+      "The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.",
+      "When `ok` is `false`, that `CallToolResult` MUST be flagged as an error result (REQ-CMD-0005).",
+      "CLI: a command given `--json` MUST print to stdout the envelope it received from the daemon, unchanged: parsing the printed text yields a JSON value equal to the REST response body, including any content inside `data` or `error.details` that the CLI's own types do not know about.",
+      "For the same operation, the same input and the same daemon state, the envelope obtained through REST, through MCP and through CLI `--json` MUST be equal as JSON values."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0301",
+    "field": "must",
+    "old": [
+      "`template/` in the `randlee/sc-runtime` repository MUST be a standard `cargo-generate` template.",
+      "The template MUST be configured by `template/cargo-generate.toml`.",
+      "The template MUST render a Cargo workspace.",
+      "`crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is `true`.",
+      "It MUST be listed in the rendered `.gitignore`.",
+      "The rendered crates MUST have these dependencies: (see table above)",
+      "The project's `Stores` struct MUST be defined in the `service` crate.",
+      "`cli` MUST use `sc-transport` with its `server` cargo feature disabled.",
+      "`cli` MUST use `sc-command` with its `server` cargo feature disabled.",
+      "Generated feature `cron` MUST enable the optional daemon dependency on `sc-cron`.",
+      "Generated feature `monty` MUST imply `cron`.",
+      "Generated feature `monty` MUST enable `sc-cron/monty`.",
+      "`service` MUST take `sc-command` (default features) as a direct dependency: by rule 7 it may not have a dependency on `sc-runtime`, so a re-export from `sc-runtime` cannot reach it."
+    ],
+    "new": [
+      "`template/` in the `randlee/sc-runtime` repository MUST be a standard `cargo-generate` template.",
+      "The template MUST be configured by `template/cargo-generate.toml`.",
+      "The template MUST render a Cargo workspace.",
+      "`crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is `true`.",
+      "`config/local.json` MUST be listed in the rendered `.gitignore`.",
+      "The rendered crates MUST have these dependencies: (see table above)",
+      "The project's `Stores` struct MUST be defined in the `service` crate.",
+      "`cli` MUST use `sc-transport` with its `server` cargo feature disabled.",
+      "`cli` MUST use `sc-command` with its `server` cargo feature disabled.",
+      "Generated feature `cron` MUST enable the optional daemon dependency on `sc-cron`.",
+      "Generated feature `monty` MUST imply `cron`.",
+      "Generated feature `monty` MUST enable `sc-cron/monty`.",
+      "`service` MUST take `sc-command` (default features) as a direct dependency: by rule 7 it may not have a dependency on `sc-runtime`, so a re-export from `sc-runtime` cannot reach it."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0306",
+    "field": "must",
+    "old": [
+      "`cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST generate a project.",
+      "That command MUST prompt in the terminal for each option.",
+      "Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.",
+      "Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.",
+      "The template tree MUST be the same one the driver uses.",
+      "Accepting every default MUST produce a project in which `cargo build --workspace` exits 0."
+    ],
+    "new": [
+      "`cargo generate --git https://github.com/randlee/sc-runtime template --name <project>` MUST render the `template/` subtree as a Cargo workspace named `<project>`.",
+      "That command MUST prompt in the terminal for each option.",
+      "Every placeholder in `template/cargo-generate.toml` MUST carry its own `prompt` text.",
+      "Where an option has a default, its placeholder in `template/cargo-generate.toml` MUST carry its own `default`, identical to the default in `wizard/answers.schema.json`.",
+      "The template tree MUST be the same one the driver uses.",
+      "Accepting every default MUST produce a project in which `cargo build --workspace` exits 0."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "REQ-RUN-0327",
+    "field": "must",
+    "old": [
+      "Two stores in one application use the same schema or a similar schema."
+    ],
+    "new": [
+      "In the copy pattern, generation MUST produce the same schema on both stores.",
+      "In the host-aggregate pattern, generation MUST support tables present on only one side.",
+      "In the host-aggregate pattern, generation MUST support columns present on only one side."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": true
+  },
+  {
+    "id": "REQ-RUN-0327",
+    "field": "requirement_statement",
+    "old": "Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, similar schemas permit tables or columns that exist on only one side, as specified by this record's success criterion.\n\nThis record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.\n\nSynchronization between databases is deferred. This requirement binds nothing until it is taken up again.\n\nTwo stores in one application use the same schema or a similar schema.",
+    "new": "Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, tables or columns may exist on only one side, as specified by this record's success criterion.\n\nThis record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.\n\nSynchronization between databases is deferred. This requirement binds nothing until it is taken up again.",
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": true
+  },
+  {
+    "id": "REQ-RUN-0603",
+    "field": "must",
+    "old": [
+      "The answers JSON object produced by the Wyvern wizard under `wizard/` MUST validate against `wizard/answers.schema.json`.",
+      "When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the wizard's answers object MUST equal that fixture.",
+      "A project generated from the wizard's answers MUST be identical, file for file, to the project generated from the equal fixture with `--var-file`."
+    ],
+    "new": [
+      "The answers JSON object produced by the Wyvern wizard under `wizard/` MUST validate against `wizard/answers.schema.json`.",
+      "When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the parsed JSON answers object produced by the wizard MUST equal the parsed JSON fixture: both have the same keys, and each corresponding value is equal with the same JSON type. Object key order and whitespace do not affect equality.",
+      "A project generated from the wizard's answers MUST be identical, file for file, to the project generated from the equal fixture with `--var-file`. The generated-tree comparison excludes `target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/`, and `.sc-compose/logs/`; every other file matches."
+    ],
+    "why": "Apply the per-record Luna rewrite following the one-call Jev diagnosis with ten extra questions.",
+    "tightening": false
+  },
+  {
+    "id": "NFR-RUN-0003",
+    "field": "requirement_statement",
+    "old": "Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.\n\nNo command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.\n\nThe prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) \"A command or operation registry\" does not forbid the shared command path of PRD \u00a73. (2) \"A portable query layer\" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) \"A macro system\" and \"a code generator of its own\" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD \u00a79). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.\n\nThe chosen crates are:\n\n| Job | Crate |\n|---|---|\n| HTTP server and router | `axum` 0.8 |\n| MCP server | `rmcp` 3.x (`StreamableHttpService`, `#[tool]`, `#[tool_router]`) |\n| OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |\n| SQL | `sqlx` 0.9 |\n| CLI parsing | `clap` derive |\n| HTTP client | `reqwest` 0.13 |\n| template rendering | `cargo-generate` |\n\n- a command or operation registry;\n- a macro system of its own: no crate with `proc-macro = true`, and no\n  `macro_rules!` macro that defines operations, routes or tools;\n- a code generator of its own, including a generated Rust HTTP client;\n- a portable query layer, meaning any abstraction that lets one query run on\n  more than one database backend;\n- a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The\n  project passes `sc_runtime::Daemon::builder()` an ordinary\n  `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.",
+    "new": "Definitions: CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. API means application programming interface. ADR means architecture decision record. A building block is a crate used to provide one of the jobs listed in the Job/Crate table. A documented API is an API shown in that crate's documentation for the selected job. A governing requirement or explicit amendment takes precedence over the table's crate choice for a job it specifically addresses.\n\nNo command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. The existing repo-internal macro policy and its success criteria stand; Phase D builds no generator. The historical generator clause below does not forbid consumer-side command generation.\n\nThe prohibited list below was a design recommendation, not an owner requirement, and three of its entries no longer bind as written. (1) \"A command or operation registry\" does not forbid the shared command path of PRD \u00a73. (2) \"A portable query layer\" forbids passing SQL across backends; it does not forbid `Storage<T>`, which carries no SQL and is required by PRD-STO-2. (3) \"A macro system\" and \"a code generator of its own\" are undecided, not prohibited: the owner is considering an sc-compose or syn-based generator (PRD \u00a79). Success criterion 1 stands until that decision. The prohibition on wrapper types around `axum`, `rmcp` and `sqlx` stands.\n\nThe Job/Crate table lists the chosen crates:\n\n| Job | Crate |\n|---|---|\n| HTTP server and router | `axum` 0.8 |\n| MCP server | `rmcp` 3.x (`StreamableHttpService`, `#[tool]`, `#[tool_router]`) |\n| OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |\n| SQL | `sqlx` 0.9 |\n| CLI parsing | `clap` derive |\n| HTTP client | `reqwest` 0.13 |\n| template rendering | `cargo-generate` |\n\n- a command or operation registry;\n- a macro system of its own: no crate with `proc-macro = true`, and no\n  `macro_rules!` macro that defines operations, routes or tools;\n- a code generator of its own, including a generated Rust HTTP client;\n- a portable query layer, meaning any abstraction that lets one query run on\n  more than one database backend;\n- a wrapper type around an `axum`, `rmcp` or `sqlx` type in a public API. The\n  project passes `sc_runtime::Daemon::builder()` an ordinary\n  `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.",
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "NFR-RUN-0003",
+    "field": "must_not",
+    "old": [
+      "The repository MUST NOT contain any of the following, in `crates/` or in `template/`:"
+    ],
+    "new": [
+      "The repository MUST NOT contain, in `crates/` or in `template/`, the items in the prohibited list in this record\u2019s Requirement Statement, subject to the amendments stated there."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "NFR-TRN-0002",
+    "field": "must",
+    "old": [
+      "The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.",
+      "The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.",
+      "For UDS it MUST use `reqwest::ClientBuilder::unix_socket(path)`."
+    ],
+    "new": [
+      "The crate `sc-transport` MUST make every client HTTP request over UDS through `reqwest` 0.13.",
+      "The crate `sc-transport` MUST make every client HTTP request over TCP through `reqwest` 0.13.",
+      "For UDS, the crate `sc-transport` MUST use `reqwest::ClientBuilder::unix_socket(path)`."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-CRON-0001",
+    "field": "must",
+    "old": [
+      "`crates/sc-cron` MUST be a workspace member ported from beads-cache.",
+      "Phase D sc-cron MUST consume the single sc-monty implementation.",
+      "sc-cron MUST retain cron policy.",
+      "sc-cron MUST retain JSON-to/from-value adaptation.",
+      "Hooks MUST receive values rather than JSON strings.",
+      "Existing unit assertions MUST be ported.",
+      "Existing integration assertions MUST be ported.",
+      "After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.",
+      "For the historical `0.1.1` initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017.",
+      "That temporary command dependency MUST set `default-features = false`.",
+      "That temporary command dependency MUST enable no features.",
+      "Canonical event values MUST remain direct registry sc-observability-types imports.",
+      "The injection API MUST be packaged at workspace version 0.1.1.",
+      "In the historical `0.1.1` initial release, `sc-cron` MUST be the fifth named public library artifact in the five-artifact set described in this record.",
+      "Registry types MUST use the Cargo registry version requirement `\"1.5.0\"`.",
+      "Command's temporary pin MUST unify those registry types to exact 1.5.0.",
+      "Test doubles MUST use dev-dependencies only.",
+      "The current local facade MUST be removed during implementation before initial publication.",
+      "Capability-proven upstream cleanup MUST remove cron -> command."
+    ],
+    "new": [
+      "`crates/sc-cron` MUST be a workspace member ported from beads-cache.",
+      "Phase D sc-cron MUST consume the single sc-monty implementation.",
+      "sc-cron MUST retain cron policy.",
+      "sc-cron MUST retain JSON-to/from-value adaptation.",
+      "Hooks MUST receive values rather than JSON strings.",
+      "Existing unit assertions MUST be ported.",
+      "Existing integration assertions MUST be ported.",
+      "After d-9, sc-cron-commands MUST consume the common sc-command read/write helpers.",
+      "For the historical `0.1.1` initial release, the canonical sc-cron port MUST use only the temporary normal sc-command 0.2.0 Phase C dependency allowed by ADR-RUN-0017.",
+      "That temporary command dependency MUST set `default-features = false`.",
+      "That temporary command dependency MUST enable no features.",
+      "Canonical event values MUST remain direct registry sc-observability-types imports.",
+      "The injection API MUST be packaged at workspace version 0.1.1.",
+      "The historical `0.1.1` initial release MUST have the five public library artifacts `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`.",
+      "Registry types MUST use the Cargo registry version requirement `\"1.5.0\"`.",
+      "Command's temporary pin MUST unify those registry types to exact 1.5.0.",
+      "Test doubles MUST use dev-dependencies only.",
+      "The current local facade MUST be removed during implementation before initial publication.",
+      "Capability-proven upstream cleanup MUST remove cron -> command."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-CRON-0001",
+    "field": "requirement_statement",
+    "old": "Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement \"1.5.0\", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.\n\nPhase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.\n\n`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`. The historical `0.1.1` initial release has five independently versioned public release artifacts: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. For that initial release, ADR-RUN-0017 permits only a temporary normal `sc-command` 0.2.0 Phase C dependency with `default-features = false` and no features for the canonical port. Canonical event values remain direct registry `sc-observability-types` imports.\n\n`sc-runtime` does not name it. The generated daemon may name it only as the\n\noptional `cron` dependency selected by the embedding application; default\n\ngenerated builds do not link it. Here \"name\" means a Cargo or other manifest\n\ndependency. Documented wiring may reference the crate in comments and schema\n\ndescriptions.\n\nThe injection API is packaged at workspace version `0.1.1`. In the historical `0.1.1` release, `sc-cron` is the fifth named artifact in the five-artifact set `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. Registry types use compatible `1.5.0`, unified to exact 1.5.0 by command's temporary pin. Normal cron enables neither command/server\n\nnor command/test-util; test doubles use dev-dependencies only. The current\n\nlocal facade is removed during implementation before initial publication.\n\nCapability-proven upstream cleanup removes cron -> command and restores the\n\noriginal no-sibling boundary.",
+    "new": "Definitions: sc-monty is the shared Monty interpreter implementation. The port preserves the existing test assertions while moving that implementation. The local facade is the current unpublished observability-types shim. A sibling edge is a dependency on another workspace library crate. Naming a crate here means a manifest dependency; comments and schema descriptions may reference documented wiring. API means application programming interface. Registry types are the canonical event types imported from the published sc-observability-types crate. The temporary pin is the exact 1.5.0 command dependency described in ADR-RUN-0017. The compatible 1.5.0 requirement is Cargo's ordinary version requirement \"1.5.0\", before the command dependency's exact pin unifies resolution. Test doubles are substitute components used only by tests. Capability-proven upstream cleanup is the removal of the temporary cron-to-command logging dependency after the upstream canonical logging capability required by ADR-RUN-0017 has been verified. Server-feature leakage is activation of server implementation features through the common-helper dependency edges.\n\nPhase D sc-cron consumes the single sc-monty implementation and no longer directly depends on monty/monty-types. It retains cron policy and JSON-to/from-value adaptation; hooks receive values rather than JSON strings. sc-sha is permitted for SHA-256 cache keys. No independent Monty compile/session/host/limits/dump/load engine remains here. Existing unit and integration assertions are ported without deletion or weakening. sc-cron-commands consumes the common sc-command read/write helpers after d-9, without server-feature leakage.\n\n`crates/sc-cron` is a workspace member, ported from beads-cache at `develop`. The historical `0.1.1` initial release has five independently versioned public release artifacts: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. For that initial release, ADR-RUN-0017 permits only a temporary normal `sc-command` 0.2.0 Phase C dependency with `default-features = false` and no features for the canonical port. Canonical event values remain direct registry `sc-observability-types` imports.\n\n`sc-runtime` does not name it. The generated daemon may name it only as the\n\noptional `cron` dependency selected by the embedding application; default\n\ngenerated builds do not link it. Here \"name\" means a Cargo or other manifest\n\ndependency. Documented wiring may reference the crate in comments and schema\n\ndescriptions.\n\nThe injection API is packaged at workspace version `0.1.1`. In the historical `0.1.1` release, the five public library artifacts are `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and optional `sc-cron`. Registry types use compatible `1.5.0`, unified to exact 1.5.0 by command's temporary pin. Normal cron enables neither command/server\n\nnor command/test-util; test doubles use dev-dependencies only. The current\n\nlocal facade is removed during implementation before initial publication.\n\nCapability-proven upstream cleanup removes cron -> command and restores the\n\noriginal no-sibling boundary.",
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-RUN-0001",
+    "field": "must",
+    "old": [
+      "The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.",
+      "The workspace members MUST be exactly these library crates. (see table above)",
+      "The repository root MUST contain each directory and file listed in the second table in the Requirement Statement (the table headed `Path | Contents`)."
+    ],
+    "new": [
+      "The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.",
+      "The workspace members MUST be exactly these library crates. (see table above)",
+      "The repository root MUST contain each directory and file listed in the second table in the Requirement Statement (the table headed `Path | Contents`), except that `examples/spike/` is exempt at and after the `v0.1.0` tag."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-RUN-0203",
+    "field": "must",
+    "old": [
+      "Every operation response, on every surface, MUST be the sc-ai-cli envelope: a JSON object with exactly the four keys `version`, `ok`, `data` and `error`, implemented by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).",
+      "On success `ok` MUST be `true`.",
+      "On success `data` MUST hold the operation's response struct.",
+      "On success `error` MUST be `null`.",
+      "On failure `ok` MUST be `false`, `data` MUST be `null`, and `error` MUST be an `OpError` object.",
+      "REST: the HTTP response body of an operation route MUST be that envelope as JSON.",
+      "The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.",
+      "When `ok` is `false`, that `CallToolResult` MUST be flagged as an error result (REQ-CMD-0005).",
+      "CLI: a command given `--json` MUST print to stdout the envelope it received from the daemon, unchanged: parsing the printed text yields a JSON value equal to the REST response body, including any content inside `data` or `error.details` that the CLI's own types do not know about.",
+      "For the same operation, the same input and the same daemon state, the envelope obtained through REST, through MCP and through CLI `--json` MUST be equal as JSON values."
+    ],
+    "new": [
+      "Every operation response, on every surface, MUST be the sc-ai-cli envelope: a JSON object with exactly the four keys `version`, `ok`, `data` and `error`, implemented by the type `Envelope<T>` in the `sc-command` crate ([REQ-CMD-0001](sc-command/requirements.md)).",
+      "On success `ok` MUST be `true`.",
+      "On success `data` MUST hold the operation's response struct.",
+      "On success `error` MUST be `null`.",
+      "On failure `ok` MUST be `false`.",
+      "On failure `data` MUST be `null`.",
+      "On failure `error` MUST be an `OpError` object.",
+      "REST: the HTTP response body of an operation route MUST be that envelope as JSON.",
+      "The `CallToolResult` of an operation MCP tool MUST carry that same envelope as its content.",
+      "When `ok` is `false`, that `CallToolResult` MUST be flagged as an error result (REQ-CMD-0005).",
+      "CLI: a command given `--json` MUST print to stdout the envelope it received from the daemon, unchanged: parsing the printed text yields a JSON value equal to the REST response body, including any content inside `data` or `error.details` that the CLI's own types do not know about.",
+      "For the same operation, the same input and the same daemon state, the envelope obtained through REST, through MCP and through CLI `--json` MUST be equal as JSON values."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-RUN-0603",
+    "field": "must",
+    "old": [
+      "The answers JSON object produced by the Wyvern wizard under `wizard/` MUST validate against `wizard/answers.schema.json`.",
+      "When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the parsed JSON answers object produced by the wizard MUST equal the parsed JSON fixture: both have the same keys, and each corresponding value is equal with the same JSON type. Object key order and whitespace do not affect equality.",
+      "A project generated from the wizard's answers MUST be identical, file for file, to the project generated from the equal fixture with `--var-file`. The generated-tree comparison excludes `target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/`, and `.sc-compose/logs/`; every other file matches."
+    ],
+    "new": [
+      "The answers JSON object produced by the Wyvern wizard under `wizard/` MUST validate against `wizard/answers.schema.json`.",
+      "When a person makes the same choices in the wizard as an answers fixture in `wizard/fixtures/` contains, the parsed JSON answers object produced by the wizard MUST equal the parsed JSON fixture: both have the same keys, and each corresponding value is equal with the same JSON type. Object key order and whitespace do not affect equality.",
+      "A project generated from the wizard's answers MUST have the same file paths and byte-for-byte file contents as the project generated from the equal fixture with `--var-file`, excluding `target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/`, and `.sc-compose/logs/` from the generated-tree comparison."
+    ],
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  },
+  {
+    "id": "REQ-RUN-0603",
+    "field": "requirement_statement",
+    "old": "Equal means the two parsed JSON values are equal: the same keys, each with the same value and JSON type. Key order and whitespace do not matter.\n\nThe generated-tree comparison is an automated test. The test stubs Wyvern, so\nCI does not need the real binary. It runs the driver once with that stub\nreturning the answers in one fixture, and once with `--var-file` on the same\nfixture, then compares the two generated trees. The comparison excludes\n`target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/` (the\nlocal sc-lint install embeds the destination path), and `.sc-compose/logs/`\n(the generator log contains timestamps). Success criteria 1 to 3 remain the\ncheck that a machine with Wyvern emits that fixture.",
+    "new": "Equal means the two parsed JSON values are equal: the same keys, each with the same value and JSON type. Key order and whitespace do not matter.\n\nThe generated-tree comparison is an automated test. The test stubs Wyvern, so\nCI does not need the real binary. It runs the driver once with that stub\nreturning the answers in one fixture, and once with `--var-file` on the same\nfixture, then compares the two generated trees. The comparison excludes\n`target/`, the `[patch.crates-io]` checkout patch (the generated root `Cargo.toml` section mapping SDK crate names to local checkout paths), `.sc-lint/venv/` (the\nlocal sc-lint install embeds the destination path), and `.sc-compose/logs/`\n(the generator log contains timestamps). Success criteria 1 to 3 remain the\ncheck that a machine with Wyvern emits that fixture.",
+    "why": "Terra rewrite reviewed against original material; clarify named subjects, existing exceptions, references and separate field obligations."
+  }
+]
