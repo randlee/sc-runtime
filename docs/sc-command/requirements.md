@@ -628,7 +628,7 @@ envelope object or of the error object is rejected by
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
+Definitions: MCP means Model Context Protocol, implemented by rmcp. The server feature enables server-side axum and rmcp conversions. Third-party dependencies are crates outside the public workspace package set in REQ-RUN-0002; workspace edges are governed by NFR-CMD-0002, including `sc-storage` for the shared command helpers. An upper bound is any version requirement that excludes a later version, including an exact `=` pin, a tilde requirement or an explicit `<` limit.
 
 Phase D dependency requirements: every registry dependency of `sc-command`
 uses its tested floor with no upper bound (REQ-RUN-0002, ANC-037). The floors
@@ -680,9 +680,9 @@ use axum and rmcp.
 - With default features `sc-command` MUST provide `OpError`.
 - With default features `sc-command` MUST provide `ErrorKind`.
 - With default features `sc-command` MUST provide `From<Result<T, OpError>> for Envelope<T>`.
-- With default features the crate's direct non-dev dependencies MUST be exactly `serde`, `serde_json`, and `sc-observability-types`.
+- With default features the crate's direct non-dev third-party dependencies MUST be exactly `serde`, `serde_json`, and `sc-observability-types`.
 - `sc-observability-types` MUST be declared with the registry requirement `">=1.5.0"`.
-- With `--features server` the direct non-dev dependencies MUST be exactly the default-feature dependencies plus `axum` and `rmcp`.
+- With `--features server` the direct non-dev third-party dependencies MUST be exactly the default-feature third-party dependencies plus `axum` and `rmcp`.
 - `axum` MUST be declared with the registry requirement `">=0.8.9"`.
 - `rmcp` MUST be declared with the registry requirement `">=3.9"`.
 - `axum` MUST be declared with `default-features = false`.
@@ -721,16 +721,19 @@ daemon and the CLI share one crate.
    which runs both of them ([REQ-RUN-0004](../requirements.md)); CI does not
    call cargo directly.
 7. `cargo tree -p sc-command -e normal --depth 1 --prefix none` (default
-   features) prints, below the `sc-command` root line, exactly one line
+   features) prints, among the third-party dependency lines below the
+   `sc-command` root line, exactly one line
    beginning with `serde `, one beginning with `serde_json `, and one
-   beginning with `sc-observability-types `, and no other line. The
+   beginning with `sc-observability-types `, and no other third-party line.
+   Workspace dependencies are checked against NFR-CMD-0002; its allowed
+   `sc-storage` edge is not rejected by this third-party check. The
    `sc-observability-types ` line is version 1.5.0 or later.
 8. The same command with `--features server` prints the lines of criterion
    7 plus exactly one line beginning with `axum ` and one beginning with
-   `rmcp `, and no other line.
+   `rmcp `, and no other third-party line.
 9. Inspection of `crates/sc-command/Cargo.toml`: the requirements are
    `sc-observability-types = ">=1.5.0"`, `axum = ">=0.8.9"` and
-   `rmcp = ">=3.9"`, and none of them has an `=`, `~`, `<` or `<=` bound.
+   `rmcp = ">=3.9"`, and none has an exact pin, caret, tilde or explicit upper bound.
 
 ### Related Documents
 
