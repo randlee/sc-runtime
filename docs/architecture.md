@@ -4063,7 +4063,7 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 **Last Updated:** 2026-11-02  
 **Owner:** randlee  
 **Decision Date:** 2026-11-02  
-**Status:** Approved  
+**Status:** Proposed  
 
 ### Context
 
@@ -4115,9 +4115,9 @@ cannot enter cooperative mode, and provider overruns cannot become successful
 
 bounded completion by dropping a waiter or emitting early status.
 
-The framework charter retains custom ScheduleStore/schema and caller-owned
+The cron schedule table is a row struct stored through `Storage<CronRow>` (PRD-CRON-2); this record does not retain a custom ScheduleStore or schema.
 
-legacy integrations. The cooperative guarantees here apply to the standard
+Caller-owned legacy integrations remain. The cooperative guarantees here apply to the standard
 
 path and any custom provider explicitly implementing that capability. SQLite
 
@@ -4172,7 +4172,7 @@ C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves the actual 
 **Why Rejected:** NFR-RUN-0002 requires a nonblocking request path. REQ-CRON-0021 instead specifies immediate fixed typed unavailable refusal when full, with no hidden capacity-wait queue, waiter registry or sleep/retry loop. The default capacity is 64, not unlimited.
 ### Implementation
 
-Status as recorded: Approved Phase C target; implementation planned.
+Status as recorded: Approved Phase C target; implementation planned. Under review since 2026-11-11 because PRD-CRON-2 replaces `SqliteScheduleStore` with `Storage<CronRow>`.
 ### Decision
 
 Phase C's default command intake completes this same pre-submission admission
@@ -4200,8 +4200,9 @@ propagation, while real-clock tests prove elapsed bounds. Unsupported stores
 cannot enter cooperative mode, and provider overruns cannot become successful
 bounded completion by dropping a waiter or emitting early status.
 
-The framework charter retains custom ScheduleStore/schema and caller-owned
-legacy integrations. The cooperative guarantees here apply to the standard
+The cron schedule table is a row struct stored through `Storage<CronRow>`
+(PRD-CRON-2); this record does not retain a custom ScheduleStore or schema.
+Caller-owned legacy integrations remain. The cooperative guarantees here apply to the standard
 path and any custom provider explicitly implementing that capability. SQLite
 hooks/TLS/interrupt are bundled-provider mechanisms, not requirements to use
 SQLite in every application. Custom providers forward the live scope and
