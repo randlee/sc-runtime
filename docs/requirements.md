@@ -2737,7 +2737,7 @@ The split into two functions is the whole testability mechanism.
 
 - Each CLI command MUST be written as two pure functions, request construction and result rendering, with the HTTP call between them.
 - The template MUST ship unit tests for each example command.
-- Those unit tests MUST need no daemon.
+- The unit tests of the example commands MUST pass when no daemon process is running.
 - Those unit tests MUST need no socket.
 - Those unit tests MUST need no network.
 - Those unit tests MUST need no child process.
