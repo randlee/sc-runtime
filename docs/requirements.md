@@ -1352,7 +1352,7 @@ Auto-start starts a real daemon process.
 - The started daemon process MUST use the standard output a launchd launch gives it rather than the CLI process's standard output.
 - The started daemon process MUST use the standard error a launchd launch gives it rather than the CLI process's standard error.
 - The started daemon process MUST use the session a launchd launch gives it rather than the CLI process's session.
-- Its arguments MUST be the service definition's arguments plus only the explicit values the daemon needs from the CLI invocation (ADR-RUN-0202 point 4).
+- The CLI-started daemon's arguments MUST be the service definition's arguments plus only the explicit values the daemon needs from the CLI invocation (ADR-RUN-0202 point 4).
 - The daemon's startup directory (its working directory when it starts) MUST always be the same directory, whoever starts it and from wherever, including launchd starts, CLI starts and every CLI invocation directory.
 - Every value the daemon needs from the CLI's invocation MUST be passed explicitly and visibly, never through inherited environment.
 - In particular, an endpoint or instance root that the CLI resolved from `--endpoint` or from `SC_ENDPOINT` in its own environment ([REQ-RUN-0310](requirements.md)) MUST reach the daemon as an explicit argument or configuration value; otherwise the daemon, which does not see the CLI's `SC_ENDPOINT`, would bind somewhere else and the CLI would never reach it.
@@ -1371,7 +1371,7 @@ Auto-start starts a real daemon process.
 - Tests of this item MUST NOT run on a developer's host.
 - The daemon MUST NOT be stopped by the CLI process exiting.
 - The daemon MUST NOT be stopped by its terminal closing.
-- It MUST NOT be the CLI's current directory.
+- The daemon's startup directory MUST NOT be the CLI's current directory.
 - The daemon MUST NOT inherit the environment of the CLI process.
 - The CLI whose daemon lost the `daemon.lock` singleton race MUST NOT treat losing as a failure.
 
@@ -1412,9 +1412,7 @@ item.
    command succeeds, which shows the endpoint reached the daemon explicitly
    (obligation 4), and that the daemon's environment does not contain
    `SC_ENDPOINT`.
-4. A test runs two CLI commands at the same moment against one fresh tempdir
-   instance root with no daemon running. Both succeed, and exactly one
-   daemon process holds `daemon.lock` afterwards.
+4. A test runs two CLI commands against one fresh tempdir instance root with no daemon running. Use explicit synchronization to hold both launched daemon attempts before singleton-lock acquisition, release them to contend for the same lock, and assert both CLI commands succeed with exactly one surviving daemon holding `daemon.lock`.
 5. A test runs a CLI command from one directory, stops the daemon, and runs
    a CLI command from a different directory; each time it reads the started
    daemon's working directory from outside the process and asserts it is the
@@ -1431,13 +1429,7 @@ item.
    tempdir instance root contains no `daemon.lock` and no `daemon.sock`).
    This criterion is conditional on the OPEN above on how auto-start is
    disabled.
-8. A test makes the started daemon fail to become reachable (for example the
-   instance root is a regular file) and runs the command with `--json`. It
-   asserts that within the bounded wait the CLI exits non-zero and prints the
-   envelope of [REQ-RUN-0202](requirements.md): `ok` is `false`, `data` is
-   `null`, `error.code` is `"DAEMON.NOT_RUNNING"` and
-   `error.suggested_action` is `"run <app> daemon start"` with the
-   application name substituted.
+8. A test runs the command with `--json` while driving the started daemon readiness failure with controlled attempt results and clock advancement to the implementation's existing finite bound. It asserts the CLI exits non-zero and prints the envelope of [REQ-RUN-0202](requirements.md): `ok` is `false`, `data` is `null`, `error.code` is `"DAEMON.NOT_RUNNING"` and `error.suggested_action` is `"run <app> daemon start"` with the application name substituted. No wall-clock duration is a pass/fail assertion.
 9. Once the mechanism and service-definition OPENs are decided: on macOS, a
    test compares a CLI-started daemon with the same daemon started by launchd
    from its service definition, and asserts that the environment, working
