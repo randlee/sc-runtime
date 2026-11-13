@@ -658,7 +658,7 @@ Port zero binds once with continuous listener ownership through actual-endpoint 
 - The return type of `DaemonFixture::client()` MUST be `&sc_transport::Client`.
 - The connection state of the client returned by `DaemonFixture::client()` MUST be connected to the fixture daemon endpoint.
 - The string returned by `DaemonFixture::endpoint_str()` MUST equal the resolved Endpoint's `Display` value.
-- The result of `sc_transport::resolve_endpoint` for the fixture endpoint string supplied through `--endpoint` MUST equal `Ok(fixture.endpoint().clone())`.
+- `sc_transport::resolve_endpoint` MUST return `Ok(fixture.endpoint().clone())` for `--endpoint <value>` with `<value>` equal to `DaemonFixture::endpoint_str()`.
 - The sc-transport resolver MUST return the fixture endpoint for `SC_ENDPOINT=<value>` with `<value>` equal to `DaemonFixture::endpoint_str()`.
 - The path returned by `DaemonFixture::instance_root()` MUST equal the fixture's temporary instance-root path.
 - The fixture stop implementation in `sc-runtime` MUST invoke the crate-private shutdown trigger.
