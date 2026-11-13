@@ -4218,11 +4218,16 @@ as [ADR-RUN-0401](architecture.md).
 
 **MUST statements:**
 
-- The driver MUST support exactly three modes of obtaining the answers object: interactive, prefill and non-interactive.
-- In each mode the driver MUST behave as the Behaviour column of the mode table states for that mode.
+- The driver MUST support the interactive mode of obtaining the answers object.
+- The driver MUST support the prefill mode of obtaining the answers object.
+- The driver MUST support the non-interactive mode of obtaining the answers object.
+- In interactive mode, the driver MUST behave as the Behaviour column of the mode table states for the interactive row.
+- In prefill mode, the driver MUST behave as the Behaviour column of the mode table states for the prefill row.
+- In non-interactive mode, the driver MUST behave as the Behaviour column of the mode table states for the non-interactive row.
 - In all three answer-acquisition modes, the answers object MUST be validated against `wizard/answers.schema.json`.
 - In all three answer-acquisition modes, the validated answers object MUST pass through the same generation steps.
-- Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set, then as `wyvern` on `PATH`.
+- When `WYVERN_BIN` is set, wizard code MUST look for Wyvern through `WYVERN_BIN` before it looks for `wyvern` on `PATH`.
+- When `WYVERN_BIN` is unset or does not supply Wyvern, wizard code MUST look for Wyvern as `wyvern` on `PATH`.
 - When `WYVERN_BIN` is unset and `wyvern` is not on `PATH`, `just new <dest>` in wizard mode MUST exit before it runs `cargo generate`.
 - If neither location supplies Wyvern, wizard code MUST name `wyvern` on stderr.
 - If neither location supplies Wyvern, `just new <dest>` in interactive or prefill mode MUST write the text `WYVERN_BIN` to stderr.
@@ -4231,6 +4236,7 @@ as [ADR-RUN-0401](architecture.md).
 
 **MUST NOT statements:**
 
+- `scripts/new_project.py` MUST NOT contain code for any mode of obtaining the answers object other than interactive, prefill and non-interactive.
 - When the wizard ends without the person finishing it, the driver MUST NOT run `cargo generate`.
 
 ### Rationale
