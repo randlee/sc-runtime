@@ -549,12 +549,12 @@ the two crates must stay independent so either can be used alone
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record.
+Definitions: CLI means command-line interface. HTTP means Hypertext Transfer Protocol. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. An endpoint is the resolved Unix domain socket path or TCP socket address represented by `Endpoint` and passed to `Client::new` (REQ-TRN-0001 and REQ-TRN-0005).
 
 2. `code()` returns `DAEMON.NOT_RUNNING`. The variant has no `suggested_action`, no `AppName`, no `sc_observability_types::ErrorCode`, and no `Remediation`. This crate does not name `daemon start`. a-6 maps the string to `ErrorCode` and owns `suggested_action` for every `TransportError`.
 3. Phase A's generated CLI is report-only. Deferred [REQ-RUN-0206](../requirements.md) preserves a possible later optional auto-start layer outside this transport boundary.
@@ -577,8 +577,8 @@ records the same table as the decision for `DaemonNotRunning`.
 - The client ([REQ-TRN-0005](requirements.md): `Client::new`, `get`, `post`) MUST return `TransportError::DaemonNotRunning` from the first `get` or `post` when it cannot open a connection to the endpoint for one of these reasons: the UDS socket file does not exist; the UDS socket file exists but nothing is listening (connection refused); the TCP connection is refused.
 - `DaemonNotRunning` MUST carry a `code` field of type `&'static str`.
 - The `DaemonNotRunning.code` value MUST be exactly `DAEMON.NOT_RUNNING`.
-- `DaemonNotRunning` MUST carry the endpoint.
-- `DaemonNotRunning` MUST carry the cause.
+- `DaemonNotRunning` MUST carry an `endpoint` field identifying the same resolved Unix domain socket path or TCP socket address passed to `Client::new`.
+- `DaemonNotRunning` MUST carry the cause (the underlying connection error that prevented opening the endpoint).
 - A response body that cannot be deserialised into the requested type MUST produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`), which carries the HTTP status, the cause, and `body_preview` (a lossy UTF-8 prefix of at most 512 bytes of the body).
 
 **MUST NOT statements:**
@@ -609,8 +609,7 @@ live. a-6 maps the string and chooses `suggested_action`, including any
 2. A test on Unix does the same against a stale socket file (a listener
    bound and dropped without removing the file) and asserts
    `DaemonNotRunning`.
-3. A test binds `127.0.0.1:0`, records the port, closes the listener, calls
-   the client against that port, and asserts `DaemonNotRunning`.
+3. Through a test-controlled connector, drive the production client connection-failure handling with a TCP endpoint and a connection-refused result on its first connection attempt. Assert that the first get or post returns `TransportError::DaemonNotRunning`. Do not rely on connecting to a port after releasing its listener.
 4. Each of tests 1 to 3 asserts the code equals `DAEMON.NOT_RUNNING`, the
    endpoint equals the endpoint passed to `Client::new`, and the cause is
    present. The matched fields are `code`, `endpoint`, and `cause`.
@@ -622,8 +621,7 @@ live. a-6 maps the string and chooses `suggested_action`, including any
    non-2xx body that deserialises as `T` is `Ok(T)`.
 7. Inspection of `crates/sc-transport/src` finds no use of
    `std::process::Command` or `tokio::process`.
-8. A test calls the client against a route that never responds and asserts
-   `TimedOut`.
+8. Drive the production client's timeout handling with a test-controlled pending request and clock. Advance that clock to the configured request deadline and assert `TransportError::TimedOut`. Do not use wall-clock sleeps, load or event-loop ordering to trigger the deadline.
 
 ---
 
