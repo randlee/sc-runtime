@@ -363,12 +363,12 @@ process environment variables.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API allocates a distinct test directory rather than using a literal path.
+Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API allocates a distinct test directory rather than using a literal path. The convenience form supplies the app name, current-directory-relative `config` path and process environment to the loader. `merge(base, overlay)` recursively merges object keys and replaces other values with the overlay, including arrays and null, as specified in REQ-CFG-0001. Environment-override rules in REQ-CFG-0002 select matching app-prefixed variables, decode their key paths and values, and apply them to the merged document.
 
 This item covers the `Loader` type of the `sc-config` crate
 (`crates/sc-config`).
 
-3. It may be built in memory, for example from a `Vec` of pairs.
+The caller may construct the environment argument entirely in memory as a vector of variable-name/value pairs.
 10. No code in the crate may call `std::env::set_var`,
     `std::env::remove_var` or `std::env::set_current_dir`, in `src/` or in
     tests. Setting the environment or the working directory of a child
@@ -392,24 +392,25 @@ are `OsString` so a non-Unicode value is reported instead of panicking.
 - The crate MUST export a public type `Loader`.
 - A `Loader` MUST be given the app name explicitly by the caller.
 - A `Loader` MUST be given the config directory (a filesystem path) explicitly by the caller.
-- A `Loader` MUST be given the environment source explicitly by the caller.
-- The environment source MUST be an iterator of (variable name, value) pairs supplied by the caller.
+- `Loader::new` MUST require the caller to provide the `environment` argument.
+- The `environment` argument MUST have type `Vec<(OsString, OsString)>`.
+- The entries of `environment` MUST be iterated as `(variable name, value)` pairs.
 - `Loader` MUST expose the public generic method `Loader::load::<T>()`.
-- `Loader::load::<T>()` MUST support every type `T` that implements `serde::de::DeserializeOwned`.
-- `Loader::load::<T>()` MUST return `Result<T, ConfigError>`.
+- For every `T: serde::de::DeserializeOwned`, `Loader::load::<T>()` MUST be callable.
+- The return type of `Loader::load::<T>()` MUST be `Result<T, ConfigError>`.
 - `Loader::load` MUST read `default.json` only from the given config directory.
 - `Loader::load` MUST read `local.json` only from the given config directory.
 - `Loader::load` MUST take overrides only from the given environment source.
-- `Loader::load` MUST apply the same file merge as the free function `load` (REQ-CFG-0001).
-- `Loader::load` MUST apply the same override rules as the free function `load` (REQ-CFG-0002).
-- The free function `load::<T>(app)` MUST be the convenience form.
-- It MUST behave exactly as a `Loader` given app name `app`, the directory `config` resolved against the current working directory, and the process environment.
+- `Loader::load` MUST merge the values from its supplied configuration directory using the `merge(base, overlay)` rules in [REQ-CFG-0001](requirements.md).
+- `Loader::load` MUST apply its supplied environment pairs to the merged document using the override rules in [REQ-CFG-0002](requirements.md).
+- The free function `load::<T>(app)` MUST provide the `Loader::load` operation with default inputs.
+- The behavior of `load::<T>(app)` MUST equal the behavior of a `Loader` supplied with `app`, the path `config` resolved relative to the current working directory, and the process-environment pairs.
 - When reading the process environment, `load` MUST use `std::env::vars_os`.
-- Tests MUST obtain their directories from a temporary-directory API.
+- Each `sc-config` test MUST obtain its test directories from a temporary-directory API that allocates a distinct directory for that test.
 
 **MUST NOT statements:**
 
-- `Loader` MUST NOT read the process environment.
+- `Loader` MUST NOT access the process environment.
 - The free function `load` MUST NOT use `std::env::vars`.
 
 ### Rationale
@@ -439,13 +440,13 @@ for the tests of any program that uses it.
 5. An integration test covers the free function `load` (entries 8 and 9). It
    writes `config/default.json` with content `{"a":0}` under a temporary
    directory `D`. It starts a helper executable with `std::process::Command`,
-   with `.current_dir(D)` and `.env("MY_APP__A", "1")`. The helper calls
+   with `.current_dir(D)`, `.env_clear()` and `.env("MY_APP__A", "1")`. The helper calls
    `sc_config::load::<serde_json::Value>` for `AppName::new("my-app")` and prints the result as
    JSON on standard output. The test asserts the printed value is `{"a":1}`.
    How the helper executable is built (for example a test-only binary target
    of the crate) is left to the implementation.
-6. An integration test covers entry 6. It starts a helper executable the same
-   way, with `.env("MY_APP__A", "1")` set on the child. The helper builds a
+6. An integration test covers entry 6. It starts a helper executable with a cleared child environment and
+   `.env("MY_APP__A", "1")` set on that child. The helper builds a
    `Loader` for app `my-app` over a directory whose `default.json` is
    `{"a":0}`, with an empty in-memory environment, and prints the result. The
    test asserts the printed value is `{"a":0}`: a matching variable in the
