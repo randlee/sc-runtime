@@ -542,7 +542,7 @@ built in parallel without touching each other.
    `sc-observability-types`, `tokio`, `sqlx`) and any obligation-3 target
    that is not a workspace member in that tree are not listed in
    `forbidden_edges` on sc-lint 0.8.0; criterion 5 enforces those names with
-   `cargo tree`. The obligation-3 table states the full policy. The manifests encode the current table, including its feature-conditional dependencies and reverse allowed-dependents entries. The sc-config and sc-transport manifests allow no workspace dependencies; the standalone command build remains sibling-free.
+   `cargo tree`. The obligation-3 table states the full policy. The manifests encode the current table, including its feature-conditional dependencies and reverse allowed-dependents entries. The sc-config and sc-transport manifests allow no workspace dependencies. The `sc-command` manifest allows `sc-storage` only.
 3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
    the default branch.
 4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
