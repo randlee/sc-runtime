@@ -1968,6 +1968,11 @@ A stub sc-compose is an executable that a driver test names in the `SC_COMPOSE` 
 The answers JSON is the answers file that the driver passes to `cargo generate`.
 JSON means JavaScript Object Notation.
 ADR means architecture decision record.
+The wait call is the call in `scripts/new_project.py` that waits for the `cargo generate` process to exit.
+A step is one external command that the driver runs, such as `cargo generate` or `sc-compose render`.
+The failed step is the step whose command exited with a non-zero status.
+An argument pair is the options `--file <input> --output <output>` on one `sc-compose render` command line, which together name one template to render and the file to write.
+The driver reports a step as the failed step by naming that step in the driver's standard error output.
 This record owns the driver's sc-compose step, the failure behaviour of that step and the removal of the `.j2` files.
 
 **MUST statements:**
@@ -1980,12 +1985,12 @@ This record owns the driver's sc-compose step, the failure behaviour of that ste
 - `template/CLAUDE.md.j2` MUST have the sc-ai-cli agent-document form.
 - The `exclude` list in `template/cargo-generate.toml` MUST contain `AGENTS.md.j2`.
 - The `exclude` list in `template/cargo-generate.toml` MUST contain `CLAUDE.md.j2`.
-- In `scripts/new_project.py`, every `sc-compose render` call MUST come after the call that waits for the `cargo generate` process to exit.
+- In `scripts/new_project.py`, the wait call MUST appear before every `sc-compose render` call.
 - In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/AGENTS.md.j2 --output <dest>/AGENTS.md`.
 - In `scripts/new_project.py`, an `sc-compose render` command line MUST pass the argument pair `--file <dest>/CLAUDE.md.j2 --output <dest>/CLAUDE.md`.
 - In `scripts/new_project.py`, every `sc-compose render` command line MUST pass the answers JSON as `--var-file`.
 - In a driver test whose stub sc-compose exits with status 1, the driver MUST exit with a non-zero status.
-- In a driver test whose stub sc-compose exits with status 1, the driver's standard error output MUST name `sc-compose` as the failed step.
+- In a driver test whose stub sc-compose exits with status 1, the failed step that the driver reports MUST be `sc-compose`.
 
 **MUST NOT statements:**
 
