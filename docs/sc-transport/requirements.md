@@ -288,48 +288,57 @@ that tests run in parallel and never touch a developer's real daemon
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol.
+Definitions: CLI means command-line interface.
+HTTP means Hypertext Transfer Protocol.
+UDS means Unix domain socket.
+TCP means Transmission Control Protocol.
+A resolved endpoint is an Endpoint value containing a UDS path or TCP socket address.
+bind is the public asynchronous sc-transport function taking &Endpoint and returning Result<Listener, TransportError>.
+Listener is the sc-transport type owning one bound socket.
+The router is the axum::Router passed to axum::serve.
+A handler is an application function attached to a router route.
+A transport switch is choosing a TCP listener instead of a UDS listener, or a UDS listener instead of a TCP listener.
+Transport-dependent means varying according to whether the listener is UDS or TCP.
+A wrapper is an additional Rust type or function adapting a router or handler.
+Unmodified means no transport-dependent change to the application router or its handlers.
+The server feature gate excludes the bind function and Listener type from builds without server.
+A server build enables the sc-transport Cargo feature server.
 
-In the crate's public-surface sketch these are `bind(&Endpoint) -> Result<Listener, TransportError>` and `Listener`. `Listener` is one type for both transports. `local_endpoint` returns the bound `Endpoint` (`TransportError::Bind` if the TCP address cannot be read). A TCP port of `0` is reported as the port the operating system assigned. `Listener` implements `axum::serve::Listener`.
+The six router/handler portability constraints are checked by source inspection of the shared router-building function, its handlers and the two `axum::serve` call sites in the dual-listener conformance test.
 
-It has no `additional_endpoints` field. A later dual-bind adds a field on that type. v0.1 does not ignore a reserved value. Calling `bind` twice remains valid. Whether `sc_runtime::Daemon::builder()` uses two listeners is owned by [REQ-RT-0001](../sc-runtime/requirements.md); a-5 copies the one-listener decision into the root documents. This crate's dual-bind question is closed.
+`Listener` implements `axum::serve::Listener`. `Listener::local_endpoint()` reports the bound `Endpoint`, including the operating-system-assigned TCP port for a request using port `0`; failure to read the TCP address returns `TransportError::Bind`.
 
-A bind failure is `TransportError::Bind` (`TRANSPORT.BIND`). The endpoint
-lock already being held is `TransportError::EndpointBusy`
-(`TRANSPORT.ENDPOINT_BUSY`). On a non-Unix target, `bind` of a UDS endpoint
-returns `TransportError::UnsupportedEndpoint`
-(`TRANSPORT.UNSUPPORTED_ENDPOINT`). Recovery tells the caller to use a
-`tcp:` endpoint. The parent directory is not created.
+Bind errors, including an occupied address or missing parent directory, use `TransportError::Bind` (`TRANSPORT.BIND`). An already-held endpoint lock returns `TransportError::EndpointBusy` (`TRANSPORT.ENDPOINT_BUSY`). A UDS bind on non-Unix returns `TransportError::UnsupportedEndpoint` (`TRANSPORT.UNSUPPORTED_ENDPOINT`), with recovery directing the caller to a `tcp:` endpoint. Binding does not create the parent directory.
 
-v0.1 `TransportConfig` describes exactly one endpoint.
+v0.1 `TransportConfig` describes exactly one endpoint and has no `additional_endpoints` field or reserved dual-bind value. A later dual-bind extension adds a field on `TransportConfig`. Calling `bind` twice is valid. Runtime use of two listeners belongs to [REQ-RT-0001](../sc-runtime/requirements.md).
 
 **MUST statements:**
 
-- When the cargo feature `server` of the crate `sc-transport` is enabled, the crate MUST expose a public function that takes a resolved endpoint (a UDS path or a TCP socket address) and returns a bound listener.
-- The returned listener MUST be accepted by `axum::serve` (axum 0.8) together with an ordinary `axum::Router`.
-- For a UDS endpoint the function MUST bind a Unix domain socket at the given path.
-- For a TCP endpoint the function MUST bind the given socket address.
-- When the TCP port is `0` the listener MUST let the caller read the actual bound address.
-- One process MUST be able to hold a UDS listener and a TCP listener at the same time.
-- That process MUST be able to serve the same router on both listeners.
-- A bind failure (for example the address is in use, or the directory does not exist) MUST be returned as an `Err` of the crate's error enum `TransportError`.
+- When `server` is enabled, `sc-transport` MUST publicly export `bind`.
+- When `axum::serve` (axum 0.8) serves a `Listener`, HTTP requests MUST reach the supplied unmodified `axum::Router`.
+- On Unix, `bind` for a UDS endpoint MUST bind the supplied socket path.
+- `bind` for a TCP endpoint MUST bind the supplied socket address.
+- For a requested TCP port of `0`, `Listener::local_endpoint()` MUST return the address assigned by the operating system.
+- One process MUST support simultaneous ownership of a UDS listener and a TCP listener.
+- One process MUST be able to serve the same router concurrently on a UDS listener and a TCP listener.
+- When socket binding fails, `sc_transport::bind` MUST return `Err(TransportError::Bind { .. })`.
+- The `bind` export in `crates/sc-transport/src/lib.rs` MUST be guarded by `#[cfg(feature = "server")]`.
+- The `Listener` export in `crates/sc-transport/src/lib.rs` MUST be guarded by `#[cfg(feature = "server")]`.
 
 **MUST NOT statements:**
 
-- The router MUST NOT need any change that depends on whether the listener is UDS or TCP.
-- The router MUST NOT need a type parameter that depends on whether the listener is UDS or TCP.
-- The router MUST NOT need a wrapper that depends on whether the listener is UDS or TCP.
-- Its handlers MUST NOT need any change that depends on whether the listener is UDS or TCP.
-- Its handlers MUST NOT need a type parameter that depends on whether the listener is UDS or TCP.
-- Its handlers MUST NOT need a wrapper that depends on whether the listener is UDS or TCP.
-- The function MUST NOT panic.
-- The function MUST NOT exist in a build without the `server` feature.
-- The listener type MUST NOT exist in a build without the `server` feature.
+- The router MUST NOT require transport-dependent source changes.
+- The router MUST NOT require a transport-dependent generic type parameter.
+- The router MUST NOT require a transport-dependent wrapper.
+- The handler MUST NOT require transport-dependent source changes.
+- The handler MUST NOT require a transport-dependent generic type parameter.
+- The handler MUST NOT require a transport-dependent wrapper.
+- `sc_transport::bind` MUST NOT panic.
 
 ### Rationale
 
