@@ -3316,22 +3316,30 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 **Status:** Draft  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-13
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: A consumer repository is an application project using the framework. A store holds one database engine's rows and SQL. A copy adaptor pairs local SQLite with the remote schema; a host-aggregate adaptor pairs host SQLite with a remote aggregate. SQL means Structured Query Language. The statements below remain subject to the explicit deferral in this record. In the copy pattern, both stores have the same schema. In the host-aggregate pattern, tables or columns may exist on only one side, as specified by this record's success criterion.
+Definitions: The project generator is the `just new` command (`scripts/new_project.py`).
+A store is a database containing tables and rows.
+A two-store layout pairs a local SQLite store with a server store.
+A server store is a Postgres or MySQL store.
+Store migrations are the SQL files in a generated store crate's `migrations` directory.
+A store schema is the set of tables and columns that a store's migrations create.
+A copy-pattern project is a generated project whose two-store layout gives the SQLite store the server store's schema.
+A host-aggregate project is a generated project whose two-store layout pairs one host's SQLite store with a server store that aggregates many hosts.
+A generation flag is a project generator input that assigns one table or one column to one store.
+A one-sided table is a table that a generation flag assigns to only one store.
+A one-sided column is a column of a shared table that a generation flag assigns to only one store.
 
-This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
-
-Synchronization between databases is deferred. This requirement binds nothing until it is taken up again.
+This Draft record is deferred and does not apply to Phase D. It creates no implementation or validation obligation until reopened. Database synchronization is deferred.
 
 **MUST statements:**
 
-- In the copy pattern, generation MUST produce the same schema on both stores.
-- In the host-aggregate pattern, generation MUST support tables present on only one side.
-- In the host-aggregate pattern, generation MUST support columns present on only one side.
+- For a copy-pattern project, the project generator MUST write SQLite store migrations that create the server store schema.
+- For a host-aggregate project, the project generator MUST create each one-sided table only in the store migrations of the store named by its generation flag.
+- For a host-aggregate project, the project generator MUST create each one-sided column only in the store migrations of the store named by its generation flag.
 
 ### Rationale
 
