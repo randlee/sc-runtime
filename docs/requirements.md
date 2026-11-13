@@ -4927,42 +4927,20 @@ the easy path and test suites stay parallel and fast.
 
 ### Requirement Statement
 
-- lint configuration beyond the three REQ-RUN-0307 invocation declarations;
-- copied maintainer crate-boundary rules or manifests;
-- `just` modules or imported `just` files;
-- tooling that checks that the REST, MCP and CLI surfaces stay in step, such
-  as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
-  clap command model.
+Definitions: The template is the `cargo-generate` template in the `template/` directory of this repository. The sc-lint consumer install is `template/sc-lint.toml` (`minimum_version` 0.8.6), `template/.sc-lint/bootstrap.py` and the `template/Justfile` recipes installed by `sc-lint init --just`, all owned by REQ-RUN-0307. Lint configuration is a lint rule, lint level or formatting option set outside the sc-lint consumer install, including a `clippy.toml`, `.clippy.toml`, `rustfmt.toml`, `.rustfmt.toml` or `deny.toml` file, a `[lints]` or `[workspace.lints]` table, and a custom lint rule. A maintainer boundary manifest is a crate-boundary rule or manifest copied from this repository's `boundaries/<crate>/` directories. The configuration-derived inventory is the application crate and allowed-edge list that `template/boundaries/render.py` generates once from the selected crates, as defined in ADR-RUN-0005 and ADR-RUN-0303. A `just` module is a `*.just` file or a `just` file pulled in by `import` or `mod`. A surface snapshot is a stored copy of `openapi.json`, of the MCP `tools/list` result or of the clap command model. A snapshot test is test code that compares a generated `openapi.json`, MCP `tools/list` result or clap command model against a surface snapshot.
 
-The template commits the sc-lint 0.8.6 consumer install:
-`template/sc-lint.toml` (`minimum_version` 0.8.6) and
-`template/.sc-lint/bootstrap.py`, installed with `sc-lint init --just`.
-Public recipes are `setup`, `lint`, `test`, and `upgrade`. The
-consumer-owned recipe `db-prepare` survives a later init. Those files and
-recipes are owned by [REQ-RUN-0307](requirements.md). The template does not
-ship a placeholder `Justfile` and does not hand the install to a later
-prototype-handoff.
+The template commits the sc-lint consumer install and does not ship a placeholder `Justfile`. The public recipes are `setup`, `lint`, `test` and `upgrade`; the consumer-owned recipe `db-prepare` survives a later init. The configuration-derived inventory includes only selected crates and allowed edges, omits disabled store and MCP components, and becomes consumer-owned after setup. All other excluded infrastructure is owned by the sc-lint project.
 
-The narrow fresh-install exception permits configuration-derived application
-crate/edge inventory only, as defined in ADR-RUN-0005/0303. It includes only
-selected crates and allowed edges, omits disabled store/MCP components, and
-becomes consumer-owned after setup. No maintainer manifests, clippy, rustfmt,
-deny, custom rules or `just` modules may be copied.
-
-All other excluded infrastructure is owned by the sc-lint project. The
-consumer pin is `sc-lint.toml`, not a hand-written clippy, rustfmt, deny,
-or `boundaries/` policy.
-
-This requirement restricts `template/` only. It does not restrict how the
-sc-runtime repository lints itself, which includes boundary manifests under
-`boundaries/<crate>/` enforced through `just lint`
-([REQ-RUN-0005](requirements.md)).
-
-The concrete file list in Success Criteria 1 is decided in this document.
+This requirement restricts `template/` only. The sc-runtime repository lints itself with boundary manifests under `boundaries/<crate>/` enforced through `just lint` ([REQ-RUN-0005](requirements.md)).
 
 **MUST NOT statements:**
 
-- The `cargo-generate` template under `template/` MUST NOT contain:
+- Files under `template/` MUST NOT contain lint configuration.
+- Files under `template/` MUST NOT contain a maintainer boundary manifest.
+- Files under `template/` MUST NOT contain a `just` module.
+- Files under `template/` MUST NOT contain a surface snapshot.
+- Files under `template/` MUST NOT contain a snapshot test.
+
 ### Rationale
 
 If the template carried lint rules, every generated project would freeze the
