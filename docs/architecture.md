@@ -1412,16 +1412,15 @@ criterion for the request paths of `crates/sc-transport` and
 ### Related Documents
 
 - [NFR-RUN-0004](requirements.md): requirements must mean less code; the review criteria.
-- [NFR-RUN-0003](requirements.md): standard crates used the documented way; the prohibited
-  constructs.
-- [ADR-RUN-0001](architecture.md): no command registry, macro system or wrapper type.
+- [NFR-RUN-0003](requirements.md): chosen crates used through documented APIs and Phase D scope.
+- [ADR-RUN-0001](architecture.md): the assembly boundary between framework parts and application wiring.
 - [ADR-RUN-0005](architecture.md): lint and `just` infrastructure are left to sc-lint.
 
 ### Context
 
 Command paths need not be hand-written; default direct conversion requires no custom transform. Consumer-side generation remains permitted follow-up work.
 
-Requirements must reduce repeated application code. NFR-RUN-0003 permits the shared command path and typed storage while retaining the current macro checks; later consumer-side generation remains permitted.
+Requirements must reduce repeated application code. NFR-RUN-0003 requires the shared command path and typed storage and describes the current deliverable scope; later consumer-side generation remains permitted.
 
 The purpose of `sc-runtime` is to stop projects hand-assembling the same
 stack (Tokio, Axum, an MCP server, a clap CLI, sqlx stores) differently each
@@ -1443,7 +1442,7 @@ requirements files, the architecture files and the sprint plans.
 4. For each job in the NFR-RUN-0003 Job/Crate table, the public crates of
    REQ-RUN-0002 and the template MUST reuse the chosen crate through its
    documented API, except where a governing requirement specifies otherwise.
-   [NFR-RUN-0003](requirements.md) owns the current prohibitions and Phase D
+   [NFR-RUN-0003](requirements.md) owns the Phase D
    scope: the shared command path and typed storage remain permitted; later
    consumer-side command generation is not built and not forbidden.
 5. Points 1 to 3 apply to these documents themselves: every new or changed
@@ -1457,13 +1456,16 @@ Shared standard components reduce repeated code across consuming projects.
 
 Benefits: projects reuse documented library APIs and maintain less repeated
 application code; the framework avoids owning duplicate surface-snapshot
-tooling, a render engine or a logging facade. The shared command path is not
-the application operation registry prohibited by NFR-RUN-0003. The SQLite
+tooling, a render engine or a logging facade. Registry, portable raw-SQL
+layer and extra wrapper omissions are Phase D scope under NFR-RUN-0003,
+not prohibitions on later consumer choices. The shared command path and
+required typed storage engines remain part of the deliverable. The SQLite
 write actor is `sc-runtime-db-sqlite`, added by [ADR-RUN-0012](architecture.md).
 
 Costs: an otherwise useful addition can be rejected solely because it does
-not save consuming projects code under point 1. Projects use the chosen
-libraries directly and must learn their APIs rather than a framework wrapper.
+not save consuming projects code under point 1. The Phase D implementation uses the chosen
+libraries directly, so projects learn those APIs rather than an extra
+framework facade. Required storage engines still implement `Storage<T>`.
 These admission constraints leave consumer-side generation open without
 creating work to implement it in Phase D.
 
@@ -1493,8 +1495,9 @@ Rejected because none has the split between a daemon and a thin HTTP client; the
 
 Enforcement uses [NFR-RUN-0004](requirements.md), by review of each sprint plan and of each
 new or changed requirement (the reviewer states what code the requirement
-saves a project from writing); [NFR-RUN-0003](requirements.md), by its `proc-macro` and
-`macro_rules!` greps and by `arch-qa` review of each crate's public API.
+saves a project from writing); [NFR-RUN-0003](requirements.md), by its Phase D scope checks and
+`arch-qa` review of the delivered public APIs. Those checks add no later
+consumer-option implementation, test or prohibition.
 
 ## ADR-RUN-0009: Daemon-process tests run in a virtual machine; no test daemon
 

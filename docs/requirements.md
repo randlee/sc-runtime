@@ -4628,16 +4628,18 @@ Definitions: CLI means command-line interface. MCP means Model Context Protocol.
 
 No command path must be hand-written. A later consumer-side generator may produce that path against the delivered sc-runtime. Phase D builds no generator.
 
-The shared command path is the one shared write path and one shared read path of PRD §3, to which a project supplies `Tcli`, `Tsql` and the transform. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is not a registry under this record. A portable query layer is any abstraction that lets one SQL query run on more than one database backend; `Storage<T>` (PRD-STO-1, PRD-STO-2) carries no SQL and is not a portable query layer. An operation-defining declarative macro is a `macro_rules!` macro that defines operations, routes or tools. A wrapper type is a public newtype, struct or trait that wraps an `axum`, `rmcp` or `sqlx` type so that callers use it in place of that type. The project passes `sc_runtime::Daemon::builder()` an ordinary `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.
+The shared command path is the one shared write path and one shared read path of PRD §3, to which a project supplies `Tcli`, `Tsql` and the transform. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is not a registry under this record. A portable query layer is any abstraction that lets one SQL query run on more than one database backend; `Storage<T>` (PRD-STO-1, PRD-STO-2) carries no SQL and is not a portable query layer. An operation-defining declarative macro is a `macro_rules!` macro that defines operations, routes or tools. A wrapper type in this scope is an added facade whose only purpose is to hide a chosen library API. The `Storage<T>` engines required by PRD-STO-2, including a Postgres or MySQL engine holding its `sqlx` pool, supply storage behavior rather than such a facade. The project passes `sc_runtime::Daemon::builder()` an ordinary `utoipa_axum::OpenApiRouter` and an ordinary `rmcp` service.
 
 Code generation for the command pattern, including an sc-compose or syn-based generator, a procedural or declarative macro, and a generated Rust HTTP client, is undecided (PRD §9): not built and not forbidden. Phase D builds no crate with `proc-macro = true` and no operation-defining declarative macro; this is Phase D scope, checked by success criteria 1 and 4, and forbids neither.
+
+Phase D adds no command or operation registry, portable raw-SQL query layer or extra library-hiding wrapper in `crates/` or `template/`. The shared command path, `Storage<T>` and its SQLite, Postgres and MySQL implementations remain required. This describes what is built in Phase D; it does not forbid a later consumer option and creates no work to implement or test one.
 
 The Job/Crate table lists the chosen crates:
 
 | Job | Crate |
 |---|---|
 | HTTP server and router | `axum` 0.8 |
-| MCP server | `rmcp` 3.x (`StreamableHttpService`, `#[tool]`, `#[tool_router]`) |
+| MCP server | `rmcp` (tested floor owned by NFR-RUN-0007; `StreamableHttpService`, `#[tool]`, `#[tool_router]`) |
 | OpenAPI | `utoipa` and `utoipa-axum` (`OpenApiRouter`, `routes!`) |
 | SQL | `sqlx` 0.9 |
 | CLI parsing | `clap` derive |
@@ -4648,15 +4650,9 @@ The Job/Crate table lists the chosen crates:
 
 - For each job in the Job/Crate table, `crates/` and `template/` MUST reuse the listed crate's capability through its documented API, except where a governing requirement or explicit amendment specifies another implementation.
 
-**MUST NOT statements:**
-
-- `crates/` and `template/` MUST NOT contain a command or operation registry.
-- `crates/` and `template/` MUST NOT contain a portable query layer.
-- A public API in `crates/` or `template/` MUST NOT contain a wrapper type.
-
 ### Rationale
 
-Each prohibited item would be code this project has to maintain
+Each additional framework-specific registry, query layer or facade would be code this project has to maintain
 and every generated project has to learn, where a standard crate already does
 the job and is already documented. Standard designs are preferred over
 hand-rolled pieces throughout. The decision that standard designs are
@@ -4668,12 +4664,13 @@ is recorded in [ADR-RUN-0008](architecture.md).
 1. Phase D scope check: at the end of Phase D,
    `grep -rn "proc-macro" --include=Cargo.toml crates template` prints
    nothing.
-2. The `arch-qa` architecture review checks the public API of each library
+2. Phase D scope check: the `arch-qa` architecture review checks the public API of each library
    crate in `crates/` against [ADR-RUN-0001](architecture.md), which states
    that the framework builds the parts and the project wires them in ordinary
-   Rust. It reports no registry type (the shared command path is not one), no
-   portable query layer, no code generator built in Phase D and no wrapper
-   type.
+   Rust. It reports no extra registry, portable raw-SQL layer, library-hiding facade
+   or code generator built in Phase D. The shared command path and required
+   typed storage engines are not rejected by this check. It imposes no
+   implementation, testing or prohibition on later consumer options.
 3. Inspection of the template: the example routes are registered with
    `utoipa_axum::routes!` on an `OpenApiRouter`, the example MCP tools use
    `#[tool]` and `#[tool_router]`, and the CLI uses `clap` derive.

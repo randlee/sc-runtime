@@ -887,9 +887,11 @@ machine, never on a developer's host
 
 ### Requirement Statement
 
-Scope: every rule in this record applies to the `sc-runtime` crate (`crates/sc-runtime`) only. The rules do not restrict `sc-command`, which supplies the shared command path of PRD §3 (one shared write path and one shared read path, to which a project supplies `Tcli`, `Tsql` and the transform), or `sc-storage`, whose `Storage<T>` trait PRD-STO-1 and PRD-STO-2 require. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is outside this crate and is not restricted by this record.
+Scope: every rule in this record describes the Phase D deliverable of the `sc-runtime` crate (`crates/sc-runtime`) only. It does not prohibit later consumer options or public API additions and creates no work to implement or test them. The rules do not restrict `sc-command`, which supplies the shared command path of PRD §3 (one shared write path and one shared read path, to which a project supplies `Tcli`, `Tsql` and the transform), or `sc-storage`, whose `Storage<T>` trait PRD-STO-1 and PRD-STO-2 require. A command or operation registry is any structure in which a project registers operations for the framework to dispatch; the shared command path is outside this crate and is not restricted by this record.
 
 The assembly-only scope of the `sc-runtime` crate does not require hand-written command paths and does not forbid a later consumer-side generator using the delivered framework. Phase D supplies the shared `sc-command` path and default plain conversion and builds no generator; code generation for the command pattern is undecided (PRD §9). Supplying the shared command path from `sc-command` does not expand `sc-runtime` beyond assembly.
+
+Phase D adds no command or operation registry to `sc-runtime`. That omission is release scope, not a prohibition on a later consumer option.
 
 `sc-runtime` is a bootstrap, not a framework layer. The closed facade below describes the Phase D deliverable. Phase D builds no procedural or declarative macro in this crate, whether private or exported. Macro-based command generation remains an undecided consumer option under PRD §9; this scope creates no obligation to implement it and does not forbid it later.
 
@@ -911,18 +913,16 @@ it, so the closed public-surface table above remains complete.
 
 **MUST statements:**
 
-- The public surface MUST be limited to the following kinds of item. (see table above)
+- In Phase D, the public surface MUST match exactly the public-surface table above.
 
 **MUST NOT statements:**
 
-- The crate MUST NOT contain a command or operation registry.
 - The crate MUST NOT define a public type that wraps a `axum` type.
 
 - The crate MUST NOT define a public type that wraps a `rmcp` type.
 
 - The crate MUST NOT define a public type that wraps a `sqlx` type.
 - The crate MUST NOT have any public item outside the closed public-surface table above.
-- The crate MUST NOT have a public trait.
 - The crate MUST NOT have a public free function beyond `mcp_request_body` and the `test-util`-gated `testing::instrument_router`.
 - The crate MUST NOT `pub use` an item from another crate.
 
@@ -960,9 +960,9 @@ libraries, and would be code every project has to learn.
    The terminal run methods exist only in Ready; logger remains same-phase.
    Cleanup and bound receipt reuse the fixed runner; no additional public
    setter, registry, wrapper, typestate or callback mechanism is part of the Phase D facade.
-4. The `arch-qa` architecture review confirms no public type has a field or
-   newtype payload of an `axum`, `rmcp` or `sqlx` type, and no registry
-   structure exists.
+4. Phase D scope check: the `arch-qa` architecture review confirms that the
+   delivered assembly facade adds no library-hiding wrapper type or operation
+   registry. This check does not restrict later consumer options or API additions.
 
 ## NFR-RT-0002: No sqlx, no `sc-observability`, no config loading
 
