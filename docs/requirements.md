@@ -3726,55 +3726,41 @@ mechanically.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-13  
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: An answers object is the generation-option JSON object validated by wizard/answers.schema.json. Refused answers files are the invalid-answer inputs described below. CI means continuous integration.
+Definitions: An answers object is a JSON object of generation options validated by `wizard/answers.schema.json`. The schema keys are the keys listed under `properties` in `wizard/answers.schema.json`. A fixture is a file matching `wizard/fixtures/*.json`. A variant is the set of values a fixture gives to every schema key except `project_name`. CI means continuous integration. Template CI is the CI workflow `.github/workflows/template.yml`, which generates a project from every fixture. The `mcp` key selects whether the generated project contains MCP (Model Context Protocol) code. A schema-invalid answers file is a JSON answers file in `tests/fixtures/refused/` that fails validation against `wizard/answers.schema.json`. The driver is `scripts/new_project.py`. The driver fails closed when it exits with a non-zero status, does not call `cargo generate`, and does not create the destination directory.
 
-A variant is one combination of option values that the template supports.
-
-The default is exercised by [REQ-RUN-0303](requirements.md) criterion 7, not by a fixture.
-
-None of them may match the glob `wizard/fixtures/*.json`. There are two classes:
-
-| Class | What the file is | What must refuse it |
-|---|---|---|
-| schema-invalid | Breaks the schema in one way: a missing required key, a value of the wrong type, a `db` value outside the enum (`both` is this class), or a key the schema does not define. | schema validation |
-| accepted layout | A complete answers object whose `db` is `postgres`, `mysql`, `sqlite-postgres`, or `sqlite-mysql`. Sprint `b-8` accepts these. v0.1 reserved them. | schema validation accepts the file. Amended 2026-10-25 |
-
-- every file matching `wizard/fixtures/*.json` validates against the schema;
-- every schema-invalid file fails schema validation;
-- the driver `scripts/new_project.py`, given a schema-invalid file through
-  `--var-file`, fails closed. Fail closed means: it exits with a non-zero
-  status, it does not run `cargo generate`, and it does not create the
-  destination directory.
-
-The test that the driver fails closed on `db` equal to `both` is owned by
-[REQ-RUN-0303](requirements.md) criterion 4. `postgres` is an accepted value
-after sprint `b-8`. Amended 2026-10-25.
-
-No clause of this item depends on the unverified `cargo-generate` mechanics
-held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
-`cargo` and only asserts that it was not called.
-
-Projects that are not MIT licensed are the reason the licence is an option.
-
-Template CI generates a project from every file matching `wizard/fixtures/*.json`.
+The default variant is exercised by [REQ-RUN-0303](requirements.md) criterion 7, not by a fixture. The test that the driver fails closed on `db` equal to `both` is owned by [REQ-RUN-0303](requirements.md) criterion 4. Answers objects whose `db` is `postgres`, `mysql`, `sqlite-postgres` or `sqlite-mysql` pass schema validation since sprint `b-8`; v0.1 reserved them. Amended 2026-10-25. No clause of this item depends on the unverified `cargo-generate` mechanics held in [ADR-RUN-0402](architecture.md).
 
 **MUST statements:**
 
-- The directory `wizard/fixtures/` MUST hold one answers JSON file per tested variant of the template.
-- Every file matching `wizard/fixtures/*.json` MUST be a complete answers object.
-- Every file matching `wizard/fixtures/*.json` MUST validate against `wizard/answers.schema.json`.
-- `wizard/fixtures/` MUST contain `sqlite-mcp.json`, the variant with `db = sqlite` and `mcp = true`.
-- `wizard/fixtures/` MUST contain a variant with `db = sqlite` and `mcp = false`.
-- `wizard/fixtures/` MUST contain a variant whose licence is not `MIT`.
-- Every fixture MUST state the licence explicitly, including the ones that use `MIT`, so that a fixture and the wizard's output for the same choices are equal JSON ([REQ-RUN-0603](requirements.md)).
-- The repository MUST also hold answers files that must be refused.
-- Those refused answers files MUST be used only by unit tests.
-- `tests/unit/` MUST contain tests that assert:
+- Every fixture MUST set a value for each schema key.
+- Every fixture MUST pass validation against `wizard/answers.schema.json`.
+- `wizard/fixtures/sqlite-mcp.json` MUST set `db` to `"sqlite"`.
+- `wizard/fixtures/sqlite-mcp.json` MUST set `mcp` to `true`.
+- `wizard/fixtures/sqlite-no-mcp.json` MUST set `db` to `"sqlite"`.
+- `wizard/fixtures/sqlite-no-mcp.json` MUST set `mcp` to `false`.
+- `wizard/fixtures/` MUST contain a fixture whose `licence` value is not `"MIT"`.
+- The top-level keys of each fixture MUST include `licence`.
+- `tests/fixtures/refused/` MUST contain an answers file whose top-level keys omit a required schema key.
+- `tests/fixtures/refused/` MUST contain an answers file whose value for one schema key has the wrong JSON type.
+- `tests/fixtures/refused/` MUST contain an answers file whose `db` value is outside the `db` enum of `wizard/answers.schema.json`.
+- `tests/fixtures/refused/` MUST contain an answers file whose top-level keys include a key that is not a schema key.
+- `tests/fixtures/refused/both.json` MUST set `db` to `"both"`.
+- `tests/unit/` MUST contain a unit test that asserts every fixture passes validation against `wizard/answers.schema.json`.
+- `tests/unit/` MUST contain a unit test that asserts every schema-invalid answers file fails validation against `wizard/answers.schema.json`.
+- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, exits with a non-zero status.
+- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, does not call `cargo generate`.
+- A unit test in `tests/unit/` MUST assert that the driver, run with `--var-file` set to a schema-invalid answers file, does not create the destination directory.
+
+**MUST NOT statements:**
+
+- Two fixtures MUST NOT have the same variant.
+- Validating any file in `wizard/fixtures/` against `wizard/answers.schema.json` MUST NOT report an error.
+- Code outside `tests/unit/` MUST NOT read files in `tests/fixtures/refused/`.
 
 ### Rationale
 
@@ -3783,7 +3769,11 @@ project that CI lints and tests. They are also one of the three things handed
 to the sc-lint team as the reference for its install packages, the other two
 being the schema and the prototype repositories generated from the fixtures.
 Failing closed matters because a project rendered from bad answers looks
-finished and is wrong.
+finished and is wrong. The licence is an option because some projects are not
+MIT licensed. Every fixture states the licence, including fixtures that use `MIT`, so that a fixture and the
+wizard's output for the same choices are equal JSON
+([REQ-RUN-0603](requirements.md)). The fail-closed test uses a stub `cargo`
+and only asserts that it was not called.
 ### Success Criteria
 
 1. A unit test validates every file matching `wizard/fixtures/*.json` against
@@ -3793,7 +3783,7 @@ finished and is wrong.
    contains `db` equal to `"sqlite"` and `mcp` equal to `false`.
 3. A unit test validates every schema-invalid answers file and asserts that
    each one is rejected. The set contains at least one file for each of the
-   four ways of breaking the schema named in the table.
+   four ways of breaking the schema named in the MUST statements.
 4. A unit test runs the driver for a destination `<dest>` with
    `--var-file <schema-invalid file>` and a stub `cargo` first on `PATH` that
    records any call. It asserts a
@@ -3807,13 +3797,11 @@ finished and is wrong.
 
 **Key Considerations:**
 
-- OPEN: the directory that holds the refused answers files is not decided.
-- OPEN: the file name of the `mcp = false` fixture, and the file names of
-  the refused answers files, are not decided.  
-  `both` is schema-invalid. `postgres` is accepted by sprint `b-8` and is not
+- The schema-invalid answers files are in `tests/fixtures/refused/`. The
+  `mcp = false` fixture is `wizard/fixtures/sqlite-no-mcp.json`.
+- `both` is schema-invalid. `postgres` is accepted by sprint `b-8` and is not
   a refused file. Amended 2026-10-25.
-- OPEN: the language and test runner of `tests/unit/` are not decided (the
-  driver is Python).
+- OPEN: the test runner of `tests/unit/` is not decided (the driver is Python).
 
 ---
 
