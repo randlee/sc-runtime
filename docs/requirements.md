@@ -575,7 +575,7 @@ built in parallel without touching each other.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -594,15 +594,19 @@ crates directly.
    - a Unix domain socket listener (`tokio::net::UnixListener`) passed to
      `axum::serve`.
 
+The spike operation may read SQLite, write SQLite, or do both; the operation remains unspecified.
+
 **MUST statements:**
 
-- The spike MUST contain one server binary that uses a single `axum` 0.8 `Router` in a single process.
+- The spike MUST contain one server binary.
+- That server binary MUST run in a single process.
+- That server process MUST use a single `axum` 0.8 `Router`.
 - The spike server MUST register REST routes through `utoipa-axum` 0.2 `OpenApiRouter` with the `routes!` macro.
 - The spike server MUST mount an `rmcp` 3.x `StreamableHttpService` at `/mcp` using `Router::nest_service("/mcp", service)`.
 - That `StreamableHttpService` MUST use stateless mode.
 - The spike server MUST open a SQLite database through `sqlx` 0.9 with the `sqlite` feature.
 - The spike server MUST pass a Unix domain socket listener (`tokio::net::UnixListener`) to `axum::serve`.
-- The spike MUST contain exactly one async service function for SQLite database reads or writes.
+- The spike MUST contain exactly one asynchronous service function that accesses SQLite.
 - The REST handler MUST call the one async service function that reads or writes the SQLite database.
 - The MCP tool MUST call the one async service function that reads or writes the SQLite database.
 - The spike MUST contain a `clap` command-line client.
@@ -616,7 +620,7 @@ crates directly.
 
 - The REST handler MUST NOT contain SQL.
 - The MCP tool MUST NOT contain SQL.
-- The spike MUST NOT use `hyperlocal`.
+- The spike MUST NOT use the Rust crate named `hyperlocal`.
 - The spike MUST NOT use a custom connector.
 
 ### Rationale
