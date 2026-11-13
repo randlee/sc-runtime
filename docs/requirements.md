@@ -1987,6 +1987,8 @@ The failed step is the step whose command exited with a non-zero status.
 An `sc-compose` step is a step that runs the executable named by the `SC_COMPOSE` environment variable, or the `sc-compose` found on `PATH` when `SC_COMPOSE` is unset.
 An `sc-compose` step renders a template into a file when that step writes the result of rendering that template to that file.
 `widget-app` is the `project_name` value in `wizard/fixtures/sqlite-mcp.json`.
+An agent document is `<dest>/AGENTS.md` or `<dest>/CLAUDE.md`.
+The template-variable input of an `sc-compose` step is the set of values that the step substitutes for the variables of the template it renders.
 The exact `sc-compose` command line, including how the answers JSON and the input and output paths are passed, is not decided by this record.
 The driver reports a step as the failed step by naming that step in the driver's standard error output.
 This record owns the driver's sc-compose step, the failure behaviour of that step and the removal of the `.j2` files.
@@ -2004,6 +2006,7 @@ This record owns the driver's sc-compose step, the failure behaviour of that ste
 - In `scripts/new_project.py`, the wait call MUST appear before every `sc-compose render` call.
 - An `sc-compose` step of the driver MUST render `<dest>/AGENTS.md.j2` into `<dest>/AGENTS.md`.
 - An `sc-compose` step of the driver MUST render `<dest>/CLAUDE.md.j2` into `<dest>/CLAUDE.md`.
+- Every `sc-compose` step that renders an agent document MUST receive the answers JSON of its driver run as its template-variable input.
 - After `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits with status 0, `<dest>/AGENTS.md` MUST contain `widget-app`.
 - After `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits with status 0, `<dest>/CLAUDE.md` MUST contain `widget-app`.
 - If an `sc-compose` step exits with a non-zero status, the driver MUST exit with a non-zero status.
@@ -2045,6 +2048,12 @@ each tool does the job it is built for and no render engine is written here.
    its standard error output is the single line
    `GEN.STEP_FAILED step is sc-compose — <recovery>`, which names
    `sc-compose` as the failed step.
+6. Checks the answers-input statement by reading `render_documents` in
+   `scripts/new_project.py`: every `sc-compose render` command it builds
+   passes, as the variable file, the JSON file that
+   `write_answers_for_compose` writes from the run's validated answers. The
+   `widget-app` check in criterion 2 supports this statement but does not by
+   itself show that every answer reaches `sc-compose`.
 ### Implementation Notes
 
 **Key Considerations:**
