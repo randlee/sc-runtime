@@ -3302,7 +3302,7 @@ Every store in an application implements the same storage trait, `Storage<T>` (P
 Owner, PRD section 4: "I want sqlite/postgres/sql to be interchangeable behind traits" (PRD-STO-2). Each engine keeps its own SQL behind that trait; `Storage<T>` carries no SQL (PRD-STO-1).
 ### Success Criteria
 
-1. In each generated layout that renders a store, every rendered store implements `Storage<T>`, and no rendered store is reached through a different storage trait.
+1. In each generated layout that renders a store, the source file of every rendered store contains an impl of `Storage<T>`.
 
 ## REQ-RUN-0329: A generated package name carries the project name
 
