@@ -1096,6 +1096,10 @@ lets the project report a config error before anything else starts.
 
 The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party dependencies `sc-runtime` is allowed.
 
+Definitions: The Allowed dependencies table is the table below; each row names one crate that `sc-runtime` may list under `[dependencies]` in `crates/sc-runtime/Cargo.toml`. `sc_config::load` is the function of the `sc-config` crate that loads a project's configuration ([REQ-CFG-0001](../sc-config/requirements.md)). A configuration file is a file that holds project configuration, such as `config/default.json` or `config/local.json`, which `sc_config::load` reads.
+
+Allowed dependencies table:
+
 | Dependency | Why it is needed |
 |---|---|
 | `sc-transport` with `features = ["server"]` | listener binding, the endpoint resolver and the instance-root function |
@@ -1104,7 +1108,8 @@ The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `s
 | `axum` | the merged `axum::Router` and serving |
 | `tokio` | the async runtime and signal handling |
 | `fd-lock` | the exclusive lock on `daemon.lock` |
-| `utoipa-axum` and `utoipa` | the routes closure returns `utoipa_axum::OpenApiRouter`, and the OpenAPI document is a `utoipa` type |
+| `utoipa-axum` | the routes closure returns `utoipa_axum::OpenApiRouter` |
+| `utoipa` | the OpenAPI document is a `utoipa` type |
 | `serde` | `DaemonConfig` MUST implement `Deserialize`, because the project loads it as `cfg.daemon` through `sc-config` |
 | `rmcp` | `.mcp(...)` accepts the concrete `StreamableHttpService` and mounts it as given. This crate does not wrap that type and does not re-export it |
 | `tracing` | the request-id span on the assembled router, including `/health`, `/openapi.json`, `/metrics`, and optional `/mcp` |
@@ -1122,28 +1127,29 @@ The workspace library set includes `sc-config`, `sc-transport`, `sc-command`, `s
   that, are owned by [NFR-RUN-0001](../requirements.md). Sprint a-6 runs that
   command.
 
-REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate depending on the others; cron temporarily depends only on command under ADR-RUN-0017.
+REQ-RUN-0005 owns the workspace-internal and forbidden edges of all workspace library crates. `sc-runtime` is the assembly crate depending on the others; cron temporarily depends only on command under ADR-RUN-0017. [NFR-RT-0002](requirements.md) owns the ban on configuration loading, `sqlx` and the `sc-observability` runtime crates; the statements below repeat those bans for this crate's dependency list.
 
 **MUST statements:**
 
-- The normal (non-dev, non-optional) dependencies of `sc-runtime` MUST be exactly the following. (see table above)
+- The set of first words of the lines of the output of `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`, excluding the word `sc-runtime`, MUST equal the set of crates named in the Allowed dependencies table.
 
 **MUST NOT statements:**
 
-- `sc-config` MUST NOT depend on `sc-runtime`.
-- `sc-config` MUST NOT depend on `sc-transport`.
-- `sc-config` MUST NOT depend on `sc-command`.
-- `sc-transport` MUST NOT depend on `sc-runtime`.
-- `sc-transport` MUST NOT depend on `sc-config`.
-- `sc-transport` MUST NOT depend on `sc-command`.
-- `sc-command` MUST NOT depend on `sc-runtime`.
-- `sc-command` MUST NOT depend on `sc-config`.
-- `sc-command` MUST NOT depend on `sc-transport`.
-- `sc-runtime` MUST NOT depend on `sc-config`.
-- `sc-runtime` MUST NOT load configuration (NFR-RT-0002).
-- `sc-runtime` MUST NOT depend on `sqlx` (NFR-RT-0002).
-- `sc-runtime` MUST NOT depend on `sc-observability` (NFR-RT-0002).
-- `sc-runtime` MUST NOT depend on `sc-observability-otlp` (NFR-RT-0002).
+- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-transport `.
+- The output of `cargo tree -p sc-config --prefix none` MUST NOT contain a line beginning `sc-command `.
+- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-config `.
+- The output of `cargo tree -p sc-transport --prefix none` MUST NOT contain a line beginning `sc-command `.
+- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-runtime `.
+- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-config `.
+- The output of `cargo tree -p sc-command --prefix none` MUST NOT contain a line beginning `sc-transport `.
+- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-config `.
+- Source files under `crates/sc-runtime/src` MUST NOT call `sc_config::load`.
+- Source files under `crates/sc-runtime/src` MUST NOT read a configuration file.
+- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sqlx `.
+- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-observability `.
+- The output of `cargo tree -p sc-runtime --prefix none` MUST NOT contain a line beginning `sc-observability-otlp `.
 
 ### Rationale
 
