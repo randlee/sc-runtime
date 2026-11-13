@@ -43,38 +43,21 @@ they agree on the endpoint and the instance root.
 
 ### Requirement Statement
 
-This item covers the file layer of the `sc-config` crate (`crates/sc-config`).
-The design fixes the two file names and that `local.json` is gitignored. The
-merge rules below are decided in this document.
+Scope: the file layer of the `sc-config` crate (`crates/sc-config`). The design fixes the two file names and that `local.json` is gitignored; the merge rules are decided in this document.
 
-```rust
-pub fn load<T: serde::de::DeserializeOwned>(app: AppName) -> Result<T, ConfigError>
-```
+Definitions: `load` is the public function `sc_config::load` with the signature `pub fn load<T: serde::de::DeserializeOwned>(app: AppName) -> Result<T, ConfigError>`. `AppName` is the type `sc_config::AppName`, constructed only by `AppName::new` or `TryFrom<&str>`, which return `ConfigError::InvalidName` with stable code `APP.INVALID_NAME` for a name that is empty, longer than 64 bytes, or contains a character other than an ASCII letter, digit, `-` or `_`; `AppName` exposes its text through `as_str` and `AsRef<str>` and does not implement `Deref`. The config directory is the directory `config` resolved against the process's current working directory. The default file is `default.json` in the config directory. The local file is `local.json` in the config directory. A file's value is the `serde_json::Value` that `serde_json::from_slice` returns for the file's bytes. The merged value is `merge(default file's value, local file's value)` when the local file exists, and the default file's value when the local file is absent. `merge(base, overlay)` is the function the merge table defines. The environment overrides of `app` are the environment-variable overrides that [REQ-CFG-0002](requirements.md) defines for the prefix of `app`. The final value is the merged value after the environment overrides of `app` are applied. The missing-default error is `Err(ConfigError::MissingDefault { path })` with `path` set to the default file's path ([REQ-CFG-0004](requirements.md)).
 
-`app` is an `sc_config::AppName`. Callers construct it with `AppName::new` or
-`TryFrom<&str>`. A name that is empty, longer than 64 bytes, or outside ASCII
-letters, digits, `-`, and `_` fails in that constructor with
-`ConfigError::InvalidName` and stable code `APP.INVALID_NAME`. It does not
-reach `load`. The name still selects only the environment-variable prefix
-(entry 9). Display is `as_str` or `AsRef<str>`. The type does not implement
-`Deref`.
+Merge table, decided in this document:
 
-4. The result is then built from `config/default.json` alone.
-7. Those overrides take precedence over both files ([REQ-CFG-0002](requirements.md)).
-9. It selects only the environment-variable prefix.
-
-`merge(base, overlay)`, decided in this document:
-
-| `base` is | `overlay` is | Result |
+| `base` is | `overlay` is | `merge(base, overlay)` |
 |---|---|---|
 | JSON object | JSON object | An object holding every key of `base` and every key of `overlay`. A key present in both has the value `merge(base[key], overlay[key])`. |
 | anything | string, number, boolean, array or `null` | `overlay`. Arrays are replaced whole; array elements are never merged or appended. `null` replaces the value; it does not delete the key. |
 | string, number, boolean, array or `null` | JSON object | `overlay`. |
 
-Precedence, lowest to highest: `config/default.json`, `config/local.json`,
-environment variables.
+Precedence, lowest to highest: the default file, the local file, environment variables.
 
-Worked example. `config/default.json`:
+Worked example. Default file:
 
 ```json
 {
@@ -84,7 +67,7 @@ Worked example. `config/default.json`:
 }
 ```
 
-`config/local.json`:
+Local file:
 
 ```json
 {
@@ -94,7 +77,7 @@ Worked example. `config/default.json`:
 }
 ```
 
-Merged value, with no environment overrides set:
+Merged value:
 
 ```json
 {
@@ -104,28 +87,23 @@ Merged value, with no environment overrides set:
 }
 ```
 
-`daemon.host` survives because objects merge key by key. `logging.targets` is
-replaced, not concatenated. `logging.level` becomes `null`. `stores` changes
-from an object to a string because a non-object overlay replaces whatever is
-beneath it.
+`daemon.host` survives because objects merge key by key. `logging.targets` is replaced, not concatenated. `logging.level` becomes `null`. `stores` changes from an object to a string because a non-object overlay replaces the value beneath.
 
 **MUST statements:**
 
-- The crate MUST export this function:
-- `load` MUST read `config/default.json`, resolved against the process's current working directory.
-- `config/default.json` MUST exist.
-- If it does not, `load` MUST return the `ConfigError` variant for a missing default file ([REQ-CFG-0004](requirements.md)).
-- `load` MUST read `config/local.json` from the same directory when that file exists.
-- Each file MUST be read as bytes.
-- Each file's bytes MUST be parsed as one JSON document into a `serde_json::Value` (`serde_json::from_slice`).
-- `load` MUST merge the `local.json` value over the `default.json` value with the function `merge(base, overlay)` defined in the table below. (see table above)
-- `load` MUST then apply the environment-variable overrides of app `app` to the merged value.
-- `load` MUST use `serde_json::from_value::<T>` for its exactly-once deserialisation of the final value into `T`.
+- The crate root `crates/sc-config/src/lib.rs` MUST make `load` public under the path `sc_config::load`.
+- `load` MUST read the default file.
+- When the default file is absent, `load` MUST return the missing-default error.
+- When the local file exists, `load` MUST read the local file.
+- `load` MUST obtain each file's value by passing the file's bytes to `serde_json::from_slice::<serde_json::Value>`.
+- `load` MUST compute the merged value by the rules of the merge table.
+- `load` MUST apply the environment overrides of `app` to the merged value.
+- `load` MUST deserialise the final value into `T` with one call to `serde_json::from_value::<T>` and no other deserialisation.
 
 **MUST NOT statements:**
 
-- An absent `config/local.json` MUST NOT be an error.
-- The `app` argument MUST NOT change which files are read.
+- When the local file is absent, `load` MUST NOT return a `ConfigError` whose `path` is the local file's path.
+- The value of `app` MUST NOT change which files `load` reads.
 - `load` MUST NOT write any file.
 - `load` MUST NOT create any file.
 - `load` MUST NOT modify any file.
@@ -167,7 +145,7 @@ equality, so key order is irrelevant.
 9. A unit test loads one temporary config directory twice with an empty
    environment, once for app `my-app` and once for app `other-app`, and
    asserts the two results are equal: the app name does not change which
-   files are read (entry 9).
+   files are read.
 
 ---
 
