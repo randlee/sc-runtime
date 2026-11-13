@@ -489,18 +489,19 @@ cargo feature named `server`, off by default
 
 ### Consequences
 
-The crate is two build configurations, and CI builds and tests both:
-`cargo test -p sc-command` and `cargo test -p sc-command --features server`.
-A mistake in gating shows up as axum or rmcp in the CLI's `cargo tree`.
-Cargo unifies features across a workspace build, so the property "the CLI
-links no axum or rmcp" is defined for the CLI built as its own selection
-(`cargo build -p cli`), and evidence must come from `cargo tree -p` on the
-CLI crate or on `sc-command` alone, not from a whole-workspace build.
+**Positive:**
+
+- A CLI built as its own package selection uses `Envelope<T>` and `OpError` without linking axum or rmcp through `sc-command`. The daemon obtains the server conversions from the same published crate by enabling `server`.
+- The generated daemon takes `sc-command` directly with `server` enabled; the CLI and service use default features, as specified by REQ-RUN-0301.
+
+**Negative:**
+
+- Maintaining default and server configurations requires building and testing both. The existing `just test` recipe runs `cargo test -p sc-command` and `cargo test -p sc-command --features server`; checking only one configuration would miss feature-gating errors in the other.
+- Cargo unifies features in a workspace-wide build, so that build can link the CLI against server-enabled `sc-command`. It cannot establish the isolated CLI dependency property; that property requires the separate package-selection check defined by NFR-RUN-0001. A gating mistake appears as axum or rmcp in that selection's `cargo tree`.
 
 **Neutral:**
 
-- The generated `daemon` crate takes `sc-command` directly with `features = ["server"]`; the generated CLI and service use default features (REQ-RUN-0301).
-- Under `cargo build --workspace`, Cargo unifies features, so the CLI is built against a `server`-enabled `sc-command`. The isolated CLI selection is the normative dependency check; workspace-wide builds are exempt (NFR-RUN-0001).
+- Workspace-wide builds remain exempt from the isolated CLI dependency property under NFR-RUN-0001. This decision does not change the generated workspace dependency graph owned by REQ-RUN-0301 and ADR-RUN-0303.
 
 ### Alternatives Considered
 
@@ -508,7 +509,7 @@ CLI crate or on `sc-command` alone, not from a whole-workspace build.
 
 **Why Rejected:**
 
-Rust's orphan rule forbids implementing axum's `IntoResponse` for `Envelope<T>` outside the crate that defines `Envelope<T>` without a wrapper type, and it would double the crates to publish and version. (The feature-unification OPEN above may reopen a client/server split; the orphan-rule obstacle would then have to be solved first.)
+Rust's orphan rule forbids implementing axum's `IntoResponse` for `Envelope<T>` outside the crate that defines `Envelope<T>` without a wrapper type, and it would double the crates to publish and version. The normative isolated CLI selection and workspace-wide exemption are recorded in NFR-RUN-0001.
 
 #### Alternative 2: No gating, with axum and rmcp as ordinary dependencies
 
