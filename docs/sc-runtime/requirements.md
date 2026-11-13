@@ -342,12 +342,12 @@ that in project code, and lets a project with no database use the crate.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. The router contents are the routes in the step-4 table below. Session state is server-owned state tracking an MCP client session; a session store is persistence for that state.
+Definitions: MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. JSON means JavaScript Object Notation. ADR means architecture decision record. The daemon router is the one `axum::Router` that `run()` builds. The mount table is the table in this requirement headed Mounted item, Source, Condition. The routes closure is the application-supplied closure passed to `.routes(...)`. The MCP closure is the application-supplied closure passed to `.mcp(...)`. The rmcp service is the `StreamableHttpService` returned by the MCP closure. Session state is server-owned state tracking an MCP client session; a session store is persistence for that state.
 
 It is one `axum::Router`, served unchanged on every listener `run()` binds.
 
@@ -379,25 +379,29 @@ the later `route` or `nest_service`. The stores closure has already run
 because lock-then-stores-then-routes is the binding start-up order; the
 check happens before reserved-route mount side effects and before bind.
 
-MCP is reachable only as `/mcp` on the one router.
+MCP is reachable only as `/mcp` on the one router. With no project route or fallback at `/mcp`, axum answers HTTP 404.
 
 **MUST statements:**
 
-- In step 4 of `run()` (after the lock is held and the stores closure has returned, before anything is bound), `sc-runtime` MUST build one `axum::Router` containing the following. (see table above)
+- `run()` MUST build exactly one daemon router.
+- `run()` MUST build the daemon router after the lock is held.
+- `run()` MUST build the daemon router after the stores closure has returned.
+- `run()` MUST build the daemon router before anything is bound.
+- The daemon router MUST contain every item of the mount table whose condition holds.
 - The routes closure MUST return a `utoipa_axum::OpenApiRouter`.
 - The OpenAPI document served MUST be the one generated from the project's route registrations.
-- `sc-runtime` MUST mount the project's router as given.
-- `sc-runtime` MUST mount the rmcp service as given.
+- `sc-runtime` MUST mount the `OpenApiRouter` returned by the routes closure as given.
+- `sc-runtime` MUST mount the rmcp service unchanged.
 
 **MUST NOT statements:**
 
-- `sc-runtime` MUST NOT wrap that router in its own types.
-- `sc-runtime` MUST NOT wrap that service in its own types.
+- `sc-runtime` MUST NOT wrap the `OpenApiRouter` returned by the routes closure in its own types.
+- `sc-runtime` MUST NOT wrap the rmcp service in its own types.
 - `sc-runtime` MUST NOT define its own router type.
 - `sc-runtime` MUST NOT require the project to register the document route itself.
 - `sc-runtime` MUST NOT add an MCP session store.
 - `sc-runtime` MUST NOT add any other session state of its own.
-- If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`; with no project route or fallback there, axum answers HTTP 404.
+- If `.mcp(...)` was not called, `sc-runtime` MUST NOT mount anything at `/mcp`.
 - MCP MUST NOT get a listener of its own.
 - MCP MUST NOT get a port of its own.
 - MCP MUST NOT get a process of its own.
