@@ -3384,13 +3384,19 @@ The SQLite writer batches channel-admitted writes on one dedicated thread. Its b
 
 7. The SQLite crate MUST expose its typed error enum rather than Box<dyn Error> or an observability ErrorCode.
 
+8. The writer thread MUST be the only thread that executes a write through rusqlite.
+
+9. The SQLite writer open function MUST take a database path as its only argument.
+
+10. The channel capacity, batch time budget, write deadline and shutdown join MUST be fixed constants of the SQLite crate, not values a production caller passes.
+
 ### Rationale
 
 Batching amortizes transaction overhead while savepoints and reply-after-commit preserve the existing write semantics.
 
 ### Consequences
 
-The shared typed-storage contract retains the batching core. ADR-RUN-0020 defines its asynchronous input, configurable open surface and application-database integration; ADR-RUN-0011 limits the writer-thread runtime exception.
+The shared typed-storage contract retains the batching core. ADR-RUN-0020 defines its asynchronous input and application-database integration; ADR-RUN-0011 limits the writer-thread runtime exception.
 
 **Negative:**
 
