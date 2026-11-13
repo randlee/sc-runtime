@@ -348,7 +348,8 @@ Definitions: `sc-command` is the crate in `crates/sc-command`. `Envelope<T>` is 
 **MUST NOT statements:**
 
 - The conversion MUST NOT accept a `version` value from the caller.
-- The conversion MUST NOT alter `value` or `op_error`.
+- The conversion MUST NOT alter `value`.
+- The conversion MUST NOT alter `op_error`.
 - `impl<T> From<Result<T, OpError>> for Envelope<T>` MUST NOT require any trait bound on `T`.
 
 ### Rationale
