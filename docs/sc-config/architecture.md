@@ -332,7 +332,7 @@ configuration once at start-up.
 
 1. In the Phase D deliverable, the `[dependencies]` table of `crates/sc-config/Cargo.toml` contains exactly `serde` and `serde_json`.
 2. In the Phase D deliverable, `sc-config` does not depend on `tokio`, `sc-observability`, `sc-observability-otlp`, or another crate of this workspace (`sc-transport`, `sc-command`, `sc-runtime`).
-3. The Phase D `load` and `Loader::load` calls are synchronous and spawn no thread or task, as specified by [NFR-CFG-0003](requirements.md).
+3. In the Phase D deliverable, the public API of `sc-config` is synchronous: no public function is an `async fn`, and no public function returns a `Future`. The `load` and `Loader::load` calls spawn no thread or task, as specified by [NFR-CFG-0003](requirements.md).
 4. This deliverable builds no watcher, reload or change notification.
 5. Async configuration and reload remain open consumer and later-version options; this ADR selects neither their API nor their crate placement and creates no implementation or testing work for them.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
