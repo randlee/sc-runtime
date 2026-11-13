@@ -4824,10 +4824,12 @@ item and [NFR-RUN-0003](requirements.md) as its enforcement.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-20  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
+
+Definitions: Non-test code is the non-test code in `crates/` and in `template/`. A test that starts a daemon obtains its own temporary instance root from a temporary-directory API or `DaemonFixture`.
 
 The instance root is the directory that holds a daemon's `daemon.lock` and `daemon.sock`. `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](sc-transport/requirements.md)). Tests that start no daemon, such as the `sc-config` tests, have no instance root and need only the temporary directory.
 
@@ -4846,7 +4848,8 @@ starts a daemon as a separate process does not run there at all
 - Every test that writes to the filesystem MUST create its own temporary directory.
 - Every test that writes to the filesystem MUST write only inside its own temporary directory.
 - Every test that starts a daemon MUST also use that temporary directory as the daemon's instance root.
-- Every test MUST pass when run in parallel with every other test in the same suite, and when two copies of the whole suite run at the same time on one machine.
+- Every test MUST pass when run in parallel with every other test in the same suite.
+- Every test MUST pass when two copies of the whole suite run at the same time on one machine.
 
 **SHOULD statements:**
 
@@ -4854,8 +4857,8 @@ starts a daemon as a separate process does not run there at all
 
 **MUST NOT statements:**
 
-- Non-test code in `crates/` and in `template/` MUST NOT contain a literal temporary-directory path (such as `/tmp`).
-- Non-test code in `crates/` and in `template/` MUST NOT contain a literal home-directory path (such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`).
+- Non-test code MUST NOT contain a literal temporary-directory path (such as `/tmp`).
+- Non-test code MUST NOT contain a literal home-directory path (such as `/Users/<name>`, `/home/<name>` or `C:\Users\<name>`).
 - A test MUST NOT use the instance root of another test.
 - A test MUST NOT use the instance root of a daemon the developer is really running.
 - A test MUST NOT bind a fixed TCP port.
