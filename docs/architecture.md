@@ -115,33 +115,27 @@ exactly one listener. `TransportConfig` is `#[non_exhaustive]` and has no
 
 ## Crate graph
 
-This historical graph snapshot describes the existing workspace edges. [REQ-RUN-0005](requirements.md) owns the Phase D target graph. The `sc-config` exclusion of `tokio` in this table describes the Phase D deliverable; it does not forbid a later async configuration option.
+This section mirrors the Phase D target graph owned by [REQ-RUN-0005](requirements.md). Boundary migrations land with the corresponding code changes. The `sc-config` Tokio exclusion applies only to the Phase D deliverable and does not prohibit a later async configuration option.
 
 | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
 |---|---|---|
 | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
-| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-| `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+| `sc-command` | `sc-storage` under the non-default `storage` feature for the shared storage command helpers (ADR-RUN-0021); the standalone envelope build (`--no-default-features`, no features) has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | `sc-storage`; optional `sc-monty` for interpreter execution; temporary defaults-off/no-features `sc-command` for the contract (ADR-RUN-0017). Canonical event values use registry `sc-observability-types` | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron-commands` | defaults-off `sc-command`; `sc-storage` for the shared command storage adapter; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+| `sc-storage` | none; Rust standard library only | every other workspace crate and every external crate |
+| `sc-monty` | none; production dependencies limited to pydantic Monty crates | every `sc-*` production dependency, Tokio and serde_json |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only targets that are workspace members in that crate's lint tree;
 crates.io names and other non-member targets are enforced by criterion 5 of
-[REQ-RUN-0005](requirements.md) (`cargo tree`). sc-lint 0.8.0 cannot fail a
-crates.io edge, so direct-depth cargo-tree checks prove `sc-runtime` and
-`sc-cron` link the types crate but not the full logging runtime.
-`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
-`sc-transport`, and temporarily `sc-runtime` plus `sc-cron` for `sc-command`
-under ADR-RUN-0017. The
-edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
-entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
-`sc-runtime` does not depend on `sc-config` and does not load configuration
-([NFR-RT-0002](sc-runtime/requirements.md)).
+[REQ-RUN-0005](requirements.md) (`cargo tree`). Direct-depth cargo-tree checks establish only direct dependency identities. The Phase D full-runtime/OTLP exclusions require the normal/build transitive identity checks for every supported production feature set specified by REQ-RUN-0005; direct-depth checks alone do not prove those exclusions.
+`allowed_dependents` records the reverse workspace edges of the table for each supported feature set. External consumer applications are not workspace dependents. The absent runtime -> config edge remains forbidden.
 
 The allowed third-party dependencies of each crate are owned by that crate's
 NFR and are not restated here:
@@ -731,11 +725,11 @@ as its own selection.
    This table mirrors [REQ-RUN-0005](requirements.md), which owns it:
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
-   |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | `sc-storage` when providing the shared storage command helpers (ADR-RUN-0021); the standalone envelope build has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+|---|---|---|
+| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` (Phase D only) |
+| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-cron-commands`, `sc-storage`, `sc-monty`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+| `sc-command` | `sc-storage` under the non-default `storage` feature for the shared storage command helpers (ADR-RUN-0021); the standalone envelope build (`--no-default-features`, no features) has no workspace dependency | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | `sc-storage` for `Storage<T>` | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
 | `sc-cron` | `sc-storage`; optional `sc-monty` for interpreter execution; temporary defaults-off/no-features `sc-command` for the contract (ADR-RUN-0017). Canonical event values use registry `sc-observability-types` | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 | `sc-cron-commands` | defaults-off `sc-command`; `sc-storage` for the shared command storage adapter; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
@@ -746,9 +740,7 @@ as its own selection.
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
-criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
-cannot fail a crates.io edge, so direct-depth cargo-tree checks prove that
-`sc-runtime` and `sc-cron` contain the types crate but not the full runtime.
+criterion 5 `cargo tree` checks (see sprint a-1 evidence). Direct-depth cargo-tree checks establish only direct dependency identities. The Phase D full-runtime/OTLP exclusions require the normal/build transitive identity checks for every supported production feature set specified by REQ-RUN-0005; direct-depth checks alone do not prove those exclusions.
 `allowed_dependents` records the reverse workspace edges of the table for the supported features. Thus sc-storage admits the listed command, SQLite and cron consumers; sc-monty admits cron when its interpreter feature is selected; command admits runtime, cron and the cron-command adapter. External consumer applications are not workspace dependents. The absent runtime -> config edge remains forbidden. Historical sprint a-1/a-5 evidence records the earlier graph, not a restriction on these Phase D edges.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
