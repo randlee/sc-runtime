@@ -105,7 +105,7 @@ ADR-RUN-0012 copies the measured atm-core path: one rusqlite connection on one t
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-25  
-**Last Updated:** 2026-10-25  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -114,9 +114,9 @@ Definitions: execute is the writer call submitting one SQLite write operation. T
 
 A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed.
 
-**MUST statements:**
+**MUST NOT statements:**
 
-- A test of two concurrent `execute` calls MUST observe one commit order: the second reply is not sent before the first statement has committed or failed.
+- For two concurrent `execute` calls, the writer MUST NOT send the second call's reply before the first call's statement has committed or failed.
 
 ### Rationale
 
@@ -125,7 +125,7 @@ ADR-RUN-0012 point 3: contiguous executes share one savepoint inside one `BEGIN 
 
 **Acceptance Criteria:**
 
-- [ ] A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed.
+- [ ] A test of two concurrent `execute` calls observes one commit order: the second reply is not sent before the first statement has committed or failed. The test drives queue admission order with controlled inputs rather than timing or sleeps.
 
 ## REQ-DBSQ-0005: No runtime or template edge
 
