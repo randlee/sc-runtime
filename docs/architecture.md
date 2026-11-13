@@ -3579,7 +3579,7 @@ It is not repeatable. Benchmarks are automated procedures driven by the `/benchm
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-10-28  
-**Last Updated:** 2026-11-02  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-10-28  
 
@@ -3688,15 +3688,20 @@ each schedule must be able to set or clear its own environment and resolve
 authorized secret references or absolute `.env` files.
 ### Consequences
 
-Sprint b-17 implements [REQ-CRON-0019](sc-cron/requirements.md) and
-[NFR-CRON-0002](sc-cron/requirements.md), updates the generated daemon's
-empty-default policy, and tests identical Python/Monty resolution. sc-cron
-still reads no `sc-config` file and implements no secret backend. Applications
-authorize agent-to-file access and provide reference resolvers. Monty
-write-through `os.environ` mutation remains unsupported until Monty exposes
-set/unset OS calls; sc-cron never mutates the daemon process environment.
-Exact-value redaction mitigates accidental propagation, not transformation or
-exfiltration by trusted hook code.
+**Positive:**
+
+- Python and Monty hooks receive the same resolved environment snapshot, so a schedule's identity and environment settings have the same meaning for both interpreters.
+- Empty-default host policy and explicit inheritance prevent silent capture of the invoking caller's environment. Exact-value redaction reduces accidental propagation of resolved values into hook diagnostics and persisted reasons.
+
+**Negative:**
+
+- Applications must authorize agent-to-file access and provide reference resolvers when they use those capabilities; sc-cron implements no secret backend and reads no sc-config file.
+- Exact-value redaction does not protect against transformed values or exfiltration by trusted hook code.
+- Monty write-through `os.environ` mutation remains unsupported until Monty exposes set/unset OS calls. sc-cron never mutates the daemon process environment.
+
+**Neutral:**
+
+- Sprint b-17 implements [REQ-CRON-0019](sc-cron/requirements.md) and [NFR-CRON-0002](sc-cron/requirements.md), updates the generated daemon's empty-default policy, and tests identical Python/Monty resolution. This decision retains those implementation and validation obligations.
 ### Alternatives Considered
 
 #### Alternative 1: Separate Python and Monty environment policies
