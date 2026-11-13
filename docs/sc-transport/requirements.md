@@ -521,7 +521,7 @@ The caller chooses `T`.
 - The request that `get(path)` sends MUST use the HTTP method `GET`.
 - `post(path, &body)` MUST send its request to `path`.
 - The request that `post(path, &body)` sends MUST use the HTTP method `POST`.
-- That POST request MUST carry `body` serialised as JSON.
+- The body of the request that `post(path, &body)` sends MUST be `body` serialised as JSON.
 - In the client source, the signature of `post` MUST accept every `B: serde::Serialize` as the body type.
 - `get(path)` MUST be `async`.
 - In the client source, the signature of `get` MUST accept every `T: serde::de::DeserializeOwned` as the response type.
@@ -539,8 +539,8 @@ The caller chooses `T`.
 - `Client::new` MUST NOT read `SC_ENDPOINT`.
 - `Client::new` MUST NOT read configuration.
 - `Client::new` MUST NOT read the instance root.
-- The crate MUST NOT name any concrete response type such as `Envelope<T>`.
-- The crate MUST NOT depend on any concrete response type such as `Envelope<T>`.
+- The client source MUST NOT contain the name of any concrete response type such as `Envelope<T>`.
+- The crate `sc-transport` MUST NOT depend on any concrete response type such as `Envelope<T>`.
 
 ### Rationale
 
