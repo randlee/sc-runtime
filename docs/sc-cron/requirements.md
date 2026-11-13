@@ -374,7 +374,7 @@ Every cross-boundary failure exposes stable codes, causes, and recovery/remediat
 
 ### Requirement Statement
 
-Definitions: Canonical plaintext schedule data is the serialized HookEnvironment configuration, including deliberate Set values, rather than secret values inherited or resolved at execution. Provider prose is text from the application reference resolver; only Denied, Unavailable, missing or a value crosses that resolver protocol. Resolved values are values supplied from daemon variables, dotenv files or references. Output assembly means composing fixed codes/recovery, outcomes, events, traces and persisted reasons. Stable text and metadata mean the fixed codes, recovery messages and non-provider metadata; they and the canonical configuration write are excluded from value replacement. The resolved map is the immutable map of environment names to values resolved for a schedule run. Schedule operations are the name-keyed `Set`, `Reference` or `Clear` operations of the schedule environment. The row deadline is the deadline of the schedule row being run. The CLI adapter children are the child processes started by sc_compose_run and atm_run.
+Definitions: Canonical plaintext schedule data is the serialized HookEnvironment configuration, including deliberate Set values, rather than secret values inherited or resolved at execution. Provider prose is text from the application reference resolver; only Denied, Unavailable, missing or a value crosses that resolver protocol. Resolved values are values supplied from daemon variables, dotenv files or references. Output assembly means composing fixed codes/recovery, outcomes, events, traces and persisted reasons. Stable text and metadata mean the fixed codes, recovery messages and non-provider metadata; they and the canonical configuration write are excluded from value replacement. The resolved map is the immutable map of environment names to values resolved for a schedule run. Schedule operations are the name-keyed `Set`, `Reference` or `Clear` operations of the schedule environment. The row deadline is the deadline of the schedule row being run. The CLI adapter children are the child processes started by sc_compose_run and atm_run. An invoking caller is the code or process that calls into sc-cron.
 
 Python and Monty schedule rows share one `HookEnvironment`; existing
 constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
@@ -455,9 +455,9 @@ remain outside an untrusted-code boundary.
 - Python MUST start with exactly the resolved map.
 - Monty Getenv MUST return the resolved-map value for a present key.
 - Monty Getenv MUST return the call's supplied default when the key is missing or cleared.
-- Monty GetEnviron MUST enumerate that same resolved map, excluding missing or cleared names.
+- Monty GetEnviron MUST return the resolved map.
 - Every Monty OS call other than `Getenv` and `GetEnviron` MUST be denied.
-- Both CLI adapter children MUST receive the resolved map.
+- Each CLI adapter child MUST receive the resolved map.
 - Hook/provider-controlled failure details and stop reasons MUST replace distinct non-empty resolved values with `[REDACTED_ENV]` before byte caps and the output assembly described above.
 - Stable text, metadata and canonical environment configuration writes MUST remain exempt from resolved-value replacement.
 - The `Debug` formatting of `HookOutput` MUST omit the contents of its raw output fields.
