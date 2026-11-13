@@ -69,7 +69,8 @@ documented way over code it must own.
 
 ### Decision
 
-The client in `sc-transport` is a plain `reqwest::Client` from reqwest 0.13.
+The client in `sc-transport` is a plain `reqwest::Client` from reqwest 0.13
+or later.
 For a UDS endpoint it is built with
 `reqwest::ClientBuilder::unix_socket(path)`. For a TCP endpoint it is built
 normally and requests go to the base URL `http://<ip>:<port>`.
@@ -151,7 +152,9 @@ Rejected because it is custom code to write, test and maintain where a standard 
 ### Implementation
 
 Enforced by: inspection of `crates/sc-transport/Cargo.toml` (no
-`hyperlocal`; `reqwest` at `0.13` with `json` and without `rustls`);
+`hyperlocal`; `reqwest` declared with the registry requirement `">=0.13"`,
+the tested floor with no upper bound (PRD-ENG-9), with `json` and without
+`rustls`);
 `cargo tree -p sc-transport -e normal --prefix none`, with and without
 `--features server`, printing no line beginning with `hyperlocal ` or
 `rustls ` (the name followed by a space). The same check is the
