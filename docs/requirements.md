@@ -877,7 +877,7 @@ second example that nobody maintains.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. `Storage<T>` is the storage trait that reads and writes `T`. A store crate is a crate of the generated project that implements `Storage<T>` for Postgres or for MySQL and contains that engine's SQL; only the service function calls it. SQLite's `Storage<T>` implementation is the published crate `sc-runtime-db-sqlite`, which is not a store crate. An operation is one named action of a project generated from `template/`; the template's example is `widget.create`. The generated crates are the crates of that project. The three surfaces are REST (an HTTP route of the daemon), MCP (a tool at the daemon's MCP endpoint) and CLI (a command of the generated `cli` crate). An operation's service function is an async function in the generated `service` crate that carries out that operation. Pass-through code is code in a REST handler or MCP tool that converts the surface's input to the service function's input type, calls the service function, or converts its result to the surface's response. CLI client code is code that builds the request, sends it by HTTP to the operation's daemon REST route or presents the response. An operation is reachable through a surface when a request on that surface runs the operation's service function and returns its result; for REST the request is an HTTP `POST /ops/<operation>` to the daemon; for CLI the request is a run of the operation's command of the generated `cli` crate, which sends that REST request.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. `Storage<T>` is the storage trait that reads and writes `T`. A store crate is a crate of the generated project that provides `Storage<T>` for one database engine: `store-sqlite`, which uses the published crate `sc-runtime-db-sqlite`, or a sqlx store crate. A sqlx store crate is a store crate for Postgres or for MySQL and contains that engine's SQL. Only the service function calls a store crate. An operation is one named action of a project generated from `template/`; the template's example is `widget.create`. The generated crates are the crates of that project. The three surfaces are REST (an HTTP route of the daemon), MCP (a tool at the daemon's MCP endpoint) and CLI (a command of the generated `cli` crate). An operation's service function is an async function in the generated `service` crate that carries out that operation. Pass-through code is code in a REST handler or MCP tool that converts the surface's input to the service function's input type, calls the service function, or converts its result to the surface's response. CLI client code is code that builds the request, sends it by HTTP to the operation's daemon REST route or presents the response. An operation is reachable through a surface when a request on that surface runs the operation's service function and returns its result; for REST the request is an HTTP `POST /ops/<operation>` to the daemon; for CLI the request is a run of the operation's command of the generated `cli` crate, which sends that REST request.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -922,7 +922,7 @@ the template's example operation `widget.create`.
    proved V2, so these clauses stand. The rule that every surface calls one service
    function does not depend on it.
 
-4. The `service` crate reaches SQL only through `Storage<T>`, implemented by `sc-runtime-db-sqlite` for SQLite and by a store crate for Postgres or MySQL (PRD-STO-1, PRD-STO-2). A project whose only database is SQLite, or that has no database, has no store crate and need not depend on `sqlx`.
+4. The `service` crate reaches SQL only through `Storage<T>`, provided by a store crate (PRD-STO-1, PRD-STO-2). A project whose only database is SQLite, or that has no database, has no sqlx store crate and need not depend on `sqlx`.
 5. A project MAY give REST and MCP different JSON shapes at the edge, provided
    both are converted to the same service-function input type before the
    service function is called. The template example uses one struct for all
@@ -942,7 +942,7 @@ the template's example operation `widget.create`.
 - An operation's REST handler MUST NOT contain code other than pass-through code.
 - An operation's MCP tool MUST NOT contain code other than pass-through code.
 - An operation's CLI command MUST NOT contain code other than CLI client code.
-- When `cargo tree -i sqlx --depth 1` runs in the generated project, its output MUST NOT name any generated crate that is not a store crate.
+- When `cargo tree -i sqlx --depth 1` runs in the generated project, its output MUST NOT name any generated crate that is not a sqlx store crate.
 
 - REST handlers MUST NOT contain SQL.
 - REST handlers MUST NOT call `sqlx`.
