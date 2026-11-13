@@ -110,7 +110,7 @@ Definitions: A workspace member is a Cargo package selected by the root `Cargo.t
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
-The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Amended 2026-11-11 (PRD-STO-3): `sc-runtime-db-sqlite` holds the atm-core SQLite writer that sits behind `Storage<T>`; the earlier rule that it is not a store the daemon opens and not a template dependency is withdrawn. The generated daemon may depend on `sc-cron` only through the optional `cron` feature fixed by [REQ-RUN-0301](requirements.md); feature-off generated builds do not link it.
+The workspace members MUST be exactly the nine packages listed in the member table. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Amended 2026-11-11 (PRD-STO-3): `sc-runtime-db-sqlite` holds the atm-core SQLite writer that sits behind `Storage<T>`; the earlier rule that it is not a store the daemon opens and not a template dependency is withdrawn. The generated daemon may depend on `sc-cron` only through the optional `cron` feature fixed by [REQ-RUN-0301](requirements.md); feature-off generated builds do not link it.
 
 | Member path | Crate name | Purpose |
 |---|---|---|
@@ -160,15 +160,15 @@ The files in `template/` contain `cargo-generate` placeholders and do not compil
 **MUST statements:**
 
 - The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace, declared in the root `Cargo.toml`.
-- The workspace members MUST be exactly these library crates. (see table above)
-- The repository root MUST contain each directory and file listed in the second table in the Requirement Statement (the table headed `Path | Contents`), except that `examples/spike/` is exempt at and after the `v0.1.0` tag.
+- The workspace members MUST be exactly the nine packages listed in the member table.
+- The repository root MUST contain each directory and file listed in the path table, except that `examples/spike/` is exempt at and after the `v0.1.0` tag.
 
 **MUST NOT statements:**
 
 - Each directory and file in the path table MUST NOT be a workspace member.
 - `template/` MUST NOT be a workspace member.
 - `template/` MUST NOT be matched by a workspace `members` glob.
-- The repository MUST NOT contain the sc-runtime design's unused `docs/adr/` directory.
+- The repository MUST NOT contain a `docs/adr/` directory.
 
 ### Rationale
 
