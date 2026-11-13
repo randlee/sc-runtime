@@ -4054,7 +4054,7 @@ the wizard's files only (criterion 5).
 - The path-table files MUST be created by copying the corresponding source wizard files.
 - The copied wizard MUST be edited to produce this repository's wizard.
 - The `data-answer` attribute values in `wizard/pages/*.html` MUST name the same options as the `properties` keys of `wizard/answers.schema.json`.
-- The `<option>` `value` attributes inside each option-input field MUST name the same values as the `enum` of the field's schema property.
+- The `<option>` `value` attributes inside each option-input field in `wizard/pages/*.html` MUST name the same values as the `enum` of that field's schema property in `wizard/answers.schema.json`.
 - When a person runs `just new <dest>` without `--var-file`, the wizard pages that Wyvern displays MUST show one input for every generation option.
 
 **MUST NOT statements:**
