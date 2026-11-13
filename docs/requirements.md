@@ -355,15 +355,15 @@ every project. Everyone who owns a generated project is affected.
 
 ### Requirement Statement
 
-Definitions: The root `Justfile` is the file named `Justfile` (capital J) at the root of `randlee/sc-runtime`. The crate CI workflow is the GitHub Actions workflow named `Crate CI` that runs lint and tests for the repository's crates. The plain-generation job is the `plain-cargo-generate` job in `.github/workflows/template.yml`, the job required by [REQ-RUN-0306](requirements.md). A workflow step is one entry under `steps:` of a job in a file under `.github/workflows/`. A lint step, test step or generation step is a workflow step, outside the plain-generation job, whose command lints code, runs tests, or generates a project from `template/`. A recipe step is any lint step, test step or generation step. A step invokes a program directly when its `run:` text calls that program itself rather than through a `just` recipe. A lint tool is a static check program, such as `sc-lint`, `cargo clippy` or `cargo fmt --check`. A primary recipe is a recipe defined by its own header line in the Justfile, and its primary recipe name is the name on that line. A just alias is an `alias <name> := <recipe>` line, which gives another name to an existing recipe. CI means continuous integration. SC base commands are the standard lint and test recipe names supplied by the sc-lint tooling adopted in this repository. A recipe is a named Justfile command. The three base recipes are the three rows in the recipe table below. The SC base command names are the primary sc-lint-supplied Justfile recipe names lint and test.
+Definitions: CI means continuous integration. The root `Justfile` is the file named `Justfile` (capital J) at the root of the repository `randlee/sc-runtime`. A recipe is a named command defined in the root `Justfile`. A primary recipe is a recipe defined by its own header line in the root `Justfile`; its name is the name on that line. A just alias is a line of the form `alias <name> := <recipe>`, which gives another name to an existing recipe. The recipe table is the table below. The test command list is the numbered list of six items below; each item names one or more commands that run tests. The static check list is the lettered list of five checks below. The driver is the generation script `scripts/new_project.py`. The crate CI workflow is the GitHub Actions workflow named `Crate CI`, which runs lint and tests for the crates of this repository. The plain-generation job is the job `plain-cargo-generate` in `.github/workflows/template.yml`. A workflow step is one entry under `steps:` of a job in a file under `.github/workflows/`. A lint step is a workflow step outside the plain-generation job whose command lints code. A test step is a workflow step outside the plain-generation job whose command runs tests. A generation step is a workflow step outside the plain-generation job whose command generates a project from `template/`; that project is the step's project. A recipe step is a lint step, a test step or a generation step. A step invokes a program directly when its `run:` text calls that program itself instead of calling a `just` recipe. A lint tool is a program that performs a static check; `sc-lint`, `cargo clippy` and `cargo fmt --check` are lint tools.
 
-The SC base command names `lint` and `test` are the recipe names that `sc-lint init --just` writes. The first line stays the sc-lint initialization header.
+The names `lint` and `test` are the recipe names that `sc-lint init --just` writes. The first line of the root `Justfile` stays the sc-lint initialization header.
 
 | Recipe | Behaviour |
 |---|---|
 | `just lint` | Runs every static check for this repository and exits non-zero if any check fails. Its checks include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |
-| `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |
-| `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |
+| `just test` | Runs every command in the test command list, and exits non-zero if any of them fails. |
+| `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) are passed through to the driver unchanged. |
 
 The test command list is specified in this record; the sc-runtime design names only the recipe.
 
@@ -382,76 +382,63 @@ The test command list is specified in this record; the sc-runtime design names o
 6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`
    1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).
 
-There is exactly one recorded exception: the job required by [REQ-RUN-0306](requirements.md), which proves that plain `cargo generate` works without the driver, and therefore runs `cargo generate --path template ...` and `cargo build --workspace` directly.
+The static check list is what `just lint` with no profile argument runs, through `.sc-lint/bootstrap.py` and `sc-lint.toml`, as the sc-lint full profile:
 
-`just lint` with no profile runs the sc-lint 0.8.6 full profile through
-`.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
-`boundary` lint), line-counts, `cargo fmt --all -- --check`,
-`cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
-`cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on
-**rustc 1.96**. `just lint gates`
-is the early profile of boundary plus line-counts. The line-counts key is
-`[line_counts] max_production_lines` and its value is `1000` for non-test
-files under `crates/*/src`. `template/**/*.rs` is not configured in this
-sprint.
+- (a) `sc-lint lint sc-boundary` (the `boundary` lint).
+- (b) line-counts, with the key `[line_counts] max_production_lines` set to `1000` for non-test files under `crates/*/src`.
+- (c) `cargo fmt --all -- --check`.
+- (d) `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`.
+- (e) `cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on **rustc 1.96**.
+
+`just lint gates` is the early profile of (a) plus (b). `template/**/*.rs` is not configured for line-counts in this sprint.
+
+There is exactly one recorded exception to the recipe-step statements: the plain-generation job, required by [REQ-RUN-0306](requirements.md), proves that plain `cargo generate` works without the driver, and therefore runs `cargo generate --path template ...` and `cargo build --workspace` directly.
 
 **MUST statements:**
 
-- The root `Justfile` MUST define a recipe named `lint`.
-- Running `just lint` MUST behave as this record's `just lint` table row describes.
-- The root `Justfile` MUST define a recipe named `test`.
-- Running `just test` MUST behave as this record's `just test` table row describes.
-- The root `Justfile` MUST define a recipe named `new`.
-- Running `just new <dest>` MUST behave as this record's `just new <dest>` table row describes.
-- Running `just test` MUST run every command in this record's numbered test command list.
-- Each lint step MUST run its checks through `just lint`.
-- Each test step MUST run its tests through `just test`.
-- Each generation step MUST generate the project through `just new`.
-- The crate CI workflow MUST be defined in the file `.github/workflows/crates.yml`.
-- On every pull request, the crate CI workflow MUST run `just lint` at the repository root.
-- On every pull request, the crate CI workflow MUST run `just test` at the repository root.
+1. The root `Justfile` MUST define a recipe named `lint`.
+2. Running `just lint` MUST behave as the `just lint` row of the recipe table describes.
+3. The root `Justfile` MUST define a recipe named `test`.
+4. Running `just test` MUST behave as the `just test` row of the recipe table describes.
+5. The root `Justfile` MUST define a recipe named `new`.
+6. Running `just new <dest>` MUST behave as the `just new <dest>` row of the recipe table describes.
+7. Running `just test` MUST run every command in the test command list.
+8. Each lint step MUST run its checks by calling `just lint`.
+9. Each test step MUST run its tests by calling `just test`.
+10. Each generation step MUST generate its project by calling `just new`.
+11. The crate CI workflow MUST be defined in the file `.github/workflows/crates.yml`.
+12. On every pull request, the crate CI workflow MUST run `just lint` at the repository root.
+13. On every pull request, the crate CI workflow MUST run `just test` at the repository root.
 
 **MUST NOT statements:**
 
-- A recipe step MUST NOT invoke `cargo` directly.
-- A recipe step MUST NOT invoke `python` directly.
-- A recipe step MUST NOT invoke a lint tool directly.
-
-- The root `Justfile` MUST NOT rename the primary recipe `lint`.
-- The root `Justfile` MUST NOT define `lint` as a just alias of a primary recipe with another name.
-- The root `Justfile` MUST NOT rename the primary recipe `test`.
-- The root `Justfile` MUST NOT define `test` as a just alias of a primary recipe with another name.
+14. A recipe step MUST NOT invoke `cargo` directly.
+15. A recipe step MUST NOT invoke `python` directly.
+16. A recipe step MUST NOT invoke a lint tool directly.
+17. The root `Justfile` MUST NOT rename the primary recipe `lint`.
+18. The root `Justfile` MUST NOT define `lint` as a just alias of a primary recipe with another name.
+19. The root `Justfile` MUST NOT rename the primary recipe `test`.
+20. The root `Justfile` MUST NOT define `test` as a just alias of a primary recipe with another name.
 
 ### Rationale
 
 Every SC repository exposes the same base `just` commands so that agents, CI
 and people use one vocabulary and need no per-repository knowledge to lint or
 test. Routing CI through the same recipes means a green local `just lint` and
-`just test` predicts a green CI run.
+`just test` predicts a green CI run. The names `lint` and `test` stay primary recipe names because they are the names sc-lint writes; an alias or a renamed recipe would break that shared vocabulary.
+
 ### Success Criteria
 
-1. `just --list` at the repository root shows `lint`, `test` and `new`.
-2. `just lint` and `just test` each exit 0 on a clean checkout of the default
-   branch.
-3. Introducing a failing unit test in any workspace crate makes `just test`
-   exit non-zero; introducing a failing test under `tests/unit/` does the
-   same.
-4. Introducing, in `crates/sc-command`, a failing test gated with
-   `#[cfg(not(feature = "server"))]` makes `just test` exit non-zero, and so
-   does a failing test gated with `#[cfg(feature = "server")]`. This shows
-   both feature configurations are tested.
-5. `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` invokes
-   `scripts/new_project.py` with that destination and that `--var-file`
-   argument (check by inspecting the recipe body).
-6. Inspect every file in `.github/workflows/`: each lint, test or generate
-   step is a `just lint`, `just test` or `just new` invocation, except the
-   steps of the one plain-`cargo generate` job of
-   [REQ-RUN-0306](requirements.md).
-7. One workflow file under `.github/workflows/` has a `pull_request` trigger
-   and steps running `just lint` and `just test` at the repository root, and
-   a pull request's check list shows a run of that workflow.
-
----
+1. Statements 1, 3 and 5: inspect the root `Justfile`; it has a recipe header line for each of `lint`, `test` and `new`, and `just --list` at the repository root shows all three.
+2. Statement 2: `just lint` exits 0 on a clean checkout of the default branch; inspect the `lint` recipe body and `sc-lint.toml` to confirm each of checks (a) to (e) runs; introducing a formatting error makes `just lint` exit non-zero.
+3. Statements 4 and 7: inspect the `test` recipe body; each of the six items of the test command list appears. `just test` exits 0 on a clean checkout of the default branch.
+4. Statement 4: introducing a failing unit test in any workspace crate makes `just test` exit non-zero; introducing a failing test under `tests/unit/` does the same.
+5. Statement 7: introducing, in `crates/sc-command`, a failing test gated with `#[cfg(not(feature = "server"))]` makes `just test` exit non-zero, and so does a failing test gated with `#[cfg(feature = "server")]`. This shows both feature configurations are tested.
+6. Statement 6: inspect the `new` recipe body; `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` invokes `scripts/new_project.py` with that destination and that `--var-file` argument.
+7. Statements 8, 9, 10, 14, 15 and 16: inspect every file in `.github/workflows/`; outside the plain-generation job, each lint step is a `just lint` invocation, each test step is a `just test` invocation, each generation step is a `just new` invocation, and no `run:` text of such a step calls `cargo`, `python` or a lint tool itself.
+8. Statement 11: the file `.github/workflows/crates.yml` exists and its `name:` is `Crate CI`.
+9. Statements 12 and 13: `.github/workflows/crates.yml` has a `pull_request` trigger and steps running `just lint` and `just test` at the repository root, and a pull request's check list shows a run of that workflow.
+10. Statements 17 to 20: inspect the root `Justfile`; `lint` and `test` each appear as the name on a recipe header line, and no line starts with `alias lint :=` or `alias test :=`.
 
 ## REQ-RUN-0005: Boundary manifests for every crate
 
