@@ -358,7 +358,7 @@ process environment variables.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 
 ### Requirement Statement
@@ -394,7 +394,9 @@ are `OsString` so a non-Unicode value is reported instead of panicking.
 - A `Loader` MUST be given the config directory (a filesystem path) explicitly by the caller.
 - A `Loader` MUST be given the environment source explicitly by the caller.
 - The environment source MUST be an iterator of (variable name, value) pairs supplied by the caller.
-- `Loader` MUST expose `Loader::load::<T>()` for any `T: serde::de::DeserializeOwned`, returning `Result<T, ConfigError>`.
+- `Loader` MUST expose the public generic method `Loader::load::<T>()`.
+- `Loader::load::<T>()` MUST support every type `T` that implements `serde::de::DeserializeOwned`.
+- `Loader::load::<T>()` MUST return `Result<T, ConfigError>`.
 - `Loader::load` MUST read `default.json` only from the given config directory.
 - `Loader::load` MUST read `local.json` only from the given config directory.
 - `Loader::load` MUST take overrides only from the given environment source.
@@ -407,10 +409,12 @@ are `OsString` so a non-Unicode value is reported instead of panicking.
 
 **MUST NOT statements:**
 
-- It MUST NOT read the process environment.
-- It MUST NOT use `std::env::vars`, which panics when any variable is not valid Unicode.
+- `Loader` MUST NOT read the process environment.
+- The free function `load` MUST NOT use `std::env::vars`.
 
 ### Rationale
+
+`std::env::vars` can panic when an environment variable is not valid Unicode. The convenience free function uses `std::env::vars_os` so environment pairs retain their `OsString` representation and non-Unicode input is reported instead of causing that panic.
 
 The process environment and the current working directory are global to the
 process. A test that sets a variable or changes directory races with every
