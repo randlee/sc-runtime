@@ -1666,7 +1666,7 @@ REST and MCP have exactly one place to call.
 
 ### Requirement Statement
 
-Definitions: The worked example is the widget example below. Its three surfaces are a REST handler, an MCP tool and a CLI command. The service function is the async operation function shared by those surfaces.
+Definitions: The worked example is the widget example below. Its three surfaces are a REST handler, an MCP tool and a CLI command. The service function is the async operation function shared by those surfaces. In this example, a command is the generated `clap` CLI command in the table; it reaches the service function through the matching daemon HTTP route. SQL means Structured Query Language, the database query text implemented by the storage layer.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -4041,7 +4041,7 @@ has to be deleted from a generated project after rendering.
 
 ### Requirement Statement
 
-Definitions: An answers object is a JSON object of generation-option values. The three modes are interactive wizard, prefilled wizard and non-interactive var-file. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test.
+Definitions: An answers object is a JSON object of generation-option values. The three modes are interactive wizard, prefilled wizard and non-interactive var-file. The generation steps are validation, values-file creation, cargo generate, sc-compose, just lint and just test. The destination is the new project output directory `<dest>` passed to `just new <dest>`.
 
 | Mode | Command line | Behaviour |
 |---|---|---|
