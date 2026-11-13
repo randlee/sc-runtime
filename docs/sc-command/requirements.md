@@ -467,6 +467,7 @@ Definitions:
 - `McpError` is the type `rmcp::ErrorData`, re-exported as `sc_command::McpError`.
 - `is_error` is the `Option<bool>` field of `CallToolResult` that marks a failed tool call.
 - `structured_content` is the JSON value field of `CallToolResult`.
+- A text content item is an element of the `content` list of `CallToolResult` whose value is `rmcp::model::RawContent::Text`.
 - The input result is the `Result<T, OpError>` value on which `into_mcp` is called.
 - The input envelope is `Envelope::<T>::from(input result)`, where `Envelope<T>` is the response envelope of [REQ-CMD-0001](requirements.md).
 - The envelope JSON is `serde_json::to_value` of the input envelope.
@@ -487,7 +488,7 @@ Definitions:
 - In a server build, `sc_command::IntoMcp` MUST be a public trait.
 - In `crates/sc-command/src`, the trait `IntoMcp` MUST declare exactly one method.
 - The signature of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST be the required signature.
-- `crates/sc-command/src` MUST contain the required impl of `IntoMcp` for `Result<T, OpError>`.
+- A file in `crates/sc-command/src` MUST define the required impl.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include `Sized`.
 - In `crates/sc-command/src`, the supertraits of `IntoMcp` MUST include a sealed supertrait.
 - The body of `IntoMcp::into_mcp` in `crates/sc-command/src` MUST obtain the input envelope by calling `Envelope::<T>::from` on the input result.
