@@ -74,7 +74,7 @@ decision.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-03  
+**Last Updated:** 2026-11-12
 **Owner:** randlee  
 **Decision Date:** 2026-09-19  
 
@@ -95,95 +95,34 @@ Source: sc-runtime design, 2026-09-19, section "The crates" (sc-runtime is a boo
 - ADR-TRN-0002
 ### Context
 
-The crate `sc-runtime` (`crates/sc-runtime`) is the one place where a
-generated project's daemon is put together: singleton lock, stores, router,
-listener. An assembly point like this tends to grow into a framework layer
-with lifecycle hooks, plugin points and a configurable start-up sequence.
+**Problem.** `sc-runtime` assembles each generated daemon's lock, stores, router and listener. Unrestricted hooks, registries or configurable ordering would turn assembly into a framework and could break the lock-before-stores and bind-last safety rules.
 
-`<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
-The same crate owns the one endpoint resolver that the daemon and the CLI
-share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
-the daemon has to call it, and the builder has only five methods through
-which inputs could arrive.
+**Constraint.** `sc-transport` owns the endpoint resolver shared by daemon and CLI ([ADR-TRN-0002](../sc-transport/architecture.md)); the daemon must call it without adding builder methods for endpoint inputs. The instance root is a per-user, per-application directory resolved by `sc-transport` or supplied explicitly; its default is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+
 ### Decision
 
-Phase C narrow public-surface reconciliation: NFR-RT-0001's closed table and
-rustdoc criterion include existing run_with_cleanup and the approved bound
-receipt alternative run_with_cleanup_and_bound. These remain Ready-only
-terminal alternatives through the same runner, with startup/teardown order
-and ADR-RT-0005 ownership unchanged. The bound callback observes the owned
-Endpoint after bind; it is not a registry, library wrapper, new typestate or
-general callback mechanism. The router test utility is the only additional
-free function authorized: it is gated by `test-util`, composes existing
-middleware on an ordinary Axum router, and adds no builder method, callback,
-lifecycle hook, or assembly behavior.
+`DaemonBuilder` is a consuming typestate builder. Public, `#[doc(hidden)]` markers `NeedStores`, `NeedRoutes` and `Ready` are nameable across crates but are not facade items. `stores` consumes `NeedStores` and returns `NeedRoutes`; `routes` consumes `NeedRoutes` and returns `Ready`. `mcp` is optional and available only in `Ready`, returning the same state. `logger` is optional in all three states and preserves the state. It replaces the fixed `sc-runtime` Noop handle without a `NeedLogger` state or run step. `run` is available only in `Ready`.
 
-2026-10-31 amendment: ADR-RUN-0017 changes only canonical port ownership
-to command for initial release; the existing command edge carries it. No
-assembly phase, lifecycle or dependency budget is added. Upstream direct Arc
-cleanup is future work.
+`Daemon::builder` accepts `&sc_transport::AppName` and `&DaemonConfig`; its initial builder cannot run. The builder has no hook, plugin registry or option that inserts work between the steps below or changes their order. It adds no general callback mechanism.
 
-`DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
-`NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
-`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
-exists only on `Ready`. `mcp` is optional and is implemented only on
-`Ready`. `logger` is optional on all three states and returns the same state;
-it replaces the fixed `sc-runtime` Noop handle and creates no `NeedLogger`
-state or run step. The markers are `pub` so the builder can be named across crates.
-They are `#[doc(hidden)]` and are not facade items.
+`run()` performs exactly five steps in order:
 
-`run()` on the builder returned by `Daemon::builder(&sc_transport::AppName, &daemon_config)`
-does exactly five things, always in this order:
+1. Take the `DaemonConfig` already loaded by the project.
+2. Resolve the instance root with `sc-transport`, then resolve the bind endpoint with the shared `sc-transport` endpoint resolver.
+3. Register SIGINT and SIGTERM streams, then acquire the exclusive `<instance-root>/daemon.lock` lock.
+4. Call the project's stores closure, then merge the project's `utoipa_axum::OpenApiRouter`, the OpenAPI document route, the health route and the optional rmcp service at `/mcp` into one `axum::Router`.
+5. Bind the endpoint with `sc-transport`, then serve the unchanged router on every bound listener until SIGINT or SIGTERM.
 
-1. take the `DaemonConfig` the project already loaded;
-2. resolve the instance root by calling the `sc-transport` instance-root
-   function, then resolve the bind endpoint by calling the `sc-transport`
-   endpoint resolver (endpoint resolution completes before the lock);
-3. register SIGINT and SIGTERM streams, then take the exclusive lock on
-   `<instance-root>/daemon.lock`;
-4. call the project's stores closure, then merge the project's
-   `utoipa_axum::OpenApiRouter`, the OpenAPI document route, a health route,
-   and the rmcp service at `/mcp` if one was given;
-5. bind through `sc-transport` last, and serve until SIGINT or SIGTERM. It is
-   one `axum::Router`, served unchanged on every listener `run()` binds.
+Endpoint resolution finishes before lock acquisition. An invalid endpoint takes no lock and opens no stores. Signals are registered before bind. Lock acquisition precedes the stores closure. Bind is the last startup step. Any failed step returns `RuntimeError` and stops later steps.
 
-In the daemon, the component that calls the `sc-transport` instance-root
-function and endpoint resolver is `run()`; the generated `main.rs` does not,
-and `sc-runtime` has no endpoint logic of its own. The `--endpoint` flag
-value (parsed by the project's `main`), the configured endpoint and an
-explicit instance root reach `run()` inside `DaemonConfig`; the builder gains
-no method for them. Honouring `SC_ENDPOINT` through the resolver is not
-loading configuration. This paragraph is decided in this document
-([REQ-RT-0008](requirements.md)); the design says only that the daemon binds
-"through sc-transport".
+`run()` calls the two `sc-transport` resolvers; generated `main.rs` does not. `sc-runtime` has no endpoint logic of its own. The project's `main` parses `--endpoint`; its value, the configured endpoint and any explicit instance root reach `run()` through `DaemonConfig`, without new builder methods. The shared resolver's `SC_ENDPOINT` override is not configuration loading ([REQ-RT-0008](requirements.md)). `DaemonConfig.transport` is `sc_transport::TransportConfig`, `DaemonConfig.endpoint_flag` is `Option<String>`, and `run` calls `sc_transport::resolve_endpoint_from_env`; the environment-variable name does not appear in this crate. The crate defines no `sc_runtime::AppName`.
 
-Endpoint resolution completes before the lock is taken, so an invalid
-endpoint does not take the lock or open stores. Signal streams are registered
-before bind. The lock is taken before the stores closure is called. Binding is
-the last step. A failure in any step returns a `RuntimeError` and no later
-step runs.
-The builder has no hook, callback, plugin registry or option that inserts
-work between steps or changes their order (decided in this document; the
-design lists the five steps and calls the crate a bootstrap, not a framework
-layer). The caller-facing sequence is consuming typestate. `Daemon::builder` takes
-`&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
-`run` is not implemented. `stores` then `routes` consume the builder. `mcp`
-and `run` exist only after `routes`. `mcp` is optional and returns the same
-ready builder. `logger` is optional before or after either transition and
-preserves `NeedStores` -> `NeedRoutes` -> `Ready`. This crate does not define
-`sc_runtime::AppName`.
+v0.1 binds exactly one listener at the one resolved endpoint. `TransportConfig` is `#[non_exhaustive]` and has no `additional_endpoints` field. `sc-transport` can bind either listener kind ([REQ-TRN-0003](../sc-transport/requirements.md)).
 
-v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
-has no `additional_endpoints` field. `sc-transport` can bind either kind of
-listener ([REQ-TRN-0003](../sc-transport/requirements.md)). The resolver
-returns one endpoint, and step 5 binds that endpoint.
+The 2026-10-31 [ADR-RUN-0017](../architecture.md) amendment assigns the initial-release canonical port to command through the existing command edge. It adds no assembly phase, lifecycle or dependency budget; direct upstream Arc cleanup is future work.
 
-`DaemonConfig.transport` is `sc_transport::TransportConfig`.
-`DaemonConfig.endpoint_flag` is `Option<String>`. `run` calls
-`sc_transport::resolve_endpoint_from_env`, which reads `SC_ENDPOINT`. The
-name does not appear in this crate ([REQ-RT-0008](requirements.md)).
+The Phase C reconciliation permits `run_with_cleanup` and `run_with_cleanup_and_bound` as `Ready`-only terminal alternatives through the same runner, preserving startup and teardown order and [ADR-RT-0005](architecture.md) ownership. The bound callback observes the owned `Endpoint` after bind; it adds no registry, library wrapper, typestate or general callback mechanism. The only additional free function is the `test-util`-gated router utility, which composes existing middleware on an ordinary Axum router without adding a builder method, callback, lifecycle hook or assembly behavior.
+
 ### Rationale
 
 Two repo-level decisions rule that out. The framework instantiates parts and
