@@ -222,11 +222,11 @@ last so no request is accepted before it can be served.
 
 ### Requirement Statement
 
-Definitions: OS means operating system. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory. A daemon is one running application server process. When the daemon.lock acquisition fails because another daemon holds it, the stores closure is not called and no listener is bound.
+Definitions: sc-runtime is the Rust crate that assembles application daemons. OS means operating system. The instance root is the per-application, per-user directory holding daemon.lock and the Unix socket, or the explicitly supplied directory. A daemon is one running application server process. The lock is the OS exclusive file lock on `<instance-root>/daemon.lock`. Lock contention is the lock being held by another daemon when `run()` tries to take it. The lock-release point is the earlier of two events: `run()` returns, or the process exits. The stores closure is the project-supplied asynchronous `.stores(...)` closure that opens stores and returns the project's `Stores` value. Successfully opened stores are that returned value. The runtime logger is the `sc_command::observability::SharedCanonicalLog` handle carried by the daemon builder. The cleanup callback is the asynchronous application cleanup supplied to `run_with_cleanup`; completion means that callback has returned. A listener is the Unix-domain-socket or TCP listener bound through `sc-transport`. RuntimeError is the public sc-runtime startup and serving error enum. LockHeld is its variant for another process holding the instance lock; InstanceFailed is its variant for instance-root or lock preparation failure without lock contention (REQ-RT-0007). A retained resource remains owned and is not dropped before the stated completion event. The instance root is in use when another daemon holds its instance lock.
 
 `<instance-root>` is the per-application, per-user directory resolved by sc-transport, or an explicitly supplied path; its default location is undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). Tests supply a tempdir as the explicit path.
 
-That variant is not `LockHeld` ([REQ-RT-0007](requirements.md)).
+Examples of a failure that is not lock contention are permission denied and an instance root that is not a directory. Such a failure returns `InstanceFailed`, not `LockHeld` (REQ-RT-0007).
 
 `run()` creates the instance root when the path is absent. It rejects an
 existing file as `InstanceFailed` and then calls `create_dir_all` before it
@@ -236,22 +236,30 @@ crate creates the directory it is about to lock.
 
 **MUST statements:**
 
-- `sc-runtime` MUST prevent a second application server process from running against the same per-application, per-user directory identified by `<instance-root>`, including an explicitly supplied directory.
+- `sc-runtime` MUST enforce a maximum of one running daemon per instance root.
 - The mechanism MUST be an OS exclusive file lock.
 - That file lock MUST be taken with the `fd-lock` crate.
 - That file lock MUST be on `<instance-root>/daemon.lock`.
-- `run()` MUST take the lock before calling the stores closure.
-- `run()` MUST take the lock before binding any listener.
-- The acquired `daemon.lock` lock MUST remain held until the first of these two events: the process exits; `run()` returns.
-- When `run_with_cleanup` has acquired the `daemon.lock` lock, it MUST retain that lock through completion of the supplied asynchronous cleanup callback. This retention rule applies on successful startup and on startup errors after lock acquisition. Successful stores and the runtime logger remain owned through the same cleanup callback.
-- If another process holds the lock, `run()` MUST return a `RuntimeError` whose variant means "lock held" (illustrative name `RuntimeError::LockHeld`; [REQ-RT-0007](requirements.md) defines the variants).
-- A failure to open or lock `daemon.lock` that is not lock contention (for example permission denied, or the instance root is not a directory) MUST make `run()` return `Err(RuntimeError::InstanceFailed)` without calling the stores closure.
+- At invocation of the project's stores closure, `run()` MUST already hold the OS exclusive lock on `<instance-root>/daemon.lock`.
+- At each listener bind, `run()` MUST already hold the lock.
+- From acquisition until the lock-release point, the OS exclusive file lock MUST remain held.
+- When `run_with_cleanup` has acquired the lock, it MUST retain the lock until the supplied asynchronous cleanup callback completes.
+- After a successful startup, `run_with_cleanup` MUST retain the acquired lock until the supplied asynchronous cleanup callback completes.
+- After a startup error following lock acquisition, `run_with_cleanup` MUST retain the acquired lock until the supplied asynchronous cleanup callback completes.
+- The `Stores` value produced by the successful stores closure MUST be retained through completion of the application cleanup callback.
+- The daemon builder's `SharedCanonicalLog` handle MUST be retained through completion of the application cleanup callback.
+- When another daemon holds the instance lock, `run()` MUST return `Err(RuntimeError::LockHeld)` (REQ-RT-0007).
+- When opening or locking `daemon.lock` fails without contention, `run()` MUST return `Err(RuntimeError::InstanceFailed)`.
+
+- The attempt to take the lock MUST be a non-blocking try-lock.
 
 **MUST NOT statements:**
 
-- The attempt to acquire `daemon.lock` MUST NOT block waiting for the holder; it uses a non-blocking try-lock.
-- In that case the stores closure MUST NOT be called.
-- In that case a listener MUST NOT be bound.
+- After a failure to open or lock `daemon.lock` that is not lock contention, the stores closure MUST NOT be called.
+
+- The attempt to take the lock MUST NOT block waiting for the holder.
+- On lock contention the stores closure MUST NOT be called.
+- On lock contention, `run()` MUST NOT bind any listener.
 - The crate MUST NOT use a PID file to detect another daemon.
 - The crate MUST NOT probe a port to detect another daemon.
 
@@ -264,6 +272,8 @@ daemons on one SQLite file would mean two writers. An OS lock is released by
 the kernel whenever the process ends, including a crash, so there is no
 stale-PID file to clean up and no race between checking and claiming.
 ### Success Criteria
+
+The ordering and retention clauses are checked by inspecting the startup and cleanup runner: lock acquisition precedes both the stores-closure invocation and listener binding; the acquired lock, successful `Stores` value and logger handle remain owned until application cleanup completes. The non-blocking acquisition clause is checked by inspecting the fd-lock try-lock path, as criterion 1 specifies. The two-daemon test checks the observable startup refusal. These checks add no wall-clock timing assertion.
 
 1. A test starts the first daemon with an explicit temporary instance root and waits for an explicit startup-complete signal confirming that its instance lock is held. While that daemon remains running and holds the lock, call `run()` for a second daemon with the same instance root and assert the lock-held `RuntimeError` result. Inspect the production acquisition path to verify that it uses fd-lock's non-blocking try-lock operation. A harness watchdog may terminate a hung test, but elapsed wall time is not a pass/fail assertion for non-blocking behavior.
 2. The same test asserts the second daemon's stores closure was never called
