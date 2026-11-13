@@ -573,9 +573,7 @@ the same JSON as a string.
 
 ### Requirement Statement
 
-Definitions: JSON means JavaScript Object Notation. T is the caller-chosen value type in Envelope<T>. error.details is the arbitrary JSON context carried by an OpError.
-
-Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
+Definitions: JSON means JavaScript Object Notation. T is the caller-chosen value type in Envelope<T>. error.details is the arbitrary JSON context carried by an OpError. The round trip is deserialising a JSON envelope into `sc_command::Envelope<T>` and serialising that value again; its input is the JSON envelope and its output is the JSON produced. Equality means `serde_json::Value` equality: same keys, same values, same `null`s; key order and whitespace are not compared. The envelope is the object with keys `version`, `ok`, `data`, `error` ([REQ-CMD-0001](requirements.md)).
 
 This requirement does not cover a typed `T` that ignores unknown fields:
 deserialising into `Envelope<Widget>` legitimately drops fields `Widget`
@@ -584,16 +582,16 @@ into `Envelope<serde_json::Value>`.
 
 **MUST statements:**
 
-- Deserialising a JSON response envelope into `sc_command::Envelope<T>` and serialising that value again MUST produce a JSON value equal to the input.
-- This MUST hold for `T = serde_json::Value` with arbitrary JSON inside `data`, including fields the CLI has no struct for.
-- This MUST hold for arbitrary JSON inside `error.details`, whatever `T` is.
-- `details` is the structured-context field of `OpError` ([REQ-CMD-0002](requirements.md)); its type MUST therefore preserve arbitrary JSON.
+- The output of the round trip MUST equal its input.
+- For `T = serde_json::Value`, the output of the round trip MUST equal its input for any JSON value inside `data`, including fields the CLI has no struct for.
+- For every `T`, the round trip MUST preserve any JSON value in `error.details` according to the defined equality.
+- The Rust type of the `details` field of `OpError` MUST preserve any JSON value through the round trip (REQ-CMD-0002).
 - A key whose value is `null` in the input (`error` in the success case, `data` in the failure case) MUST be present with the value `null` in the output.
 - The `version` value in the output MUST be the value read from the input, not the version constant of the `sc-command` build doing the printing.
 
 **MUST NOT statements:**
 
-- That null-valued key MUST NOT be dropped.
+- Within this requirement's scope, the round trip MUST NOT drop a key whose value is `null` in its input.
 
 ### Rationale
 
