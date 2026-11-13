@@ -871,7 +871,7 @@ second example that nobody maintains.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. A store crate is a generated engine-specific crate containing that database engine's SQL; only the service function calls it. An operation is one named action of a project generated from `template/`; the template's example is `widget.create`. The generated crates are the crates of that project. The three surfaces are REST (an HTTP route of the daemon), MCP (a tool at the daemon's MCP endpoint) and CLI (a command of the generated `cli` crate). The service function is the operation's one async function in the generated `service` crate. An operation is reachable through a surface when a request on that surface runs the operation's service function and returns its result; for REST the request is an HTTP `POST /ops/<operation>` to the daemon.
+Definitions: CLI means command-line interface. MCP means Model Context Protocol. SQL means Structured Query Language. JSON means JavaScript Object Notation. ADR means architecture decision record. A store crate is a generated engine-specific crate containing that database engine's SQL; only the service function calls it. An operation is one named action of a project generated from `template/`; the template's example is `widget.create`. The generated crates are the crates of that project. The three surfaces are REST (an HTTP route of the daemon), MCP (a tool at the daemon's MCP endpoint) and CLI (a command of the generated `cli` crate). An operation's service function is an async function in the generated `service` crate that carries out that operation. Pass-through code is code in a REST handler or MCP tool that converts the surface's input to the service function's input type, calls the service function, or converts its result to the surface's response. CLI client code is code that builds the request, sends it by HTTP to the operation's daemon REST route or presents the response. An operation is reachable through a surface when a request on that surface runs the operation's service function and returns its result; for REST the request is an HTTP `POST /ops/<operation>` to the daemon; for CLI the request is a run of the operation's command of the generated `cli` crate, which sends that REST request.
 
 Command paths may be written directly in Phase D. Direct Tcli-to-Tsql conversion needs no custom transform. Later consumer-side generation against the delivered framework remains permitted.
 
@@ -926,17 +926,18 @@ the template's example operation `widget.create`.
 
 - An operation MUST define exactly one request struct in the generated `api-types` crate.
 - An operation MUST define exactly one response struct in the generated `api-types` crate.
-- An operation MUST define exactly one async service function in the generated `service` crate.
+- An operation MUST have exactly one service function.
 - Each operation MUST be reachable through REST.
 - Each operation MUST be reachable through MCP.
 - Each operation MUST be reachable through CLI.
-- For an operation, a REST handler MUST restrict its work to input conversion, the service-function call and result conversion.
-- For an operation, an MCP tool MUST restrict its work to input conversion, the service-function call and result conversion.
-- `sqlx` MUST be a dependency of the generated `store-*` crates only.
+- In the generated project, `cargo tree -i sqlx --depth 1` output MUST name every store crate.
 
 **MUST NOT statements:**
 
-- For an operation, a CLI command MUST NOT perform work outside request construction, HTTP submission to that operation's daemon REST route, and response presentation.
+- An operation's REST handler MUST NOT contain code other than pass-through code.
+- An operation's MCP tool MUST NOT contain code other than pass-through code.
+- An operation's CLI command MUST NOT contain code other than CLI client code.
+- In the generated project, `cargo tree -i sqlx --depth 1` output MUST NOT name any generated crate that is not a store crate.
 
 - REST handlers MUST NOT contain SQL.
 - REST handlers MUST NOT call `sqlx`.
