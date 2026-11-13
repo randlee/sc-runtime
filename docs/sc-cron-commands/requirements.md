@@ -114,7 +114,7 @@ Phase C target, planned and unimplemented.
 
 ### Requirement Statement
 
-Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces. The adapter is the `sc-cron-commands` crate. `CronExecutor` is the object-safe executor trait exported by the adapter with default features. `StandardCronExecutor` is the executor provided under its non-default scheduler feature; the standard executor and standard implementation mean it. `CronOperations` is sc-cron's native operations port ([REQ-CRON-0021](../sc-cron/requirements.md)).
+Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build. CLI means command-line interface. MCP means Model Context Protocol. Standard validation is the version, field, target, limit and cursor validation in REQ-CRNC-0001. Scope propagation passes the live StoreOperationContext into the native operation. Selected generation means cron_commands=true with cron selected. The core is sc-cron's scheduler API, usable without sc-cron-commands. A CLI end projection is the generated end command forwarding its typed request to the same CronExecutor as the other selected command surfaces. The adapter is the `sc-cron-commands` crate. `CronExecutor` is the object-safe executor trait exported by the adapter with default features. `StandardCronExecutor` is the executor provided under its non-default scheduler feature; the standard executor and standard implementation mean it. `CronOperations` is sc-cron's native operations port ([REQ-CRON-0021](../sc-cron/requirements.md)). A custom cron implementation is an application's own implementation of `CronOperations` or of `CronExecutor`.
 
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
@@ -145,10 +145,11 @@ No consumer-product migration or automatic job start is implied.
 - Scheduler-feature StandardCronExecutor MUST consume native CronOperations.
 - Scheduler-feature StandardCronExecutor MUST consume explicit ApplicationTargetBindings.
 - The standard executor MUST derive a child operation context.
-- Custom CronOperations or CronExecutor implementations MUST document task/physical-join ownership responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document persistence truth responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document authorization responsibilities.
-- Custom CronOperations or CronExecutor implementations MUST document error mapping responsibilities.
+- A custom cron implementation MUST document its task ownership responsibilities.
+- A custom cron implementation MUST document its physical-join ownership responsibilities.
+- A custom cron implementation MUST document its persistence truth responsibilities.
+- A custom cron implementation MUST document its authorization responsibilities.
+- A custom cron implementation MUST document its error mapping responsibilities.
 - The standard implementation MUST retain standard validation.
 - The standard implementation MUST retain scope propagation.
 - Unsupported Monty MUST fail before persistence.

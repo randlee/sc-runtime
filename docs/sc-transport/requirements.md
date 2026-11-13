@@ -111,28 +111,31 @@ not decide that.
 - The crate `sc-transport` (`crates/sc-transport`) MUST expose one public endpoint resolver.
 - A daemon binary MUST call that resolver to learn where the daemon listens.
 - A CLI binary MUST call that resolver to learn where the daemon listens.
-- The resolver's result MUST be one of exactly two cases: a Unix domain socket (UDS) path, or a TCP socket address.
+- The resolver MUST return an endpoint.
+- `Endpoint` MUST have no variant other than `Endpoint::Uds` and `Endpoint::Tcp`.
 - The resolver MUST use the value of the first supplying source.
-- The resolver MUST accept the `SC_ENDPOINT` value as an explicit input, so that a caller or a test can supply it without changing the process environment.
+- The resolver MUST accept the `SC_ENDPOINT` value as an explicit input.
 - The convenience form MUST read the variable with `std::env::var_os("SC_ENDPOINT")`.
 - The convenience form MUST then call the explicit-input form.
 - The platform default MUST be the default endpoint that the platform table gives for the running platform.
-- The endpoint and instance-root portion of a project's configuration MUST be one public type exported by `sc-transport` with default features.
+- The endpoint and instance-root portion of a project's configuration MUST be the shared configuration type.
+- `sc-transport` built with default features MUST export the shared configuration type as a public type.
 - The endpoint and instance-root configuration type that `sc-transport` exports MUST implement `serde::Deserialize`.
 - A source value that cannot be parsed as an endpoint MUST produce an `Err` of the crate's error enum `TransportError`.
-- The crate MUST also provide, with default features, the reverse conversion: from a resolved endpoint to the string form accepted by `--endpoint` and `SC_ENDPOINT`.
+- `sc-transport` built with default features MUST provide a conversion from an endpoint to the string form that `--endpoint` and `SC_ENDPOINT` accept.
 - Parsing the rendered string MUST yield an endpoint equal to the original.
 
 **MUST NOT statements:**
 
 - The convenience form MUST NOT use `std::env::var`.
 - The convenience form MUST NOT use `std::env::vars`.
-- The crate MUST NOT contain a literal TCP port number that it uses as a default; TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)).
-- This follows from two other binding facts: the CLI and the daemon must give the resolver the same configuration value, and a CLI MUST NOT depend on `sc-runtime`, so it cannot name `sc_runtime::DaemonConfig`.
+- The crate MUST NOT contain a literal TCP port number that it uses as a default.
 - The resolver MUST NOT panic in that case.
 - The resolver MUST NOT silently fall through to the next source in that case.
 
 ### Rationale
+
+The explicit-input form lets a caller or a test supply the `SC_ENDPOINT` value without changing the process environment. TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)). The shared configuration type lives in `sc-transport` because the CLI and the daemon give the resolver the same configuration value, and a CLI does not depend on `sc-runtime`, so it cannot name `sc_runtime::DaemonConfig`.
 
 A daemon and its CLI are separate binaries with no run-time coordination. If
 they compute the endpoint differently they never meet, so one resolver used
