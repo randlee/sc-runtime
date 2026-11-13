@@ -860,7 +860,7 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 
 ### Requirement Statement
 
-Definitions: `TransportError` is the public `enum` of `sc-transport` whose variants, stable codes, cause payloads and recoveries are the error-inventory table in [ADR-TRN-0001](architecture.md): `InvalidName`, `InvalidEndpoint`, `MissingTcpPort`, `InstanceRootUnavailable`, `DaemonNotRunning`, `ResponseDecode`, `TimedOut`, `Request`, `Bind`, `EndpointBusy` and `NotASocket`. `TransportCause` is the type of the `cause` field of `TransportError` and of the value `Error::source` returns. A public function is a `pub fn` or `pub` method reachable from the `sc-transport` crate root. The error type of a function is `E` in its return type `Result<T, E>`. Reachable code is every function body in `crates/sc-transport/src`, outside items marked `#[cfg(test)]`, that a public function calls directly or through other functions. An opaque error type is an error type whose variants a caller cannot match on, including `anyhow::Error` and `Box<dyn std::error::Error>`. A failing input is any caller argument the function rejects or any environment state under which the call cannot complete, including at least an unparseable endpoint string, a missing path, a missing directory, a refused connection and an unreadable environment variable.
+Definitions: `TransportError` is the public `enum` of `sc-transport` whose variants, stable codes, cause payloads and recoveries are the error-inventory table in [ADR-TRN-0001](architecture.md): `InvalidName`, `InvalidEndpoint`, `MissingTcpPort`, `InstanceRootUnavailable`, `DaemonNotRunning`, `ResponseDecode`, `TimedOut`, `Request`, `Bind`, `EndpointBusy` and `NotASocket`. `TransportCause` is the type of the `cause` field of `TransportError` and of the value `Error::source` returns. A public function is a `pub fn` or `pub` method reachable from the `sc-transport` crate root. The error type of a function is `E` in its return type `Result<T, E>`. Reachable code is every function body in `crates/sc-transport/src`, outside items marked `#[cfg(test)]`, that a public function calls directly or through other functions. An opaque error type is an error type whose variants a caller cannot match on, including `anyhow::Error` and `Box<dyn std::error::Error>`. The arguments and environment states under which a public function cannot return its `Ok` value include an unparseable endpoint string, a missing path, a missing directory, a refused connection and an unreadable environment variable.
 
 The rule is owned by [NFR-RUN-0009](../requirements.md), which applies to every library crate of the workspace; this record applies the rule to `sc-transport` with no exception. The sc-runtime design states the rule for `sc-config` only; this document decides its application to `sc-transport`. A comment beside a call or expression does not exempt the call or expression from a MUST NOT statement.
 
@@ -868,7 +868,7 @@ The rule is owned by [NFR-RUN-0009](../requirements.md), which applies to every 
 
 - In `crates/sc-transport/src`, the count of public `enum` definitions named `TransportError` MUST equal 1.
 - The error type of each public function of `sc-transport` MUST be `TransportError`.
-- When a public function of `sc-transport` receives a failing input, the call MUST return `Err`.
+- When a public function of `sc-transport` is called with an argument or in an environment state under which it cannot return its `Ok` value, the call MUST return `Err`.
 
 **MUST NOT statements:**
 
