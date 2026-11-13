@@ -38,72 +38,158 @@ pair, not only sc-runtime ones.
 **Status:** Active  
 **Version:** 1.0.0  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-11-13  
-**Owner:** randlee
+**Last Updated:** 2026-11-13
+**Owner:** randlee  
 
 ### Requirement Statement
 
-Definitions: `sc-transport` is the Rust crate at `crates/sc-transport`. A daemon binary is an application server executable. CLI means command-line interface; a CLI binary is the application executable that sends user commands to the daemon. An endpoint is the address at which the daemon listens. The endpoint resolver is the shared Rust function that selects that address from the ordered sources below. UDS means Unix domain socket; TCP means Transmission Control Protocol. `PathBuf` is Rust's owned filesystem path type; `SocketAddr` is Rust's Internet Protocol address and port type. `Endpoint` is the resolved-address enum. The permitted variant names are `Uds` and `Tcp`. `TransportError` is the crate's error enum. The explicit-input resolver form is `resolve_endpoint`; the convenience form is `resolve_endpoint_from_env`. Both are forms of the same endpoint resolver. Rust's `Result<T, E>` has success variant `Ok(T)` and failure variant `Err(E)`. A successful resolution is a call that resolves an address; a failed resolution is a call that cannot resolve an address. Default features means the feature selection Cargo uses when a dependency enables no named features and does not disable default features.
+Definitions: CLI means command-line interface. UDS means Unix domain socket. TCP means Transmission Control Protocol. ADR means architecture decision record. The shared configuration type is TransportConfig, carrying endpoint and instance_root as described below. "In that case" refers to a source value that cannot be parsed as an endpoint. A daemon binary is an application server executable. The endpoint resolver determines the Unix domain socket path or TCP socket address at which that daemon listens. The explicit-input form is `resolve_endpoint`; the convenience form is `resolve_endpoint_from_env`. The source table is headed Order, Source, How the value reaches the resolver. The platform table is headed Platform, Default endpoint. An endpoint is an `Endpoint::Uds(PathBuf)` or `Endpoint::Tcp(SocketAddr)` value. A source supplies a value when the caller passes a value for it rather than "absent"; the platform default always supplies a value. The first supplying source is the lowest-numbered source in the source table that supplies a value.
 
-A supplying source is a source whose value is present rather than absent. The first supplying source is the lowest-numbered supplying source in this table. The platform default is the fallback source.
+In the crate's public-surface sketch these are `Endpoint::Uds(PathBuf)` and `Endpoint::Tcp(SocketAddr)`, produced by `resolve_endpoint(...)`.
 
-| Order | Source |
-|---|---|
-| 1 | Value of the `--endpoint` command-line flag supplied by the caller |
-| 2 | Value of `SC_ENDPOINT` supplied as an explicit parameter |
-| 3 | Endpoint value in the caller's configuration |
-| 4 | Platform default |
+This precedence order is decided in this document; the sc-runtime design lists the sources (`--endpoint`, `SC_ENDPOINT`, config, platform default) but not their order.
 
-The platform default table is:
+| Order | Source | How the value reaches the resolver |
+|---|---|---|
+| 1 | the `--endpoint` command-line flag | The calling binary parses the flag (the crate MUST NOT depend on `clap` or parse `argv`) and passes the value, or "absent", as an argument. |
+| 2 | the `SC_ENDPOINT` environment variable | The value of the process environment variable named exactly `SC_ENDPOINT`, passed to the resolver as an explicit argument (the value, or "absent"). |
+| 3 | the endpoint from the caller's configuration | The caller passes it as an argument. The crate MUST NOT depend on `sc-config`. |
+| 4 | the platform default | Computed by the crate, see below. |
+
+The crate MAY also offer a convenience form of the resolver that reads the variable itself. Both points are decided in this document; the sc-runtime design names `SC_ENDPOINT` as a source but does not say who reads it.
 
 | Platform | Default endpoint |
 |---|---|
-| macOS and Linux | `Endpoint::Uds(<instance-root>/daemon.sock)` |
-| Windows | `Endpoint::Tcp(127.0.0.1:<configured-port>)` |
+| macOS and Linux | UDS at `<instance-root>/daemon.sock` |
+| Windows | TCP on IP address `127.0.0.1`, with the port taken from the caller's configuration |
 
-The instance root is the per-application, per-user directory resolved by `sc-transport`, or an explicitly supplied directory. Its default is `<base>/<app>`, where `<app>` is the application name. On Unix, `<base>` is non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`; on Windows it is `LOCALAPPDATA`. The configured port is the caller's `TransportConfig.tcp_port`. `TransportConfig` is the transport-settings type. Transport settings are the endpoint and instance-root portion of the caller's configuration. `serde` is the Rust serialization library; its `Deserialize` trait constructs a typed value from serialized input. The default build is `sc-transport` compiled using its default Cargo features. The endpoint string forms accepted by `--endpoint` and `SC_ENDPOINT` are `uds:<path>` and `tcp:<socket-addr>`, where `<socket-addr>` is a literal Rust `SocketAddr`. Rendering means converting an `Endpoint` to that string form; parsing is the reverse conversion. For an endpoint `e`, `render(e)` denotes the rendering call and `parse(s)` denotes parsing string `s`; these are notation, not required function names.
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path. On Unix the default base is
+non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`. On Windows it
+is `LOCALAPPDATA`. The path is `<base>/<app>`
+([REQ-TRN-0002](requirements.md)). `instance_root` does not create it.
+
+The Windows address `127.0.0.1` is stated by the sc-runtime design. That the Windows port comes from the caller's configuration is decided in this document: the design states "port from config" for cross-host TCP and names no port for the Windows default.
+
+`DaemonConfig` embeds this type ([REQ-RT-0001](../sc-runtime/requirements.md), [REQ-RT-0008](../sc-runtime/requirements.md)); a CLI's configuration uses it directly. The resolver takes source 3 and the explicit instance root from a value of this type or from its fields.
+
+Any code that needs that string, including `sc_runtime::testing::DaemonFixture` ([REQ-RT-0006](../sc-runtime/requirements.md)), obtains it from this conversion and does not format it itself. This follows from REQ-RT-0006 and [REQ-RT-0008](../sc-runtime/requirements.md), which bar `sc-runtime` from holding endpoint logic. The conversion is `Display` and `FromStr` on `Endpoint`: `uds:<path>` and `tcp:<socket-addr>`. `tcp:` takes a literal `SocketAddr` and does not resolve DNS. An empty string is `TransportError::InvalidEndpoint` and does not fall through.
+
+Pinned by sprint a-3:
+
+- The endpoint type is `Endpoint::{Uds(PathBuf), Tcp(SocketAddr)}`.
+- The resolver is
+  `resolve_endpoint(&AppName, flag: Option<&OsStr>, environment: Option<&OsStr>, &TransportConfig) -> Result<Endpoint, TransportError>`.
+  `resolve_endpoint_from_env` is the convenience form and reads only
+  `std::env::var_os("SC_ENDPOINT")`.
+- An unparseable value is `TransportError::InvalidEndpoint`
+  (`TRANSPORT.INVALID_ENDPOINT`).
+- The configuration type is `TransportConfig`. It is `#[non_exhaustive]`
+  and `serde::Deserialize`. Its fields are `endpoint: Option<String>`,
+  `instance_root: Option<PathBuf>`, and `tcp_port: Option<u16>`. It has no
+  `additional_endpoints` field. v0.1 binds exactly one listener per config.
+  A later dual-bind adds a field on this type. v0.1 does not ignore a
+  reserved value. `DaemonConfig` field names stay with
+  [REQ-RT-0001](../sc-runtime/requirements.md); that type embeds
+  `TransportConfig`.
+- On Windows, a missing `tcp_port` with no override is
+  `TransportError::MissingTcpPort` (`TRANSPORT.MISSING_TCP_PORT`). `detail`
+  says to set `TransportConfig.tcp_port` or pass a `tcp:` override. This
+  crate has no default TCP port.
+- An override or `TransportConfig.endpoint` that names `uds:<path>` is a
+  UDS endpoint on every platform, including Windows. The resolver returns
+  it. `Client::new` and `bind` reject a UDS endpoint on non-Unix targets
+  when they are used (`TransportError::Request` and
+  `TransportError::UnsupportedEndpoint`).
+
+Whether the project template writes a default TCP port into generated
+configuration stays with [REQ-RUN-0301](../requirements.md). This crate does
+not decide that.
 
 **MUST statements:**
 
-- The public declarations of `sc-transport` MUST expose one endpoint resolver.
-- The daemon binary source MUST call the endpoint resolver to obtain its listening address.
-- The CLI binary source MUST call the endpoint resolver to obtain the daemon listening address.
-- The endpoint resolver return type MUST be a Rust `Result`.
-- The success payload type of the endpoint resolver result MUST be `Endpoint`.
-- The error payload type of the endpoint resolver result MUST be `TransportError`.
-- A successful resolution MUST return the `Ok` variant.
-- A failed resolution MUST return the `Err` variant.
-- The Rust enum declaration of `Endpoint` MUST include `Uds(PathBuf)`.
-- The Rust enum declaration of `Endpoint` MUST include `Tcp(SocketAddr)`.
+- The crate `sc-transport` (`crates/sc-transport`) MUST expose one public endpoint resolver.
+- A daemon binary MUST call that resolver to learn where the daemon listens.
+- A CLI binary MUST call that resolver to learn where the daemon listens.
+- The resolver's result MUST be one of exactly two cases: a Unix domain socket (UDS) path, or a TCP socket address.
 - The resolver MUST use the value of the first supplying source.
-- The signature of `resolve_endpoint` MUST include a parameter carrying the optional `SC_ENDPOINT` value.
-- The body of `resolve_endpoint_from_env` MUST read `SC_ENDPOINT` using `std::env::var_os("SC_ENDPOINT")`.
-- After reading `SC_ENDPOINT`, `resolve_endpoint_from_env` MUST call `resolve_endpoint`.
-- The platform default MUST equal the endpoint given for the running platform in the platform default table.
-- The transport settings MUST have the single Rust type `TransportConfig`.
-- The Rust declaration of `TransportConfig` MUST have public visibility.
-- The public exports of the default build MUST include `TransportConfig`.
-- The Rust trait implementations for `TransportConfig` MUST include `serde::Deserialize`.
-- A resolver call whose first supplying source value cannot be parsed as an endpoint MUST return the `Err` variant.
-- The public exports of the default build MUST include an endpoint-to-string conversion.
-- For each endpoint `e`, the result of `parse(render(e))` MUST equal `e`.
+- The resolver MUST accept the `SC_ENDPOINT` value as an explicit input, so that a caller or a test can supply it without changing the process environment.
+- The convenience form MUST read the variable with `std::env::var_os("SC_ENDPOINT")`.
+- The convenience form MUST then call the explicit-input form.
+- The platform default MUST be the default endpoint that the platform table gives for the running platform.
+- The endpoint and instance-root portion of a project's configuration MUST be one public type exported by `sc-transport` with default features.
+- The endpoint and instance-root configuration type that `sc-transport` exports MUST implement `serde::Deserialize`.
+- A source value that cannot be parsed as an endpoint MUST produce an `Err` of the crate's error enum `TransportError`.
+- The crate MUST also provide, with default features, the reverse conversion: from a resolved endpoint to the string form accepted by `--endpoint` and `SC_ENDPOINT`.
+- Parsing the rendered string MUST yield an endpoint equal to the original.
 
 **MUST NOT statements:**
 
-- The Rust enum declaration of `Endpoint` MUST NOT include a variant name outside the permitted variant names.
-- The body of `resolve_endpoint_from_env` MUST NOT call `std::env::var`.
-- The body of `resolve_endpoint_from_env` MUST NOT call `std::env::vars`.
-- The Rust source of `sc-transport` MUST NOT contain a literal TCP port number used as a default.
-- A resolver call whose first supplying source value cannot be parsed as an endpoint MUST NOT panic.
-- A resolver call whose first supplying source value cannot be parsed as an endpoint MUST NOT fall through to the next source.
+- The convenience form MUST NOT use `std::env::var`.
+- The convenience form MUST NOT use `std::env::vars`.
+- The crate MUST NOT contain a literal TCP port number that it uses as a default; TCP ports come only from an override or from the caller's configuration ([ADR-TRN-0002](architecture.md)).
+- This follows from two other binding facts: the CLI and the daemon must give the resolver the same configuration value, and a CLI MUST NOT depend on `sc-runtime`, so it cannot name `sc_runtime::DaemonConfig`.
+- The resolver MUST NOT panic in that case.
+- The resolver MUST NOT silently fall through to the next source in that case.
 
 ### Rationale
 
-A shared resolver keeps the daemon and CLI at the same address. Explicit environment input allows callers to supply values without mutating process-wide environment state. TCP ports come from overrides or caller configuration, as specified by ADR-TRN-0002 point 8. The shared configuration type belongs in `sc-transport` because both binaries use it: the CLI cannot name `sc_runtime::DaemonConfig` without depending on `sc-runtime`, a dependency excluded by NFR-RUN-0001. The shared configuration obligation is also carried by REQ-RUN-0310.
+A daemon and its CLI are separate binaries with no run-time coordination. If
+they compute the endpoint differently they never meet, so one resolver used
+by both makes disagreement impossible. UDS is the default on macOS and Linux
+because access is controlled by file permissions and it needs no port and no
+token, the same approach dockerd uses. Windows defaults to TCP because
+reqwest's `ClientBuilder::unix_socket` exists only on Unix. Cross-host use
+and browser frontends use TCP with a port from configuration; port ranges are
+registered centrally in the synaptic-canvas repository. The override sources
+exist so tests and multi-instance setups can point both binaries somewhere
+else. `SC_ENDPOINT` is an explicit input because tests run in parallel in one
+process, and a test that sets a process-wide environment variable breaks the
+others. The configuration type lives here because this is the only crate
+that both a CLI and a daemon depend on for endpoints. The callers are the
+generated `cli` and `daemon`, which each accept `--endpoint`
+([REQ-RUN-0310](../requirements.md)), and `sc-runtime`'s `run()`, which
+resolves the daemon's bind endpoint only through this resolver
+([REQ-RT-0008](../sc-runtime/requirements.md)).
 
 ### Success Criteria
 
-The resolver and its callers satisfy the MUST and MUST NOT statements under their stated conditions.
+1. A unit test in `crates/sc-transport` supplies all of sources 1, 2 and 3
+   with three different valid endpoints and asserts the result equals the
+   source 1 value.
+2. A unit test supplies sources 2 and 3 only, both as explicit arguments,
+   and asserts the result equals the supplied `SC_ENDPOINT` value.
+3. A unit test supplies source 3 only and asserts the result equals the
+   configuration value.
+4. A unit test compiled only on Unix (`#[cfg(unix)]`) supplies no source,
+   uses an explicit instance root `R` (a tempdir), and asserts the result is
+   the UDS path `R/daemon.sock`.
+5. A unit test compiled only on Windows (`#[cfg(windows)]`) supplies no
+   override and a configuration port `P`, and asserts the result is the TCP
+   address `127.0.0.1:P`.
+6. A unit test supplies an unparseable source 1 value and asserts the result
+   is `Err` with `TransportError::InvalidEndpoint`. The source 2 value is
+   not returned.
+7. Inspection of `crates/sc-transport` (source and tests) finds no call to
+   `std::env::set_var` or `std::env::remove_var`; tests 1 to 6 pass
+   `SC_ENDPOINT` as an argument and pass under the default parallel test
+   runner.
+8. `crates/sc-transport/Cargo.toml` lists neither `clap` nor `sc-config`.
+9. Inspection of `crates/sc-transport/src` finds that the string
+   `SC_ENDPOINT` is read, if at all, only through `std::env::var_os`, and
+   finds no call to `std::env::var(` or `std::env::vars`.
+10. `cargo doc -p sc-transport` with default features lists the public
+    configuration type, and a test containing
+    `fn assert_de<T: serde::de::DeserializeOwned>() {}` instantiated with
+    that type compiles.
+11. Inspection of non-test code in `crates/sc-transport/src` finds no
+    literal TCP port number used as a default endpoint.
+12. A unit test renders one UDS endpoint and one TCP endpoint to the string
+    form, parses each string back as an explicit `--endpoint` value, and
+    asserts the result equals the original endpoint, and asserts the literal
+    strings `uds:<path>` and `tcp:<socket-addr>`.
+
+---
 
 ## REQ-TRN-0002: Instance root directory resolution in `sc-transport`
 
