@@ -459,11 +459,17 @@ Source: sc-runtime design, 2026-09-19; applies repo [ADR-RUN-0003](../architectu
 
 ### Context
 
-The crate `sc-transport` has two halves with different users. Listener
-binding exists to feed `axum::serve` in a daemon, so it needs axum. Endpoint
-resolution and the HTTP client are used by a CLI, and a CLI binary must link
-none of axum, rmcp or sqlx: they would multiply its build time and binary
-size.
+Problem: the crate `sc-transport` must serve a daemon that needs axum and a
+CLI that must not link axum.
+
+Forces:
+
+- Listener binding exists to feed `axum::serve` in a daemon, so listener
+  binding needs axum.
+- Endpoint resolution and the HTTP client are used by a CLI, and a CLI
+  binary must link none of axum, rmcp or sqlx, because they would multiply
+  the CLI's build time and binary size.
+- The daemon and the CLI must agree on endpoints.
 
 ### Decision
 
@@ -497,15 +503,23 @@ behind a `server` cargo feature that is off by default
 
 ### Consequences
 
-A CLI that depends on `sc-transport` links tokio and reqwest but not axum.
-CI must build and test the crate twice, with and without `server`, because
-code behind a feature is otherwise not compiled. Cargo unifies features
-across one build, so a workspace build that includes `sc-runtime` will
-compile `sc-transport` with `server`, and a CLI built in that same build is
-linked against the `server`-enabled crate. The property "a CLI links no
-axum" is therefore defined for a CLI built as its own selection
-(`cargo build -p cli`), and evidence must come from `cargo tree` on the CLI
-or on this crate alone, not from a workspace build.
+**Positive:**
+
+- A CLI that depends on `sc-transport` with default features links tokio
+  and reqwest and links no axum.
+- The daemon and the CLI resolve endpoints with the same code in one crate.
+
+**Negative:**
+
+- CI builds and tests `sc-transport` twice, once without and once with
+  `server`, because code behind a disabled feature is not compiled.
+- Cargo unifies features across one build, so a workspace build that
+  includes `sc-runtime` compiles `sc-transport` with `server`, and a CLI
+  built in that same build links axum.
+- The property that a CLI links no axum holds only for a CLI built as its
+  own selection (`cargo build -p cli`); evidence for the property comes from
+  `cargo tree` on the CLI or on `sc-transport` alone, not from a workspace
+  build.
 
 **Neutral:**
 
