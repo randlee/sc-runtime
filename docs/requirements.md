@@ -4476,16 +4476,42 @@ would be tested against the old crate code.
 
 ### Requirement Statement
 
-Definitions: The SDK (software development kit) is the nine public crates of REQ-RUN-0002: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The release tag is the Git tag `v0.3.0` of this repository. The qualified publishing kit is sc-publish at the revision pinned in `release/sc-publish-pin.toml`. Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. The first publication wave is the first group of packages published in that order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. Archive rehearsal is the pre-upload build and tests of the exact packaged archives that the release uploads. The released template is the `template/` directory at the release tag. The registry proof run is the workflow run that performs the registry proof; the registry proof commit is the commit it checks out. The rehearsed archives are the packaged archives that passed archive rehearsal. The Cargo manifests of a package are its `Cargo.toml` files; its source files are its other files, apart from the files that `cargo package` adds (`Cargo.toml.orig`, `Cargo.lock` and `.cargo_vcs_info.json`). In the rehearsed archives these are the files unpacked from each `.crate` archive; in the registry proof commit they are the files under the package directory of each SDK crate, at the same relative paths. Two sets of files differ when a path is in one set only or the bytes at a path are not identical in both, that is, when `diff -r` of the two directories prints any line. Human authorization and registry credentials are the existing release permission and credential requirements. The release lock is the newest-tested Cargo.lock. A crates.io source is a Cargo.lock `source` value of `registry+https://github.com/rust-lang/crates.io-index`. The release run is the run of the Template workflow (`.github/workflows/template.yml`) started by pushing the release tag, in which every generated project resolves the SDK from crates.io with no checkout patch. Registry proof is the build and tests of a consumer whose Cargo.lock gives a crates.io source for every SDK crate, with no checkout path, Git or patch substitute. An actual SDK consumer is a project that depends on SDK crates published to crates.io, such as a project generated from the released template. The controlled-host benchmark check is the publish preflight run of `scripts/benchmark/check_release_evidence.py` on committed controlled-host benchmark evidence for the release tag commit, required by ADR-RUN-0015. A fixture matrix entry is the Template workflow job for one answers JSON file under `wizard/fixtures/`. The daemon-process tests are the tests that NFR-RUN-0010 requires to run on an isolated machine.
+Definitions for the following statements: The SDK (software development kit) is the nine public crates of REQ-RUN-0002: `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`, `sc-cron-commands`, `sc-runtime-db-sqlite`, `sc-storage` and `sc-monty`. The qualified publishing kit is sc-publish at the revision pinned in `release/sc-publish-pin.toml`. A populated repository is a generated project with its selected template rendered. ADR means architecture decision record. The first publication wave is the first group of packages published in that order. sc-monty is the Monty interpreter crate; sc-storage is the shared storage crate. The released template is the `template/` directory at the release tag. The registry proof run is the workflow run that performs the registry proof; the registry proof commit is the commit it checks out. The rehearsed archives are the packaged archives that passed archive rehearsal. In the rehearsed archives these are the files unpacked from each `.crate` archive; in the registry proof commit they are the files under the package directory of each SDK crate, at the same relative paths. Two sets of files differ when a path is in one set only or the bytes at a path are not identical in both, that is, when `diff -r` of the two directories prints any line. Human authorization and registry credentials are the existing release permission and credential requirements. The release run is the run of the Template workflow (`.github/workflows/template.yml`) started by pushing the release tag, in which every generated project resolves the SDK from crates.io with no checkout patch. Registry proof is the build and tests of a consumer whose Cargo.lock gives a crates.io source for every SDK crate, with no checkout path, Git or patch substitute. An actual SDK consumer is a project that depends on SDK crates published to crates.io, such as a project generated from the released template. The controlled-host benchmark check is the publish preflight run of `scripts/benchmark/check_release_evidence.py` on committed controlled-host benchmark evidence for the release tag commit, required by ADR-RUN-0015. A fixture matrix entry is the Template workflow job for one answers JSON file under `wizard/fixtures/`. The daemon-process tests are the tests that NFR-RUN-0010 requires to run on an isolated machine. For this release, sc-storage has no dependency on another package in the release; sc-monty likewise has no dependency on another package in the release. JSON means JavaScript Object Notation. A checkout-path dependency resolves to a local checkout; a patched source overrides the registry package source. The preflight checks and package checks are the respective checks supplied by the qualified publishing kit. This record governs the 0.3.0 coordinated release, not a permanent restriction on consumers choosing different dependency versions.
 
-This requirement governs the coordinated 0.3.0 release of the nine public crates identified by REQ-RUN-0002 and delivery of the generated template.
+
+
+
+
+Definitions for the following statements: Newest-tested Cargo.lock records the dependency versions most recently tested for the delivered release; .sc-runtime/tested-dependencies.json is the matching tested-dependency metadata. The dependency order is the topological order of the published package dependencies in the final Cargo manifests. The Cargo manifests of a package are its `Cargo.toml` files; its source files are its other files, apart from the files that `cargo package` adds (`Cargo.toml.orig`, `Cargo.lock` and `.cargo_vcs_info.json`). The release lock is the newest-tested Cargo.lock. A crates.io source is a Cargo.lock `source` value of `registry+https://github.com/rust-lang/crates.io-index`. Git is the source version-control system; Cargo is the Rust package manager.
+
+
+
+
+
+
+
+
+Definitions for the following statements: Archive rehearsal is the pre-upload build and tests of the exact packaged archives that the release uploads.
+
+
+
+
+
+
+
+
+
+
+
+
+Definitions for the following statements: The release tag is the Git tag `v0.3.0` of this repository.
 
 **MUST statements:**
 
 - The crates.io page of each SDK crate MUST list version 0.3.0.
 - The crates-publish workflow (`.github/workflows/crates-publish.yml`) MUST upload the packages in the dependency order.
-- `sc-storage`, the shared storage crate with no dependency on another package in this release, MUST be included in the first publication wave.
-- `sc-monty`, the Monty interpreter crate with no dependency on another package in this release, MUST be included in the first publication wave.
+- The first publication wave MUST include sc-storage.
+- The first publication wave MUST include sc-monty.
 - Every SDK crate entry in the Cargo.lock of a project generated from the released template MUST have a crates.io source.
 - The job of every fixture matrix entry in the release run MUST finish with conclusion success.
 - The crates-publish workflow run that uploads the published packages MUST check out the commit that the release tag points to.
@@ -4509,18 +4535,18 @@ This requirement governs the coordinated 0.3.0 release of the nine public crates
 - The released template MUST NOT substitute a checkout-path dependency for a registry SDK dependency.
 - The released template MUST NOT substitute a Git dependency for a registry SDK dependency.
 - The released template MUST NOT substitute a patched source for a registry SDK dependency.
-
 - Checkout-patched consumer tests MUST NOT be reported as registry proof.
 - The source files of the registry proof commit MUST NOT differ from the source files of the rehearsed archives.
 - The Cargo manifests of the registry proof commit MUST NOT differ from the Cargo manifests of the rehearsed archives.
 
+
 ### Rationale
 
-Published registry packages permit consuming projects to upgrade the SDK through Cargo. A tested lock and dependency metadata recommend a known combination without restricting consumer dependency choices.
+The statements preserve the existing contract while separating independently observable obligations.
 
 ### Success Criteria
 
-The coordinated packages are visible in crates.io, the exact-archive rehearsal and registry-only consumer runs pass, the fixture matrix is green, and the release tag identifies the qualified source. Generated profiles receive the matching tested lock and metadata from their release build/test run.
+Inspect .github/workflows/crates-publish.yml and its release run for dependency order and checkout identity. Inspect the release artifacts and consumer Cargo.lock sources. Check the recorded exit statuses of rehearsal and registry proof, pre-upload check results and fixture conclusions. Compare archive source/manifests by path and bytes. Confirm unchanged authorization and registry-credential requirements.
 
 ### Implementation Notes
 
