@@ -168,7 +168,7 @@ sides agree on the shape at compile time.
 
 ### Requirement Statement
 
-Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006). A suggestion is the non-empty recovery text an `OpError` is built with. Default features are the Cargo features of `sc-command` that are on when a dependent gives no `features` or `default-features` key.
+Definitions: CLI means command-line interface. JSON means JavaScript Object Notation. OpError is the error value with kind, code, message, details and suggested_action fields; ErrorKind is its classification enum. HTTP means Hypertext Transfer Protocol. API means application programming interface. ADR means architecture decision record. The canonical remediation type is the suggested_action representation supplied by sc-observability-types; a parallel remediation type would duplicate that representation. The five wire keys are `kind`, `code`, `message`, `details` and `suggested_action`. Equal JSON values are equal as `serde_json::Value` (REQ-CMD-0006). A suggestion is the non-empty recovery text an `OpError` is built with. The allowed remediation type set is {`sc_observability_types::Remediation`, `sc_observability_types::RecoverableSteps`}. An `OpError` constructor is a public function of `sc-command` that returns an `OpError`. Default features are the Cargo features of `sc-command` that are on when a dependent gives no `features` or `default-features` key.
 
 Dependency requirement: `sc-command` declares registry `sc-observability-types`
 with the tested floor `>=1.5.0` and no upper bound (REQ-RUN-0002, ANC-037).
@@ -237,31 +237,32 @@ The tested minimum is 1.5.0.
 
 **MUST statements:**
 
-- `OpError` MUST be a public type.
-- The crate `sc-command` MUST export `OpError` from its crate root.
-- `sc_command::OpError` MUST be available with default features.
-- `OpError` MUST serialise to a JSON object that has every one of the five wire keys.
+- The declaration of `OpError` under `crates/sc-command/src/` MUST be `pub`.
+- `crates/sc-command/src/lib.rs` MUST make `OpError` public at the crate root.
+- With default features, a dependent crate MUST be able to name `OpError` as `sc_command::OpError`.
+- The JSON object that `OpError` serialises to MUST contain all five wire keys.
 - `OpError` MUST serialise to a JSON object that has no key other than the five wire keys.
-- `OpError` MUST implement `serde::Serialize`.
-- `OpError` MUST implement `serde::Deserialize`.
-- `ErrorKind` MUST implement `serde::Serialize`.
-- `ErrorKind` MUST implement `serde::Deserialize`.
-- `OpError` MUST implement `Debug`.
-- `OpError` MUST implement `Clone`.
-- `OpError` MUST implement `PartialEq`.
-- `OpError` MUST implement `Display`.
-- `ErrorKind` MUST implement `Debug`.
-- `ErrorKind` MUST implement `Clone`.
-- `ErrorKind` MUST implement `PartialEq`.
-- `ErrorKind` MUST implement `Display`.
-- `OpError` MUST implement `std::error::Error`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `serde::Serialize` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `serde::Deserialize` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `serde::Serialize` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `serde::Deserialize` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Debug` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Clone` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `PartialEq` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Display` for `OpError`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Debug` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Clone` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `PartialEq` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `Display` for `ErrorKind`.
+- `crates/sc-command/src/` MUST contain a derive or an impl block that implements `std::error::Error` for `OpError`.
 - `code` MUST be the type `ErrorCode` from the published crate `sc-observability-types`.
 - `crates/sc-command/Cargo.toml` MUST declare a dependency on `sc-observability-types`.
 - In `crates/sc-command/Cargo.toml`, the registry version requirement of `sc-observability-types` MUST be `">=1.5.0"`.
 - When an `OpError` is built with a suggestion, `suggested_action` MUST serialise as a JSON string.
 - When an `OpError` is built with a suggestion, the JSON string value of `suggested_action` MUST equal the suggestion.
-- A remediation value that `OpError` holds or is built from MUST be of type `sc_observability_types::Remediation` or `sc_observability_types::RecoverableSteps`.
-- The Rust type of the `details` field MUST be `Option<serde_json::Value>`.
+- In `crates/sc-command/src/`, the `remediation` field of `OpError` MUST have a type in the allowed remediation type set.
+- In `crates/sc-command/src/`, each remediation parameter of an `OpError` constructor MUST have a type in the allowed remediation type set.
+- The `details` field of `OpError` MUST be declared with the Rust type `Option<serde_json::Value>`.
 - Serialising the `details` field after deserialising it as part of `OpError` MUST produce an equal JSON value.
 
 **MUST NOT statements:**
