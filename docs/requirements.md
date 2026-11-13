@@ -596,7 +596,7 @@ built in parallel without touching each other.
 
 ### Requirement Statement
 
-Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when its request makes the server run that function and the client receives that function's result.
+Definitions: MCP means Model Context Protocol, served here through rmcp. REST is the HTTP route interface; SQL is the database query language. The service function is the one async function used by all three clients to access SQLite. CLI means command-line interface. MCP means Model Context Protocol. HTTP means Hypertext Transfer Protocol. SQL means Structured Query Language. A custom connector is connector code written for the spike instead of using the documented reqwest Unix-socket connection API. A client reaches the one async SQLite service function when its request makes the server run that function and the client receives that function's result. The `clap` client calls the REST route when, run against the server socket, it sends an HTTP request to that route and receives the route's HTTP response.
 
 `examples/spike` in the `randlee/sc-runtime` repository is a throwaway proof,
 built before any of the four library crates exists, so it uses the third-party
