@@ -42,6 +42,8 @@ uses it to parse the answer and to print it for `--json`.
 
 ### Requirement Statement
 
+Definitions: `sc-command` is the crate in `crates/sc-command`. The envelope key set is exactly `version`, `ok`, `data` and `error`, with the success/failure values specified by the Key table below.
+
 It is the sc-ai-cli response envelope: the one JSON shape every REST response, MCP tool result and CLI `--json` output uses.
 
 | Key | JSON value in the success case | JSON value in the failure case |
@@ -89,10 +91,10 @@ It drops `version`.
 
 **MUST statements:**
 
-- The crate `sc-command` (directory `crates/sc-command`) MUST export a public generic type `sc_command::Envelope<T>` from its crate root, available with default features.
+- With default features, `sc-command` MUST export the public generic type `sc_command::Envelope<T>` from its crate root.
 - `Envelope<T>` MUST implement `serde::Serialize` for any `T: Serialize`.
 - `Envelope<T>` MUST implement `serde::Deserialize` for any `T: DeserializeOwned`.
-- `Envelope<T>` MUST serialise to a JSON object with exactly these four keys and no others: (see table above)
+- The JSON object produced by serialising `Envelope<T>` MUST have a key set equal to the envelope key set.
 - In the success case the `error` key MUST be present with the value `null`.
 - In the failure case the `data` key MUST be present with the value `null`.
 - Tests MUST compare parsed JSON values, not byte strings.
