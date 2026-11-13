@@ -2,7 +2,7 @@
 name: judge-jev
 description: Judge whether REQ, NFR and ADR records are well written with TypeSafe's Jev, reading them through Raptor, and fix failing records until they pass without changing what they require. Use when the user asks to check, judge, score, tune or fix requirements, NFRs or ADRs, asks whether a record is testable, vague or well written, or asks to add or test a definition for a record's term. Also use when asked whether a prompt, skill, agent, task template or code meets its REQ, NFR or ADR; that mode is not in this release, and the skill says so. Not for parsing records (Raptor does that) and not for general code review.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # judge-jev
@@ -56,18 +56,20 @@ Exit 0 with `"issues": 0` means every record imported. Otherwise fix each diagno
 
 | Agent | Role | Returns |
 | --- | --- | --- |
-| `jev-fix-proposer` | Proposes candidate edits for one record's failing answers. Run several in parallel with no shared context; they share no context. | Fenced JSON: candidate edits, each naming the failing answer it targets |
+| `jev-fix-proposer` | Writes one candidate edit for one weak statement with one named strategy. Launch one per statement and strategy, in parallel, with no shared context. | Fenced JSON: one candidate, or what it needs |
 
-You stay the author: you apply, measure, combine and review every candidate. A proposer never edits a file or calls Jev. Agents load when a session starts: if `jev-fix-proposer` is not available by name, launch a general-purpose agent whose prompt is the body of `.<harness>/agents/jev-fix-proposer.md` (at the install root) followed by the input object. If no agent can be launched, say so and write the candidates yourself from that file.
+You apply and measure every candidate; a proposer never edits a file or calls Jev. Agents load when a session starts: if `jev-fix-proposer` is not available by name, launch a general-purpose agent whose prompt is the body of `.<harness>/agents/jev-fix-proposer.md` (at the install root) followed by the input object. If no agent can be launched, say so and write the candidates yourself, one per strategy.
 
 ## Hard stops
 
-- Every round launches the `jev-fix-proposer` agents before any candidate is measured (`references/fix-strategy.md` step 4). Your own candidates join theirs; they never replace them.
-- Never edit a question, tree, criterion or threshold to make a record pass.
+- Ask Jev why before any edit: judge with the diagnostic tree (`references/fix-strategy.md` step 1). Do not reason about a failure you can ask about.
+- Never change what a record requires: no obligation added, dropped, narrowed, widened or made stricter. Such a fix goes to the owner with both texts.
+- Never invent a number, definition or alternative; take it from the repository and cite the file and line in your report, never in the record.
+- Never edit a gate question, criterion, verdict rule or threshold. Diagnostic questions are appended only.
+- Never delete a record or a statement to make a record pass.
 - Never answer for Jev. A failed call is rerun once, then reported with its code and verbatim message; it is never a verdict.
-- Never show the user a proposed edit, or call a record passing, before live runs show it passing.
-- Never keep an edit that drops, weakens or adds an obligation, even when Jev scores it higher.
-- Never invent a number, term definition or alternative; take it from the repository and cite the file and line in your report, never in the record.
-- Every round of edits ends with a live Jev run. Keep the run files and `.sc/judge-jev/logs/`.
+- A record passes only on the gate: three runs of identical text, every gate answer's median at or above the threshold (`scripts/jev_gate.py`). One passing run is not a pass.
+- An accepted record is frozen: do not judge it again unless its text changes.
+- Keep the run files and `.sc/judge-jev/accepted.jsonl`. Every request and answer is logged under `~/.judge-jev/<repository name>/<UTC date>/logs/`; never delete or move it.
 
 Jev request format, limits and every error code: `references/jev-api.md`.
