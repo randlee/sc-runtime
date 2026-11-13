@@ -1,12 +1,3 @@
-docs/sc-command/requirements.md NFR-CMD-0001
-docs/sc-command/requirements.md NFR-CMD-0002
-docs/sc-command/requirements.md NFR-CMD-0003
-docs/sc-command/requirements.md REQ-CMD-0001
-docs/sc-command/requirements.md REQ-CMD-0002
-docs/sc-command/requirements.md REQ-CMD-0003
-docs/sc-command/requirements.md REQ-CMD-0004
-docs/sc-command/requirements.md REQ-CMD-0005
-docs/sc-command/requirements.md REQ-CMD-0006
 docs/sc-config/requirements.md NFR-CFG-0001
 docs/sc-config/requirements.md NFR-CFG-0002
 docs/sc-config/requirements.md NFR-CFG-0003
