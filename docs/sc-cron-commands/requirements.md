@@ -31,6 +31,53 @@ SQL, environment values, source code or payload in diagnostics. Read views
 exclude sensitive source/environment/payload unless a separate authorized
 application projection explicitly exposes them.
 
+**MUST statements:**
+
+- `cron.start` MUST use a strict version-1 JSON DTO.
+- `cron.end` MUST use a strict version-1 JSON DTO.
+- `cron.list` MUST use a strict version-1 JSON DTO.
+- Command results MUST use the existing sc-command Envelope/OpError.
+- CLI, REST and MCP projections MUST use the same request.
+- CLI, REST and MCP projections MUST use the same typed result.
+- CLI, REST and MCP projections MUST use the same namespaced error codes.
+- Start MUST support existing Rust targets.
+- Start MUST support existing Python targets.
+- Start MUST support optional Monty targets.
+- Start MUST support ordinary five-field cron or supported aliases.
+- Start MUST support a bounded timeout.
+- Start MUST support opaque payload/environment.
+- Rust commands MUST use the application-configured Job or dispatcher.
+- End MUST require name.
+- End MUST require generation.
+- List MUST support bounded deterministic continuation for active schedules.
+- List MUST support bounded deterministic continuation for ended schedules.
+- List MUST support bounded deterministic continuation for all schedules.
+- List views MUST expose id.
+- List views MUST expose generation.
+- List views MUST expose state.
+- Unknown or duplicate fields MUST be rejected before writes.
+- Invalid version MUST be rejected before writes.
+- Invalid generation MUST be rejected before writes.
+- Invalid limits MUST be rejected before writes.
+- Invalid cursor MUST be rejected before writes.
+- Overflow MUST be rejected before writes.
+- Unsupported targets MUST be rejected before writes.
+- The contract sprint MUST freeze core-derived size limits.
+- The contract sprint MUST freeze value-free error mapping.
+- Read views MUST exclude sensitive source, environment and payload unless a separately authorized application projection exposes them.
+
+**MUST NOT statements:**
+
+- The command contract MUST NOT add a serialized function or new job catalog.
+- Diagnostics MUST NOT expose raw SQL.
+- Diagnostics MUST NOT expose environment values.
+- Diagnostics MUST NOT expose source code.
+- Diagnostics MUST NOT expose payload.
+- The contract MUST NOT introduce implicit end-all.
+- The contract MUST NOT introduce hard deletion.
+- The contract MUST NOT introduce ATM team/phase/mandatory-until.
+- The contract MUST NOT introduce six-field-only grammar.
+
 ### Rationale
 
 This optional library reconciles the new human command requirement with the scheduler core's existing no-product-API rule.
@@ -56,6 +103,8 @@ Phase C target, planned and unimplemented.
 
 ### Requirement Statement
 
+Definitions: Unsupported Monty means a Monty target requested without the optional Monty capability enabled in the selected build.
+
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
 and explicit ApplicationTargetBindings ports defined in the Phase C contract;
@@ -77,6 +126,45 @@ provides one working selected-default recipe with bundled store, explicit
 worker/target registration and startup, commands, and stop/join/outcome handling;
 it links the core custom-store example and describes supported replacement.
 No consumer-product migration or automatic job start is implied.
+
+**MUST statements:**
+
+- The default-surface object-safe CronExecutor MUST accept the sole CronRequest type.
+- The default-surface object-safe CronExecutor MUST accept a real deadline.
+- Scheduler-feature StandardCronExecutor MUST consume native CronOperations.
+- Scheduler-feature StandardCronExecutor MUST consume explicit ApplicationTargetBindings.
+- The standard executor MUST derive a child operation context.
+- Custom CronOperations or CronExecutor implementations MUST document task/physical-join ownership responsibilities.
+- Custom CronOperations or CronExecutor implementations MUST document persistence truth responsibilities.
+- Custom CronOperations or CronExecutor implementations MUST document authorization responsibilities.
+- Custom CronOperations or CronExecutor implementations MUST document error mapping responsibilities.
+- The standard implementation MUST retain standard validation.
+- The standard implementation MUST retain scope propagation.
+- Unsupported Monty MUST fail before persistence.
+- Selected generation MUST install an actual CLI start projection calling that same executor.
+- Selected generation MUST install an actual CLI end projection calling that same executor.
+- Selected generation MUST install an actual CLI list projection calling that same executor.
+- Selected generation MUST install actual HTTP projections calling that same executor.
+- Selected generation MUST install actual optional MCP projections calling that same executor.
+- cron_commands MUST default to false.
+- Selecting cron_commands MUST require cron.
+- Applications MUST be able to use the core without commands.
+- The adapter README MUST provide a working selected-default recipe.
+- That recipe MUST demonstrate the bundled store.
+- That recipe MUST demonstrate explicit worker/target registration.
+- That recipe MUST demonstrate startup.
+- That recipe MUST demonstrate commands.
+- That recipe MUST demonstrate stop handling.
+- That recipe MUST demonstrate join handling.
+- That recipe MUST demonstrate outcome handling.
+- The adapter README MUST link the core custom-store example.
+- The adapter README MUST describe supported replacement.
+
+**MUST NOT statements:**
+
+- The standard executor MUST NOT introduce a separate timeout or ownership policy.
+- A recommended example, DTO-only library or production success/unsupported stub MUST NOT satisfy selected generation.
+- Selecting cron_commands MUST NOT enable MCP when MCP is disabled.
 
 ### Rationale
 
@@ -104,6 +192,8 @@ C-5 implements operations for real Scheduler; c-6 implements the executor with d
 
 ### Requirement Statement
 
+Definitions: Monty is the pydantic interpreter stack, including sc-monty, monty and monty-types. Axum is the Rust HTTP framework supplied by the axum crate.
+
 DTO-only defaults depend on serde/serde_json and defaults-off sc-command;
 exclude cron, SQLite, Tokio, Monty, clap, Axum, RMCP and command/server. The
 non-default scheduler feature adds only approved cron/async edges; Monty remains
@@ -123,6 +213,53 @@ The command schema feature supplies canonical owner-local Envelope<T>, OpError
 and ErrorKind traits matching their existing custom serialization exactly.
 Typed Envelope<CronResponse> and all nested schema types compile under the
 same identities; no copied envelope/error model or generic response schema.
+
+**MUST statements:**
+
+- DTO-only defaults MUST depend only on serde, serde_json and defaults-off sc-command.
+- The non-default scheduler feature MUST add only approved cron and async dependency edges.
+- Monty MUST be enabled only by a separate explicit opt-in feature selection.
+- The optional schema feature MUST supply JsonSchema for the adapter-owned DTO family.
+- The optional schema feature MUST supply ToSchema for that same adapter-owned DTO family.
+- Schema dependencies MUST remain optional.
+- The schema feature MUST be independent of scheduler.
+- Selected daemon/service projections MUST enable schema on their own edges.
+- Canonical Envelope<T> schema traits MUST be owner-local.
+- Canonical OpError schema traits MUST be owner-local.
+- Canonical ErrorKind schema traits MUST be owner-local.
+- Canonical Envelope<T> schema traits MUST match existing custom serialization.
+- Canonical OpError schema traits MUST match existing custom serialization.
+- Canonical ErrorKind schema traits MUST match existing custom serialization.
+- Envelope<CronResponse> and nested schema types MUST compile with the same selected dependency identities.
+
+**MUST NOT statements:**
+
+- An sc-command-to-cron/adapter cycle MUST NOT be introduced.
+- An sc-runtime-to-cron/adapter edge MUST NOT be introduced.
+- DTO-only defaults MUST NOT link cron.
+- DTO-only defaults MUST NOT link SQLite.
+- DTO-only defaults MUST NOT link Tokio.
+- DTO-only defaults MUST NOT link Monty.
+- DTO-only defaults MUST NOT link clap.
+- DTO-only defaults MUST NOT link Axum.
+- DTO-only defaults MUST NOT link RMCP.
+- DTO-only defaults MUST NOT link command/server.
+- CLI clients sharing DTOs MUST NOT link scheduler or server implementation.
+- The schema feature MUST NOT add cron dependencies.
+- The schema feature MUST NOT add SQLite dependencies.
+- The schema feature MUST NOT add Tokio dependencies.
+- The schema feature MUST NOT add Monty dependencies.
+- The schema feature MUST NOT add dependencies on the Axum HTTP framework (`axum`).
+- The schema feature MUST NOT add RMCP dependencies.
+- The schema feature MUST NOT add command/server dependencies.
+- Defaults MUST NOT activate schema.
+- Defaults MUST NOT activate scheduler.
+- Isolated CLI defaults MUST NOT enable schema.
+- The typed schema contract MUST NOT use foreign orphan implementations.
+- The typed schema contract MUST NOT use a second wire DTO.
+- The typed schema contract MUST NOT use generic schema substitutes.
+- The schema contract MUST NOT copy the envelope/error model.
+- The schema contract MUST NOT use a generic response schema.
 
 ### Rationale
 

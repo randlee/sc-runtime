@@ -116,16 +116,20 @@ beneath it.
 - `config/default.json` MUST exist.
 - If it does not, `load` MUST return the `ConfigError` variant for a missing default file ([REQ-CFG-0004](requirements.md)).
 - `load` MUST read `config/local.json` from the same directory when that file exists.
-- Each file MUST be read as bytes and parsed as one JSON document into a `serde_json::Value` (`serde_json::from_slice`).
+- Each file MUST be read as bytes.
+- Each file's bytes MUST be parsed as one JSON document into a `serde_json::Value` (`serde_json::from_slice`).
 - `load` MUST merge the `local.json` value over the `default.json` value with the function `merge(base, overlay)` defined in the table below. (see table above)
 - `load` MUST then apply the environment-variable overrides of app `app` to the merged value.
-- `load` MUST deserialise the final value into `T` exactly once, with `serde_json::from_value::<T>`.
+- `load` MUST use `serde_json::from_value::<T>` for its exactly-once deserialisation of the final value into `T`.
 
 **MUST NOT statements:**
 
 - An absent `config/local.json` MUST NOT be an error.
 - The `app` argument MUST NOT change which files are read.
-- `load` MUST NOT write, create or modify any file.
+- `load` MUST NOT write any file.
+- `load` MUST NOT create any file.
+- `load` MUST NOT modify any file.
+
 ### Rationale
 
 `config/default.json` is checked in and documents every setting.
@@ -291,13 +295,14 @@ cannot be descended into.
 - If parsing fails, the value MUST be used unchanged as a JSON string.
 - Starting at the document root, for each of `k1` to `k(n-1)`: if the current value is an object that lacks the key, an empty object MUST be created at that key.
 - If the current value at any step of that walk, including the root, is not an object (it is a string, number, boolean, array or `null`), the load MUST fail with the `ConfigError` variant for an override that cannot be applied ([REQ-CFG-0004](requirements.md)).
-- At the last object, key `kn` MUST be set to the override value.
+- At the last object in the key-path walk, key `kn` MUST be set to the override value.
 - Overrides MUST take precedence over `config/default.json` and `config/local.json`.
 
 **MUST NOT statements:**
 
 - A single `_` MUST NOT separate segments.
 - The document MUST NOT be silently restructured.
+
 ### Rationale
 
 Deployments and CI need to change a setting without editing a file, and the
@@ -356,6 +361,8 @@ process environment variables.
 
 ### Requirement Statement
 
+Definitions: JSON means JavaScript Object Notation. API means application programming interface. A temporary-directory API allocates a distinct test directory rather than using a literal path.
+
 This item covers the `Loader` type of the `sc-config` crate
 (`crates/sc-config`).
 
@@ -381,12 +388,16 @@ are `OsString` so a non-Unicode value is reported instead of panicking.
 **MUST statements:**
 
 - The crate MUST export a public type `Loader`.
-- A `Loader` MUST be given three inputs explicitly by the caller: the app name, the config directory (a filesystem path), and the environment source.
+- A `Loader` MUST be given the app name explicitly by the caller.
+- A `Loader` MUST be given the config directory (a filesystem path) explicitly by the caller.
+- A `Loader` MUST be given the environment source explicitly by the caller.
 - The environment source MUST be an iterator of (variable name, value) pairs supplied by the caller.
 - `Loader` MUST expose `Loader::load::<T>()` for any `T: serde::de::DeserializeOwned`, returning `Result<T, ConfigError>`.
-- `Loader::load` MUST read `default.json` and `local.json` from the given config directory and from nowhere else.
-- `Loader::load` MUST take overrides from the given environment source and from nowhere else.
-- `Loader::load` MUST apply the same file merge ([REQ-CFG-0001](requirements.md)) and the same override rules ([REQ-CFG-0002](requirements.md)) as the free function `load`.
+- `Loader::load` MUST read `default.json` only from the given config directory.
+- `Loader::load` MUST read `local.json` only from the given config directory.
+- `Loader::load` MUST take overrides only from the given environment source.
+- `Loader::load` MUST apply the same file merge as the free function `load` (REQ-CFG-0001).
+- `Loader::load` MUST apply the same override rules as the free function `load` (REQ-CFG-0002).
 - The free function `load::<T>(app)` MUST be the convenience form.
 - It MUST behave exactly as a `Loader` given app name `app`, the directory `config` resolved against the current working directory, and the process environment.
 - When reading the process environment, `load` MUST use `std::env::vars_os`.
@@ -396,6 +407,7 @@ are `OsString` so a non-Unicode value is reported instead of panicking.
 
 - It MUST NOT read the process environment.
 - It MUST NOT use `std::env::vars`, which panics when any variable is not valid Unicode.
+
 ### Rationale
 
 The process environment and the current working directory are global to the
@@ -481,10 +493,14 @@ and recovery steps are the error inventory in
 - `ConfigError` MUST have one distinct variant for each failure in this table. (see table above)
 - Each variant MUST carry the listed data as typed fields, not only inside a message string.
 - A `local.json` that exists but cannot be read MUST produce failure 2, not be skipped.
-- Failure 1 and failure 2 MUST be distinct variants: "file not found" for `default.json` is failure 1, every other I/O error is failure 2.
-- `ConfigError` MUST implement `std::fmt::Debug`, `std::fmt::Display` and `std::error::Error`.
+- Failure 1 MUST be the distinct "file not found" variant for `default.json`.
+- Failure 2 MUST be the distinct variant for every other I/O error.
+- `ConfigError` MUST implement `std::fmt::Debug`.
+- `ConfigError` MUST implement `std::fmt::Display`.
+- `ConfigError` MUST implement `std::error::Error`.
 - The `Display` text of every variant MUST contain the file path or the variable name that the variant carries.
-- The `Display` text of failure 3 MUST contain the line and the column.
+- The `Display` text of failure 3 MUST contain the line.
+- The `Display` text of failure 3 MUST contain the column.
 
 **SHOULD statements:**
 
@@ -493,6 +509,7 @@ and recovery steps are the error inventory in
 **MUST NOT statements:**
 
 - A missing `local.json` MUST NOT produce an error.
+
 ### Rationale
 
 A configuration error is the first failure a new user meets, and in a
@@ -654,8 +671,11 @@ crate is added.
 
 **MUST NOT statements:**
 
-- `[dependencies]` MUST NOT contain optional dependencies or target-specific dependency tables that add a third crate.
-- `thiserror` and `anyhow` MUST NOT be added.
+- `[dependencies]` MUST NOT contain optional dependencies.
+- `[dependencies]` MUST NOT contain target-specific dependency tables that add a third crate.
+- `thiserror` MUST NOT be added.
+- `anyhow` MUST NOT be added.
+
 ### Rationale
 
 The design lists exactly `serde` and `serde_json` as the dependencies of
@@ -719,11 +739,14 @@ This item binds all code under `crates/sc-config/src` for the first release
 
 **MUST NOT statements:**
 
-- The crate MUST NOT contain an `async fn`, an `.await`, or a public function that returns a `Future`.
+- The crate MUST NOT contain an `async fn`.
+- The crate MUST NOT contain an `.await`.
+- The crate MUST NOT contain a public function that returns a `Future`.
 - The crate MUST NOT watch files for changes.
 - The crate MUST NOT reload configuration after a load has returned.
 - The crate MUST NOT offer change notification: no callbacks, channels or subscriptions.
-- The crate MUST NOT spawn threads or tasks.
+- The crate MUST NOT spawn threads.
+- The crate MUST NOT spawn tasks.
 
 ### Rationale
 

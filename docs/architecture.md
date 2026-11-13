@@ -1161,6 +1161,7 @@ Two public signatures in `sc-command` are dictated by third-party libraries
 and cannot name an sc-runtime error enum: an rmcp `#[tool]` function must
 return `Result<CallToolResult, McpError>`, and axum's `IntoResponse`
 conversion cannot fail.
+
 ### Decision
 
 The owner of the error rule and of the panic rule is
@@ -1201,6 +1202,10 @@ returns `ExitCode` and turns config and runtime errors into exit codes and
 messages. `sc-config`, `sc-transport` and `sc-runtime` each carry a small
 error enum and a test per variant.
 
+**Negative:**
+
+- Each crate maintains its own typed error enum instead of using opaque errors.
+
 **Neutral:**
 
 - OPEN: whether `sc-command` needs an error enum of its own, and its name if
@@ -1211,6 +1216,7 @@ error enum and a test per variant.
   route, an axum rejection of a request body, an rmcp protocol error. The owner
   of this question is [REQ-RUN-0203](requirements.md). Point 5 makes no claim about those
   responses.
+
 ### Alternatives Considered
 
 #### Alternative 1: `anyhow`-style opaque errors in public APIs
@@ -2423,6 +2429,8 @@ Amended 2026-10-25.
 - ADR-RUN-0301 — amended by this ADR: point 2
 ### Context
 
+The problem is the mismatch between ADR-RUN-0301 point 2's table-replacement description and the generated stores' row-identity upsert behavior.
+
 This record is deferred and does not apply to Phase D; it creates no implementation or validation obligation until reopened.
 
 Synchronization between databases is deferred. This ADR binds nothing until it is taken up again.
@@ -2432,6 +2440,7 @@ table: it clears the rows, then inserts the batch, so a second copy does not
 return `Conflict`. The generated stores upsert one row identity and do not
 clear the table. Writing that contract into the Active sentence of point 2
 is not how an ADR changes. A later ADR names the decision it amends.
+
 ### Decision
 
 1. `write_rows` upserts one row identity and does not clear the table.
@@ -2454,6 +2463,7 @@ stores follow this contract. They do not clear the table before the write.
 **Negative:**
 
 - Identities absent from a batch stay in the destination table; a write does not remove them.
+
 ### Alternatives Considered
 
 #### Alternative 1: Clear the table, then insert the batch
@@ -3122,6 +3132,7 @@ these relies on a `cargo-generate` behaviour that sprint a-1 verified on
 cargo-generate 0.25.1. That is the pinned version.
 
 The problem is that the sc-runtime design of 2026-09-19 described these `cargo-generate` behaviours but marked them as unverified, to be confirmed by the spike before anything relied on them.
+
 ### Decision
 
 1. `template/cargo-generate.toml` defines one placeholder per option, of type
@@ -3210,6 +3221,11 @@ ignore = ["extra.txt"]
 ```
 
 Two `cargo generate --path <template> --template-values-file <file> --name spike-proof --destination <existing-dir> --silent` runs, stdin closed, differed only in `use_extra`. Both exited 0 and printed no prompt. Rendered output contained `label=from-file`, `extra=true` or `extra=false`, and `tag=one` / `tag=two`. `extra.txt` was present only for `use_extra = true`. `cmp` of the excluded `AGENTS.md.j2` exited 0. The destination directory must already exist; `cargo generate` creates `<destination>/spike-proof` inside it.
+
+**Negative:**
+
+- Plain `cargo generate` requires `--allow-commands` and `python3` on `PATH` because the post hook prefixes package names.
+
 ### Alternatives Considered
 
 #### Alternative 1: A `cargo-generate` hook script was held as the fallback if conditional `ignore` did not work
@@ -3335,6 +3351,8 @@ Rejected. It flags locks that are dropped before `.await` and misses a guard tha
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md), [REQ-RUN-0308](requirements.md).
 
 ### Context
+
+The problem is how to amortize transaction overhead while preserving existing write semantics through savepoints and replies after commit.
 
 The SQLite writer batches channel-admitted writes on one dedicated thread. Its batching and typed-error behavior remain applicable when the public input becomes the asynchronous Storage<T> implementation defined by ADR-RUN-0020.
 
@@ -3981,6 +3999,8 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 
 ### Context
 
+The problem is that dropping an async waiter does not establish physical completion of admitted storage work, so bounded stop and truthful persistence outcomes require retained ownership.
+
 This contract is built on `SqliteScheduleStore`, which PRD-CRON-2 replaces with `Storage<CronRow>`. It has not been re-planned against PRD v2.0.
 
 Phase C's default command intake completes this same pre-submission admission
@@ -4062,6 +4082,7 @@ the actual admission race and persisted state after join, c-4 proves packaged
 behavior. This changes the prior strict physical-cutoff interpretation by the
 
 explicit human decision, not a finding waiver or implementation PASS.
+
 ### Rationale
 
 NFR-RUN-0002 and the existing service-hardening checklist section 7 motivate this operational bound.
@@ -4073,6 +4094,7 @@ C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves the actual 
 
 - When all command slots are taken, public commands are refused with `command_capacity_exhausted`, and callers reduce concurrency or retry later.
 - Shutdown does not guarantee physical completion by G/K. An admitted commit may complete late or end Indeterminate, and callers reconcile it through a separately authorized readback.
+
 ### Alternatives Considered
 
 #### Alternative 1: Unbounded capacity-wait queue
