@@ -4,7 +4,7 @@
 //! overrides like [`Loader`](crate::Loader), after a regular-file check and a capped read.
 
 use std::collections::BTreeMap;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fmt;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -410,38 +410,9 @@ pub fn load<T: Serialize, E>(
     }
     layers.reverse();
     for (name, raw) in inputs.environment {
-        let Some(name) = name.to_str() else {
-            continue;
-        };
-        let alias = inputs.env_aliases.iter().find(|(alias, _)| *alias == name);
-        let key = if let Some((_, key)) = alias {
-            (*key).to_owned()
-        } else if name.starts_with(inputs.env_prefix) {
-            // A name with an empty segment names no setting.
-            let Ok(segments) = key_path(name, inputs.env_prefix) else {
-                continue;
-            };
-            segments.join(".")
-        } else {
-            continue;
-        };
-        let parts: Vec<_> = key.split('.').collect();
-        // A prefixed variable names one of `env_accepts` or is ignored.
-        if alias.is_none() && !accepted(inputs.env_accepts, &parts) {
-            continue;
+        if let Some(layer) = env_layer(inputs, name, raw)? {
+            layers.push(layer);
         }
-        let source = Source::Env(name.into());
-        let text = raw
-            .to_str()
-            .ok_or_else(|| at(&source, invalid(&key, "value is not UTF-8")))?;
-        let value = match env_value_kind(inputs.keys, &parts) {
-            EnvValue::String => Value::String(text.into()),
-            EnvValue::Json => parse_override_value(text),
-        };
-        let mut object = Value::Object(Map::new());
-        put(&mut object, &parts, value).map_err(|e| at(&source, e))?;
-        check_keys(&object, inputs.keys).map_err(|e| at(&source, e))?;
-        layers.push((object, source));
     }
     for (key, value) in &inputs.flags {
         let source = Source::Flag(
@@ -489,6 +460,46 @@ pub fn load<T: Serialize, E>(
         layered.sources.entry(row.path).or_insert(Source::Default);
     }
     Ok(layered)
+}
+
+/// One environment variable as a layer, or `None` when it names no accepted setting.
+fn env_layer<E>(
+    inputs: &Inputs<'_>,
+    name: &OsStr,
+    raw: &OsStr,
+) -> Result<Option<(Value, Source)>, LayersError<E>> {
+    let Some(name) = name.to_str() else {
+        return Ok(None);
+    };
+    let alias = inputs.env_aliases.iter().find(|(alias, _)| *alias == name);
+    let key = if let Some((_, key)) = alias {
+        (*key).to_owned()
+    } else if name.starts_with(inputs.env_prefix) {
+        // A name with an empty segment names no setting.
+        let Ok(segments) = key_path(name, inputs.env_prefix) else {
+            return Ok(None);
+        };
+        segments.join(".")
+    } else {
+        return Ok(None);
+    };
+    let parts: Vec<_> = key.split('.').collect();
+    // A prefixed variable names one of `env_accepts` or is ignored.
+    if alias.is_none() && !accepted(inputs.env_accepts, &parts) {
+        return Ok(None);
+    }
+    let source = Source::Env(name.into());
+    let text = raw
+        .to_str()
+        .ok_or_else(|| at(&source, invalid(&key, "value is not UTF-8")))?;
+    let value = match env_value_kind(inputs.keys, &parts) {
+        EnvValue::String => Value::String(text.into()),
+        EnvValue::Json => parse_override_value(text),
+    };
+    let mut object = Value::Object(Map::new());
+    put(&mut object, &parts, value).map_err(|e| at(&source, e))?;
+    check_keys(&object, inputs.keys).map_err(|e| at(&source, e))?;
+    Ok(Some((object, source)))
 }
 
 /// Resolved settings with their sources: one per leaf of the serialized config under the
