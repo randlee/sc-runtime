@@ -7,6 +7,8 @@ use serde_json::{Map, Value};
 use crate::app_name::AppName;
 use crate::error::ConfigError;
 
+pub mod layers;
+
 /// Explicit configuration directory and environment.
 ///
 /// `load` is the process convenience wrapper. `Loader` is the form tests and
