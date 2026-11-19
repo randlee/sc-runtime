@@ -1,17 +1,18 @@
 //! A layered JSON loader: several files, prefixed environment variables and flags, merged
 //! with per-leaf provenance and validated by the caller's decode. The caller supplies the
-//! files, the keys each layer accepts and the decode. It reads files with the same reader,
-//! merge and override parsing as [`Loader`](crate::Loader), after a regular-file and size check.
+//! files, the keys each layer accepts and the decode. It parses files, merges and reads
+//! overrides like [`Loader`](crate::Loader), after a regular-file check and a capped read.
 
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::fmt;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 use serde_json::{Map, Value};
 
-use super::{key_path, merge, parse_override_value, read_optional_json, set_path};
+use super::{key_path, merge, parse_json_file, parse_override_value, set_path};
 use crate::ConfigError;
 
 /// Where a resolved setting originated.
@@ -266,7 +267,28 @@ fn file_value<E>(path: &Path) -> Result<Option<Value>, LayersError<E>> {
             bytes: metadata.len(),
         });
     }
-    read_optional_json(path).map_err(LayersError::Config)
+    let read = |source| {
+        LayersError::Config(ConfigError::Read {
+            path: path.into(),
+            source,
+        })
+    };
+    let mut bytes = Vec::new();
+    std::fs::File::open(path)
+        .map_err(read)?
+        .take(MAX_FILE_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(read)?;
+    // The read itself is capped, so a file that grew after the check is still refused.
+    if bytes.len() as u64 > MAX_FILE_BYTES {
+        return Err(LayersError::TooLarge {
+            file: path.into(),
+            bytes: bytes.len() as u64,
+        });
+    }
+    parse_json_file(path, &bytes)
+        .map(Some)
+        .map_err(LayersError::Config)
 }
 
 fn put<E>(root: &mut Value, parts: &[&str], value: Value) -> Result<(), LayersError<E>> {
