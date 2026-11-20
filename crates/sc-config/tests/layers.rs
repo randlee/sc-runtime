@@ -8,7 +8,8 @@ use std::path::{Path, PathBuf};
 
 use sc_config::ConfigError;
 use sc_config::layers::{
-    EnvValue, FileLayer, Inputs, Key, Layered, LayersError, MAX_FILE_BYTES, Source, load, resolved,
+    EnvValue, FileLayer, Inputs, Key, Layered, LayersError, MAX_FILE_BYTES, Source, join_path,
+    load, resolved,
 };
 use serde_json::{Value, json};
 
@@ -96,6 +97,45 @@ fn row(layered: &Layered<Value>, path: &str) -> (String, String) {
 }
 fn files(root: &Path) -> (PathBuf, PathBuf) {
     (root.join("high.json"), root.join("low.json"))
+}
+
+#[test]
+fn dotted_key_provenance_uses_the_same_path_as_decode() {
+    let root = support::TempDir::new();
+    let (high, low) = files(root.path());
+    write(&low, &json!({"items":{"runner.one":{"host":"bad"}}}));
+    write(&high, &json!({"items":{"runner.one":{"port":9000}}}));
+    let inputs = Inputs {
+        files: vec![
+            FileLayer {
+                path: high,
+                accepts: KEYS,
+            },
+            FileLayer {
+                path: low.clone(),
+                accepts: KEYS,
+            },
+        ],
+        env_prefix: "APP_",
+        env_aliases: &[],
+        env_accepts: KEYS,
+        flags: BTreeMap::new(),
+        flag_names: BTreeMap::new(),
+        keys: KEYS,
+        environment: &[],
+    };
+    let error = load(
+        &inputs,
+        |_| -> Result<Value, Rejected> {
+            Err(Rejected(join_path(
+                &join_path("items", "runner.one"),
+                "host",
+            )))
+        },
+        |error| Some(error.0.as_str()),
+    )
+    .unwrap_err();
+    assert!(matches!(error, LayersError::At { source: Source::File(path), .. } if path == low));
 }
 
 #[test]

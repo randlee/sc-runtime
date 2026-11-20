@@ -300,6 +300,21 @@ fn put<E>(root: &mut Value, parts: &[&str], value: Value) -> Result<(), LayersEr
         .map_err(|_| invalid(parts[0], "nested setting conflicts with a scalar"))
 }
 
+/// Joins an error-path segment using the same representation as layer provenance.
+#[must_use]
+pub fn join_path(path: &str, key: &str) -> String {
+    let key = if key.contains(['.', '"', '\\']) {
+        format!("{key:?}")
+    } else {
+        key.to_owned()
+    };
+    if path.is_empty() {
+        key
+    } else {
+        format!("{path}.{key}")
+    }
+}
+
 // Records the source of every leaf `value` sets when merged over `into`, as `merge` places it.
 fn record(
     into: Option<&Value>,
@@ -313,11 +328,7 @@ fn record(
             sources.insert(path.into(), source.clone());
         }
         for (key, val) in src {
-            let next = if path.is_empty() {
-                key.clone()
-            } else {
-                format!("{path}.{key}")
-            };
+            let next = join_path(path, key);
             record(dst.get(key), val, &next, source, sources);
         }
     } else {
@@ -326,7 +337,7 @@ fn record(
         match value.as_object() {
             Some(obj) if !obj.is_empty() => {
                 for (key, val) in obj {
-                    record(None, val, &format!("{path}.{key}"), source, sources);
+                    record(None, val, &join_path(path, key), source, sources);
                 }
             }
             _ => {
@@ -383,7 +394,8 @@ fn attributed<E>(
 /// Precedence, highest first: flags, environment, then `files` in order. `decode` sees the
 /// merged value and then each layer re-applied over it, so a masked invalid value still
 /// fails under its own source. Leaves of the decoded value that no layer set are recorded
-/// as [`Source::Default`]. `decode_path` gives a decode error's key path, which names the
+/// as [`Source::Default`]. `decode_path` gives a decode error's key path, built with
+/// [`join_path`] for each segment, which names the
 /// layer that supplied it.
 ///
 /// # Errors
@@ -519,7 +531,7 @@ pub fn resolved<T: Serialize>(layered: &Layered<T>, keys: &[Key]) -> Vec<Resolve
 fn walk(value: &Value, path: String, sources: &BTreeMap<String, Source>, rows: &mut Vec<Resolved>) {
     if let Some(fields) = value.as_object().filter(|fields| !fields.is_empty()) {
         for (key, child) in fields {
-            walk(child, format!("{path}.{key}"), sources, rows);
+            walk(child, join_path(&path, key), sources, rows);
         }
         return;
     }
