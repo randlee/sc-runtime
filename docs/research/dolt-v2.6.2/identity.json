@@ -1,0 +1,77 @@
+{
+  "source": {
+    "repository": "https://github.com/dolthub/dolt",
+    "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+    "claimed_version": "v2.6.2",
+    "installed_binary_used_as_evidence": false,
+    "tests_run": false,
+    "source_inspected": true
+  },
+  "claims": [
+    {
+      "id": "ID-01",
+      "topic": "commit identity and author/committer provenance",
+      "classification": "native-capability-with-limit",
+      "finding": "Dolt supports local/global config identity, author/committer session overrides, and explicit --author. These are mutable commit attribution fields and are not authenticated actor identity.",
+      "evidence": [
+        {"path": "go/libraries/doltcore/env/config.go", "lines": "39-48,236-254", "symbol": "ConfigScope, GetNameAndEmail", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/env/config.go#L39-L48"},
+        {"path": "go/cmd/dolt/commands/engine/sqlengine.go", "lines": "701-729", "symbol": "commitIdentEnvOverrides, InitClientCommitIdentSession", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/engine/sqlengine.go#L701-L729"},
+        {"path": "go/libraries/doltcore/sqle/dprocedures/dolt_commit.go", "lines": "277-305", "symbol": "prepareCommit author handling", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dprocedures/dolt_commit.go#L277-L305"}
+      ]
+    },
+    {
+      "id": "ID-02",
+      "topic": "SQL authorization and branch permissions",
+      "classification": "native-capability",
+      "finding": "SQL accounts and branch-control permissions are separate from commit metadata. Branch control is scoped by database, branch, user, host, permissions; commit checks merge access.",
+      "evidence": [
+        {"path": "go/libraries/doltcore/sqle/dtables/branch_control_table.go", "lines": "30-70", "symbol": "AccessTableName, PermissionsStrings, accessSchema", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtables/branch_control_table.go#L30-L70"},
+        {"path": "go/libraries/doltcore/sqle/enginetest/branch_control_test.go", "lines": "728-807", "symbol": "Require admin to modify tables test case", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/branch_control_test.go#L728-L807"},
+        {"path": "go/libraries/doltcore/sqle/dprocedures/dolt_commit.go", "lines": "159-179", "symbol": "doDoltCommit", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dprocedures/dolt_commit.go#L159-L179"}
+      ]
+    },
+    {
+      "id": "ID-03",
+      "topic": "remote credentials and scope",
+      "classification": "native-with-limit",
+      "finding": "Dolt remote client supports explicit user/password configuration, stored JWK identity, a process environment password, and credential helper; inspected helper lookup reads global config and tests explicitly show local config is ignored. Server remote API auth uses SQL accounts/passwords and CLONE_ADMIN. Shared process env is not per-SQL-client credentials.",
+      "evidence": [
+        {"path": "go/libraries/doltcore/env/grpc_dial_provider.go", "lines": "181-199,201-216,231-255", "symbol": "globalCredentialHelper, getRPCCredsFromOSEnv, getRPCCreds", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/env/grpc_dial_provider.go#L181-L199"},
+        {"path": "go/libraries/doltcore/env/environment.go", "lines": "1025-1045", "symbol": "CredsDir, UserDoltCreds", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/env/environment.go#L1025-L1045"},
+        {"path": "go/libraries/doltcore/env/grpc_dial_provider_test.go", "lines": "38-66", "symbol": "TestCredentialHelperUsesGlobalConfig, TestCredentialHelperIgnoresLocalConfig", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/env/grpc_dial_provider_test.go#L38-L66"},
+        {"path": "integration-tests/go-sql-server-driver/remotesapi_auth_test.go", "lines": "102-112", "symbol": "TestRemotesAPIAuthentication account setup", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/integration-tests/go-sql-server-driver/remotesapi_auth_test.go#L102-L112"}
+      ]
+    },
+    {
+      "id": "ID-04",
+      "topic": "SQL binding, identifiers, and injection boundary",
+      "classification": "native-pattern-plus-consumer-policy",
+      "finding": "Upstream branch, commit, and log commands parameterize procedure values. SQL identifiers such as database/table names cannot be ordinary placeholders; consumer must quote/allowlist identifiers and bind data values.",
+      "evidence": [
+        {"path": "go/cmd/dolt/commands/branch.go", "lines": "441-460", "symbol": "generateBranchSql", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/branch.go#L441-L460"},
+        {"path": "go/cmd/dolt/commands/commit.go", "lines": "193-250", "symbol": "constructParametrizedDoltCommitQuery", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/commit.go#L193-L250"},
+        {"path": "go/cmd/dolt/commands/log.go", "lines": "193-245", "symbol": "constructInterpolatedDoltLogQuery", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/log.go#L193-L245"}
+      ]
+    },
+    {
+      "id": "ID-05",
+      "topic": "history, status, pinned reads, and export",
+      "classification": "native-read-capability-plus-unresolved-export-probe",
+      "finding": "Dolt exposes commit history/status and SQL AS OF revision reads. dolt dump documentation describes exporting the working set, so deterministic refresh should select an explicit hash/revision and validate read-only export behavior. Application stakeholder attribution remains consumer-owned trace metadata.",
+      "evidence": [
+        {"path": "go/libraries/doltcore/sqle/dtablefunctions/dolt_log.go", "lines": "37-50", "symbol": "LogTableFunctionArgs", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dtablefunctions/dolt_log.go#L37-L50"},
+        {"path": "go/libraries/doltcore/sqle/enginetest/dolt_queries_dtables.go", "lines": "60-94", "symbol": "dolt_status AS OF query assertions", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries_dtables.go#L60-L94"},
+        {"path": "integration-tests/go-sql-server-driver/concurrent_multi_branch_test.go", "lines": "195-206", "symbol": "readConcurrentBranchRows AS OF HEAD", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/integration-tests/go-sql-server-driver/concurrent_multi_branch_test.go#L195-L206"},
+        {"path": "go/cmd/dolt/commands/dump.go", "lines": "65-76", "symbol": "dumpDocs", "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/dump.go#L65-L76"}
+      ]
+    }
+  ],
+  "acceptance_probes": [
+    "Test SQL users against scoped branch permissions for read, write, merge, admin, branch changes, and remote operations.",
+    "Show commit author/committer can differ from SQL CURRENT_USER across local/global config, DOLT_AUTHOR_*, DOLT_COMMITTER_*, and --author inputs.",
+    "Probe global vs local helper precedence, environment override, secret rotation/redaction, and two concurrent consumers with distinct credentials against one shared server.",
+    "Probe hostile procedure values and separately test the application's database/table identifier quoting or allowlist.",
+    "Pin a commit hash and compare exported schema, row counts, and stable digest under concurrent branch commits using explicit AS OF semantics.",
+    "Emit app-owned trace events for human, agent, session, team, and multiple stakeholder repos, linking authenticated principal and exact Dolt commit hash."
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 64644,
+    "pid": 43681,
+    "exit_before_cleanup": null,
+    "exit_after_cleanup": 0
+  },
+  "probes": [
+    {
+      "case": "manual-abort-set-autocommit",
+      "sql": "SET autocommit=0",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "manual-abort-begin",
+      "sql": "START TRANSACTION",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "manual-abort-before-head",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-merge",
+      "sql": "CALL DOLT_MERGE('side')",
+      "ok": true,
+      "rows": [
+        [
+          "",
+          0,
+          1,
+          "conflicts found"
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-conflict-count",
+      "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+      "ok": true,
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-working-row",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-operation",
+      "sql": "CALL DOLT_MERGE('--abort')",
+      "ok": true,
+      "rows": [
+        [
+          "",
+          0,
+          0,
+          "merge aborted"
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-conflict-count-after",
+      "sql": "SELECT COUNT(*) FROM dolt_conflicts",
+      "ok": true,
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-working-row-after",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-head-after",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-commit",
+      "sql": "COMMIT",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "manual-abort-head-after-commit",
+      "sql": "SELECT hashof('HEAD')",
+      "ok": true,
+      "rows": [
+        [
+          "icb8ruqjdedhhgeufjei8ubtvk9ui72g"
+        ]
+      ]
+    },
+    {
+      "case": "manual-abort-row-after-commit",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "dirty-main-use",
+      "sql": "USE `dirty/main`",
+      "ok": true,
+      "rows": []
+    },
+    {
+      "case": "dirty-main-row-before-merge",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "dirty-main-status-before-merge",
+      "sql": "SELECT * FROM dolt_status",
+      "ok": true,
+      "rows": [
+        [
+          "t",
+          0,
+          "modified"
+        ]
+      ]
+    },
+    {
+      "case": "dirty-main-merge-side",
+      "sql": "CALL DOLT_MERGE('side')",
+      "ok": false,
+      "error": "OperationalError(1105, 'error: local changes would be stomped by merge:\\n\\tt\\n Please commit your changes before you merge.')"
+    },
+    {
+      "case": "dirty-main-row-after-merge",
+      "sql": "SELECT * FROM t ORDER BY pk",
+      "ok": true,
+      "rows": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "case": "dirty-main-status-after-merge",
+      "sql": "SELECT * FROM dolt_status",
+      "ok": true,
+      "rows": [
+        [
+          "t",
+          0,
+          "modified"
+        ]
+      ]
+    }
+  ]
+}
