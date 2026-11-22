@@ -3,7 +3,7 @@
 #[path = "support/mod.rs"]
 mod support;
 
-use sc_config::{ConfigError, EnvSource, FileSource, Layers, Source, ValueSource};
+use sc_config::{ConfigError, EnvSource, FileSource, LayerSource, Layers, Source, ValueSource};
 use serde_json::{Value, json};
 use support::{TempDir, environment, write_file};
 
@@ -24,8 +24,9 @@ fn a_required_file_that_is_absent_is_missing_default() {
 #[test]
 fn an_optional_file_that_is_absent_contributes_nothing() {
     let dir = TempDir::new();
-    let layers = Layers::new().push(FileSource::new(dir.path().join("a.json")).optional());
-    assert_eq!(load(layers).unwrap(), json!({}));
+    let source = FileSource::new(dir.path().join("a.json")).optional();
+    assert!(source.load(&json!({})).unwrap().is_none());
+    assert_eq!(load(Layers::new().push(source)).unwrap(), json!({}));
 }
 
 #[test]
@@ -53,7 +54,8 @@ fn accepts_rejects_keys_outside_the_accepted_paths() {
     }
     assert_eq!(error.code(), "CFG.UNKNOWN_KEY");
     let text = error.to_string();
-    assert!(text.contains("b") && text.contains("a.json"), "{text}");
+    let expected = format!("key b in {} is not accepted", path.display());
+    assert!(text.contains(&expected), "{text}");
 }
 
 #[test]
@@ -146,4 +148,59 @@ fn new_error_variants_have_codes_and_name_what_they_carry() {
     };
     assert_eq!(failed.code(), "CFG.SOURCE");
     assert!(failed.to_string().contains("keychain login"));
+}
+
+#[test]
+fn an_alias_replaces_whole_and_is_attributed_to_its_variable() {
+    let below = ValueSource::new(Source::default("d"), json!({"project": {"a": 1, "b": 2}}));
+    let env = EnvSource::new("MY_APP__", environment(&[("SC_PROJECT", r#"{"c":3}"#)]))
+        .alias("SC_PROJECT", ["project"]);
+    let resolved = Layers::new().push(below).push(env).resolve().unwrap();
+    assert_eq!(resolved.value, json!({"project": {"c": 3}}));
+    let rows = resolved.rows();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].path, ["project", "c"]);
+    assert_eq!(rows[0].source, Source::env("SC_PROJECT"));
+}
+
+#[test]
+fn deserialize_lists_the_real_file_paths_and_only_files() {
+    #[derive(Debug, serde::Deserialize)]
+    struct Strict {
+        _n: u8,
+    }
+    let dir = TempDir::new();
+    write_file(dir.path(), "a.json", r#"{"_n":"x"}"#);
+    let path = dir.path().join("a.json");
+    let labelled = ValueSource::new(Source::file("not-a-file.json"), json!({}));
+    let layers = Layers::new().push(FileSource::new(&path)).push(labelled);
+    match layers.load::<Strict>().unwrap_err() {
+        ConfigError::Deserialize { files, .. } => assert_eq!(files, vec![path]),
+        other => panic!("unexpected {other}"),
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn a_non_utf8_path_is_reported_unchanged() {
+    use std::ffi::OsString;
+    use std::os::unix::ffi::OsStringExt;
+
+    #[derive(Debug, serde::Deserialize)]
+    struct Strict {
+        _n: u8,
+    }
+    let dir = TempDir::new();
+    let mut raw = dir.path().as_os_str().to_owned().into_vec();
+    raw.extend_from_slice(b"/\xff.json");
+    let path = std::path::PathBuf::from(OsString::from_vec(raw));
+    std::fs::write(&path, r#"{"_n":"x"}"#).unwrap();
+    match Layers::new()
+        .push(FileSource::new(&path))
+        .load::<Strict>()
+        .unwrap_err()
+    {
+        ConfigError::Deserialize { files, .. } => assert_eq!(files, vec![path]),
+        other => panic!("unexpected {other}"),
+    }
 }

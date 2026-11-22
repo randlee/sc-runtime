@@ -12,7 +12,7 @@ use crate::provenance::Source;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum ConfigError {
-    /// A required file is absent: `default.json`, or any required `FileSource`.
+    /// A required configuration file is absent.
     MissingDefault {
         /// Full path that was looked up.
         path: PathBuf,
@@ -76,16 +76,6 @@ pub enum ConfigError {
 }
 
 impl ConfigError {
-    fn layered_recovery(&self) -> &'static str {
-        match self {
-            Self::UnknownKey { .. } => {
-                "Remove the key from that file, or set it where it is accepted."
-            }
-            Self::SourceFailed { .. } => "Follow the message from that source.",
-            _ => "",
-        }
-    }
-
     /// Returns the stable code for this failure.
     pub fn code(&self) -> &'static str {
         match self {
@@ -104,9 +94,7 @@ impl ConfigError {
     /// Returns the recovery step for this failure.
     pub fn recovery(&self) -> &'static str {
         match self {
-            Self::MissingDefault { .. } => {
-                "Create default.json in the config directory and load again."
-            }
+            Self::MissingDefault { .. } => "Create that file and load again.",
             Self::Read { .. } => {
                 "Make the file readable, or replace a directory at that path with a file."
             }
@@ -123,30 +111,12 @@ impl ConfigError {
                 "Use 1 to 64 bytes of ASCII letters, digits, '-', and '_' ."
             }
             Self::NonUnicode { .. } => {
-                "Give the variable a Unicode name and value. Names that do not start with the application prefix are ignored."
+                "Give the variable a Unicode name and value. Names that match no prefix or alias are ignored."
             }
-            Self::UnknownKey { .. } | Self::SourceFailed { .. } => self.layered_recovery(),
-        }
-    }
-}
-
-impl ConfigError {
-    fn fmt_layered(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UnknownKey { path, key } => write!(
-                formatter,
-                "{}: key {key} in {} is not accepted; {}",
-                self.code(),
-                path.display(),
-                self.recovery()
-            ),
-            Self::SourceFailed { origin, message } => write!(
-                formatter,
-                "{}: source {origin} failed: {message}; {}",
-                self.code(),
-                self.recovery()
-            ),
-            _ => Ok(()),
+            Self::UnknownKey { .. } => {
+                "Remove the key from that file, or set it where it is accepted."
+            }
+            Self::SourceFailed { .. } => "Follow the message from that source.",
         }
     }
 }
@@ -156,7 +126,7 @@ impl fmt::Display for ConfigError {
         match self {
             Self::MissingDefault { path } => write!(
                 formatter,
-                "{}: default configuration file not found at {}; {}",
+                "{}: required configuration file not found: {}; {}",
                 self.code(),
                 path.display(),
                 self.recovery()
@@ -211,7 +181,19 @@ impl fmt::Display for ConfigError {
                 variable.to_string_lossy(),
                 self.recovery()
             ),
-            Self::UnknownKey { .. } | Self::SourceFailed { .. } => self.fmt_layered(formatter),
+            Self::UnknownKey { path, key } => write!(
+                formatter,
+                "{}: key {key} in {} is not accepted; {}",
+                self.code(),
+                path.display(),
+                self.recovery()
+            ),
+            Self::SourceFailed { origin, message } => write!(
+                formatter,
+                "{}: source {origin} failed: {message}; {}",
+                self.code(),
+                self.recovery()
+            ),
         }
     }
 }

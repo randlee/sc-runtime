@@ -18,6 +18,8 @@ use crate::provenance::{Provenance, ResolvedRow, Source, SourceKind};
 pub struct Layer {
     pub(crate) source: Source,
     pub(crate) value: Value,
+    /// The real path of the file this layer was read from, if any.
+    file: Option<PathBuf>,
     replace: Vec<Vec<String>>,
     attributes: Vec<(Vec<String>, Source)>,
 }
@@ -28,9 +30,15 @@ impl Layer {
         Self {
             source,
             value,
+            file: None,
             replace: Vec::new(),
             attributes: Vec::new(),
         }
+    }
+
+    pub(crate) fn read_from(mut self, path: PathBuf) -> Self {
+        self.file = Some(path);
+        self
     }
 
     /// Marks `path` so its value replaces the value below instead of merging into it.
@@ -167,8 +175,8 @@ impl Layers {
             let Some(layer) = source.load(&value)? else {
                 continue;
             };
-            if layer.source.kind == SourceKind::File {
-                files.push(PathBuf::from(&layer.source.name));
+            if let Some(path) = &layer.file {
+                files.push(path.clone());
             }
             for (_, origin) in &layer.attributes {
                 if origin.kind == SourceKind::Env {

@@ -113,7 +113,9 @@ impl LayerSource for FileSource {
             return Ok(None);
         };
         self.check_accepted(&value)?;
-        Ok(Some(Layer::new(Source::file(&self.path), value)))
+        Ok(Some(
+            Layer::new(Source::file(&self.path), value).read_from(self.path.clone()),
+        ))
     }
 }
 

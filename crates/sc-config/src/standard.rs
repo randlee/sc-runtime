@@ -79,7 +79,8 @@ impl StandardContext {
         environment: Vec<(OsString, OsString)>,
     ) -> Self {
         let prefix = family.env_prefix();
-        let home_var = OsString::from(format!("{}_HOME", prefix.trim_end_matches("__")));
+        let stem = prefix.strip_suffix("__").unwrap_or(&prefix);
+        let home_var = OsString::from(format!("{stem}_HOME"));
         Self {
             family,
             products,
@@ -109,8 +110,8 @@ impl StandardContext {
     /// The default is the family name upper-cased with `-` mapped to `_`, plus
     /// `_HOME`.
     #[must_use]
-    pub fn with_home_var(mut self, name: impl Into<OsString>) -> Self {
-        self.home_var = name.into();
+    pub fn with_home_var(mut self, name: impl Into<String>) -> Self {
+        self.home_var = OsString::from(name.into());
         self
     }
 
@@ -135,7 +136,7 @@ impl StandardContext {
     fn variable(&self, name: &str) -> Option<PathBuf> {
         self.environment
             .iter()
-            .find(|(key, _)| key.as_os_str() == name)
+            .find(|(key, value)| key.as_os_str() == name && !value.is_empty())
             .map(|(_, value)| PathBuf::from(value))
     }
 

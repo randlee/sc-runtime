@@ -3,7 +3,6 @@
 #[path = "support/mod.rs"]
 mod support;
 
-use std::ffi::OsString;
 use std::fs;
 use std::path::Path;
 
@@ -239,10 +238,6 @@ fn later_env_prefixes_win_and_aliases_apply_last() {
     assert_eq!(layers.load::<Value>().unwrap(), json!({"x": 2, "y": 3}));
 }
 
-fn os(text: &str) -> OsString {
-    OsString::from(text)
-}
-
 #[test]
 fn the_user_folder_comes_from_the_home_variable_chain() {
     let home = TempDir::new();
@@ -267,7 +262,7 @@ fn the_user_folder_comes_from_the_home_variable_chain() {
     let user = |env: &[(&str, &str)], var: Option<&str>| -> Value {
         let mut context = context(&["sc-agent"], env);
         if let Some(var) = var {
-            context = context.with_home_var(os(var));
+            context = context.with_home_var(var);
         }
         StandardLayers::new(context).user().load().unwrap()
     };
@@ -346,4 +341,49 @@ fn an_alias_wins_over_prefixed_variables_in_either_call_order() {
     let expected = json!({"project": "alias"});
     assert_eq!(env_first.load::<Value>().unwrap(), expected);
     assert_eq!(alias_first.load::<Value>().unwrap(), expected);
+}
+
+#[test]
+fn the_home_variable_is_never_applied_as_a_setting() {
+    let relocated = TempDir::new();
+    write(relocated.path(), "sc-agent.json", r#"{"from":"user"}"#);
+    let value = relocated.path().to_string_lossy().into_owned();
+    for (variable, builder) in [("SC_AGENT_HOME", None), ("ATM_HOME", Some("ATM_HOME"))] {
+        let mut context = context(&["sc-agent"], &[(variable, value.as_str())]);
+        if let Some(name) = builder {
+            context = context.with_home_var(name);
+        }
+        let loaded: Value = StandardLayers::new(context)
+            .user()
+            .env(["SC_AGENT_", "ATM_"])
+            .load()
+            .unwrap();
+        assert_eq!(loaded, json!({"from": "user"}), "{variable}");
+    }
+}
+
+#[test]
+fn a_family_with_trailing_underscores_keeps_its_own_home_variable() {
+    let relocated = TempDir::new();
+    write(relocated.path(), "a__.json", r#"{"from":"relocated"}"#);
+    let value = relocated.path().to_string_lossy().into_owned();
+    let family = name("a__");
+    let user = |variable: &str| -> Value {
+        let env = environment(&[(variable, value.as_str())]);
+        let context = StandardContext::new(family.clone(), vec![family.clone()], env);
+        StandardLayers::new(context).user().load().unwrap()
+    };
+    // The prefix is `A____`; only its last `__` is replaced by `_HOME`.
+    assert_eq!(user("A___HOME"), json!({"from": "relocated"}));
+    assert_eq!(user("A_HOME"), json!({}));
+}
+
+#[test]
+fn an_empty_home_variable_is_unset() {
+    let home_name = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
+    let loaded: Value = StandardLayers::new(context(&["sc-agent"], &[(home_name, "")]))
+        .user()
+        .load()
+        .unwrap();
+    assert_eq!(loaded, json!({}));
 }
