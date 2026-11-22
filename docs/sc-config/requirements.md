@@ -653,11 +653,15 @@ This item covers the three sources `sc-config` ships. Each implements
 
 **`EnvSource`**
 
-4. `EnvSource::new(prefix: AppName, environment)` applies the overrides of
-   [REQ-CFG-0002](requirements.md) for `prefix.env_prefix()` from the
-   explicit `Vec<(OsString, OsString)>`, unchanged: same naming, same JSON
-   or string value parsing, same order and the same errors. It never reads
-   the process environment.
+4. `EnvSource::new(prefix: impl Into<String>, environment)` takes the
+   prefix exactly as the consumer gives it (for example `DECIDR_` or
+   `MY_APP__`) and matches it literally against each variable name in the
+   explicit `Vec<(OsString, OsString)>`. The rest of the name is turned
+   into a key path and the value parsed exactly as in
+   [REQ-CFG-0002](requirements.md) items 4 onward: same splitting on `__`,
+   same JSON or string parsing, same order and the same errors. It never
+   reads the process environment. `Loader` passes `app.env_prefix()`, so
+   its behaviour is unchanged.
 5. `.alias(variable, path)` maps one exact variable name to a key path,
    with the same value parsing. Aliases are applied after prefixed
    variables, in ascending byte order of the variable name.
@@ -684,7 +688,9 @@ set (REQ-SAG-0019).
 1. An absent file returns `MissingFile`; with `.optional()` it returns
    `Ok(None)`. A directory at the path returns `Read`.
 2. `.accepts(["a"])` over `{"a":1,"b":2}` returns `UnknownKey` naming `b`.
-3. The REQ-CFG-0002 success criteria pass against `EnvSource::new`.
+3. The REQ-CFG-0002 success criteria pass against
+   `EnvSource::new("MY_APP__", env)`, and with prefix `DECIDR_` the
+   variable `DECIDR_LAYA__PORT=1` sets `{"laya":{"port":1}}`.
 4. `.alias("SC_PROJECT", "project")` with `SC_PROJECT=x` sets
    `{"project":"x"}`.
 5. `MY_APP__A__B=2` over a base `{"a":1}` returns `Override`.
@@ -808,7 +814,9 @@ This item covers `StandardLayers`, the stack products use
    `Project`, `Local`, `Env`, `Flags`.
 2. `StandardLayers::new(ctx: StandardContext)` and one method per slot:
    `.defaults(value)`, `.system()`, `.user()`, `.project()`, `.local()`,
-   `.env(prefix: AppName)`, `.flags(value)`. A slot not called is not
+   `.env(prefixes)`, `.flags(value)`. `prefixes` is the consumer's list of
+   literal env prefixes, one per product (REQ-CFG-0006 item 4), applied in
+   list order so a later prefix wins. A slot not called is not
    loaded. Call order does not matter: slots load in slot order.
 3. Filling a slot twice is `ConfigError::DuplicateSlot { slot }`, returned
    by `load` and `resolve`.
