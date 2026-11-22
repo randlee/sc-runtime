@@ -13,7 +13,7 @@ monty = ["sc-cron/monty"]
 [dependencies]
 sc-cron = { path = "../../../crates/sc-cron", default-features = false }
 # Application persistence utility, pinned to the qualified provider family.
-rusqlite = { version = "0.39", default-features = false, features = ["bundled", "hooks"] }
+rusqlite = { version = "0.41", default-features = false, features = ["bundled", "hooks"] }
 
 [dev-dependencies]
 process-wrap = { version = "10", default-features = false, features = ["std", "job-object", "process-group", "process-session"] }

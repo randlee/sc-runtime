@@ -16,7 +16,7 @@ import unittest
 from tests.integration.generation.generate_owned import cargo_generate
 
 ROOT = Path(__file__).resolve().parents[3]
-FROZEN = {"rmcp": "3.8.0", "utoipa": "6.0.0", "utoipa-axum": "0.3.0", "schemars": "1.2.3"}
+FROZEN = {"rmcp": "3.9.0", "utoipa": "6.0.0", "utoipa-axum": "0.3.0", "schemars": "1.2.3"}
 
 
 def load_file(name, path):
@@ -72,7 +72,7 @@ class RuntimeIdentityTests(unittest.TestCase):
     def test_actual_locked_workspace_uses_frozen_identities(self):
         verify_identities(metadata(ROOT), ["sc-runtime"])
 
-    def test_rusqlite_0_39_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite(self):
+    def test_rusqlite_0_41_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite(self):
         # The existing portable owner bounds Cargo lock/fetch waits and reaps
         # the complete process tree, including descendants holding output open.
         manifest = ROOT / "crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.toml"
@@ -83,7 +83,7 @@ class RuntimeIdentityTests(unittest.TestCase):
         )
         document = json.loads(process.stdout)
         expected = {}
-        for name, family in (("libsqlite3-sys", "0.37."), ("rusqlite", "0.39."), ("sqlx", "0.9.")):
+        for name, family in (("libsqlite3-sys", "0.39."), ("rusqlite", "0.41."), ("sqlx", "0.9.")):
             versions = {package["version"] for package in document["packages"] if package["name"] == name}
             self.assertEqual(len(versions), 1, f"expected one {name}, found {versions}")
             version = next(iter(versions))
@@ -139,8 +139,8 @@ class RuntimeIdentityTests(unittest.TestCase):
         self.assertTrue(store["dependencies"]["sqlx"]["version"].startswith("0.9"))
         native = tomllib.loads((ROOT / "crates/sc-runtime-db-sqlite/Cargo.toml").read_text())
         cron = tomllib.loads((ROOT / "crates/sc-cron/Cargo.toml").read_text())
-        self.assertTrue(native["dependencies"]["rusqlite"]["version"].startswith("0.39"))
-        self.assertTrue(cron["dependencies"]["rusqlite"]["version"].startswith("0.39"))
+        self.assertTrue(native["dependencies"]["rusqlite"]["version"].startswith("0.41"))
+        self.assertTrue(cron["dependencies"]["rusqlite"]["version"].startswith("0.41"))
 
 
 class GenericProjectionTests(unittest.TestCase):

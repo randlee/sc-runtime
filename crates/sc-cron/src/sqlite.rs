@@ -150,7 +150,7 @@ impl SqliteScheduleStore {
         limits: ScheduleLimits,
         logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
-        let connection = Connection::open(path.as_ref())
+        let mut connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
         connection
             .busy_handler(Some(scope::baseline_busy))
@@ -169,7 +169,7 @@ impl SqliteScheduleStore {
     ///
     /// [`CronError::Store`] if SQLite cannot allocate the database.
     pub fn open_in_memory(limits: ScheduleLimits) -> Result<Self, CronError> {
-        let connection = Connection::open_in_memory()
+        let mut connection = Connection::open_in_memory()
             .map_err(|error| store_error("failed to open database", error))?;
         connection
             .busy_handler(Some(scope::baseline_busy))

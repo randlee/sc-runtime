@@ -1598,6 +1598,10 @@ schemars **1.2.3**, the resolved identity satisfying RMCP's JsonSchema bound.
 C-3 consumes this exact matrix; newer versions require an ADR amendment and
 repeat qualification, not an implicit latest upgrade.
 
+> Update 2026-11-22: advisory fixes moved rmcp to 3.9.0 (RUSTSEC-2026-0462)
+> and rusqlite to 0.41 / libsqlite3-sys 0.39 (RUSTSEC-2026-0459). Both remain
+> inside the ranges that sqlx 0.9.1 sqlite and schemars 1.2.3 accept.
+
 The temporary composition manifest compiles ordinary OpenApiRouter split and
 Axum nest_service of the streamable-HTTP service, real Parameters<CronRequest>,
 schema_for!(CronRequest), Envelope<CronResponse> JSON/OpenAPI schemas, and the

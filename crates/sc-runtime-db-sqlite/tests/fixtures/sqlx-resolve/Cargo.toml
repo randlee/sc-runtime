@@ -6,7 +6,7 @@ version = "0.0.0"
 edition = "2021"
 publish = false
 license = "MIT"
-description = "Resolve gate: rusqlite 0.39 and sqlx 0.9 sqlite share one libsqlite3-sys."
+description = "Resolve gate: rusqlite 0.41 and sqlx 0.9 sqlite share one libsqlite3-sys."
 
 [dependencies]
 sc-runtime-db-sqlite = { path = "../../.." }
