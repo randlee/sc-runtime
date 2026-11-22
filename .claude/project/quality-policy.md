@@ -33,6 +33,12 @@ their own prompts.
   carry-forward finding it owns. Plan QA is capped at 3 rounds
   (`plan_qa_cycle_limit`); a round that leaves only minor findings reports
   `PASS — minor fixes required, no re-QA`
+- `extensibility-qa` in every QA round, sprint or plan: open-ended in the
+  first round, and in QA-2 and later scope-locked to its own carried
+  findings plus the round's fix diff whenever that diff changes a public
+  API or a consumer-facing record, or removes an option or capability
+  (owner directive 2026-11-22: extensibility is consulted in every round,
+  so cuts made to simplify are checked against named consumers)
 - `ceremony-finding-screen`: every sprint or plan QA round that has
   findings, over all of them, before the report is posted
 - `blastr`: every sprint or plan QA round that has blocking or important

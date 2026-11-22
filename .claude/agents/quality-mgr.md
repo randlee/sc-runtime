@@ -247,6 +247,10 @@ For implementation QA-1 in this Rust repo:
 For QA-2 and later (fix-verification) rechecks of implementation work:
 - always run `req-qa`
 - always run `arch-qa`
+- run `extensibility-qa` scope-locked to its carried `EXT-*` findings plus
+  the fix diff, whenever that diff changes a public API or a consumer-facing
+  record or removes an option or capability (repository policy); findings
+  must cite lines in that diff
 - always run `rust-qa-agent` (objective execution-fact gates: fmt, clippy,
   tests, lint, RULE-003, pytests — not a subjective findings pass)
 - run `ruthless-boundary-qa` only when assigned carry-forward `RBQA-*`
@@ -307,7 +311,10 @@ For docs-only plan review (`review_mode: plan`):
 - run `schema-reviewer` only when repository policy defines a governed
   interface relevant to the plan
 - plan QA-2 and later are fix-verification rounds: run `req-qa` and
-  `arch-qa` scoped to the dispatched findings, and dispatch the subjective
+  `arch-qa` scoped to the dispatched findings, run `extensibility-qa`
+  scope-locked to its carried findings plus the fix diff under the same
+  public-API, record or removed-capability condition as implementation
+  rechecks, and dispatch the subjective
   reviewers only under the fix-round rule above. Verdict = each dispatched
   finding's fixed/regressed/open status, nothing else. New observations go
   in debt notes and do not fail the round, except a regression introduced by
