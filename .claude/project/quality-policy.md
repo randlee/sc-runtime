@@ -35,6 +35,13 @@ their own prompts.
   `PASS — minor fixes required, no re-QA`
 - `ceremony-finding-screen`: every sprint or plan QA round that has
   findings, over all of them, before the report is posted
+- `blastr`: every sprint or plan QA round that has blocking or important
+  findings, over those findings, after the primary reviewers return; its
+  blast-radius triage is a separate report section and recommends only.
+  Consumer: the lead's fix-or-loosen triage. Defect class: over-specified
+  requirements growing through QA (PR #154: 4 records grew to 11). Retire it
+  if two consecutive phases show no `fix-smaller` or `escalate-record-change`
+  verdict the lead adopted.
 - Phase-end review: the initial implementation set plus `flaky-test-qa`
 - Run `flaky-test-qa` earlier when tests changed or instability is suspected
 - Run `schema-reviewer` only when the governed-interface section below names

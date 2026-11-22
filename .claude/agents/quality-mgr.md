@@ -190,6 +190,14 @@ TODO-specific rule:
    `ceremony-finding-screen` (where repository policy lists it) over all of
    them and list its `ceremony` and `concern_valid_remedy_ceremony` verdicts in the report as proposed
    `rejected: ceremony` rulings for the lead (see Ceremony Disputes).
+   Then, in the same rounds, launch `blastr` (where repository policy lists
+   it, background) over every blocking and important finding with its
+   file:line, authority and prescribed remediation. Add its results as a
+   separate "Blast-radius triage" section of the report: per finding the fix
+   size, net lines, the verdict (`fix-as-prescribed`, `fix-smaller`, or
+   `escalate-record-change`) and, for escalations, the record, clause and
+   what is lost. Blastr only recommends: the lead and the user make the
+   fix-or-loosen call, and you never downgrade or drop a finding on its say-so.
 9. Check PR CI state when a PR number is present:
    - prefer `atm gh monitor status`
    - prefer `atm gh monitor pr <PR> --start-timeout 120`
