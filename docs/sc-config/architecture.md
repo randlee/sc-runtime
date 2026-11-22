@@ -416,7 +416,8 @@ precedence, a separate error type without codes and a per-layer decode into
    - ADR-CFG-0001 items 3 and 4 and inventory: `ConfigError` becomes
      `#[non_exhaustive]` and gains the variants of
      [REQ-CFG-0009](requirements.md); item 4 reads "the path, variable or
-     source at fault". A required file that is absent is `MissingDefault`.
+     source at fault". Item 3 and the `CFG.MISSING_DEFAULT` row read "a
+   required file is absent" in place of "`default.json` is absent".
 6. New public enums, and new public structs with public fields, are
    `#[non_exhaustive]`, so a later field or variant does not break callers.
 
@@ -428,8 +429,8 @@ precedence, a separate error type without codes and a per-layer decode into
   release carries it.
 - Callers that match `ConfigError` exhaustively add a wildcard arm. Variant
   literals still compile. One minor-version bump of the pre-1.0 crate.
-- A type error is still reported against the merged value; provenance
-  shows which source set the failing key.
+- A type error is still reported against the merged value. `resolve()`
+  then `rows()` shows which source set the failing key.
 
 ### Alternatives Considered
 
@@ -446,7 +447,8 @@ precedence, a separate error type without codes and a per-layer decode into
 
 **Enforced by:** when Active, the success criteria of
 [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md), run by `cargo test -p sc-config`, and
-`arch-qa` review for a second load pipeline or a second error type.
+`arch-qa` review for a second load pipeline, a second error type, or a
+new public enum or field-bearing struct without `#[non_exhaustive]`.
 
 ### Related Documents
 
