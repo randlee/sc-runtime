@@ -841,9 +841,14 @@ This item covers `StandardLayers`, the stack products use
 5. `StandardContext::new(family: AppName, products: Vec<AppName>,
    environment: Vec<(OsString, OsString)>)` names the folder and the files. `.with_home(dir)`,
    `.with_system_dir(dir)` and `.with_project_root(dir)` set the folders.
-6. Folders: System is the system dir; User is `<home>/.<family>/`, where
-   `<home>` is `with_home` if set, else `HOME`, else `USERPROFILE`, from
-   the context's environment; Project and Local are
+   `.with_home_var(name)` sets the name of the variable that relocates the
+   user folder; the default is the family name upper-cased with `-` mapped
+   to `_`, plus `_HOME` (`sc-agent` gives `SC_AGENT_HOME`).
+6. Folders: System is the system dir. User is, first match wins:
+   `with_home(dir)` if set; else the value of the home variable (item 5)
+   in the context's environment, used as the user folder itself; else
+   `<home>/.<family>/`, where `<home>` is `USERPROFILE` on Windows and
+   `HOME` elsewhere, from the context's environment. Project and Local are
    `<project_root>/.<family>/`. A slot whose folder is not set reads
    nothing.
 7. Files: in every folder, each product's `<product>.json` is read in list
@@ -882,8 +887,12 @@ Tests use temporary directories passed with `with_home`,
 6. `.accepts(decidr, [["model"]])` with `decidr.json` holding `log_root`
    returns `UnknownKey`.
 7. `.env(["A_", "B_"])` with `A_X=1` and `B_X=2` gives `x` = `2`.
-8. With no `with_home` and `HOME` set to a temporary directory in the
-   context's environment, `.user()` reads `<HOME>/.<family>/`.
+8. With no `with_home` and `HOME` (or `USERPROFILE` on Windows) set to a
+   temporary directory in the context's environment, `.user()` reads
+   `<home>/.<family>/`. With `SC_AGENT_HOME` also set to another temporary
+   directory, `.user()` reads that directory instead, and with
+   `.with_home_var("ATM_HOME")` it reads the directory named by
+   `ATM_HOME`.
 
 ---
 

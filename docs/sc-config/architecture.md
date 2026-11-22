@@ -488,8 +488,10 @@ sc-agent ships several products (CLIs and wheels) that share one folder,
    `~/.<family>/<product>.json` and `<project_root>/.<family>/<product>.json`,
    each overridden by `<product>.local.json` in the same folder.
 4. The consumer passes the home override, system folder and project root.
-   `sc-config` derives only the home folder itself, from `HOME` or
-   `USERPROFILE` in the environment it is given.
+   `sc-config` derives only the user folder: a consumer-nameable
+   `<FAMILY>_HOME` variable relocates it (so several apps and instances
+   can share one environment), else `~/.<family>/` from `HOME`, or
+   `USERPROFILE` on Windows, in the environment it is given.
 5. Products built on `sc-config` use `StandardLayers`. A product that uses
    raw `Layers` says why in its own architecture document. `load` and
    `Loader` remain for the template's `config/` layout
