@@ -2,19 +2,22 @@ use std::ffi::OsString;
 use std::fmt;
 use std::path::PathBuf;
 
+use crate::provenance::Source;
+
 /// Failure from application-name construction or configuration loading.
 ///
 /// Each variant carries the path or variable that caused it. [`Self::code`]
 /// is the stable code for that failure. [`Self::recovery`] is the next step
 /// for the caller.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum ConfigError {
-    /// `default.json` is not in the config directory.
+    /// A required configuration file is absent.
     MissingDefault {
         /// Full path that was looked up.
         path: PathBuf,
     },
-    /// `default.json` or `local.json` exists but cannot be read.
+    /// A configuration file exists but cannot be read.
     Read {
         /// Path that could not be read.
         path: PathBuf,
@@ -56,6 +59,20 @@ pub enum ConfigError {
         /// Variable name, which may itself be non-Unicode.
         variable: OsString,
     },
+    /// A file holds a key outside the paths its source accepts.
+    UnknownKey {
+        /// Path of the file holding the key.
+        path: PathBuf,
+        /// The offending key path.
+        key: String,
+    },
+    /// A consumer-defined source failed.
+    SourceFailed {
+        /// The source that failed.
+        origin: Source,
+        /// Message from that source.
+        message: String,
+    },
 }
 
 impl ConfigError {
@@ -69,15 +86,15 @@ impl ConfigError {
             Self::Deserialize { .. } => "CFG.DESERIALIZE",
             Self::InvalidName { .. } => "APP.INVALID_NAME",
             Self::NonUnicode { .. } => "CFG.NON_UNICODE",
+            Self::UnknownKey { .. } => "CFG.UNKNOWN_KEY",
+            Self::SourceFailed { .. } => "CFG.SOURCE",
         }
     }
 
     /// Returns the recovery step for this failure.
     pub fn recovery(&self) -> &'static str {
         match self {
-            Self::MissingDefault { .. } => {
-                "Create default.json in the config directory and load again."
-            }
+            Self::MissingDefault { .. } => "Create that file and load again.",
             Self::Read { .. } => {
                 "Make the file readable, or replace a directory at that path with a file."
             }
@@ -94,8 +111,12 @@ impl ConfigError {
                 "Use 1 to 64 bytes of ASCII letters, digits, '-', and '_' ."
             }
             Self::NonUnicode { .. } => {
-                "Give the variable a Unicode name and value. Names that do not start with the application prefix are ignored."
+                "Give the variable a Unicode name and value. Names that match no prefix or alias are ignored."
             }
+            Self::UnknownKey { .. } => {
+                "Remove the key from that file, or set it where it is accepted."
+            }
+            Self::SourceFailed { .. } => "Follow the message from that source.",
         }
     }
 }
@@ -105,7 +126,7 @@ impl fmt::Display for ConfigError {
         match self {
             Self::MissingDefault { path } => write!(
                 formatter,
-                "{}: default configuration file not found at {}; {}",
+                "{}: required configuration file not found: {}; {}",
                 self.code(),
                 path.display(),
                 self.recovery()
@@ -158,6 +179,19 @@ impl fmt::Display for ConfigError {
                 "{}: environment variable {} is not valid Unicode; {}",
                 self.code(),
                 variable.to_string_lossy(),
+                self.recovery()
+            ),
+            Self::UnknownKey { path, key } => write!(
+                formatter,
+                "{}: key {key} in {} is not accepted; {}",
+                self.code(),
+                path.display(),
+                self.recovery()
+            ),
+            Self::SourceFailed { origin, message } => write!(
+                formatter,
+                "{}: source {origin} failed: {message}; {}",
+                self.code(),
                 self.recovery()
             ),
         }

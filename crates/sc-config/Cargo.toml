@@ -7,7 +7,7 @@ homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Synchronous JSON configuration loader with environment overrides."
+description = "Synchronous layered JSON configuration loader with environment overrides and provenance."
 readme = "README.md"
 # Process tests autodiscover src/bin/sc-config-load-helper.rs in this checkout.
 # The directory is excluded so `cargo install sc-config` does not ship that helper.

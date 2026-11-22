@@ -74,3 +74,38 @@ fn composition_roots(manifest: &str) -> BTreeSet<String> {
         .filter(|item| !item.is_empty())
         .collect()
 }
+
+/// Every exported name is reachable from outside the crate, and `ConfigError`
+/// can only be matched with a wildcard arm (REQ-CFG-0009 criterion 2).
+#[test]
+fn layered_exports_are_usable_from_outside_the_crate() {
+    use sc_config::{
+        ConfigError, EnvSource, FileSource, Layer, LayerSource, Layers, Resolved, ResolvedRow,
+        Slot, Source, SourceKind, StandardContext, StandardLayers, ValueSource,
+    };
+
+    fn exported<T>() {}
+    exported::<Layers>();
+    exported::<FileSource>();
+    exported::<EnvSource>();
+    exported::<ValueSource>();
+    exported::<StandardLayers>();
+    exported::<StandardContext>();
+    exported::<Layer>();
+    exported::<Resolved>();
+    exported::<ResolvedRow>();
+    exported::<Source>();
+    exported::<SourceKind>();
+    exported::<Box<dyn LayerSource>>();
+    assert_ne!(Slot::User, Slot::Flags);
+
+    let error = ConfigError::UnknownKey {
+        path: "a.json".into(),
+        key: "b".to_owned(),
+    };
+    let named = match error {
+        ConfigError::UnknownKey { .. } => "unknown key",
+        _ => "other",
+    };
+    assert_eq!(named, "unknown key");
+}

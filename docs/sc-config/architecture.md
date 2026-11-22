@@ -34,9 +34,8 @@ observability, and nothing in this workspace is a dependency of it.
 | `Loader::load::<T>() -> Result<T, ConfigError>` | same merge as `load`, using only those inputs |
 | `ConfigError` | typed error enum; inventory below and [REQ-CFG-0004](requirements.md) |
 
-Proposed additions, not binding until [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names)
-and [ADR-CFG-0005](#adr-cfg-0005-products-use-one-standard-layer-order) are
-Active: `Layers`, `Resolved`, the `LayerSource` trait and `Layer`;
+Added by [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names)
+and [ADR-CFG-0005](#adr-cfg-0005-products-use-one-standard-layer-order): `Layers`, `Resolved`, the `LayerSource` trait and `Layer`;
 `FileSource`, `EnvSource`, `ValueSource`; `Source`, `SourceKind`,
 `ResolvedRow`; `StandardLayers`, `StandardContext`, `Slot`. `ConfigError`
 becomes `#[non_exhaustive]` and gains `UnknownKey` and `SourceFailed`.
@@ -70,7 +69,7 @@ is Active, the same steps run as `Loader`'s preset stack on the layered engine
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document  
 
-**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends items 3 and 4 and adds the inventory rows marked Proposed below.
+**Amended by:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends items 3 and 4 and adds the inventory rows marked ADR-CFG-0004 below.
 
 ### Context
 
@@ -133,8 +132,8 @@ carry a source location.
 | Override path is empty or walks through a non-object | `CFG.OVERRIDE` | `Override.variable`, the full variable name | Drop the empty segment, or change the name so the path does not descend through a scalar, array, or null. |
 | Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
 | Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
-| (Proposed, ADR-CFG-0004) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it where it is accepted. |
-| (Proposed) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `SourceFailed.message` | Follow the message from that source. |
+| (ADR-CFG-0004) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it where it is accepted. |
+| (ADR-CFG-0004) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `SourceFailed.message` | Follow the message from that source. |
 
 ### Consequences
 
@@ -188,7 +187,7 @@ panicking constructs and opaque error types in the public API.
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document  
 
-**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends the Context and item 3. The other items stay binding, and the Enforced-by check of one `serde_json::from_value::<T>` call applies to the single call in `Resolved::deserialize`.
+**Amended by:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends the Context and item 3. The other items stay binding, and the Enforced-by check of one `serde_json::from_value::<T>` call applies to the single call in `Resolved::deserialize`.
 
 ### Context
 
@@ -379,7 +378,7 @@ a forbidden crate name followed by a space, including
 
 ## ADR-CFG-0004: One layered engine; consumers extend it with sources and names
 
-**Status:** Proposed  
+**Status:** Active  
 **Decision Date:** 2026-11-22  
 **Source:** extensibility review of PR #153 (`sc-config` `layers`, sc-agent team), 2026-11-22; owner rulings of 2026-11-22 (extension points are a trait and consumer-given names; no options beyond those). When Active, amends [ADR-CFG-0002](architecture.md) Context and item 3, and [ADR-CFG-0001](architecture.md) items 3 and 4 and its inventory, as stated in Decision item 5  
 
@@ -461,7 +460,7 @@ new public enum or field-bearing struct without `#[non_exhaustive]`.
 
 ## ADR-CFG-0005: Products use one standard layer order
 
-**Status:** Proposed  
+**Status:** Active  
 **Decision Date:** 2026-11-22  
 **Source:** owner instruction, 2026-11-22 ("define a recommended order and methods that enforce that order ... if teams pick and choose, all products will work differently"); owner rulings of 2026-11-22 on folders (`~/.<family>/<product>`) and names; owner direction relayed by ai-lead@sc-ai  
 
