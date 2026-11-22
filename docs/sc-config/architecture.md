@@ -1,6 +1,6 @@
 # `sc-config` Architecture
 
-**ID Range:** ADR-CFG-0001 through ADR-CFG-0004  
+**ID Range:** ADR-CFG-0001 through ADR-CFG-0005  
 **Status:** Draft  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-11-22  
@@ -41,7 +41,7 @@ trait and `Layer`; `FileSource`, `FormatError`, `EnvSource`, `KeyCase`,
 `ResolvedRow`; `Loader::layers()`; `ConfigError` becomes `#[non_exhaustive]`
 and gains `MissingFile`, `TooLarge`, `ParseFormat`, `UnknownKey`,
 `InvalidKeyPath`, `EnvSetting`, `SourceFailed`, `source_failed`,
-`source_failed_with` and `report`.
+`source_failed_with` and `report`. Under [ADR-CFG-0005](#adr-cfg-0005-products-use-one-standard-layer-order): `StandardLayers`, `StandardContext`, `Platform`, `Slot`, `After`, `FileNames`, `UserFolders`, `LocalFolders`, `Source::slot`, `Loader::standard()`, and `ConfigError::DuplicateSlot` / `InvalidFileName`.
 
 ## How loading works
 
@@ -142,6 +142,8 @@ carry a source location.
 | (Proposed) A key path is empty or has an empty segment | `CFG.KEY_PATH` | `InvalidKeyPath.input`, `.reason` | Give a non-empty path with non-empty segments; quote a segment that contains `.`. |
 | (Proposed) An environment source setting is empty | `CFG.ENV_SETTING` | `EnvSetting.setting`, `.value` | Give a non-empty prefix, separator or alias name. |
 | (Proposed) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `.message`, optional cause | Follow the message from that source. |
+| (Proposed, ADR-CFG-0005) A standard slot is filled twice | `CFG.DUPLICATE_SLOT` | `DuplicateSlot.slot` | Fill each slot once; add extra sources with `insert`. |
+| (Proposed, ADR-CFG-0005) A slot file name is empty, `.`/`..`, contains a separator, or repeats | `CFG.FILE_NAME` | `InvalidFileName.name` | Give plain, distinct file names. |
 | (Proposed) Deserialize also carries sources | `CFG.DESERIALIZE` | adds `Deserialize.sources`, every contributing source in precedence order | Align the merged JSON with `T`; `Layers::resolve` shows which source set each key. |
 
 ### Consequences
@@ -417,7 +419,7 @@ test `config_startup_uses_each_library_code_once`
 1. `sc-config` provides one layered engine over an ordered list of
    `LayerSource` trait objects, which receive the accumulated value
    read-only and return a layer. The caller chooses the sources and their
-   order; `sc-config` assigns no source kind a rank. The requirements are
+   order; `sc-config` assigns no source kind a rank within `Layers` (refined by [ADR-CFG-0005](architecture.md): `StandardLayers` is the one ranked stack). The requirements are
    [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md)
    and [NFR-CFG-0004](requirements.md); this ADR does not restate them.
 2. Behaviour a consumer may need differently is a builder parameter whose
@@ -531,3 +533,105 @@ While Proposed, nothing here is enforced.
 - [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md),
   [NFR-CFG-0004](requirements.md)
 - PR #153: the `layers` proposal this decision replaces
+
+---
+
+## ADR-CFG-0005: Products use one standard layer order
+
+**Status:** Proposed  
+**Decision Date:** 2026-11-22  
+**Source:** owner instruction, 2026-11-22 ("define a recommended order and methods that enforce that order ... if teams pick and choose, all products will work differently"); owner direction relayed by ai-lead@sc-ai, 2026-11-22 (support every known precedence layer in the crate, with ready locators and a preset); refines [ADR-CFG-0004](architecture.md) item 1  
+
+### Context
+
+ADR-CFG-0004 makes `Layers` an engine with no built-in rank: precedence is
+push order. That keeps every order expressible, but it means each product
+decides its own order and its own paths for system, user and work-tree
+files. Precedence is easy to get subtly wrong (does the user file beat the
+project file? does a work-tree folder beat `local.json`?), and two products
+that answer differently confuse every user of both. sc-agent already needs
+all seven known layers, several files per folder (`decidr.json` over
+`sc-agent.json`), a home dotfolder (`~/.sc-agent/`) and a work-tree folder
+(`<worktree>/.sc/<app>/`).
+
+### Decision
+
+1. `sc-config` defines one standard order of seven slots, lowest first:
+   defaults, system, user, project, local, environment, flags. The order runs
+   from general to specific, and from what is installed to what the user
+   typed last ([REQ-CFG-0010](requirements.md)).
+2. `StandardLayers` enforces it: one method per slot, call order irrelevant,
+   a slot filled twice is `CFG.DUPLICATE_SLOT`. Consumers choose which slots
+   they fill and which file names each holds; they cannot reorder slots.
+   ai-lead's relayed note suggested consumers "pick and reorder"; the
+   owner's direct instruction is to enforce one order, so reordering is not
+   offered. A consumer-specific source enters only at a named point between
+   slots (`insert(After::…)`), and nothing can go above flags.
+3. The crate ships a locator for every slot. Paths come from an explicit
+   `StandardContext` (environment, project root, platform), resolved with
+   `std` only. No locator reads process state or runs a process
+   ([NFR-CFG-0002](requirements.md), [NFR-CFG-0003](requirements.md)).
+4. Within the user slot the config folder (XDG / `%APPDATA%`) is lower and
+   the home dotfolder is higher; within the local slot `config/local.json`
+   is lower and the work-tree folder higher. Inside a slot, order is
+   folder-major, then the consumer's file-name list. In every case the more
+   specific location wins.
+5. `StandardLayers::recommended` is the documented preset of the five slots
+   the crate can fill; the consumer adds defaults and flags.
+6. Products built on `sc-config` use `StandardLayers`. Raw `Layers`
+   ([ADR-CFG-0004](architecture.md)) stays public as the escape hatch for a
+   need the slots cannot meet; a product that uses it states the reason in
+   its own architecture document. Provenance names the slot of every value.
+7. `Loader` keeps exactly its behaviour: it is `StandardLayers` with
+   project, `config/local.json` and environment only, and never reads user,
+   system or work-tree folders.
+8. Refines ADR-CFG-0004 item 1: "assigns no source kind a rank" holds for
+   `Layers`; `StandardLayers` is the one ranked stack.
+9. Error inventory additions to ADR-CFG-0001: `CFG.DUPLICATE_SLOT`
+   (`DuplicateSlot.slot`) and `CFG.FILE_NAME` (`InvalidFileName.name`).
+
+### Consequences
+
+- Every product reads the same locations in the same order, and `config
+  show` output from any of them reads the same way.
+- sc-agent expresses its stack as `recommended` with
+  `UserFolders::ConfigThenDotfolder("sc-agent")`, its file-name lists and
+  its env aliases, plus defaults and flags.
+- A product needing a source the slots lack (keychain, remote) inserts it at
+  a named point; one needing a different order must use raw `Layers` and
+  justify it, which makes divergence visible in review.
+- System-wide `XDG_CONFIG_DIRS` lists and macOS `~/Library/Application
+  Support` are not read. Adding either later is a new `#[non_exhaustive]`
+  variant, not a breaking change.
+
+### Alternatives Considered
+
+- Recommend an order in prose only. Rejected: the owner's point is that
+  teams then pick and choose; only a builder that cannot reorder enforces it.
+- Let consumers reorder slots. Rejected for the same reason; raw `Layers`
+  already covers a justified exception.
+- File-major order within a slot (each file name across all folders).
+  Rejected: it splits a folder's files apart and lets a general folder's
+  later file beat a specific folder's earlier one.
+- Read the dotfolder only when the config folder is absent (first match).
+  Rejected: presence-dependent precedence makes adding a folder silently
+  change which file wins; a fixed folder order is predictable.
+- Detect work trees by running `git`. Rejected: a process call is slow,
+  host-dependent and untestable without git installed; a `.git` entry walk
+  covers repositories, linked worktrees and submodules.
+
+### Implementation
+
+**Enforced by:** when Active, the success criteria of
+[REQ-CFG-0010](requirements.md), run by `cargo test -p sc-config`, and the
+`arch-qa` review agent, which checks products and plans built on
+`sc-config` for a raw `Layers` stack without a stated reason. While
+Proposed, nothing here is enforced.
+
+### Related Documents
+
+- [ADR-CFG-0004](architecture.md): the engine; item 1 refined by item 8
+- [ADR-CFG-0001](architecture.md): error inventory, extended by item 9
+- [REQ-CFG-0010](requirements.md): slots, locators, builder and preset
+- [REQ-CFG-0008](requirements.md): `Loader` preset that `Loader::standard`
+  mirrors

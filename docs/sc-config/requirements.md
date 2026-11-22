@@ -1,6 +1,6 @@
 # `sc-config` Requirements
 
-**ID Range:** REQ-CFG-0001 through REQ-CFG-0009; NFR-CFG-0001 through NFR-CFG-0004  
+**ID Range:** REQ-CFG-0001 through REQ-CFG-0010; NFR-CFG-0001 through NFR-CFG-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-11-22  
@@ -33,6 +33,7 @@ they agree on the endpoint and the instance root.
 |---|---|---|
 | REQ-CFG-0001 through REQ-CFG-0004 | Requirements | Active |
 | REQ-CFG-0005 through REQ-CFG-0009 | Requirements: layered engine ([ADR-CFG-0004](architecture.md)) | Proposed |
+| REQ-CFG-0010 | Requirements: standard layer order ([ADR-CFG-0005](architecture.md)) | Proposed |
 | NFR-CFG-0001 through NFR-CFG-0003 | Non-functional requirements | Active |
 | NFR-CFG-0004 | Non-functional requirements | Proposed |
 
@@ -1112,6 +1113,200 @@ the stable code that scripts and the template daemon already use.
    carries all three in `sources` in order, the file in `files` and the
    variable in `variables`.
 5. `fn ss<T: Send + Sync>() {}` called with `ConfigError` compiles.
+
+---
+
+## REQ-CFG-0010: `StandardLayers` fixes the recommended layer order
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the standard layer order of the `sc-config` crate
+(`crates/sc-config`) and the builder that enforces it. The decision is
+[ADR-CFG-0005](architecture.md). `StandardLayers` builds a `Layers` stack
+([REQ-CFG-0005](requirements.md)) from the built-in sources
+([REQ-CFG-0006](requirements.md)); it adds no second pipeline.
+
+**Slots.** `Slot` MUST be a public `#[non_exhaustive]` enum with exactly
+these seven variants. Its rank is fixed, lowest precedence first:
+
+| Rank | `Slot` | Content | Absent folder or file |
+|---|---|---|---|
+| 1 | `Defaults` | one `ValueSource` built by the consumer | - |
+| 2 | `System` | files in the system folder | skipped |
+| 3 | `User` | files in the user folders | skipped |
+| 4 | `Project` | files in the project config folder | required unless `.optional()` |
+| 5 | `Local` | `local.json` in the project config folder, then files in the work-tree folder | skipped |
+| 6 | `Env` | one `EnvSource` | - |
+| 7 | `Flags` | one `ValueSource` of flags parsed by the consumer | - |
+
+1. `StandardLayers::new(app: AppName, context: StandardContext) -> StandardLayers`
+   creates a builder with every slot empty.
+2. `StandardContext` MUST be a public `#[non_exhaustive]` struct built by
+   `StandardContext::new(environment: Vec<(OsString, OsString)>, project_root: PathBuf, platform: Platform)`.
+   `StandardContext::from_process(project_root)` is the convenience that
+   captures `std::env::vars_os()` through the crate's single call site
+   ([REQ-CFG-0008](requirements.md) item 4) and uses `Platform::current()`.
+   `Platform` MUST be a public `#[non_exhaustive]` enum with `Unix` and
+   `Windows`; `Platform::current()` returns `Windows` under
+   `cfg(windows)` and `Unix` otherwise. No locator reads the process
+   environment, the current directory or `cfg` itself: every path below is
+   computed from the `StandardContext` alone.
+3. One method per slot, each returning `Result<StandardLayers, ConfigError>`:
+   `.defaults(value: serde_json::Value)`, `.system(files: FileNames)`,
+   `.user(user: UserFolders, files: FileNames)`,
+   `.project(files: FileNames)`, `.local(local: LocalFolders, files: FileNames)`,
+   `.env(source: EnvSource)`, `.flags(value: serde_json::Value)`.
+4. Calling a slot method on a slot that is already filled MUST return
+   `ConfigError::DuplicateSlot { slot }` (code `CFG.DUPLICATE_SLOT`) and
+   leave nothing changed.
+5. The order in which slot methods are called MUST NOT affect the result:
+   the stack is always assembled in slot rank. Every slot is optional to
+   fill; an unfilled slot contributes nothing.
+6. `.insert(after: After, source: Box<dyn LayerSource>) -> StandardLayers`
+   is the only way to add a consumer-specific source. `After` MUST be a
+   public `#[non_exhaustive]` enum with `Defaults`, `System`, `User`,
+   `Project`, `Local` and `Env`; there is no `After::Flags`, so flags are
+   always the highest layer. Inserted sources sit directly above their
+   named slot, in insertion order, whether or not that slot is filled.
+7. `StandardLayers` MUST NOT offer any method that reorders, swaps or
+   re-ranks slots.
+8. `.build() -> Layers` returns the assembled stack;
+   `.load::<T>()`, `.resolve()` and `.load_with_provenance::<T>()` are
+   `self.build()` followed by the `Layers` method of the same name.
+
+**File names within a slot.**
+
+9. `FileNames` MUST be a public type built by
+   `FileNames::new(names: impl IntoIterator<Item = impl Into<String>>) -> Result<FileNames, ConfigError>`:
+   an ordered, non-empty list of file names, lowest precedence first (for
+   example `["sc-agent.json", "decidr.json"]`: `decidr.json` wins). A name
+   that is empty, is `.` or `..`, or contains `/` or `\` MUST return
+   `ConfigError::InvalidFileName { name }` (code `CFG.FILE_NAME`). A
+   duplicate name MUST return the same error.
+10. Within one slot the order MUST be folder-major: every listed file of the
+    lower folder, in list order, then every listed file of the higher
+    folder, in list order. Each file is one `FileSource`, optional except in
+    `Project`.
+
+**Locators.** Each folder below is computed from `StandardContext`. An
+environment value is used only when it is present, Unicode, non-empty and
+an absolute path; otherwise it counts as unset. `<app>` is
+`AppName::as_str`.
+
+11. `System`: `Unix` → `/etc/<app>/`. `Windows` → `%ProgramData%\<app>\`;
+    when `ProgramData` is unset the slot reads nothing. `XDG_CONFIG_DIRS`
+    is not read.
+12. `User` folders, lower first, according to `UserFolders`, a public
+    `#[non_exhaustive]` enum:
+    - `UserFolders::Config` (the default the preset uses): the config folder
+      only. `Unix` → `$XDG_CONFIG_HOME/<app>/`, else `$HOME/.config/<app>/`.
+      `Windows` → `%APPDATA%\<app>\`.
+    - `UserFolders::Dotfolder(name: String)`: the home dotfolder only,
+      `<home>/.<name>/`, where `<home>` is `$HOME`, else on `Windows`
+      `%USERPROFILE%`. `name` follows the `FileNames` name rule.
+    - `UserFolders::ConfigThenDotfolder(name)`: both, config folder lower,
+      dotfolder higher.
+    When the needed variable is unset, that folder is skipped.
+13. `Project`: `<project_root>/config/`.
+14. `Local` folders, lower first, according to `LocalFolders`, a public
+    `#[non_exhaustive]` enum:
+    - `LocalFolders::ConfigLocal`: `<project_root>/config/local.json` only;
+      the `files` argument is ignored for this form and MAY be
+      `FileNames::new(["local.json"])`.
+    - `LocalFolders::WorkTree`: `<worktree>/.sc/<app>/` only.
+    - `LocalFolders::ConfigLocalThenWorkTree` (the default the preset uses):
+      `config/local.json` first, then the work-tree folder.
+15. Work-tree detection MUST use `std::fs` only and run no process: starting
+    at `project_root` and moving to each parent in turn, the first directory
+    that contains an entry named `.git` (a directory, or a file as in a
+    linked worktree or submodule) is `<worktree>`. The walk stops after the
+    filesystem root, or after the directory set by
+    `StandardContext::with_worktree_ceiling(dir)` when one is set (the
+    ceiling itself is checked). With no match there is no work tree and the
+    work-tree folder is skipped. An I/O error other than not-found while checking an entry
+    MUST return `ConfigError::Read` with that path.
+
+**Provenance and preset.**
+
+16. Every `Source` produced by `StandardLayers` MUST carry its slot:
+    `Source::slot() -> Option<Slot>` returns it, and `Serialize` adds a
+    `slot` field when present. Inserted sources report `None` unless they set
+    one.
+17. `StandardLayers::recommended(app, context)` MUST be the documented
+    preset: it fills `System` and `Project` with `FileNames` `["config.json"]`
+    and `["default.json"]`, `User` with `UserFolders::Config` and
+    `["config.json"]`, `Local` with `LocalFolders::ConfigLocalThenWorkTree`
+    and `["config.json"]`, and `Env` with `EnvSource::for_app(&app,
+    environment)`. `Project` is optional in the preset. `Defaults` and
+    `Flags` are left for the consumer, who alone holds those values; the
+    rustdoc example fills them.
+18. `Loader::standard(&self) -> StandardLayers` MUST return the stack of
+    `Loader::layers()` ([REQ-CFG-0008](requirements.md)) expressed as slots:
+    `Project` (required, `["default.json"]`, folder = the loader's config
+    directory, absence reported as `MissingDefault`), `Local` with
+    `LocalFolders::ConfigLocal`, and `Env`. It MUST NOT include `User`,
+    `System` or the work-tree folder; `Loader`'s behaviour is unchanged.
+
+### Rationale
+
+Without one order, every product that builds its own stack decides
+precedence and paths again, and users of two products see two answers to
+"which file wins". Slots fix the order and the locators fix the paths, so
+consumers choose which layers they use and which file names live in them,
+but not the order. Folder-major order within a slot keeps a folder's files
+together, and the more specific folder (dotfolder over config folder,
+work tree over project) wins, matching the slot order's
+general-to-specific rule. Paths come from an explicit environment so tests
+are deterministic and nothing reads process state behind the caller.
+
+### Success Criteria
+
+All tests live in `crates/sc-config`, build a `StandardContext` with an
+in-memory environment, a temporary `project_root` and an explicit
+`Platform`, and run under `cargo test`. No test depends on the host's
+`HOME` or platform.
+
+1. Filling all seven slots in rank order and in reverse rank order, with
+   each slot setting `{"k": <rank>}`, both load `{"k": 7}`; resolving each
+   reports `k` from `Slot::Flags`.
+2. A second `.env(...)` call returns `DuplicateSlot { slot: Slot::Env }`
+   with code `CFG.DUPLICATE_SLOT`.
+3. `.insert(After::User, s)` with `s` setting `{"k":"ins"}`, `User` setting
+   `{"k":"user"}` and `Project` setting `{"k":"proj"}` loads `"proj"`;
+   without `Project` it loads `"ins"`. Two inserts at `After::User` apply in
+   insertion order.
+4. `FileNames::new(["a.json","b.json"])` in one folder, both setting `k`,
+   loads `b.json`'s value. `FileNames::new([""])`, `["../x"]`, `["a/b"]`
+   and `["a","a"]` each return `InvalidFileName`.
+5. `UserFolders::ConfigThenDotfolder("sc-agent")` with `XDG_CONFIG_HOME`
+   and `HOME` set to temporary folders, files `["sc-agent.json",
+   "decidr.json"]` present in both: the dotfolder's `decidr.json` wins, and
+   resolving reports each key's exact path.
+6. `Unix`: with `XDG_CONFIG_HOME` unset the user folder is
+   `$HOME/.config/<app>/`; with `XDG_CONFIG_HOME=relative/path` it is also
+   `$HOME/.config/<app>/`. `Windows`: the user folder is
+   `%APPDATA%\<app>\`, and with `HOME` unset the dotfolder uses
+   `%USERPROFILE%`. The locator's computed paths are asserted directly.
+7. `System` on `Unix` computes `/etc/<app>/` and on `Windows` with
+   `ProgramData` unset reads nothing. A test asserts the computed path
+   without reading `/etc`.
+8. Work tree: a temporary tree `root/.git/` (directory) with
+   `project_root = root/a/b` finds `root`; with `.git` as a file it finds
+   `root`; with no `.git` and `with_worktree_ceiling(temp_root)`, no work
+   tree is found and the folder is skipped, whatever the host's own
+   directories contain.
+9. `LocalFolders::ConfigLocalThenWorkTree` with `config/local.json` and
+   `<worktree>/.sc/<app>/config.json` both setting `k` loads the work-tree
+   value.
+10. `Loader::standard()` and `Loader::layers()` resolve equal values and
+    equal provenance over the REQ-CFG-0001 worked example, and an absent
+    `default.json` returns `MissingDefault` from both.
+11. `serde_json::to_value` of a row from `StandardLayers` has
+    `source.slot`; a row from an inserted source has none.
+12. A `compile_fail` doctest using `After::Flags` fails to compile, and a
+    doctest inserting at each of the six `After` variants compiles.
 
 ---
 
