@@ -1,6 +1,6 @@
 # `sc-config` Requirements
 
-**ID Range:** REQ-CFG-0001 through REQ-CFG-0010; NFR-CFG-0001 through NFR-CFG-0004  
+**ID Range:** REQ-CFG-0001 through REQ-CFG-0010; NFR-CFG-0001 through NFR-CFG-0003  
 **Status:** Draft  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-11-22  
@@ -35,7 +35,6 @@ they agree on the endpoint and the instance root.
 | REQ-CFG-0005 through REQ-CFG-0009 | Requirements: layered engine ([ADR-CFG-0004](architecture.md)) | Proposed |
 | REQ-CFG-0010 | Requirements: standard layer order ([ADR-CFG-0005](architecture.md)) | Proposed |
 | NFR-CFG-0001 through NFR-CFG-0003 | Non-functional requirements | Active |
-| NFR-CFG-0004 | Non-functional requirements | Proposed |
 
 ---
 
@@ -572,37 +571,29 @@ This item covers the layered engine of `sc-config` (`crates/sc-config`):
 ([REQ-CFG-0010](requirements.md)) are stacks built on it; the crate has no
 other load pipeline ([ADR-CFG-0004](architecture.md)).
 
-1. `LayerSource` MUST be a public, object-safe, unsealed trait with a
-   `Send + Sync` bound:
+1. `LayerSource` MUST be a public, object-safe, unsealed trait:
 
    ```rust
-   pub trait LayerSource: Send + Sync {
-       fn source(&self) -> Source;
+   pub trait LayerSource {
        fn load(&self, base: &serde_json::Value) -> Result<Option<Layer>, ConfigError>;
    }
    ```
 
    `base` is the value accumulated from the layers below, read-only.
    `Ok(None)` means the source is absent and contributes nothing.
-2. Every key-path argument in REQ-CFG-0005 through REQ-CFG-0010
-   (`replace_at`, `attribute`, `accepts`, `alias`) is a slice of segments,
-   `&[&str]`; criteria write it as `["a","b"]`.
-   `Layer::new(source, value)` builds a layer. `.replace_at(path)` marks a
-   key path whose value replaces the accumulated value whole instead of
-   merging into it. `.attribute(path, source)` records the source of a
-   path's leaves for provenance ([REQ-CFG-0007](requirements.md)); when
-   attributed paths nest, the deepest wins.
+2. `Layer::new(source: Source, value)` builds a layer; `source` is what
+   provenance reports for its leaves ([REQ-CFG-0007](requirements.md)).
+   Key-path arguments (`accepts`, `alias`) are slices of segments,
+   `&[&str]`; criteria write them as `["a","b"]`.
 3. `Layers::new()` creates an empty stack and `Layers::push(source)` adds a
    source as the new highest layer. Precedence is push order.
 4. `Layers::resolve()` MUST call each source's `load` once, lowest first,
    with the value accumulated so far; skip `Ok(None)`; return the first
    `Err` unchanged; and fold each layer onto the accumulated value with
-   `merge` from [REQ-CFG-0001](requirements.md), applying `replace_at`
-   paths first. It starts from `{}` and returns
-   `Resolved { value, provenance }`. `Resolved` also records, in order, the
-   source of every layer that returned `Some`; `Deserialize.files` is the
-   paths of those `File` sources and `Deserialize.variables` the variables
-   attributed in them (REQ-CFG-0004 criterion 7).
+   `merge` from [REQ-CFG-0001](requirements.md). It starts from `{}` and
+   returns a `Resolved`. On a deserialise failure, `Deserialize.files` and
+   `Deserialize.variables` list the files and variables that contributed
+   (REQ-CFG-0004 criterion 7).
 5. `Layers::load::<T>()` MUST equal `resolve()` followed by
    `Resolved::deserialize::<T>()`, which calls `serde_json::from_value::<T>`
    once on the final value. No layer is deserialised into `T` on its own
@@ -627,12 +618,10 @@ Tests live in `crates/sc-config/tests` and use `ValueSource`
 3. A source returning `Ok(None)` leaves the result unchanged.
 4. A source returning `Err` makes `load` return that error, and a source
    above it is never called (it holds a per-test `Arc<AtomicUsize>`).
-5. A layer with `.replace_at(["a"])` and value `{"a":{"c":1}}` over
-   `{"a":{"b":1}}` resolves to `{"a":{"c":1}}`.
-6. An empty stack loads a `#[serde(default)]` struct as its default.
-7. A `T` whose `Deserialize` increments a per-test `Arc<AtomicUsize>` is
+5. An empty stack loads a `#[serde(default)]` struct as its default.
+6. A `T` whose `Deserialize` increments a per-test `Arc<AtomicUsize>` is
    deserialised once for a three-layer stack.
-8. A load over an existing `default.json` and an empty `local.json` that
+7. A load over an existing `default.json` and an empty `local.json` that
    fails to deserialise lists both files in `Deserialize.files`.
 
 ---
@@ -652,7 +641,7 @@ This item covers the three sources `sc-config` ships. Each implements
    rules of [REQ-CFG-0001](requirements.md) and
    [REQ-CFG-0004](requirements.md). A path that exists but is not a regular
    file is `ConfigError::Read`.
-2. A file is required by default: absent is `ConfigError::MissingFile
+2. A file is required by default: absent is `ConfigError::MissingDefault
    { path }`. `.optional()` makes an absent file return `Ok(None)`.
 3. `.accepts(paths)` limits the file to the given key paths: a leaf outside
    them is `ConfigError::UnknownKey { path, key }`; a leaf is inside an
@@ -673,9 +662,9 @@ This item covers the three sources `sc-config` ships. Each implements
 5. `.alias(variable, path)` maps one exact variable name to a key path,
    with the same value parsing. Aliases are applied after prefixed
    variables, in ascending byte order of the variable name.
-6. It computes its result on a copy of `base`, so an override through a
-   non-object still fails with `CFG.OVERRIDE`, and returns the overridden
-   paths marked `replace_at` and attributed to their variables.
+6. An override through a non-object in `base` fails with `CFG.OVERRIDE`,
+   as in REQ-CFG-0002; each overridden path is replaced whole and reported
+   in provenance under its variable.
 
 **`ValueSource`**
 
@@ -693,7 +682,7 @@ set (REQ-SAG-0019).
 
 ### Success Criteria
 
-1. An absent file returns `MissingFile`; with `.optional()` it returns
+1. An absent file returns `MissingDefault`; with `.optional()` it returns
    `Ok(None)`. A directory at the path returns `Read`.
 2. `.accepts([["a"]])` over `{"a":1,"b":2}` returns `UnknownKey` naming
    `b`; `.accepts([["laya"]])` over `{"laya":{"port":1}}` loads.
@@ -719,18 +708,13 @@ This item covers the provenance in `Resolved`
    Custom(String) }` MUST be public, `#[non_exhaustive]`, `Clone`, `Eq`,
    `Display` and `Serialize`, built with `Source::file`, `env`, `flag`,
    `default` and `custom`. A consumer's own kind uses `Custom`.
-2. `KeyPath::from_segments(segments)` builds a path from owned strings.
-   `Display` joins segments with `.` and writes a segment that contains `.`
-   as a JSON string.
-3. A leaf is a scalar, an array, `null` or an empty object of the merged
+2. A leaf is a scalar, an array, `null` or an empty object of the merged
    value.
-4. `Provenance` maps every leaf path to the source of the highest layer
-   that set it; an environment leaf names its variable. A leaf replaced by
-   a higher layer is gone from the provenance.
-5. `Provenance::source_of(&KeyPath) -> Option<&Source>` returns one leaf's
-   source. `Provenance::rows()` returns every leaf as
-   `ResolvedRow { path, source, value }` (`Serialize`), sorted by path,
-   with `value` the typed JSON value.
+3. `Resolved::rows()` returns every leaf as
+   `ResolvedRow { path, source, value }` (`Serialize`), sorted by path:
+   `path` is the leaf's segments, `source` the source of the highest layer
+   that set it (an environment leaf names its variable) and `value` the
+   JSON value. A leaf replaced by a higher layer has no row.
 
 ### Rationale
 
@@ -742,8 +726,7 @@ sc-agent's `config show` needs to say where each setting came from.
    `a.b` from `MY_APP__A__B` with `3` and `a.c` from the file with `2`.
 2. Stack `[{"a":{"b":1}}, {"a":5}]` gives a row for `a` and none for `a.b`.
 3. A source with `Source::custom("keychain", "login")` is reported as such.
-4. `source_of` returns the same source as the matching row.
-5. `serde_json::to_value(rows)` succeeds.
+4. `serde_json::to_value(rows)` succeeds.
 
 ---
 
@@ -753,24 +736,17 @@ sc-agent's `config show` needs to say where each setting came from.
 
 ### Requirement Statement
 
-1. `Loader::layers()` MUST return the stack `FileSource` of
-   `<dir>/default.json` (required), `FileSource` of `<dir>/local.json`
-   (optional), `EnvSource` for the loader's app and environment.
-2. `Loader::load` MUST be `layers().load()`, except that a missing
-   `default.json` is reported as `MissingDefault { path }`, as today.
-3. Every behaviour of [REQ-CFG-0001](requirements.md) through
-   [REQ-CFG-0004](requirements.md) is unchanged.
+`Loader::load` MUST run on `Layers` ([REQ-CFG-0005](requirements.md)), and
+every behaviour of [REQ-CFG-0001](requirements.md) through
+[REQ-CFG-0004](requirements.md) is unchanged.
 
 ### Rationale
 
-Running `Loader` on the engine leaves one pipeline, and `layers()` gives
-consumers a stack to push more sources onto.
+Running `Loader` on the engine leaves one pipeline.
 
 ### Success Criteria
 
 1. Every existing test in `crates/sc-config/tests` passes without edits.
-2. Pushing a `ValueSource` onto `Loader::layers()` overrides an environment
-   variable that sets the same key.
 
 ---
 
@@ -784,18 +760,15 @@ consumers a stack to push more sources onto.
    `#[non_exhaustive]`.
 2. It gains these variants, each with a stable code and a recovery step in
    the [ADR-CFG-0001](architecture.md) inventory and a `Display` that names
-   the path, key, source or slot it carries:
+   the path, key or source it carries:
 
    | Variant | Code |
    |---|---|
-   | `MissingFile { path }` | `CFG.MISSING_FILE` |
    | `UnknownKey { path, key }` | `CFG.UNKNOWN_KEY` |
    | `SourceFailed { origin: Source, message }` | `CFG.SOURCE` |
-   | `DuplicateSlot { slot }` | `CFG.DUPLICATE_SLOT` |
 
-3. A consumer's `LayerSource` reports its own failure with
-   `ConfigError::source_failed(origin, message)`.
-4. Existing variants and their fields are unchanged.
+   A consumer's `LayerSource` reports its own failure as `SourceFailed`.
+3. Existing variants and their fields are unchanged.
 
 ### Rationale
 
@@ -806,7 +779,7 @@ callers.
 ### Success Criteria
 
 1. Each new variant is triggered by a test that asserts its `code()` and
-   that its `Display` names the carried path, key, source or slot.
+   that its `Display` names the carried path, key or source.
 2. A test outside the crate matches `ConfigError` with a wildcard arm.
 
 ---
@@ -822,20 +795,18 @@ This item covers `StandardLayers`, the stack products use
 
 1. The standard slots, lowest first, are the variants of the public enum
    `Slot`: `Defaults`, `System`, `User`, `Project`, `Local`, `Env`,
-   `Flags`. `After` has the same variants except `Flags`.
+   `Flags`.
 2. `StandardLayers::new(ctx: StandardContext)` and one method per slot,
    each taking `self` and returning `Self`: `.defaults(value)`,
    `.system()`, `.user()`, `.project()`, `.local()`, `.env(prefixes)`,
    `.flags(value)`. `prefixes` is the consumer's list of literal env
    prefixes, one per product (REQ-CFG-0006 item 4), applied in list order
    so a later prefix wins; aliases apply after all of them. A slot not
-   called is not loaded. Call order does not matter: slots load in slot
-   order. Layers carry `Source::default` and `Source::flag` for
-   `.defaults` and `.flags`, and file or variable sources otherwise.
+   called is not loaded; calling one again replaces the earlier call.
+   Call order does not matter: slots load in slot order.
 3. `.load::<T>()` and `.resolve()` build the stack and return what
-   `Layers` does (REQ-CFG-0005). Filling a slot twice is
-   `ConfigError::DuplicateSlot { slot }`, returned by them.
-4. `.insert(after: After, source: impl LayerSource + 'static)`, for example `After::User`, adds a
+   `Layers` does (REQ-CFG-0005).
+4. `.insert(above: Slot, source: impl LayerSource + 'static)` adds a
    consumer source directly above the named slot; several at one point
    apply in call order. There is no way to reorder slots.
 5. `StandardContext::new(family: AppName, products: Vec<AppName>,
@@ -881,8 +852,8 @@ Tests use temporary directories passed with `with_home`,
 1. A value set in every slot resolves to the `Flags` value; with `Flags`
    removed, to `Env`; and so on down to `Defaults`. Calling the slot
    methods in reverse order gives the same result.
-2. `.user()` called twice returns `DuplicateSlot`.
-3. A source inserted `After::User` overrides the user file and is
+2. `.flags(a)` then `.flags(b)` resolves to `b`.
+3. A source inserted above `Slot::User` overrides the user file and is
    overridden by the project file.
 4. With family `sc-agent` and products `[sc-agent, decidr]`,
    `decidr.json` overrides `sc-agent.json` in the same folder, and
@@ -1096,30 +1067,3 @@ async `main` alike.
 4. A test loads, then rewrites `default.json` with a different value, and
    asserts the value returned by the first load is unchanged and that a second
    explicit load returns the new value.
-
----
-
-## NFR-CFG-0004: New public types can grow without breaking callers
-
-**Status:** Proposed  
-
-### Requirement Statement
-
-This item binds the public types added by [REQ-CFG-0005](requirements.md)
-through [REQ-CFG-0010](requirements.md).
-
-1. Every new public enum, and every new public struct with public fields,
-   MUST be `#[non_exhaustive]`. Structs are built with constructors or
-   builders.
-2. Every export of `crates/sc-config/src/lib.rs` MUST be named in the
-   `[public] facade` of `boundaries/sc-config/sc-config.toml`.
-
-### Rationale
-
-PR #153's public types were exhaustive structs with public fields, so the
-next field any consumer needs would break every other consumer.
-
-### Success Criteria
-
-1. Review checks item 1 against each new type.
-2. `facade_lists_every_export` (`crates/sc-config/tests/facade.rs`) passes.

@@ -37,11 +37,9 @@ observability, and nothing in this workspace is a dependency of it.
 Proposed additions, not binding until [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names)
 and [ADR-CFG-0005](#adr-cfg-0005-products-use-one-standard-layer-order) are
 Active: `Layers`, `Resolved`, the `LayerSource` trait and `Layer`;
-`FileSource`, `EnvSource`, `ValueSource`; `Source`, `SourceKind`, `KeyPath`,
-`Provenance`, `ResolvedRow`; `Loader::layers()`; `StandardLayers`,
-`StandardContext`, `Slot`, `After`. `ConfigError` becomes
-`#[non_exhaustive]` and gains `MissingFile`, `UnknownKey`, `SourceFailed`
-and `DuplicateSlot`.
+`FileSource`, `EnvSource`, `ValueSource`; `Source`, `SourceKind`,
+`ResolvedRow`; `StandardLayers`, `StandardContext`, `Slot`. `ConfigError`
+becomes `#[non_exhaustive]` and gains `UnknownKey` and `SourceFailed`.
 
 ## How loading works
 
@@ -135,10 +133,8 @@ carry a source location.
 | Override path is empty or walks through a non-object | `CFG.OVERRIDE` | `Override.variable`, the full variable name | Drop the empty segment, or change the name so the path does not descend through a scalar, array, or null. |
 | Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
 | Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
-| (Proposed, ADR-CFG-0004) A required file is absent | `CFG.MISSING_FILE` | `MissingFile.path` | Create the file, or make the source optional. |
-| (Proposed) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it where it is accepted. |
+| (Proposed, ADR-CFG-0004) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it where it is accepted. |
 | (Proposed) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `SourceFailed.message` | Follow the message from that source. |
-| (Proposed, ADR-CFG-0005) A standard slot is filled twice | `CFG.DUPLICATE_SLOT` | `DuplicateSlot.slot` | Fill each slot once; add extra sources with `insert`. |
 
 ### Consequences
 
@@ -415,13 +411,14 @@ precedence, a separate error type without codes and a per-layer decode into
 5. Amendments, effective when Active:
    - ADR-CFG-0002 Context: the layers are caller-defined; the three-layer
      stack is `Loader`'s ([REQ-CFG-0008](requirements.md)).
-   - ADR-CFG-0002 item 3: `EnvSource` applies the same override rules to a
-     copy of the value below it and returns the result as a layer with
-     `replace_at` paths. The result is identical.
+   - ADR-CFG-0002 item 3: `EnvSource` applies the same override rules as
+     a layer over the value below it. The result is identical.
    - ADR-CFG-0001 items 3 and 4 and inventory: `ConfigError` becomes
      `#[non_exhaustive]` and gains the variants of
-     [REQ-CFG-0009](requirements.md); item 4 reads "the path, variable,
-     source or slot at fault".
+     [REQ-CFG-0009](requirements.md); item 4 reads "the path, variable or
+     source at fault". A required file that is absent is `MissingDefault`.
+6. New public enums, and new public structs with public fields, are
+   `#[non_exhaustive]`, so a later field or variant does not break callers.
 
 ### Consequences
 
@@ -448,8 +445,7 @@ precedence, a separate error type without codes and a per-layer decode into
 ### Implementation
 
 **Enforced by:** when Active, the success criteria of
-[REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md) and
-[NFR-CFG-0004](requirements.md), run by `cargo test -p sc-config`, and
+[REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md), run by `cargo test -p sc-config`, and
 `arch-qa` review for a second load pipeline or a second error type.
 
 ### Related Documents
@@ -457,8 +453,7 @@ precedence, a separate error type without codes and a per-layer decode into
 - [ADR-CFG-0001](architecture.md), [ADR-CFG-0002](architecture.md):
   amended by item 5
 - [ADR-CFG-0005](architecture.md): the standard stack built on this engine
-- [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md),
-  [NFR-CFG-0004](requirements.md)
+- [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md)
 
 ---
 
@@ -519,7 +514,7 @@ sc-agent ships several products (CLIs and wheels) that share one folder,
 ### Implementation
 
 **Enforced by:** when Active, the success criteria of
-[REQ-CFG-0010](requirements.md) and [NFR-CFG-0004](requirements.md), run by
+[REQ-CFG-0010](requirements.md), run by
 `cargo test -p sc-config`, and `arch-qa` review for a product using raw `Layers` without a stated reason.
 
 ### Related Documents
