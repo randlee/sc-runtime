@@ -373,7 +373,7 @@ repository MUST define these three recipes. That is the name `sc-lint init
 `just test` MUST run all of these. The list is decided in this document; the
 sc-runtime design names only the recipe.
 
-1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.96; see items 2 and 6).
+1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.98; see items 2 and 6).
 2. `cargo test -p sc-cron` with default features.
 3. `cargo test -p sc-config`, `cargo test -p sc-transport`,
    `cargo test -p sc-command` and `cargo test -p sc-runtime`, each with
@@ -385,8 +385,8 @@ sc-runtime design names only the recipe.
 4. `cargo test -p sc-transport --features server` and
    `cargo test -p sc-command --features server`.
 5. The generator contract tests under `tests/unit/`.
-6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`
-   1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).
+6. `cargo test -p sc-cron --features monty` on **rustc 1.98** (the `monty`
+   1.6 crates require 1.98, which is the single workspace toolchain).
 
 `lint` and `test` are the standard SC base command names; they MUST NOT be
 renamed or aliased to other primary names.
@@ -406,7 +406,7 @@ A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `boundary` lint), line-counts, `cargo fmt --all -- --check`,
 `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
 `cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on
-**rustc 1.96**. `just lint gates`
+**rustc 1.98**. `just lint gates`
 is the early profile of boundary plus line-counts. The line-counts key is
 `[line_counts] max_production_lines` and its value is `1000` for non-test
 files under `crates/*/src`. `template/**/*.rs` is not configured in this

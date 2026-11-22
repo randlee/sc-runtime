@@ -1100,7 +1100,7 @@ def test_hygiene_single_sources_pins_paths_and_publish_time_validations(tmp_path
 
     # Item 1: the Rust toolchain pin is single-sourced through build-plan.
     for text in (release_text, preflight_text, crates_text, python_action_text):
-        assert "1.94.1" not in text
+        assert "1.98.1" not in text
         assert "rust_toolchain" in text
 
     # Item 2: the sc-lint repository slug is an input with a documented pin.
@@ -3263,7 +3263,7 @@ def write_readme_fixture(
                 "| | |",
                 "|-|-|",
                 f"| Version | {status_version} |",
-                "| MSRV | Rust 1.94.1 |",
+                "| MSRV | Rust 1.98.1 |",
                 f"| Stability | stable {stability_minor} release line |",
                 "",
             ]

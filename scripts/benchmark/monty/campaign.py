@@ -100,20 +100,20 @@ def toolchain_rustc(prefix: list[str]) -> str | None:
 def monty_cargo() -> tuple[list[str], str]:
     """Return a cargo argv prefix and the rustc version string.
 
-    Rust 1.96.1 is required for the Monty feature. Some machines expose that
-    compiler as the ``1.96`` channel rather than a ``1.96.1`` toolchain name.
+    Rust 1.98.1 is required for the Monty feature. Some machines expose that
+    compiler as the ``1.98`` channel rather than a ``1.98.1`` toolchain name.
     """
     probes: list[tuple[list[str], list[str]]] = [
-        (["rustup", "run", "1.96.1", "rustc"], ["rustup", "run", "1.96.1", "cargo"]),
-        (["rustup", "run", "1.96", "rustc"], ["rustup", "run", "1.96", "cargo"]),
+        (["rustup", "run", "1.98.1", "rustc"], ["rustup", "run", "1.98.1", "cargo"]),
+        (["rustup", "run", "1.98", "rustc"], ["rustup", "run", "1.98", "cargo"]),
     ]
     for rustc_cmd, cargo_cmd in probes:
         version = toolchain_rustc(rustc_cmd)
-        if version and version.startswith("rustc 1.96.1"):
+        if version and version.startswith("rustc 1.98.1"):
             return cargo_cmd, version
     raise CampaignError(
-        "Rust 1.96.1 is required for the Monty benchmark. "
-        "Install it with `rustup toolchain install 1.96.1`."
+        "Rust 1.98.1 is required for the Monty benchmark. "
+        "Install it with `rustup toolchain install 1.98.1`."
     )
 
 
@@ -585,7 +585,7 @@ def self_check() -> None:
             html_path=html_path,
             host="self-check",
             git_revision="a" * 40,
-            rustc_version="rustc 1.96.1 (self-check)",
+            rustc_version="rustc 1.98.1 (self-check)",
             when=when,
         )
         if payload["status"] != "MEASURED":
@@ -612,7 +612,7 @@ def self_check() -> None:
             html_path=html_path,
             host="self-check",
             git_revision="b" * 40,
-            rustc_version="rustc 1.96.1 (self-check)",
+            rustc_version="rustc 1.98.1 (self-check)",
             when=when.replace(minute=1),
             baselines=failing,
         )
@@ -625,7 +625,7 @@ def self_check() -> None:
                 html_path=html_path,
                 host="self-check",
                 git_revision="b" * 40,
-                rustc_version="rustc 1.96.1 (self-check)",
+                rustc_version="rustc 1.98.1 (self-check)",
                 when=when.replace(minute=1),
             )
         except CampaignError:
@@ -661,7 +661,7 @@ def self_check() -> None:
                 html_path=html_path,
                 host="self-check",
                 git_revision="c" * 40,
-                rustc_version="rustc 1.96.1 (self-check)",
+                rustc_version="rustc 1.98.1 (self-check)",
                 when=when.replace(minute=2),
             )
         except CampaignError as exc:
