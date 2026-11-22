@@ -17,7 +17,7 @@ pub enum ConfigError {
         /// Full path that was looked up.
         path: PathBuf,
     },
-    /// `default.json` or `local.json` exists but cannot be read.
+    /// A configuration file exists but cannot be read.
     Read {
         /// Path that could not be read.
         path: PathBuf,
