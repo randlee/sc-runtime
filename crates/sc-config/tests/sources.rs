@@ -180,7 +180,8 @@ fn deserialize_lists_the_real_file_paths_and_only_files() {
     }
 }
 
-#[cfg(unix)]
+// macOS file systems reject non-UTF-8 names, so only Linux can create this file.
+#[cfg(target_os = "linux")]
 #[test]
 fn a_non_utf8_path_is_reported_unchanged() {
     use std::ffi::OsString;
