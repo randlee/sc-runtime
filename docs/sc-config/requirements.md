@@ -471,7 +471,7 @@ for the tests of any program that uses it.
 
 **Status:** Active  
 
-**Proposed amendment:** [REQ-CFG-0009](requirements.md) adds variants and makes `ConfigError` `#[non_exhaustive]`; existing variants are unchanged. Until it is Active this item stands as written.
+**Proposed amendment:** [REQ-CFG-0009](requirements.md) adds variants and makes `ConfigError` `#[non_exhaustive]`; existing variants are unchanged, except that `MissingDefault` is returned for any absent required file, not only `default.json`. Until it is Active this item stands as written.
 
 ### Requirement Statement
 
@@ -582,9 +582,11 @@ other load pipeline ([ADR-CFG-0004](architecture.md)).
    `base` is the value accumulated from the layers below, read-only.
    `Ok(None)` means the source is absent and contributes nothing.
 2. `Layer::new(source: Source, value)` builds a layer; `source` is what
-   provenance reports for its leaves ([REQ-CFG-0007](requirements.md)).
-   Key-path arguments (`accepts`, `alias`) are slices of segments,
-   `&[&str]`; criteria write them as `["a","b"]`.
+   provenance reports for all its leaves ([REQ-CFG-0007](requirements.md)).
+   `EnvSource` attributes each leaf to its own variable internally; the
+   variables applied and the files read come from those sources.
+   A key path is a list of string segments; criteria write it as
+   `["a","b"]`.
 3. `Layers::new()` creates an empty stack and `Layers::push(source)` adds a
    source as the new highest layer. Precedence is push order.
 4. `Layers::resolve()` MUST call each source's `load` once, lowest first,
@@ -711,7 +713,8 @@ This item covers the provenance in `Resolved`
 2. A leaf is a scalar, an array, `null` or an empty object of the merged
    value.
 3. `Resolved::rows()` returns every leaf as
-   `ResolvedRow { path, source, value }` (`Serialize`), sorted by path:
+   `ResolvedRow { path, source, value }` (`Serialize`,
+   `#[non_exhaustive]`), sorted by path:
    `path` is the leaf's segments, `source` the source of the highest layer
    that set it (an environment leaf names its variable) and `value` the
    JSON value. A leaf replaced by a higher layer has no row.
@@ -768,7 +771,8 @@ Running `Loader` on the engine leaves one pipeline.
    | `SourceFailed { origin: Source, message }` | `CFG.SOURCE` |
 
    A consumer's `LayerSource` reports its own failure as `SourceFailed`.
-3. Existing variants and their fields are unchanged.
+3. Existing variants and their fields are unchanged; `MissingDefault`
+   now means any absent required file.
 
 ### Rationale
 
@@ -794,8 +798,8 @@ This item covers `StandardLayers`, the stack products use
 ([ADR-CFG-0005](architecture.md)).
 
 1. The standard slots, lowest first, are the variants of the public enum
-   `Slot`: `Defaults`, `System`, `User`, `Project`, `Local`, `Env`,
-   `Flags`.
+   `Slot` (`#[non_exhaustive]`): `Defaults`, `System`, `User`,
+   `Project`, `Local`, `Env`, `Flags`.
 2. `StandardLayers::new(ctx: StandardContext)` and one method per slot,
    each taking `self` and returning `Self`: `.defaults(value)`,
    `.system()`, `.user()`, `.project()`, `.local()`, `.env(prefixes)`,
