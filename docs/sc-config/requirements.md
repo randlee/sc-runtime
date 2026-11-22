@@ -1,9 +1,9 @@
 # `sc-config` Requirements
 
-**ID Range:** REQ-CFG-0001 through REQ-CFG-0004; NFR-CFG-0001 through NFR-CFG-0003  
+**ID Range:** REQ-CFG-0001 through REQ-CFG-0009; NFR-CFG-0001 through NFR-CFG-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-22  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -28,8 +28,8 @@ they agree on the endpoint and the instance root.
 
 | Range | Area | Scope |
 |---|---|---|
-| REQ-CFG-0001 through REQ-CFG-0004 | Requirements | - |
-| NFR-CFG-0001 through NFR-CFG-0003 | Non-functional requirements | - |
+| REQ-CFG-0001 through REQ-CFG-0009 | Requirements | REQ-CFG-0005..0009 Proposed (layered engine, ADR-CFG-0004) |
+| NFR-CFG-0001 through NFR-CFG-0004 | Non-functional requirements | NFR-CFG-0004 Proposed |
 
 ---
 
@@ -548,6 +548,367 @@ directory and an in-memory environment.
 
 ---
 
+## REQ-CFG-0005: Layered loading over a caller-ordered list of sources
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the layered loading engine of the `sc-config` crate
+(`crates/sc-config`). It is the one load pipeline of the crate: `Loader`
+([REQ-CFG-0008](requirements.md)) and every consumer-defined stack run on it.
+The decision that the caller, not the crate, defines the layers is
+[ADR-CFG-0004](architecture.md).
+
+1. The crate MUST export a public trait `LayerSource` with these methods:
+
+   ```rust
+   pub trait LayerSource {
+       /// Provenance of every value this source contributes.
+       fn source(&self) -> Source;
+       /// `Ok(None)` means "absent, contributes nothing" (for example an
+       /// optional file that does not exist). It is not an error.
+       fn load(&self) -> Result<Option<serde_json::Value>, ConfigError>;
+   }
+   ```
+
+2. The trait MUST be object safe and MUST NOT be sealed, so a crate outside
+   `sc-config` can implement it for its own source (a keychain, a remote
+   store, a CLI profile).
+3. The crate MUST export a builder type `Layers` that holds an ordered list of
+   `Box<dyn LayerSource>`. `Layers::new()` creates an empty stack and
+   `Layers::push(source)` appends a source as the new highest-precedence
+   layer. Precedence is exactly the push order: a later source overrides an
+   earlier one.
+4. `sc-config` MUST NOT impose, reorder or insert layers. Whatever order the
+   caller pushes is the order applied. No source kind (file, environment,
+   flag, default) has a built-in rank.
+5. `Layers::load::<T>()` for `T: serde::de::DeserializeOwned` MUST:
+   1. call `load` on every source once, lowest precedence first;
+   2. skip a source that returns `Ok(None)`;
+   3. stop and return the first `Err`, unchanged;
+   4. fold the returned values with `merge(base, overlay)` exactly as defined
+      in [REQ-CFG-0001](requirements.md), starting from an empty JSON object;
+   5. deserialise the final value into `T` exactly once with
+      `serde_json::from_value::<T>` ([ADR-CFG-0002](architecture.md) items 4
+      and 5 still bind: no layer is deserialised into `T` on its own).
+6. `Layers::load_with_provenance::<T>()` MUST do the same and also return the
+   per-leaf provenance of [REQ-CFG-0007](requirements.md), as
+   `Layered<T> { value: T, provenance: Provenance }`.
+7. An empty stack, or a stack whose sources all return `Ok(None)`, MUST
+   deserialise `{}` into `T`. It is not an error.
+8. The engine MUST NOT read the process environment, the current directory or
+   any file itself. Only sources do I/O.
+
+### Rationale
+
+PR #153 added a second loader, beside `Loader`, with its own file checks, its
+own environment ordering and a fixed flags > environment > files precedence.
+Two pipelines drift, and a fixed precedence serves one consumer. A single
+engine over caller-ordered sources lets each consumer state its own order
+(sc-agent's flags over environment over files, a daemon's files over
+environment, a test's in-memory values) without `sc-config` knowing any of
+them. Keeping the fold on `serde_json::Value` with the existing `merge`
+preserves ADR-CFG-0002.
+
+### Success Criteria
+
+Tests live in `crates/sc-config`. Sources in tests are in-memory
+`ValueSource`s ([REQ-CFG-0006](requirements.md)) unless stated.
+
+1. Stack `[{"a":1,"b":1}, {"a":2}]` loads into `Value` as `{"a":2,"b":1}`;
+   the same two sources pushed in reverse order load as `{"a":1,"b":1}`.
+2. A test defines a struct outside the crate's modules that implements
+   `LayerSource` (returns `{"x":"custom"}`), pushes it, and asserts the load
+   yields `{"x":"custom"}`. The test compiles only because the trait is
+   public and unsealed.
+3. A source returning `Ok(None)` between two value sources leaves the result
+   equal to the stack without it.
+4. A source returning `Err(e)` makes `load` return that same error variant;
+   a counting source pushed after it asserts its `load` was never called.
+5. An empty stack loads `#[derive(Deserialize, Default)] #[serde(default)]
+   struct C { a: u8 }` as `C { a: 0 }`.
+6. A test with a `T` whose `Deserialize` counts its invocations asserts it is
+   called once for a three-layer stack.
+7. `fn assert_obj_safe(_: &dyn LayerSource) {}` compiles.
+
+---
+
+## REQ-CFG-0006: Built-in sources are configurable, not fixed
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the sources `sc-config` ships. Each implements `LayerSource`
+([REQ-CFG-0005](requirements.md)). Every setting a consumer might need to
+change is a builder parameter with a default, not a constant.
+
+**`FileSource`**
+
+1. `FileSource::new(path)` reads one file. `.optional()` makes an absent file
+   return `Ok(None)`; by default an absent file is `ConfigError::MissingFile`
+   ([REQ-CFG-0009](requirements.md)).
+2. The file MUST be a regular file after following symlinks. Anything else
+   (directory, device, FIFO) MUST be `ConfigError::Read` with the path.
+3. `.max_bytes(n)` sets a size cap. The default is no cap. With a cap, the
+   source MUST read at most `n + 1` bytes from the opened handle and MUST
+   return `ConfigError::TooLarge { path, limit }` when more than `n` bytes
+   exist, so a file that grows after a metadata check is still refused.
+4. The default format is JSON (`serde_json::from_slice`).
+   `.format(parser)` replaces it with a caller-supplied
+   `fn(&[u8]) -> Result<serde_json::Value, FormatError>`, so a consumer can
+   read TOML, YAML or anything else without `sc-config` depending on a
+   parser ([NFR-CFG-0002](requirements.md) still binds).
+   `FormatError { message, line: Option<usize>, column: Option<usize> }` is
+   public and constructible by callers.
+5. `source()` MUST return `Source::file(path)`.
+
+**`EnvSource`**
+
+6. `EnvSource::new(prefix, environment)` takes a prefix string and an explicit
+   `Vec<(OsString, OsString)>`. It MUST NOT read the process environment;
+   `EnvSource::from_process(prefix)` is the convenience that captures
+   `std::env::vars_os()` once.
+7. Defaults reproduce [REQ-CFG-0002](requirements.md) exactly: segment
+   separator `__`, each segment lower-cased, value parsed as JSON else taken
+   as a string, a longer name that extends a shorter one wins.
+8. `.separator(s)` replaces `__`. `.key_case(KeyCase)` selects
+   `Lower` (default), `Preserve` or `Upper` so upper-case or mixed-case config
+   keys are reachable from the environment. `KeyCase` is `#[non_exhaustive]`.
+9. `.alias(variable, path)` maps one exact variable name to one key path
+   regardless of prefix, so a consumer can honour an established name such as
+   `SC_AGENT_MODEL` → `model`. `.alias_string(variable, path)` does the same
+   but always takes the value as a string, never parsing JSON.
+10. `.only(paths)` restricts the source to the given key paths: a prefixed
+    variable whose path is not in the set (or under one of its entries) MUST
+    be ignored, not rejected. Without `.only`, every prefixed variable
+    applies.
+11. Matching variables MUST be applied in ascending encoded-byte order of the
+    variable name, with aliases applied after prefixed variables, so the
+    result never depends on the order of the input `Vec`.
+12. A matching variable (prefixed or aliased) whose name or value is not
+    Unicode MUST be `ConfigError::NonUnicode`. A non-matching variable MUST
+    be ignored whatever its encoding.
+13. `source()` MUST return `Source::env(prefix)`; each leaf's provenance names
+    the exact variable that set it ([REQ-CFG-0007](requirements.md)).
+
+**`ValueSource`**
+
+14. `ValueSource::new(source, value)` contributes a caller-built
+    `serde_json::Value` under the given `Source`. It is how a consumer feeds
+    parsed command-line flags, compiled-in defaults or test fixtures into the
+    stack. `sc-config` MUST NOT parse command lines itself.
+
+### Rationale
+
+The PR #153 loader fixed JSON, a 1 MiB cap, `__` and lower-case keys, and
+three hard-coded loops for files, environment and flags. Each of those is a
+choice one consumer made. As parameters with defaults equal to today's
+behaviour, they cost nothing for current users and leave every other consumer
+free to choose. A caller-supplied parser keeps the two-dependency rule while
+removing the JSON-only limit on consumers.
+
+### Success Criteria
+
+1. `FileSource::new(p).optional()` on an absent `p` returns `Ok(None)`;
+   without `.optional()` it returns `MissingFile` carrying `p`.
+2. `FileSource` on a directory returns `Read` carrying the path.
+3. With `.max_bytes(4)`, a 5-byte file returns `TooLarge { limit: 4 }`; a
+   4-byte file loads. A test using a `Read` wrapper that yields more bytes
+   than `metadata().len()` reported asserts `TooLarge` (no reliance on a
+   race).
+4. `.format(|b| ...)` with a parser that maps `b"k=v"` to `{"k":"v"}` loads
+   `{"k":"v"}`; a parser error returns `ParseFormat` carrying the path and
+   the parser's message.
+5. Every success criterion of [REQ-CFG-0002](requirements.md) passes against
+   `EnvSource::new("MY_APP__", env)` with default settings.
+6. `.separator("_").key_case(KeyCase::Preserve)` with `APP_Foo_Bar=1` sets
+   `{"Foo":{"Bar":1}}`.
+7. `.alias("SC_AGENT_MODEL", "model")` with `SC_AGENT_MODEL=x` sets
+   `{"model":"x"}`; `.alias_string("V", "v")` with `V=123` sets `{"v":"123"}`.
+8. `.only(["a"])` with `P__A=1,P__B=2` yields `{"a":1}` and no error.
+9. Two calls with the same variables in opposite `Vec` order produce equal
+   values for `P__A={"b":1}` and `P__A__B=2`.
+10. A prefixed variable with a non-Unicode value returns `NonUnicode`; an
+    unprefixed non-Unicode variable is ignored.
+11. `grep -rn "std::env::var" crates/sc-config/src` matches only
+    `from_process` and the free `load`.
+
+---
+
+## REQ-CFG-0007: Per-leaf provenance with open source kinds and redaction
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the provenance returned by
+`Layers::load_with_provenance` ([REQ-CFG-0005](requirements.md)).
+
+1. `Source` MUST be a public `#[non_exhaustive]` struct with a kind and a
+   name, `Display`, `Clone`, `Eq`, `Hash` and `serde::Serialize`.
+   `SourceKind` MUST be `#[non_exhaustive]` with at least `File`, `Env`,
+   `Flag`, `Default` and `Custom(String)`. Constructors: `Source::file(path)`,
+   `Source::env(name)`, `Source::flag(name)`, `Source::default_values(name)`,
+   `Source::custom(kind, name)`. A consumer's own source kind is expressible
+   with `Custom` without a change to `sc-config`.
+2. A key path MUST be a `KeyPath`: an owned list of segments, built at
+   runtime (`KeyPath::from_segments`, `KeyPath::parse_dotted`). A segment may
+   contain `.`; `Display` writes segments joined by `.` with any segment
+   containing `.` or `"` written as a JSON string literal. `parse_dotted`
+   accepts that same form, so `Display` and `parse_dotted` round-trip.
+3. A leaf is a scalar, an array, `null` or an empty object in the merged
+   value. Arrays are leaves; their elements are not tracked separately.
+4. `Provenance` MUST map every leaf path of the merged value to the `Source`
+   of the highest-precedence layer that set it. For an environment variable
+   or alias the recorded `Source` MUST carry the exact variable name. When an
+   upper layer replaces an object with a non-object, the object's former
+   leaves MUST disappear from the provenance.
+5. Provenance MUST be computed from the layer values during the fold. It MUST
+   NOT deserialise any layer into `T`.
+6. `Provenance::rows()` MUST return `Vec<ResolvedRow>` sorted by path, where
+   `ResolvedRow { path: KeyPath, source: Source, value: serde_json::Value }`
+   is `#[non_exhaustive]` and `Serialize`. `value` is the typed JSON value,
+   not a string. A path no layer set is absent; it is never reported as
+   `Default`.
+7. `Layers::sensitive(path)` marks a key path. In `rows()`, the value of that
+   path and of every path under it MUST be the string `"<redacted>"`, while
+   `source` is still reported. Redaction MUST NOT change the value
+   deserialised into `T`.
+8. `rows()` MUST NOT fail and MUST NOT silently drop rows.
+
+### Rationale
+
+Provenance answers "where did this setting come from", which every consumer
+with more than one layer eventually needs (`config show` in sc-agent, a
+daemon's start-up log). A closed source enum and string-typed provenance
+lock that answer to sc-agent's three sources. Typed, serialisable rows let
+an agent consume `config show --json` without reparsing. Redaction is needed
+because the first consumer to show provenance will show a token.
+
+### Success Criteria
+
+1. A test implements a source with `Source::custom("keychain", "login")`
+   and asserts its leaves report that source.
+2. Stack `[file {"a":{"b":1,"c":2}}, env P__A__B=3]`: rows are
+   `a.b → env P__A__B, 3` and `a.c → file, 2`.
+3. Stack `[{"a":{"b":1}}, {"a":5}]`: rows contain only `a`, not `a.b`.
+4. A key `{"x.y":1}` produces path `"x.y"` in `Display`, and
+   `KeyPath::parse_dotted` of that output equals the original path.
+5. `{"a":[1,2]}` yields one row `a` with value `[1,2]`; `{"e":{}}` yields one
+   row `e` with value `{}`.
+6. With `.sensitive("auth")`, rows for `auth.token` show `"<redacted>"` and
+   the loaded `T` still holds the token.
+7. `serde_json::to_value(rows)` succeeds and each row's `source` serialises
+   with a `kind` and a `name` field.
+8. A `T` whose `Deserialize` counts invocations is called exactly once by
+   `load_with_provenance` for a three-layer stack.
+
+---
+
+## REQ-CFG-0008: `Loader` is a preset stack on the layered engine
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers how `Loader` and the free function `load`
+([REQ-CFG-0003](requirements.md)) relate to `Layers`
+([REQ-CFG-0005](requirements.md)).
+
+1. `Loader::load::<T>()` MUST be implemented as `Loader::layers().load::<T>()`.
+2. `Loader::layers(&self) -> Layers` MUST be public and MUST return this
+   stack, lowest first: `FileSource` of `<dir>/default.json` (required),
+   `FileSource` of `<dir>/local.json` (optional), `EnvSource` with
+   `AppName::env_prefix` and the loader's environment, default settings.
+3. A consumer MAY push further sources onto the returned `Layers`, for example
+   a `ValueSource` of parsed flags, to extend the preset without rebuilding
+   it.
+4. The crate MUST contain exactly one implementation of file reading, of
+   environment-override application and of `merge`. `Loader` MUST NOT keep a
+   private pipeline.
+5. Every behaviour required by [REQ-CFG-0001](requirements.md) through
+   [REQ-CFG-0004](requirements.md) is unchanged, with the error mapping of
+   [REQ-CFG-0009](requirements.md) item 3.
+
+### Rationale
+
+Re-expressing `Loader` on the engine removes the PR #153 fork (two env
+orders, two sets of file checks) and proves the engine can express the
+crate's own conventions. Exposing `layers()` gives sc-agent and the
+generated-project template one starting point to extend.
+
+### Success Criteria
+
+1. Every existing test in `crates/sc-config/tests` passes unchanged (only
+   error-variant names updated where item 3 of REQ-CFG-0009 maps them).
+2. A test compares `Loader::load::<Value>()` with
+   `Loader::layers().load::<Value>()` over the REQ-CFG-0001 worked example and
+   asserts equality.
+3. A test pushes a `ValueSource` onto `Loader::layers()` and asserts it
+   overrides an environment variable that sets the same key.
+4. `grep -rn "fn merge\|from_slice" crates/sc-config/src` shows one `merge`
+   definition and one `from_slice` call site.
+
+---
+
+## REQ-CFG-0009: One `ConfigError` covers every source, with codes
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item extends `ConfigError` ([REQ-CFG-0004](requirements.md),
+[ADR-CFG-0001](architecture.md)) to the layered engine. There is no second
+error type.
+
+1. Every public function of the engine and of every built-in source MUST
+   return `ConfigError`. The crate MUST NOT export another error enum.
+2. `ConfigError` MUST be `#[non_exhaustive]`.
+3. `MissingDefault { path }` is generalised to `MissingFile { path }`, code
+   `CFG.MISSING_FILE`. `Loader` reports a missing `default.json` through it.
+4. New variants, each with `code()` and `recovery()` like every existing
+   variant:
+
+   | Variant | Code | Carries | Recovery |
+   |---|---|---|---|
+   | `TooLarge { path, limit }` | `CFG.TOO_LARGE` | path, byte limit | Shrink the file or raise the limit the program set. |
+   | `ParseFormat { path, message, line, column }` | `CFG.PARSE_FORMAT` | path, parser message, optional line and column | Fix the file at the reported place. |
+   | `Source { source, message }` | `CFG.SOURCE` | the `Source` that failed, its message | Follow the message from that source. |
+
+5. `Source { .. }` MUST be constructible by external `LayerSource`
+   implementations through `ConfigError::source_failed(source, message)`.
+6. `Deserialize` MUST additionally carry `sources: Vec<Source>`: every source
+   that contributed a value, in precedence order. Its `files` and
+   `variables` fields remain.
+7. Every variant's `Display` MUST name the path, variable or source it
+   carries.
+
+### Rationale
+
+PR #153's `LayersError` had no codes, no recovery text and free-form
+messages, breaking the actionable-error contract of REQ-CFG-0004 for the new
+path. One error type keeps one contract. `#[non_exhaustive]` is the only way
+to add the next failure mode without breaking every caller, which ADR-CFG-0001
+already lists as a cost.
+
+### Success Criteria
+
+1. `grep -rn "pub enum .*Error" crates/sc-config/src` matches only
+   `ConfigError`.
+2. A test outside the crate matches on `ConfigError` with a wildcard arm and
+   compiles; the crate's own source has `#[non_exhaustive]` on the enum.
+3. For each new variant a test triggers it and asserts `code()`, a non-empty
+   `recovery()` and that `to_string()` contains the carried path or source
+   name.
+4. A custom source returning `ConfigError::source_failed(Source::custom("k",
+   "n"), "denied")` surfaces as `Source` with that source and message.
+5. A deserialise failure over a three-source stack carries all three in
+   `sources`, in order.
+
+---
+
 ## NFR-CFG-0001: Public API returns `Result<T, ConfigError>`; no panics
 
 **Status:** Active  
@@ -741,3 +1102,42 @@ async `main` alike.
 4. A test loads, then rewrites `default.json` with a different value, and
    asserts the value returned by the first load is unchanged and that a second
    explicit load returns the new value.
+
+---
+
+## NFR-CFG-0004: Public types can grow without breaking callers
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item binds every public type of `crates/sc-config/src` added or changed
+by [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md).
+
+1. Every public enum MUST be `#[non_exhaustive]`.
+2. Every public struct with public fields MUST be `#[non_exhaustive]` and
+   constructible from outside the crate through a constructor or builder.
+3. Configuration of a source or stack MUST be by builder methods with
+   defaults, not by a struct literal the caller fills in.
+4. No public field or argument may require `&'static str` where a runtime
+   value is a legitimate input (key paths, variable names, prefixes).
+5. `boundaries/sc-config/sc-config.toml` MUST list every public item.
+
+### Rationale
+
+PR #153's `Inputs`, `Key`, `Layered` and `Resolved` were exhaustive structs
+with public fields, so the next field any consumer needs breaks every other
+consumer. `Key.path: &'static str` stopped keys being built from data.
+
+### Success Criteria
+
+1. A script lists every `pub enum` and `pub struct` with `pub` fields in
+   `crates/sc-config/src` and fails if the preceding attributes lack
+   `#[non_exhaustive]`.
+2. A test crate outside `sc-config` constructs each public struct without a
+   struct literal.
+3. `grep -rn "&'static str" crates/sc-config/src` returns no match in a public
+   signature.
+4. `sc-lint lint sc-boundary` passes with the manifest naming every item
+   reported by `cargo public-api -p sc-config` (or `rustdoc` JSON when that
+   tool is absent).
