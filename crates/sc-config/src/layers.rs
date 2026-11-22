@@ -71,6 +71,7 @@ pub trait LayerSource {
 
 /// The merged value of a stack with the source of each leaf.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct Resolved {
     /// The merged value.
     pub value: Value,

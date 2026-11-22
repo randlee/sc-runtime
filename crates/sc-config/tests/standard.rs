@@ -333,3 +333,17 @@ fn an_alias_alone_fills_the_env_slot() {
         StandardLayers::new(context(&[], &[("SC_PROJECT", "x")])).alias("SC_PROJECT", ["project"]);
     assert_eq!(layers.load::<Value>().unwrap(), json!({"project": "x"}));
 }
+
+#[test]
+fn an_alias_wins_over_prefixed_variables_in_either_call_order() {
+    let env = [("SC_AGENT_PROJECT", "prefixed"), ("SC_PROJECT", "alias")];
+    let env_first = StandardLayers::new(context(&[], &env))
+        .env(["SC_AGENT_"])
+        .alias("SC_PROJECT", ["project"]);
+    let alias_first = StandardLayers::new(context(&[], &env))
+        .alias("SC_PROJECT", ["project"])
+        .env(["SC_AGENT_"]);
+    let expected = json!({"project": "alias"});
+    assert_eq!(env_first.load::<Value>().unwrap(), expected);
+    assert_eq!(alias_first.load::<Value>().unwrap(), expected);
+}

@@ -12,7 +12,7 @@ use crate::provenance::Source;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum ConfigError {
-    /// `default.json` is not in the config directory.
+    /// A required file is absent: `default.json`, or any required `FileSource`.
     MissingDefault {
         /// Full path that was looked up.
         path: PathBuf,

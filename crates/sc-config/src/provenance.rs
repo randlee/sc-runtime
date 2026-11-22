@@ -12,6 +12,7 @@ use crate::layers::Layer;
 ///
 /// A consumer's own kind uses [`SourceKind::Custom`].
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 pub enum SourceKind {
     /// A file.
     File,
@@ -42,6 +43,7 @@ impl fmt::Display for SourceKind {
 /// For a file the name is its path; for an environment setting it is the
 /// variable name.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 pub struct Source {
     /// What sort of origin this is.
     pub kind: SourceKind,
@@ -91,6 +93,7 @@ impl fmt::Display for Source {
 
 /// One leaf of the resolved value with the source that set it.
 #[derive(Clone, Debug, Serialize)]
+#[non_exhaustive]
 pub struct ResolvedRow {
     /// Key segments from the document root to the leaf, outermost first.
     pub path: Vec<String>,

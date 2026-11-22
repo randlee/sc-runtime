@@ -28,6 +28,7 @@ use crate::sources::{EnvSource, FileSource, ValueSource, strs};
 
 /// One position in the standard order.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[non_exhaustive]
 pub enum Slot {
     /// Built-in defaults.
     Defaults,
