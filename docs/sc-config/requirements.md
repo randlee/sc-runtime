@@ -870,7 +870,9 @@ Tests use temporary directories passed with `with_home`,
    `ATM_HOME`. With `with_home(dir)` also set, it reads `dir`. With prefix
    `SC_AGENT_` and `SC_AGENT_HOME` set, the result has no `home` key.
 9. `.alias("SC_PROJECT", ["project"])` with no `.env` call and
-   `SC_PROJECT=p` gives `project` = `"p"`.
+   `SC_PROJECT=p` gives `project` = `"p"`. With `.env(["SC_AGENT_"])` also called and
+   `SC_AGENT_PROJECT=q`, `project` is still `"p"`: aliases apply after the
+   prefixes, whatever the call order.
 
 ---
 
