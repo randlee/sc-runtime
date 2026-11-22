@@ -4,6 +4,10 @@
 //! logging exists. `/health` does not check the widget database. `GET /ready`
 //! does.
 
+// rustc 1.98 needs a deeper query limit to lay out the daemon future when
+// the MySQL store is generated.
+#![recursion_limit = "256"]
+
 use std::path::PathBuf;
 use std::process::ExitCode;
 
