@@ -8,7 +8,7 @@ use std::fs;
 use std::path::Path;
 
 use sc_config::{
-    After, AppName, ConfigError, Layer, LayerSource, Slot, Source, StandardContext, StandardLayers,
+    AppName, ConfigError, Layer, LayerSource, Slot, Source, StandardContext, StandardLayers,
 };
 use serde_json::{Value, json};
 use support::{TempDir, environment};
@@ -122,27 +122,21 @@ fn local_slot_overrides_project_slot() {
 }
 
 #[test]
-fn filling_a_slot_twice_is_a_duplicate_slot_error() {
-    let d = dirs();
-    let error = full(&d, &[]).user().user().load::<Value>().unwrap_err();
-    match &error {
-        ConfigError::DuplicateSlot { slot } => assert_eq!(*slot, Slot::User),
-        other => panic!("unexpected {other}"),
-    }
-    assert_eq!(error.code(), "CFG.DUPLICATE_SLOT");
-    assert!(error.to_string().contains("user"));
-    assert!(full(&d, &[]).user().user().resolve().is_err());
+fn calling_a_slot_again_replaces_the_earlier_value() {
+    let layers = StandardLayers::new(context(&[], &[]))
+        .defaults(json!({"v": 1}))
+        .defaults(json!({"v": 2}));
+    assert_eq!(winner(layers), json!(2));
 }
 
 struct Inserted(&'static str);
 
 impl LayerSource for Inserted {
-    fn source(&self) -> Source {
-        Source::custom("test", self.0)
-    }
-
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
-        Ok(Some(Layer::new(self.source(), json!({"v": self.0}))))
+        Ok(Some(Layer::new(
+            Source::custom("test", self.0),
+            json!({"v": self.0}),
+        )))
     }
 }
 
@@ -152,17 +146,17 @@ fn an_inserted_source_sits_directly_above_its_slot() {
     let layers = full(&d, &[])
         .user()
         .project()
-        .insert(After::User, Inserted("inserted"));
+        .insert(Slot::User, Inserted("inserted"));
     // Above the user file, below the project file.
     assert_eq!(winner(layers), json!("project"));
     let layers = full(&d, &[])
         .user()
-        .insert(After::User, Inserted("inserted"));
+        .insert(Slot::User, Inserted("inserted"));
     assert_eq!(winner(layers), json!("inserted"));
     let first = full(&d, &[])
         .user()
-        .insert(After::User, Inserted("one"))
-        .insert(After::User, Inserted("two"));
+        .insert(Slot::User, Inserted("one"))
+        .insert(Slot::User, Inserted("two"));
     assert_eq!(winner(first), json!("two"));
 }
 
@@ -309,11 +303,33 @@ fn defaults_and_flags_carry_default_and_flag_sources() {
     let layers = StandardLayers::new(context(&[], &[]))
         .defaults(json!({"a": 1}))
         .flags(json!({"b": 2}));
-    let provenance = layers.resolve().unwrap().provenance;
-    let kinds: Vec<String> = provenance
-        .rows()
-        .iter()
-        .map(|r| r.source.kind.to_string())
-        .collect();
+    let rows = layers.resolve().unwrap().rows();
+    let kinds: Vec<String> = rows.iter().map(|r| r.source.kind.to_string()).collect();
     assert_eq!(kinds, ["default", "flag"]);
+}
+
+#[test]
+fn an_empty_home_variable_is_ignored_and_never_a_setting() {
+    let home = TempDir::new();
+    write(
+        &home.path().join(".sc-agent"),
+        "sc-agent.json",
+        r#"{"from":"home"}"#,
+    );
+    let home_value = home.path().to_string_lossy().into_owned();
+    let home_name = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
+    let env = [(home_name, home_value.as_str()), ("SC_AGENT_HOME", "")];
+    let value: Value = StandardLayers::new(context(&["sc-agent"], &env))
+        .user()
+        .env(["SC_AGENT_"])
+        .load()
+        .unwrap();
+    assert_eq!(value, json!({"from": "home"}));
+}
+
+#[test]
+fn an_alias_alone_fills_the_env_slot() {
+    let layers =
+        StandardLayers::new(context(&[], &[("SC_PROJECT", "x")])).alias("SC_PROJECT", ["project"]);
+    assert_eq!(layers.load::<Value>().unwrap(), json!({"project": "x"}));
 }

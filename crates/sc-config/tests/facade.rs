@@ -80,34 +80,32 @@ fn composition_roots(manifest: &str) -> BTreeSet<String> {
 #[test]
 fn layered_exports_are_usable_from_outside_the_crate() {
     use sc_config::{
-        After, ConfigError, EnvSource, FileSource, KeyPath, Layer, LayerSource, Layers, Provenance,
-        Resolved, ResolvedRow, Slot, Source, SourceKind, StandardContext, StandardLayers,
-        ValueSource,
+        ConfigError, EnvSource, FileSource, Layer, LayerSource, Layers, Resolved, ResolvedRow,
+        Slot, Source, SourceKind, StandardContext, StandardLayers, ValueSource,
     };
 
-    fn assert_send_sync<T: Send + Sync>() {}
-    assert_send_sync::<Layers>();
-    assert_send_sync::<FileSource>();
-    assert_send_sync::<EnvSource>();
-    assert_send_sync::<ValueSource>();
-    assert_send_sync::<StandardLayers>();
-    let _: Option<Box<dyn LayerSource>> = None;
     fn exported<T>() {}
+    exported::<Layers>();
+    exported::<FileSource>();
+    exported::<EnvSource>();
+    exported::<ValueSource>();
+    exported::<StandardLayers>();
+    exported::<StandardContext>();
     exported::<Layer>();
     exported::<Resolved>();
-    exported::<Provenance>();
     exported::<ResolvedRow>();
-    exported::<KeyPath>();
     exported::<Source>();
     exported::<SourceKind>();
-    exported::<StandardContext>();
-    assert_ne!(After::User, After::Env);
+    exported::<Box<dyn LayerSource>>();
     assert_ne!(Slot::User, Slot::Flags);
 
-    let error = ConfigError::DuplicateSlot { slot: Slot::User };
+    let error = ConfigError::UnknownKey {
+        path: "a.json".into(),
+        key: "b".to_owned(),
+    };
     let named = match error {
-        ConfigError::DuplicateSlot { .. } => "duplicate",
+        ConfigError::UnknownKey { .. } => "unknown key",
         _ => "other",
     };
-    assert_eq!(named, "duplicate");
+    assert_eq!(named, "unknown key");
 }

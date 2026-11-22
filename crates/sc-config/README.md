@@ -45,17 +45,17 @@ is replaced) and deserialises the result into your type once.
 - `ValueSource::new(source, value)` contributes a value you built, for
   defaults or parsed command-line flags. `sc-config` does not parse flags.
 - Implement `LayerSource` for anything else (a keychain, a remote store, other
-  file formats). Report your own failure with `ConfigError::source_failed`.
-- `Layers::resolve()` returns `Resolved`, whose `provenance` names the source
-  of every leaf (`Provenance::rows()`), for a `config show` style command.
-- `Loader::layers()` returns the loader's stack so you can push more sources.
+  file formats). Report your own failure with `ConfigError::SourceFailed`.
+- `Layers::resolve()` returns `Resolved`; `Resolved::rows()` names the source
+  of every leaf, for a `config show` style command.
 
 ## Standard layer order
 
 Products that share a family of settings use `StandardLayers`, which enforces
 one order, lowest first: defaults, system, user, project, local, env, flags.
-Fill the slots you want; call order does not matter. `insert(After::User,
-source)` adds your own source directly above a slot.
+Fill the slots you want; call order does not matter. `insert(Slot::User,
+source)` adds your own source directly above a slot; calling a slot method
+again replaces its earlier value.
 
 ```rust,no_run
 use sc_config::{AppName, StandardContext, StandardLayers};
@@ -84,7 +84,8 @@ Each product reads `<product>.json`, then `<product>.local.json`, from:
   `%ProgramData%\<family>\` on Windows.
 - user: `with_home(dir)` if set; else the folder named by `<FAMILY>_HOME`
   (for example `SC_AGENT_HOME`; rename it with `with_home_var`) in the
-  context's environment; else `~/.<family>/`, where `~` is `HOME`
+  context's environment, if not empty; that variable is never applied as a
+  setting; else `~/.<family>/`, where `~` is `HOME`
   (`USERPROFILE` on Windows).
 - project: `<project_root>/.<family>/`. The `.json` files are the project
   slot and the `.local.json` files are the local slot.

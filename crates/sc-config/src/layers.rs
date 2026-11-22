@@ -11,15 +11,15 @@ use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
 use crate::error::ConfigError;
-use crate::provenance::{KeyPath, Provenance, Source, SourceKind};
+use crate::provenance::{Provenance, ResolvedRow, Source, SourceKind};
 
 /// One layer's contribution: a JSON value and where it came from.
 #[derive(Clone, Debug)]
 pub struct Layer {
     pub(crate) source: Source,
     pub(crate) value: Value,
-    replace: Vec<KeyPath>,
-    attributes: Vec<(KeyPath, Source)>,
+    replace: Vec<Vec<String>>,
+    attributes: Vec<(Vec<String>, Source)>,
 }
 
 impl Layer {
@@ -33,37 +33,23 @@ impl Layer {
         }
     }
 
-    /// Marks the key path `path`, a slice of segments, so its value replaces the value below instead of merging into it.
-    #[must_use]
-    pub fn replace_at<'a>(mut self, path: impl AsRef<[&'a str]>) -> Self {
-        self.replace.push(KeyPath::from_strs(path));
-        self
-    }
-
-    /// Attributes the leaves at and below `path` to `source`.
-    ///
-    /// When attributed paths nest, the deepest wins.
-    #[must_use]
-    pub fn attribute<'a>(mut self, path: impl AsRef<[&'a str]>, source: Source) -> Self {
-        self.attributes.push((KeyPath::from_strs(path), source));
-        self
-    }
-
-    pub(crate) fn replace_key(mut self, path: KeyPath) -> Self {
+    /// Marks `path` so its value replaces the value below instead of merging into it.
+    pub(crate) fn replace_at(mut self, path: Vec<String>) -> Self {
         self.replace.push(path);
         self
     }
 
-    pub(crate) fn attribute_key(mut self, path: KeyPath, source: Source) -> Self {
+    /// Attributes the leaves at and below `path` to `source`; the deepest path wins.
+    pub(crate) fn attribute(mut self, path: Vec<String>, source: Source) -> Self {
         self.attributes.push((path, source));
         self
     }
 
-    pub(crate) fn source_for(&self, leaf: &KeyPath) -> &Source {
+    pub(crate) fn source_for(&self, leaf: &[String]) -> &Source {
         self.attributes
             .iter()
-            .filter(|(path, _)| leaf.0.starts_with(&path.0))
-            .max_by_key(|(path, _)| path.0.len())
+            .filter(|(path, _)| leaf.starts_with(path))
+            .max_by_key(|(path, _)| path.len())
             .map_or(&self.source, |(_, source)| source)
     }
 }
@@ -71,34 +57,38 @@ impl Layer {
 /// A place configuration comes from.
 ///
 /// Implement this to add a keychain, a remote store or another file format.
-pub trait LayerSource: Send + Sync {
-    /// Describes this source.
-    fn source(&self) -> Source;
-
+pub trait LayerSource {
     /// Returns this source's layer, or `Ok(None)` when the source is absent.
     ///
     /// `base` is the value accumulated from the layers below, read-only.
     ///
     /// # Errors
     ///
-    /// Returns a [`ConfigError`]; use [`ConfigError::source_failed`] for a
+    /// Returns a [`ConfigError`]; use [`ConfigError::SourceFailed`] for a
     /// failure of your own.
     fn load(&self, base: &Value) -> Result<Option<Layer>, ConfigError>;
 }
 
 /// The merged value of a stack with the source of each leaf.
 #[derive(Clone, Debug)]
-#[non_exhaustive]
 pub struct Resolved {
     /// The merged value.
     pub value: Value,
-    /// Source of each leaf of `value`.
-    pub provenance: Provenance,
+    provenance: Provenance,
     files: Vec<PathBuf>,
     variables: Vec<String>,
 }
 
 impl Resolved {
+    /// Returns every leaf of the merged value with the source that set it.
+    ///
+    /// A leaf is a scalar, an array, `null` or an empty object, found in the
+    /// highest layer that set it; an environment leaf names its variable.
+    /// Rows are sorted by path.
+    pub fn rows(&self) -> Vec<ResolvedRow> {
+        self.provenance.rows()
+    }
+
     /// Deserialises the merged value into `T`, once.
     ///
     /// # Errors
@@ -185,7 +175,7 @@ impl Layers {
                 }
             }
             for path in &layer.replace {
-                remove_path(&mut value, &path.0);
+                remove_path(&mut value, path);
                 provenance.remove_under(path);
             }
             provenance.record(&layer, &value);

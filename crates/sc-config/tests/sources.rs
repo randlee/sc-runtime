@@ -12,11 +12,11 @@ fn load(layers: Layers) -> Result<Value, ConfigError> {
 }
 
 #[test]
-fn a_required_file_that_is_absent_is_missing_file() {
+fn a_required_file_that_is_absent_is_missing_default() {
     let dir = TempDir::new();
     let path = dir.path().join("a.json");
     match load(Layers::new().push(FileSource::new(&path))).unwrap_err() {
-        ConfigError::MissingFile { path: reported } => assert_eq!(reported, path),
+        ConfigError::MissingDefault { path: reported } => assert_eq!(reported, path),
         other => panic!("unexpected {other}"),
     }
 }
@@ -140,12 +140,10 @@ fn value_source_contributes_its_value() {
 
 #[test]
 fn new_error_variants_have_codes_and_name_what_they_carry() {
-    let failed = ConfigError::source_failed(Source::custom("keychain", "login"), "locked");
+    let failed = ConfigError::SourceFailed {
+        origin: Source::custom("keychain", "login"),
+        message: "locked".to_owned(),
+    };
     assert_eq!(failed.code(), "CFG.SOURCE");
     assert!(failed.to_string().contains("keychain login"));
-    let missing = ConfigError::MissingFile {
-        path: "x/y.json".into(),
-    };
-    assert_eq!(missing.code(), "CFG.MISSING_FILE");
-    assert!(missing.to_string().contains("y.json"));
 }

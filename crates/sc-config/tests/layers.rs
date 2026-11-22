@@ -8,8 +8,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use sc_config::{
-    AppName, ConfigError, KeyPath, Layer, LayerSource, Layers, Loader, Source, SourceKind,
-    ValueSource,
+    AppName, ConfigError, EnvSource, FileSource, Layer, LayerSource, Layers, Loader, Source,
+    SourceKind, ValueSource,
 };
 use serde::{Deserialize, Deserializer};
 use serde_json::{Value, json};
@@ -39,10 +39,6 @@ fn precedence_is_push_order() {
 struct Fixed(Option<Layer>);
 
 impl LayerSource for Fixed {
-    fn source(&self) -> Source {
-        Source::custom("keychain", "login")
-    }
-
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
         Ok(self.0.clone())
     }
@@ -65,7 +61,7 @@ fn an_absent_source_changes_nothing() {
     let layers = Layers::new().push(val(json!({"a": 1}))).push(Fixed(None));
     let result = layers.resolve().unwrap();
     assert_eq!(result.value, json!({"a": 1}));
-    assert_eq!(result.provenance.rows().len(), 1);
+    assert_eq!(result.rows().len(), 1);
 }
 
 struct Counting {
@@ -74,14 +70,13 @@ struct Counting {
 }
 
 impl LayerSource for Counting {
-    fn source(&self) -> Source {
-        Source::custom("count", "n")
-    }
-
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
         self.calls.fetch_add(1, Ordering::SeqCst);
         if self.fail {
-            Err(ConfigError::source_failed(self.source(), "boom"))
+            Err(ConfigError::SourceFailed {
+                origin: Source::custom("count", "n"),
+                message: "boom".to_owned(),
+            })
         } else {
             Ok(None)
         }
@@ -113,10 +108,6 @@ fn the_first_error_is_returned_and_later_sources_are_not_called() {
 struct SeesBase(Arc<Mutex<Option<Value>>>);
 
 impl LayerSource for SeesBase {
-    fn source(&self) -> Source {
-        Source::custom("probe", "p")
-    }
-
     fn load(&self, base: &Value) -> Result<Option<Layer>, ConfigError> {
         *self.0.lock().unwrap() = Some(base.clone());
         Ok(None)
@@ -132,16 +123,6 @@ fn a_source_sees_the_value_below_it() {
         .push(SeesBase(seen.clone()));
     layers.resolve().unwrap();
     assert_eq!(*seen.lock().unwrap(), Some(json!({"a": 1, "b": 2})));
-}
-
-#[test]
-fn replace_at_replaces_instead_of_merging() {
-    let upper =
-        Layer::new(Source::custom("keychain", "login"), json!({"a": {"c": 1}})).replace_at(["a"]);
-    let layers = Layers::new()
-        .push(val(json!({"a": {"b": 1}})))
-        .push(Fixed(Some(upper)));
-    assert_eq!(resolved(&layers), json!({"a": {"c": 1}}));
 }
 
 #[derive(Debug, Default, Deserialize, PartialEq)]
@@ -189,7 +170,7 @@ fn deserialize_error_lists_files_and_variables_from_the_sources() {
         dir.path().to_path_buf(),
         environment(&[("MY_APP__NAME", "n")]),
     );
-    match loader.layers().load::<Defaulted>().unwrap_err() {
+    match loader.load::<Defaulted>().unwrap_err() {
         ConfigError::Deserialize {
             files, variables, ..
         } => {
@@ -202,39 +183,35 @@ fn deserialize_error_lists_files_and_variables_from_the_sources() {
 
 // Provenance (REQ-CFG-0007).
 
-fn path(segments: &[&str]) -> KeyPath {
-    KeyPath::from_segments(segments.iter().map(|s| (*s).to_owned()))
-}
-
 #[test]
 fn env_leaf_names_its_variable_and_file_leaf_keeps_the_file() {
     let dir = TempDir::new();
     write_file(dir.path(), "default.json", r#"{"a":{"b":1,"c":2}}"#);
-    let loader = Loader::new(
-        AppName::new("my-app").unwrap(),
-        dir.path().to_path_buf(),
-        environment(&[("MY_APP__A__B", "3")]),
-    );
-    let rows = loader.layers().resolve().unwrap().provenance.rows();
+    let layers = Layers::new()
+        .push(FileSource::new(dir.path().join("default.json")))
+        .push(EnvSource::new(
+            "MY_APP__",
+            environment(&[("MY_APP__A__B", "3")]),
+        ));
+    let rows = layers.resolve().unwrap().rows();
     assert_eq!(rows.len(), 2);
-    assert_eq!(rows[0].path.to_string(), "a.b");
+    assert_eq!(rows[0].path, ["a", "b"]);
     assert_eq!(rows[0].source, Source::env("MY_APP__A__B"));
     assert_eq!(rows[0].value, json!(3));
-    assert_eq!(rows[1].path.to_string(), "a.c");
+    assert_eq!(rows[1].path, ["a", "c"]);
     assert_eq!(rows[1].source.kind, SourceKind::File);
     assert!(rows[1].source.name.ends_with("default.json"));
     assert_eq!(rows[1].value, json!(2));
 }
 
 #[test]
-fn a_replaced_leaf_is_gone_from_provenance() {
+fn a_replaced_leaf_is_gone_from_the_rows() {
     let layers = Layers::new()
         .push(val(json!({"a": {"b": 1}})))
         .push(val(json!({"a": 5})));
-    let provenance = layers.resolve().unwrap().provenance;
-    assert!(provenance.source_of(&path(&["a"])).is_some());
-    assert!(provenance.source_of(&path(&["a", "b"])).is_none());
-    assert_eq!(provenance.rows().len(), 1);
+    let rows = layers.resolve().unwrap().rows();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].path, ["a"]);
 }
 
 #[test]
@@ -244,86 +221,34 @@ fn merging_an_empty_object_keeps_the_leaves_below() {
         .push(val(json!({"a": {}})));
     let resolved = layers.resolve().unwrap();
     assert_eq!(resolved.value, json!({"a": {"b": 1}}));
-    assert!(resolved.provenance.source_of(&path(&["a", "b"])).is_some());
-    assert!(resolved.provenance.source_of(&path(&["a"])).is_none());
+    let rows = resolved.rows();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].path, ["a", "b"]);
 }
 
 #[test]
-fn a_custom_source_is_reported_and_source_of_matches_rows() {
+fn a_custom_source_is_reported_and_rows_serialise() {
     let layers = Layers::new()
         .push(val(json!({"a": 1, "k": 0})))
         .push(fixed(json!({"k": 1})));
-    let provenance = layers.resolve().unwrap().provenance;
-    let source = provenance.source_of(&path(&["k"])).unwrap();
-    assert_eq!(source, &Source::custom("keychain", "login"));
-    assert_eq!(source.to_string(), "keychain login");
-    for row in provenance.rows() {
-        assert_eq!(provenance.source_of(&row.path), Some(&row.source));
-    }
-    let rendered = serde_json::to_value(provenance.rows()).unwrap();
-    assert_eq!(rendered[1]["path"], json!("k"));
+    let rows = layers.resolve().unwrap().rows();
+    assert_eq!(rows[1].source, Source::custom("keychain", "login"));
+    assert_eq!(rows[1].source.to_string(), "keychain login");
+    let rendered = serde_json::to_value(&rows).unwrap();
+    assert_eq!(rendered[1]["path"], json!(["k"]));
     assert_eq!(rendered[1]["value"], json!(1));
 }
 
 #[test]
-fn the_deepest_attribute_wins() {
-    let outer = Source::custom("outer", "o");
-    let inner = Source::custom("inner", "i");
-    let layer = Layer::new(
-        Source::custom("base", "b"),
-        json!({"a": {"b": 1, "c": 2}, "d": 3}),
-    )
-    .attribute(["a"], outer.clone())
-    .attribute(["a", "b"], inner.clone());
-    let provenance = Layers::new()
-        .push(Fixed(Some(layer)))
-        .resolve()
-        .unwrap()
-        .provenance;
-    assert_eq!(provenance.source_of(&path(&["a", "b"])), Some(&inner));
-    assert_eq!(provenance.source_of(&path(&["a", "c"])), Some(&outer));
-    assert_eq!(
-        provenance.source_of(&path(&["d"])),
-        Some(&Source::custom("base", "b"))
-    );
-}
-
-#[test]
-fn a_segment_with_a_dot_is_written_as_a_json_string() {
-    let key = KeyPath::from_segments(["a.b".to_owned(), "c".to_owned()]);
-    assert_eq!(key.to_string(), r#""a.b".c"#);
-}
-
-// Loader on the engine (REQ-CFG-0008).
-
-#[test]
-fn a_pushed_value_source_overrides_the_environment() {
+fn a_required_file_that_is_absent_is_missing_default() {
     let dir = TempDir::new();
-    write_file(dir.path(), "default.json", r#"{"a":0}"#);
-    let loader = Loader::new(
-        AppName::new("my-app").unwrap(),
-        dir.path().to_path_buf(),
-        environment(&[("MY_APP__A", "1")]),
-    );
-    let flags = Source::flag("--a");
-    let value: Value = loader
-        .layers()
-        .push(ValueSource::new(flags, json!({"a": 2})))
-        .load()
-        .unwrap();
-    assert_eq!(value, json!({"a": 2}));
-}
-
-#[test]
-fn loader_layers_reports_a_missing_default_as_a_missing_file() {
-    let dir = TempDir::new();
-    let loader = Loader::new(
-        AppName::new("my-app").unwrap(),
-        dir.path().to_path_buf(),
-        Vec::new(),
-    );
-    let engine = loader.layers().load::<Value>().unwrap_err();
-    assert_eq!(engine.code(), "CFG.MISSING_FILE");
-    let preset = loader.load::<Value>().unwrap_err();
-    assert_eq!(preset.code(), "CFG.MISSING_DEFAULT");
+    let path = dir.path().join("a.json");
+    let error = Layers::new()
+        .push(FileSource::new(&path))
+        .load::<Value>()
+        .unwrap_err();
+    match error {
+        ConfigError::MissingDefault { path: reported } => assert_eq!(reported, path),
+        other => panic!("unexpected {other}"),
+    }
 }

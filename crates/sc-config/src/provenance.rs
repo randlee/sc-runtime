@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
-use serde::{Serialize, Serializer};
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::layers::Layer;
@@ -12,7 +12,6 @@ use crate::layers::Layer;
 ///
 /// A consumer's own kind uses [`SourceKind::Custom`].
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[non_exhaustive]
 pub enum SourceKind {
     /// A file.
     File,
@@ -43,7 +42,6 @@ impl fmt::Display for SourceKind {
 /// For a file the name is its path; for an environment setting it is the
 /// variable name.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[non_exhaustive]
 pub struct Source {
     /// What sort of origin this is.
     pub kind: SourceKind,
@@ -91,54 +89,11 @@ impl fmt::Display for Source {
     }
 }
 
-/// Path of keys from the document root to a setting.
-///
-/// `Display` joins the segments with `.` and writes a segment that contains
-/// `.` as a JSON string.
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct KeyPath(pub(crate) Vec<String>);
-
-impl KeyPath {
-    /// Builds a path from owned segments, outermost key first.
-    pub fn from_segments(segments: impl IntoIterator<Item = String>) -> Self {
-        Self(segments.into_iter().collect())
-    }
-}
-
-impl KeyPath {
-    pub(crate) fn from_strs<'a>(segments: impl AsRef<[&'a str]>) -> Self {
-        Self(segments.as_ref().iter().map(|s| (*s).to_owned()).collect())
-    }
-}
-
-impl fmt::Display for KeyPath {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (index, segment) in self.0.iter().enumerate() {
-            if index > 0 {
-                formatter.write_str(".")?;
-            }
-            if segment.contains('.') {
-                write!(formatter, "{}", Value::String(segment.clone()))?;
-            } else {
-                formatter.write_str(segment)?;
-            }
-        }
-        Ok(())
-    }
-}
-
-impl Serialize for KeyPath {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.collect_str(self)
-    }
-}
-
 /// One leaf of the resolved value with the source that set it.
 #[derive(Clone, Debug, Serialize)]
-#[non_exhaustive]
 pub struct ResolvedRow {
-    /// Path of the leaf.
-    pub path: KeyPath,
+    /// Key segments from the document root to the leaf, outermost first.
+    pub path: Vec<String>,
     /// Source of the highest layer that set it.
     pub source: Source,
     /// The leaf's JSON value.
@@ -150,18 +105,13 @@ pub struct ResolvedRow {
 /// A leaf is a scalar, an array, `null` or an empty object. A leaf replaced by
 /// a higher layer is no longer listed.
 #[derive(Clone, Debug, Default)]
-pub struct Provenance {
-    leaves: BTreeMap<KeyPath, (Source, Value)>,
+pub(crate) struct Provenance {
+    leaves: BTreeMap<Vec<String>, (Source, Value)>,
 }
 
 impl Provenance {
-    /// Returns the source of the leaf at `path`, if there is one.
-    pub fn source_of(&self, path: &KeyPath) -> Option<&Source> {
-        self.leaves.get(path).map(|(source, _)| source)
-    }
-
     /// Returns every leaf, sorted by path.
-    pub fn rows(&self) -> Vec<ResolvedRow> {
+    pub(crate) fn rows(&self) -> Vec<ResolvedRow> {
         self.leaves
             .iter()
             .map(|(path, (source, value))| ResolvedRow {
@@ -173,8 +123,8 @@ impl Provenance {
     }
 
     /// Forgets every leaf at or below `path`.
-    pub(crate) fn remove_under(&mut self, path: &KeyPath) {
-        self.leaves.retain(|key, _| !key.0.starts_with(&path.0));
+    pub(crate) fn remove_under(&mut self, path: &[String]) {
+        self.leaves.retain(|key, _| !key.starts_with(path));
     }
 
     /// Records the leaves `layer` sets. `base` is the value below the layer.
@@ -184,11 +134,10 @@ impl Provenance {
             if matches!(value, Value::Object(_)) && is_object_at(base, &segments) {
                 continue;
             }
-            let path = KeyPath(segments);
-            let source = layer.source_for(&path).clone();
+            let source = layer.source_for(&segments).clone();
             self.leaves
-                .retain(|key, _| !(key.0.starts_with(&path.0) || path.0.starts_with(&key.0)));
-            self.leaves.insert(path, (source, value.clone()));
+                .retain(|key, _| !(key.starts_with(&segments) || segments.starts_with(key)));
+            self.leaves.insert(segments, (source, value.clone()));
         }
     }
 }

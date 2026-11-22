@@ -7,7 +7,7 @@ use serde_json::{Map, Value};
 
 use crate::error::ConfigError;
 use crate::layers::{Layer, LayerSource};
-use crate::provenance::{KeyPath, Source, leaves};
+use crate::provenance::{Source, leaves};
 
 /// One JSON file.
 ///
@@ -27,7 +27,7 @@ use crate::provenance::{KeyPath, Source, leaves};
 pub struct FileSource {
     path: PathBuf,
     optional: bool,
-    accepts: Option<Vec<KeyPath>>,
+    accepts: Option<Vec<Vec<String>>>,
 }
 
 impl FileSource {
@@ -53,11 +53,11 @@ impl FileSource {
     /// [`ConfigError::UnknownKey`]. Without this call every key is allowed.
     #[must_use]
     pub fn accepts<'a, P: AsRef<[&'a str]>>(mut self, paths: impl IntoIterator<Item = P>) -> Self {
-        self.accepts = Some(paths.into_iter().map(KeyPath::from_strs).collect());
+        self.accepts = Some(paths.into_iter().map(strs).collect());
         self
     }
 
-    pub(crate) fn with_accepted(mut self, accepted: Option<Vec<KeyPath>>) -> Self {
+    pub(crate) fn with_accepted(mut self, accepted: Option<Vec<Vec<String>>>) -> Self {
         self.accepts = accepted;
         self
     }
@@ -69,7 +69,7 @@ impl FileSource {
                 return if self.optional {
                     Ok(None)
                 } else {
-                    Err(ConfigError::MissingFile {
+                    Err(ConfigError::MissingDefault {
                         path: self.path.clone(),
                     })
                 };
@@ -96,10 +96,10 @@ impl FileSource {
             return Ok(());
         };
         for (segments, _) in leaves(value) {
-            if !accepted.iter().any(|ok| segments.starts_with(&ok.0)) {
+            if !accepted.iter().any(|ok| segments.starts_with(ok)) {
                 return Err(ConfigError::UnknownKey {
                     path: self.path.clone(),
-                    key: KeyPath(segments).to_string(),
+                    key: segments.join("."),
                 });
             }
         }
@@ -108,16 +108,12 @@ impl FileSource {
 }
 
 impl LayerSource for FileSource {
-    fn source(&self) -> Source {
-        Source::file(&self.path)
-    }
-
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
         let Some(value) = self.read()? else {
             return Ok(None);
         };
         self.check_accepted(&value)?;
-        Ok(Some(Layer::new(self.source(), value)))
+        Ok(Some(Layer::new(Source::file(&self.path), value)))
     }
 }
 
@@ -151,7 +147,9 @@ pub struct EnvSource {
     /// `None` matches no variable, so only aliases apply.
     prefix: Option<String>,
     environment: Vec<(OsString, OsString)>,
-    aliases: Vec<(String, KeyPath)>,
+    aliases: Vec<(String, Vec<String>)>,
+    /// A variable never applied, even when it matches.
+    excluded: Option<OsString>,
 }
 
 impl EnvSource {
@@ -161,6 +159,7 @@ impl EnvSource {
             prefix: Some(prefix.into()),
             environment,
             aliases: Vec::new(),
+            excluded: None,
         }
     }
 
@@ -170,6 +169,7 @@ impl EnvSource {
             prefix: None,
             environment,
             aliases: Vec::new(),
+            excluded: None,
         }
     }
 
@@ -179,20 +179,27 @@ impl EnvSource {
     /// variable name's bytes. The value is parsed the same way.
     #[must_use]
     pub fn alias<'a>(self, variable: impl Into<String>, path: impl AsRef<[&'a str]>) -> Self {
-        self.alias_path(variable.into(), KeyPath::from_strs(path))
+        self.alias_path(variable.into(), strs(path))
     }
 
-    pub(crate) fn alias_path(mut self, variable: String, path: KeyPath) -> Self {
+    pub(crate) fn alias_path(mut self, variable: String, path: Vec<String>) -> Self {
         self.aliases.push((variable, path));
         self
     }
 
+    /// Never applies the variable `name`, even when it matches the prefix.
+    pub(crate) fn exclude(mut self, name: OsString) -> Self {
+        self.excluded = Some(name);
+        self
+    }
+
     /// Lists the variables to apply, in order, with the alias path if any.
-    fn matches(&self) -> Vec<(&OsString, &OsString, Option<&KeyPath>)> {
+    fn matches(&self) -> Vec<(&OsString, &OsString, Option<&Vec<String>>)> {
         let prefix = self.prefix.as_deref();
         let mut prefixed: Vec<_> = self
             .environment
             .iter()
+            .filter(|(name, _)| self.excluded.as_ref() != Some(name))
             .filter(|(name, _)| {
                 prefix.is_some_and(|prefix| name.as_encoded_bytes().starts_with(prefix.as_bytes()))
             })
@@ -213,10 +220,6 @@ impl EnvSource {
 }
 
 impl LayerSource for EnvSource {
-    fn source(&self) -> Source {
-        Source::env(self.prefix.clone().unwrap_or_default())
-    }
-
     fn load(&self, base: &Value) -> Result<Option<Layer>, ConfigError> {
         let matches = self.matches();
         if matches.is_empty() {
@@ -234,7 +237,7 @@ impl LayerSource for EnvSource {
                 });
             };
             let segments = match alias {
-                Some(path) => path.0.clone(),
+                Some(path) => path.clone(),
                 None => key_segments(name, self.prefix.as_deref().unwrap_or_default()),
             };
             let parsed = parse_value(value);
@@ -243,11 +246,14 @@ impl LayerSource for EnvSource {
             };
             set_path(&mut scratch, &segments, parsed.clone()).map_err(|()| failed())?;
             set_path(&mut overlay, &segments, parsed).map_err(|()| failed())?;
-            applied.push((KeyPath(segments), Source::env(name)));
+            applied.push((segments, Source::env(name)));
         }
-        let mut layer = Layer::new(self.source(), overlay);
+        let mut layer = Layer::new(
+            Source::env(self.prefix.clone().unwrap_or_default()),
+            overlay,
+        );
         for (path, origin) in applied {
-            layer = layer.replace_key(path.clone()).attribute_key(path, origin);
+            layer = layer.replace_at(path.clone()).attribute(path, origin);
         }
         Ok(Some(layer))
     }
@@ -324,11 +330,12 @@ impl ValueSource {
 }
 
 impl LayerSource for ValueSource {
-    fn source(&self) -> Source {
-        self.source.clone()
-    }
-
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
         Ok(Some(Layer::new(self.source.clone(), self.value.clone())))
     }
+}
+
+/// Copies a slice of key segments.
+pub(crate) fn strs<'a>(segments: impl AsRef<[&'a str]>) -> Vec<String> {
+    segments.as_ref().iter().map(|s| (*s).to_owned()).collect()
 }

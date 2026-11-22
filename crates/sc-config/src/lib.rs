@@ -17,8 +17,8 @@ pub use layers::{Layer, LayerSource, Layers, Resolved};
 #[doc(inline)]
 pub use load::{Loader, load};
 #[doc(inline)]
-pub use provenance::{KeyPath, Provenance, ResolvedRow, Source, SourceKind};
+pub use provenance::{ResolvedRow, Source, SourceKind};
 #[doc(inline)]
 pub use sources::{EnvSource, FileSource, ValueSource};
 #[doc(inline)]
-pub use standard::{After, Slot, StandardContext, StandardLayers};
+pub use standard::{Slot, StandardContext, StandardLayers};

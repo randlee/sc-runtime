@@ -23,12 +23,11 @@ use serde_json::Value;
 use crate::app_name::AppName;
 use crate::error::ConfigError;
 use crate::layers::{LayerSource, Layers, Resolved};
-use crate::provenance::{KeyPath, Source};
-use crate::sources::{EnvSource, FileSource, ValueSource};
+use crate::provenance::Source;
+use crate::sources::{EnvSource, FileSource, ValueSource, strs};
 
 /// One position in the standard order.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[non_exhaustive]
 pub enum Slot {
     /// Built-in defaults.
     Defaults,
@@ -46,39 +45,6 @@ pub enum Slot {
     Flags,
 }
 
-/// The slot a source is inserted directly above, as in `After::User`.
-///
-/// Same variants as [`Slot`] except `Flags`, which has nothing above it.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[non_exhaustive]
-pub enum After {
-    /// Above [`Slot::Defaults`].
-    Defaults,
-    /// Above [`Slot::System`].
-    System,
-    /// Above [`Slot::User`].
-    User,
-    /// Above [`Slot::Project`].
-    Project,
-    /// Above [`Slot::Local`].
-    Local,
-    /// Above [`Slot::Env`].
-    Env,
-}
-
-impl After {
-    fn slot(self) -> Slot {
-        match self {
-            Self::Defaults => Slot::Defaults,
-            Self::System => Slot::System,
-            Self::User => Slot::User,
-            Self::Project => Slot::Project,
-            Self::Local => Slot::Local,
-            Self::Env => Slot::Env,
-        }
-    }
-}
-
 const SLOTS: [Slot; 7] = [
     Slot::Defaults,
     Slot::System,
@@ -88,20 +54,6 @@ const SLOTS: [Slot; 7] = [
     Slot::Env,
     Slot::Flags,
 ];
-
-impl fmt::Display for Slot {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Self::Defaults => "defaults",
-            Self::System => "system",
-            Self::User => "user",
-            Self::Project => "project",
-            Self::Local => "local",
-            Self::Env => "env",
-            Self::Flags => "flags",
-        })
-    }
-}
 
 /// Names and folders for a [`StandardLayers`] stack.
 #[derive(Clone, Debug)]
@@ -193,7 +145,7 @@ impl StandardContext {
         let relocated = self
             .environment
             .iter()
-            .find(|(key, _)| *key == self.home_var)
+            .find(|(key, value)| *key == self.home_var && !value.is_empty())
             .map(|(_, value)| PathBuf::from(value));
         relocated.or_else(|| {
             let home = self.variable(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
@@ -210,9 +162,8 @@ impl StandardContext {
 /// The layers a product uses, in the one standard order.
 ///
 /// Fill the slots you want; call order does not matter, slots load in slot
-/// order. Filling a slot twice is [`ConfigError::DuplicateSlot`], returned by
-/// [`resolve`](Self::resolve) and [`load`](Self::load). A slot whose folder
-/// is not set reads nothing.
+/// order. Calling a slot method again replaces its earlier value. A slot whose
+/// folder is not set reads nothing.
 ///
 /// # Examples
 ///
@@ -232,12 +183,11 @@ impl StandardContext {
 pub struct StandardLayers {
     context: StandardContext,
     filled: BTreeSet<Slot>,
-    duplicate: Option<Slot>,
     defaults: Option<Value>,
     flags: Option<Value>,
     env_prefixes: Vec<String>,
-    aliases: Vec<(String, KeyPath)>,
-    accepts: BTreeMap<AppName, Vec<KeyPath>>,
+    aliases: Vec<(String, Vec<String>)>,
+    accepts: BTreeMap<AppName, Vec<Vec<String>>>,
     inserted: Vec<(Slot, Box<dyn LayerSource>)>,
 }
 
@@ -256,7 +206,6 @@ impl StandardLayers {
         Self {
             context,
             filled: BTreeSet::new(),
-            duplicate: None,
             defaults: None,
             flags: None,
             env_prefixes: Vec::new(),
@@ -267,9 +216,7 @@ impl StandardLayers {
     }
 
     fn fill(mut self, slot: Slot) -> Self {
-        if !self.filled.insert(slot) && self.duplicate.is_none() {
-            self.duplicate = Some(slot);
-        }
+        self.filled.insert(slot);
         self
     }
 
@@ -320,12 +267,12 @@ impl StandardLayers {
         self.fill(Slot::Flags)
     }
 
-    /// Adds `source` directly above `after`. Slots cannot be reordered.
+    /// Adds `source` directly above `slot`. Slots cannot be reordered.
     ///
     /// Sources inserted after the same slot stack in insertion order.
     #[must_use]
-    pub fn insert(mut self, after: After, source: impl LayerSource + 'static) -> Self {
-        self.inserted.push((after.slot(), Box::new(source)));
+    pub fn insert(mut self, slot: Slot, source: impl LayerSource + 'static) -> Self {
+        self.inserted.push((slot, Box::new(source)));
         self
     }
 
@@ -338,32 +285,28 @@ impl StandardLayers {
         product: &AppName,
         paths: impl IntoIterator<Item = P>,
     ) -> Self {
-        self.accepts.insert(
-            product.clone(),
-            paths.into_iter().map(KeyPath::from_strs).collect(),
-        );
+        self.accepts
+            .insert(product.clone(), paths.into_iter().map(strs).collect());
         self
     }
 
     /// Maps the variable `variable` to the key path `path` in the `Env` slot.
     ///
-    /// Aliases load in the `Env` slot, after its prefixed variables, even
-    /// when [`env`](Self::env) is not called.
+    /// This fills the `Env` slot, so [`env`](Self::env) is not needed.
+    /// Aliases apply after all prefixed variables.
     #[must_use]
     pub fn alias<'a>(mut self, variable: impl Into<String>, path: impl AsRef<[&'a str]>) -> Self {
-        self.aliases
-            .push((variable.into(), KeyPath::from_strs(path)));
-        self
+        self.aliases.push((variable.into(), strs(path)));
+        self.fill(Slot::Env)
     }
 
     /// Resolves the stack.
     ///
     /// # Errors
     ///
-    /// Returns [`ConfigError::DuplicateSlot`] if a slot was filled twice, or
-    /// the first error of [`Layers::resolve`].
+    /// Returns the first error of [`Layers::resolve`].
     pub fn resolve(self) -> Result<Resolved, ConfigError> {
-        self.into_layers()?.resolve()
+        self.into_layers().resolve()
     }
 
     /// Resolves the stack and deserialises the result into `T`, once.
@@ -376,10 +319,7 @@ impl StandardLayers {
         self.resolve()?.deserialize()
     }
 
-    fn into_layers(mut self) -> Result<Layers, ConfigError> {
-        if let Some(slot) = self.duplicate {
-            return Err(ConfigError::DuplicateSlot { slot });
-        }
+    fn into_layers(mut self) -> Layers {
         let mut layers = Layers::new();
         for slot in SLOTS {
             for file in self.files(slot) {
@@ -388,7 +328,7 @@ impl StandardLayers {
             if let Some(value) = self.value_for(slot) {
                 layers = layers.push(value);
             }
-            if slot == Slot::Env {
+            if slot == Slot::Env && self.filled.contains(&Slot::Env) {
                 for env in self.env_sources() {
                     layers = layers.push(env);
                 }
@@ -401,7 +341,7 @@ impl StandardLayers {
                 layers = layers.push_boxed(source);
             }
         }
-        Ok(layers)
+        layers
     }
 
     fn value_for(&self, slot: Slot) -> Option<ValueSource> {
@@ -420,12 +360,17 @@ impl StandardLayers {
             .iter()
             .map(|prefix| EnvSource::new(prefix.clone(), environment.clone()))
             .collect();
+        // The home variable relocates the user folder and is never a setting.
+        sources = sources
+            .into_iter()
+            .map(|source| source.exclude(self.context.home_var.clone()))
+            .collect();
         if !self.aliases.is_empty() {
             let mut aliases = EnvSource::aliases_only(environment.clone());
             for (variable, path) in &self.aliases {
                 aliases = aliases.alias_path(variable.clone(), path.clone());
             }
-            sources.push(aliases);
+            sources.push(aliases.exclude(self.context.home_var.clone()));
         }
         sources
     }

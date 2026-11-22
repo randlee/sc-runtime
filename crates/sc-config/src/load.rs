@@ -14,7 +14,8 @@ use crate::sources::{EnvSource, FileSource};
 /// parallel callers use, because it does not read the process environment or
 /// the current directory except for the path the caller already built.
 ///
-/// `Loader` is a preset stack on [`Layers`]: see [`Loader::layers`].
+/// `Loader` is a preset stack on [`Layers`]: `default.json`, `local.json`, then
+/// the environment.
 ///
 /// # Examples
 ///
@@ -49,11 +50,9 @@ impl Loader {
         }
     }
 
-    /// Returns the loader's stack: `default.json` (required), `local.json`
-    /// (optional), then the environment variables of the app.
-    ///
-    /// Push more sources onto it to layer them above the environment.
-    pub fn layers(&self) -> Layers {
+    /// The preset stack: `default.json` (required), `local.json` (optional),
+    /// then the environment variables of the app.
+    fn layers(&self) -> Layers {
         Layers::new()
             .push(FileSource::new(self.config_dir.join("default.json")))
             .push(FileSource::new(self.config_dir.join("local.json")).optional())
@@ -75,13 +74,7 @@ impl Loader {
     /// be read or parsed, an override cannot be applied, a prefix-matching
     /// variable is not Unicode, or the merged document does not match `T`.
     pub fn load<T: DeserializeOwned>(&self) -> Result<T, ConfigError> {
-        let default_path = self.config_dir.join("default.json");
-        match self.layers().load() {
-            Err(ConfigError::MissingFile { path }) if path == default_path => {
-                Err(ConfigError::MissingDefault { path })
-            }
-            other => other,
-        }
+        self.layers().load()
     }
 }
 

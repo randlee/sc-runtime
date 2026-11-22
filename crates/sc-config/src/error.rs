@@ -3,7 +3,6 @@ use std::fmt;
 use std::path::PathBuf;
 
 use crate::provenance::Source;
-use crate::standard::Slot;
 
 /// Failure from application-name construction or configuration loading.
 ///
@@ -60,11 +59,6 @@ pub enum ConfigError {
         /// Variable name, which may itself be non-Unicode.
         variable: OsString,
     },
-    /// A required file is absent.
-    MissingFile {
-        /// Full path that was looked up.
-        path: PathBuf,
-    },
     /// A file holds a key outside the paths its source accepts.
     UnknownKey {
         /// Path of the file holding the key.
@@ -79,31 +73,16 @@ pub enum ConfigError {
         /// Message from that source.
         message: String,
     },
-    /// A standard slot was filled twice.
-    DuplicateSlot {
-        /// The slot that was filled twice.
-        slot: Slot,
-    },
 }
 
 impl ConfigError {
     fn layered_recovery(&self) -> &'static str {
         match self {
-            Self::MissingFile { .. } => "Create the file, or make the source optional.",
             Self::UnknownKey { .. } => {
                 "Remove the key from that file, or set it where it is accepted."
             }
             Self::SourceFailed { .. } => "Follow the message from that source.",
-            Self::DuplicateSlot { .. } => "Fill each slot once; add extra sources with insert.",
             _ => "",
-        }
-    }
-
-    /// Builds the error a consumer's `LayerSource` returns when it fails.
-    pub fn source_failed(origin: Source, message: impl Into<String>) -> Self {
-        Self::SourceFailed {
-            origin,
-            message: message.into(),
         }
     }
 
@@ -117,10 +96,8 @@ impl ConfigError {
             Self::Deserialize { .. } => "CFG.DESERIALIZE",
             Self::InvalidName { .. } => "APP.INVALID_NAME",
             Self::NonUnicode { .. } => "CFG.NON_UNICODE",
-            Self::MissingFile { .. } => "CFG.MISSING_FILE",
             Self::UnknownKey { .. } => "CFG.UNKNOWN_KEY",
             Self::SourceFailed { .. } => "CFG.SOURCE",
-            Self::DuplicateSlot { .. } => "CFG.DUPLICATE_SLOT",
         }
     }
 
@@ -148,10 +125,7 @@ impl ConfigError {
             Self::NonUnicode { .. } => {
                 "Give the variable a Unicode name and value. Names that do not start with the application prefix are ignored."
             }
-            Self::MissingFile { .. }
-            | Self::UnknownKey { .. }
-            | Self::SourceFailed { .. }
-            | Self::DuplicateSlot { .. } => self.layered_recovery(),
+            Self::UnknownKey { .. } | Self::SourceFailed { .. } => self.layered_recovery(),
         }
     }
 }
@@ -159,13 +133,6 @@ impl ConfigError {
 impl ConfigError {
     fn fmt_layered(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::MissingFile { path } => write!(
-                formatter,
-                "{}: required file not found at {}; {}",
-                self.code(),
-                path.display(),
-                self.recovery()
-            ),
             Self::UnknownKey { path, key } => write!(
                 formatter,
                 "{}: key {key} in {} is not accepted; {}",
@@ -176,12 +143,6 @@ impl ConfigError {
             Self::SourceFailed { origin, message } => write!(
                 formatter,
                 "{}: source {origin} failed: {message}; {}",
-                self.code(),
-                self.recovery()
-            ),
-            Self::DuplicateSlot { slot } => write!(
-                formatter,
-                "{}: slot {slot} was filled twice; {}",
                 self.code(),
                 self.recovery()
             ),
@@ -250,10 +211,7 @@ impl fmt::Display for ConfigError {
                 variable.to_string_lossy(),
                 self.recovery()
             ),
-            Self::MissingFile { .. }
-            | Self::UnknownKey { .. }
-            | Self::SourceFailed { .. }
-            | Self::DuplicateSlot { .. } => self.fmt_layered(formatter),
+            Self::UnknownKey { .. } | Self::SourceFailed { .. } => self.fmt_layered(formatter),
         }
     }
 }
