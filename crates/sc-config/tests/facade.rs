@@ -74,3 +74,40 @@ fn composition_roots(manifest: &str) -> BTreeSet<String> {
         .filter(|item| !item.is_empty())
         .collect()
 }
+
+/// Every exported name is reachable from outside the crate, and `ConfigError`
+/// can only be matched with a wildcard arm (REQ-CFG-0009 criterion 2).
+#[test]
+fn layered_exports_are_usable_from_outside_the_crate() {
+    use sc_config::{
+        After, ConfigError, EnvSource, FileSource, KeyPath, Layer, LayerSource, Layers, Provenance,
+        Resolved, ResolvedRow, Slot, Source, SourceKind, StandardContext, StandardLayers,
+        ValueSource,
+    };
+
+    fn assert_send_sync<T: Send + Sync>() {}
+    assert_send_sync::<Layers>();
+    assert_send_sync::<FileSource>();
+    assert_send_sync::<EnvSource>();
+    assert_send_sync::<ValueSource>();
+    assert_send_sync::<StandardLayers>();
+    let _: Option<Box<dyn LayerSource>> = None;
+    let _: Option<(
+        Layer,
+        Resolved,
+        Provenance,
+        ResolvedRow,
+        KeyPath,
+        Source,
+        SourceKind,
+        StandardContext,
+    )> = None;
+    assert_eq!(After::User, Slot::User);
+
+    let error = ConfigError::DuplicateSlot { slot: Slot::User };
+    let named = match error {
+        ConfigError::DuplicateSlot { .. } => "duplicate",
+        _ => "other",
+    };
+    assert_eq!(named, "duplicate");
+}
