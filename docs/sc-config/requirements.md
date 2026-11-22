@@ -584,7 +584,10 @@ other load pipeline ([ADR-CFG-0004](architecture.md)).
 
    `base` is the value accumulated from the layers below, read-only.
    `Ok(None)` means the source is absent and contributes nothing.
-2. `Layer::new(source, value)` builds a layer. `.replace_at(path)` marks a
+2. Every key-path argument in REQ-CFG-0005 through REQ-CFG-0010
+   (`replace_at`, `attribute`, `accepts`, `alias`) is a slice of segments,
+   `&[&str]`; criteria write it as `["a","b"]`.
+   `Layer::new(source, value)` builds a layer. `.replace_at(path)` marks a
    key path whose value replaces the accumulated value whole instead of
    merging into it. `.attribute(path, source)` records the source of a
    path's leaves for provenance ([REQ-CFG-0007](requirements.md)); when
@@ -596,12 +599,14 @@ other load pipeline ([ADR-CFG-0004](architecture.md)).
    `Err` unchanged; and fold each layer onto the accumulated value with
    `merge` from [REQ-CFG-0001](requirements.md), applying `replace_at`
    paths first. It starts from `{}` and returns
-   `Resolved { value, provenance }`.
+   `Resolved { value, provenance }`. `Resolved` also records, in order, the
+   source of every layer that returned `Some`; `Deserialize.files` is the
+   paths of those `File` sources and `Deserialize.variables` the variables
+   attributed in them (REQ-CFG-0004 criterion 7).
 5. `Layers::load::<T>()` MUST equal `resolve()` followed by
    `Resolved::deserialize::<T>()`, which calls `serde_json::from_value::<T>`
    once on the final value. No layer is deserialised into `T` on its own
    ([ADR-CFG-0002](architecture.md) item 4).
-6. The engine does no I/O. Only sources read files or the environment.
 
 ### Rationale
 
@@ -621,12 +626,14 @@ Tests live in `crates/sc-config/tests` and use `ValueSource`
    appears in the result.
 3. A source returning `Ok(None)` leaves the result unchanged.
 4. A source returning `Err` makes `load` return that error, and a source
-   above it is never called (it holds a per-test `Cell` counter).
-5. A layer with `.replace_at("a")` and value `{"a":{"c":1}}` over
+   above it is never called (it holds a per-test `Arc<AtomicUsize>`).
+5. A layer with `.replace_at(["a"])` and value `{"a":{"c":1}}` over
    `{"a":{"b":1}}` resolves to `{"a":{"c":1}}`.
 6. An empty stack loads a `#[serde(default)]` struct as its default.
-7. A `T` whose `Deserialize` increments a per-test counter is deserialised
-   once for a three-layer stack.
+7. A `T` whose `Deserialize` increments a per-test `Arc<AtomicUsize>` is
+   deserialised once for a three-layer stack.
+8. A load over an existing `default.json` and an empty `local.json` that
+   fails to deserialise lists both files in `Deserialize.files`.
 
 ---
 
@@ -648,8 +655,9 @@ This item covers the three sources `sc-config` ships. Each implements
 2. A file is required by default: absent is `ConfigError::MissingFile
    { path }`. `.optional()` makes an absent file return `Ok(None)`.
 3. `.accepts(paths)` limits the file to the given key paths: a leaf outside
-   them is `ConfigError::UnknownKey { path, key }`. Without `.accepts`,
-   every key is allowed.
+   them is `ConfigError::UnknownKey { path, key }`; a leaf is inside an
+   accepted path when its path equals it or lies under it. Without
+   `.accepts`, every key is allowed.
 
 **`EnvSource`**
 
@@ -660,8 +668,8 @@ This item covers the three sources `sc-config` ships. Each implements
    into a key path and the value parsed exactly as in
    [REQ-CFG-0002](requirements.md) items 4 onward: same splitting on `__`,
    same JSON or string parsing, same order and the same errors. It never
-   reads the process environment. `Loader` passes `app.env_prefix()`, so
-   its behaviour is unchanged.
+   reads the process environment. An empty prefix matches every variable.
+   `Loader` passes `app.env_prefix()`, so its behaviour is unchanged.
 5. `.alias(variable, path)` maps one exact variable name to a key path,
    with the same value parsing. Aliases are applied after prefixed
    variables, in ascending byte order of the variable name.
@@ -687,11 +695,12 @@ set (REQ-SAG-0019).
 
 1. An absent file returns `MissingFile`; with `.optional()` it returns
    `Ok(None)`. A directory at the path returns `Read`.
-2. `.accepts(["a"])` over `{"a":1,"b":2}` returns `UnknownKey` naming `b`.
+2. `.accepts([["a"]])` over `{"a":1,"b":2}` returns `UnknownKey` naming
+   `b`; `.accepts([["laya"]])` over `{"laya":{"port":1}}` loads.
 3. The REQ-CFG-0002 success criteria pass against
    `EnvSource::new("MY_APP__", env)`, and with prefix `DECIDR_` the
    variable `DECIDR_LAYA__PORT=1` sets `{"laya":{"port":1}}`.
-4. `.alias("SC_PROJECT", "project")` with `SC_PROJECT=x` sets
+4. `.alias("SC_PROJECT", ["project"])` with `SC_PROJECT=x` sets
    `{"project":"x"}`.
 5. `MY_APP__A__B=2` over a base `{"a":1}` returns `Override`.
 
@@ -708,7 +717,8 @@ This item covers the provenance in `Resolved`
 
 1. `Source { kind, name }` and `SourceKind { File, Env, Flag, Default,
    Custom(String) }` MUST be public, `#[non_exhaustive]`, `Clone`, `Eq`,
-   `Display` and `Serialize`. A consumer's own kind uses `Custom`.
+   `Display` and `Serialize`, built with `Source::file`, `env`, `flag`,
+   `default` and `custom`. A consumer's own kind uses `Custom`.
 2. `KeyPath::from_segments(segments)` builds a path from owned strings.
    `Display` joins segments with `.` and writes a segment that contains `.`
    as a JSON string.
@@ -719,8 +729,8 @@ This item covers the provenance in `Resolved`
    a higher layer is gone from the provenance.
 5. `Provenance::source_of(&KeyPath) -> Option<&Source>` returns one leaf's
    source. `Provenance::rows()` returns every leaf as
-   `ResolvedRow { path, source, value }`, sorted by path, with `value` the
-   typed JSON value.
+   `ResolvedRow { path, source, value }` (`Serialize`), sorted by path,
+   with `value` the typed JSON value.
 
 ### Rationale
 
@@ -810,33 +820,40 @@ callers.
 This item covers `StandardLayers`, the stack products use
 ([ADR-CFG-0005](architecture.md)).
 
-1. The standard slots, lowest first, are: `Defaults`, `System`, `User`,
-   `Project`, `Local`, `Env`, `Flags`.
-2. `StandardLayers::new(ctx: StandardContext)` and one method per slot:
-   `.defaults(value)`, `.system()`, `.user()`, `.project()`, `.local()`,
-   `.env(prefixes)`, `.flags(value)`. `prefixes` is the consumer's list of
-   literal env prefixes, one per product (REQ-CFG-0006 item 4), applied in
-   list order so a later prefix wins. A slot not called is not
-   loaded. Call order does not matter: slots load in slot order.
-3. Filling a slot twice is `ConfigError::DuplicateSlot { slot }`, returned
-   by `load` and `resolve`.
-4. `.insert(After::Slot, source)` adds a consumer source directly above the
-   named slot. There is no way to reorder slots.
+1. The standard slots, lowest first, are the variants of the public enum
+   `Slot`: `Defaults`, `System`, `User`, `Project`, `Local`, `Env`,
+   `Flags`. `After` has the same variants except `Flags`.
+2. `StandardLayers::new(ctx: StandardContext)` and one method per slot,
+   each taking `self` and returning `Self`: `.defaults(value)`,
+   `.system()`, `.user()`, `.project()`, `.local()`, `.env(prefixes)`,
+   `.flags(value)`. `prefixes` is the consumer's list of literal env
+   prefixes, one per product (REQ-CFG-0006 item 4), applied in list order
+   so a later prefix wins; aliases apply after all of them. A slot not
+   called is not loaded. Call order does not matter: slots load in slot
+   order. Layers carry `Source::default` and `Source::flag` for
+   `.defaults` and `.flags`, and file or variable sources otherwise.
+3. `.load::<T>()` and `.resolve()` build the stack and return what
+   `Layers` does (REQ-CFG-0005). Filling a slot twice is
+   `ConfigError::DuplicateSlot { slot }`, returned by them.
+4. `.insert(After::Slot, source: impl LayerSource + 'static)` adds a
+   consumer source directly above the named slot; several at one point
+   apply in call order. There is no way to reorder slots.
 5. `StandardContext::new(family: AppName, products: Vec<AppName>,
-   environment)` names the folder and the files. `.with_home(dir)`,
+   environment: Vec<(OsString, OsString)>)` names the folder and the files. `.with_home(dir)`,
    `.with_system_dir(dir)` and `.with_project_root(dir)` set the folders.
 6. Folders: System is the system dir; User is `<home>/.<family>/`, where
-   `<home>` is `with_home` if set, else `HOME` (Unix) or `USERPROFILE`
-   (Windows) from the context's environment; Project and Local are
+   `<home>` is `with_home` if set, else `HOME`, else `USERPROFILE`, from
+   the context's environment; Project and Local are
    `<project_root>/.<family>/`. A slot whose folder is not set reads
    nothing.
 7. Files: in every folder, each product's `<product>.json` is read in list
    order, then each product's `<product>.local.json` in list order, so a
    local file wins. In the project folder the `.json` files are the
-   `Project` slot and the `.local.json` files are the `Local` slot. Every
-   file is an optional `FileSource`.
+   `Project` slot and the `.local.json` files are the `Local` slot; in the
+   system and user folders both belong to that folder's slot. Every file is
+   an optional `FileSource`.
 8. `.accepts(product, paths)` applies `FileSource::accepts` to that
-   product's files in every slot.
+   product's files in every slot; a product not in the context is ignored.
 9. `.alias(variable, path)` adds an alias to the `Env` slot.
 
 ### Rationale
@@ -862,8 +879,11 @@ Tests use temporary directories passed with `with_home`,
    `decidr.json` overrides `sc-agent.json` in the same folder, and
    `decidr.local.json` in the project folder overrides both.
 5. An unset system dir, home or project root reads nothing for that slot.
-6. `.accepts(decidr, ["model"])` with `decidr.json` holding `log_root`
+6. `.accepts(decidr, [["model"]])` with `decidr.json` holding `log_root`
    returns `UnknownKey`.
+7. `.env(["A_", "B_"])` with `A_X=1` and `B_X=2` gives `x` = `2`.
+8. With no `with_home` and `HOME` set to a temporary directory in the
+   context's environment, `.user()` reads `<HOME>/.<family>/`.
 
 ---
 
@@ -1075,8 +1095,7 @@ through [REQ-CFG-0010](requirements.md).
 1. Every new public enum, and every new public struct with public fields,
    MUST be `#[non_exhaustive]`. Structs are built with constructors or
    builders.
-2. A method added later to `LayerSource` MUST have a default body.
-3. Every export of `crates/sc-config/src/lib.rs` MUST be named in the
+2. Every export of `crates/sc-config/src/lib.rs` MUST be named in the
    `[public] facade` of `boundaries/sc-config/sc-config.toml`.
 
 ### Rationale
@@ -1087,5 +1106,4 @@ next field any consumer needs would break every other consumer.
 ### Success Criteria
 
 1. Review checks item 1 against each new type.
-2. A test implements `LayerSource` with only `source` and `load`.
-3. `facade_lists_every_export` (`crates/sc-config/tests/facade.rs`) passes.
+2. `facade_lists_every_export` (`crates/sc-config/tests/facade.rs`) passes.
