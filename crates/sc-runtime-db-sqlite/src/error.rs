@@ -37,7 +37,7 @@ const RECOVERY_REPLY_TYPE_MISMATCH: &str = "Do not retry a non-idempotent write 
 ///
 /// `Error::source` on `Sqlite` and `Commit` is the underlying
 /// [`rusqlite::Error`]. That type is part of this crate's public contract, so
-/// the rusqlite 0.41 pin is the semver boundary. `Open` carries that same
+/// the rusqlite 0.43 pin is the semver boundary. `Open` carries that same
 /// rusqlite error, or the `std::io::Error` from starting the thread, when one
 /// exists.
 #[derive(Debug)]
@@ -86,7 +86,7 @@ pub enum SqliteWriterError {
         /// Underlying rusqlite error.
         ///
         /// Shared across every caller in a failed batch. `rusqlite::Error` is
-        /// not `Clone` on rusqlite 0.41, and this crate does not build a new
+        /// not `Clone` on rusqlite 0.43, and this crate does not build a new
         /// `SqliteFailure`.
         source: Arc<rusqlite::Error>,
     },
