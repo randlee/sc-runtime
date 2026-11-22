@@ -404,8 +404,9 @@ precedence, a separate error type without codes and a per-layer decode into
 2. Consumers extend `sc-config` in two ways only: by implementing the
    public `LayerSource` trait, and by passing their own names (family,
    products, env prefix, aliases) when they build a stack. The built-in
-   sources have no other options: no format hook, no size cap, no
-   environment naming options ([REQ-CFG-0006](requirements.md)).
+   sources have only the options their consumers use (`optional`,
+   `accepts`, `alias`): no format hook, no size cap, no environment naming
+   options ([REQ-CFG-0006](requirements.md)).
 3. Layers fold as `serde_json::Value` with the one `merge`, and the result
    is deserialised into `T` once. An environment value and a file value for
    the same setting therefore reach `T` the same way.
@@ -419,7 +420,8 @@ precedence, a separate error type without codes and a per-layer decode into
      `replace_at` paths. The result is identical.
    - ADR-CFG-0001 items 3 and 4 and inventory: `ConfigError` becomes
      `#[non_exhaustive]` and gains the variants of
-     [REQ-CFG-0009](requirements.md).
+     [REQ-CFG-0009](requirements.md); item 4 reads "the path, variable,
+     source or slot at fault".
 
 ### Consequences
 
@@ -454,6 +456,7 @@ precedence, a separate error type without codes and a per-layer decode into
 
 - [ADR-CFG-0001](architecture.md), [ADR-CFG-0002](architecture.md):
   amended by item 5
+- [ADR-CFG-0005](architecture.md): the standard stack built on this engine
 - [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md),
   [NFR-CFG-0004](requirements.md)
 
@@ -476,7 +479,8 @@ sc-agent ships several products (CLIs and wheels) that share one folder,
 
 1. The standard order has seven slots, lowest first: defaults, system,
    user, project, local, environment, flags
-   ([REQ-CFG-0010](requirements.md)).
+   ([REQ-CFG-0010](requirements.md)). A project's settings override a
+   user's, as in git's system, global, local order.
 2. `StandardLayers` enforces it. Consumers choose which slots to fill and
    may insert their own source above a named slot; they cannot reorder
    slots.
@@ -484,10 +488,14 @@ sc-agent ships several products (CLIs and wheels) that share one folder,
    `~/.<family>/<product>.json` and `<project_root>/.<family>/<product>.json`,
    each overridden by `<product>.local.json` in the same folder.
 4. The consumer passes the home override, system folder and project root.
-   `sc-config` derives only the home folder itself, from `HOME` or
-   `USERPROFILE` in the environment it is given.
+   `sc-config` derives only the user folder: a consumer-nameable
+   `<FAMILY>_HOME` variable relocates it (so several apps and instances
+   can share one environment), else `~/.<family>/` from `HOME`, or
+   `USERPROFILE` on Windows, in the environment it is given.
 5. Products built on `sc-config` use `StandardLayers`. A product that uses
-   raw `Layers` says why in its own architecture document.
+   raw `Layers` says why in its own architecture document. `load` and
+   `Loader` remain for the template's `config/` layout
+   ([REQ-CFG-0008](requirements.md)).
 
 ### Consequences
 
@@ -511,8 +519,8 @@ sc-agent ships several products (CLIs and wheels) that share one folder,
 ### Implementation
 
 **Enforced by:** when Active, the success criteria of
-[REQ-CFG-0010](requirements.md), run by `cargo test -p sc-config`, and
-`arch-qa` review for a product using raw `Layers` without a stated reason.
+[REQ-CFG-0010](requirements.md) and [NFR-CFG-0004](requirements.md), run by
+`cargo test -p sc-config`, and `arch-qa` review for a product using raw `Layers` without a stated reason.
 
 ### Related Documents
 
