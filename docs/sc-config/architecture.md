@@ -12,8 +12,11 @@ Crate-level architecture and ADRs for `sc-config`. Repo-level architecture is in
 [`../architecture.md`](../architecture.md); this crate's requirements are in
 [`requirements.md`](requirements.md); its boundary manifest is
 `boundaries/sc-config/`. ADRs follow
-the shared SC requirement and ADR templates. Every ADR here is Active
-and binding; an ADR changes only through a later ADR that names it.
+the shared SC requirement and ADR templates. Only ADRs with **Status: Active**
+are binding; an Active ADR changes only through a later ADR that names it. An
+ADR with **Status: Proposed** binds nothing, is not cited as governing by any
+sprint plan, and is not enforced by `arch-qa` until a later change makes it
+Active.
 
 ## Role
 
@@ -31,13 +34,23 @@ observability, and nothing in this workspace is a dependency of it.
 | `Loader::load::<T>() -> Result<T, ConfigError>` | same merge as `load`, using only those inputs |
 | `ConfigError` | typed error enum; inventory below and [REQ-CFG-0004](requirements.md) |
 
-Proposed additions ([ADR-CFG-0004](#adr-cfg-0004-the-caller-defines-the-layers-sc-config-provides-the-engine)):
-`Layers` (ordered stack, push order is precedence), the unsealed
-`LayerSource` trait, `FileSource`, `EnvSource`, `ValueSource`, `Source` /
-`SourceKind` / `KeyPath` provenance types, `Provenance` and `ResolvedRow`,
-and `Loader::layers()`. `ConfigError` becomes `#[non_exhaustive]`.
+Proposed additions, not binding until [ADR-CFG-0004](#adr-cfg-0004-the-caller-defines-the-layers-sc-config-provides-the-engine)
+is Active: `Layers`, `Resolved`, `Layered<T>`, the unsealed `LayerSource`
+trait and `Layer`; `FileSource`, `FormatError`, `EnvSource`, `KeyCase`,
+`ValueMode`, `ValueSource`; `Source`, `SourceKind`, `KeyPath`, `Provenance`,
+`ResolvedRow`; `Loader::layers()`; `ConfigError` becomes `#[non_exhaustive]`
+and gains `MissingFile`, `TooLarge`, `ParseFormat`, `UnknownKey`,
+`InvalidKeyPath`, `EnvSetting`, `SourceFailed`, `source_failed`,
+`source_failed_with` and `report`.
 
 ## How loading works
+
+This is `Loader`'s behaviour. Its rules are owned by
+[REQ-CFG-0001](requirements.md) (files and `merge`) and
+[REQ-CFG-0002](requirements.md) (environment); the steps below summarise
+them. When [ADR-CFG-0004](#adr-cfg-0004-the-caller-defines-the-layers-sc-config-provides-the-engine)
+is Active, the same steps run as `Loader`'s preset stack on the layered engine
+([REQ-CFG-0008](requirements.md)).
 
 1. Read `default.json` into a `serde_json::Value` (required).
 2. Read `local.json` if present and merge it over the first value.
@@ -58,6 +71,8 @@ and `Loader::layers()`. `ConfigError` becomes `#[non_exhaustive]`.
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document  
+
+**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-the-caller-defines-the-layers-sc-config-provides-the-engine) item 5 amends items 3 and 4 and adds the inventory rows marked Proposed below.
 
 ### Context
 
@@ -120,6 +135,14 @@ carry a source location.
 | Override path is empty or walks through a non-object | `CFG.OVERRIDE` | `Override.variable`, the full variable name | Drop the empty segment, or change the name so the path does not descend through a scalar, array, or null. |
 | Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
 | Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
+| (Proposed, ADR-CFG-0004) A required non-default file is absent | `CFG.MISSING_FILE` | `MissingFile.path` | Create that file, or mark the source optional. |
+| (Proposed) A capped file exceeds its limit | `CFG.TOO_LARGE` | `TooLarge.path`, `TooLarge.limit` | Shrink the file or raise the limit the program set. |
+| (Proposed) A caller-supplied format parser failed | `CFG.PARSE_FORMAT` | `ParseFormat.path`, `.message`, optional `.line` and `.column` | Fix the file at the reported place. |
+| (Proposed) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it in the layer that accepts it. |
+| (Proposed) A key path is empty or has an empty segment | `CFG.KEY_PATH` | `InvalidKeyPath.input`, `.reason` | Give a non-empty path with non-empty segments; quote a segment that contains `.`. |
+| (Proposed) An environment source setting is empty | `CFG.ENV_SETTING` | `EnvSetting.setting`, `.value` | Give a non-empty prefix, separator or alias name. |
+| (Proposed) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `.message`, optional cause | Follow the message from that source. |
+| (Proposed) Deserialize also carries sources | `CFG.DESERIALIZE` | adds `Deserialize.sources`, every contributing source in precedence order | Align the merged JSON with `T`; `Layers::resolve` shows which source set each key. |
 
 ### Consequences
 
@@ -172,6 +195,8 @@ panicking constructs and opaque error types in the public API.
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document  
+
+**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-the-caller-defines-the-layers-sc-config-provides-the-engine) item 5 amends the Context, item 3 and item 6. Items 1, 2, 4 and 5 stay binding, and the Enforced-by check of one `serde_json::from_value::<T>` call applies to the single call after `Layers::resolve()`.
 
 ### Context
 
@@ -294,24 +319,15 @@ reload features as a note for later, possibly as a separate
    `sc-config`. `sc-config` never depends on that crate, and these features
    are not added to `sc-config` behind a Cargo feature.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
-   list. `allowed_dependencies` is `serde` and `serde_json`.
-   `forbidden_edges` lists workspace-member targets only. This lint tree's
-   only workspace member is `sc-config`, so that list is empty.
-   `sc-observability-types` and the other crates.io names in the
-   [REQ-RUN-0005](../requirements.md) policy table are not members of this
-   tree, so they are not manifest edges. `cargo tree -p sc-config -e normal --prefix none`
-   is what fails those names. a-2 created the single-member root lint tree
-   (`members = ["crates/sc-config"]`). a-5 extends that workspace to four
-   members; this crate's manifest stays the one this sprint writes.
-   `[public] facade` lists every `lib.rs` export. sc-lint 0.8.0 parses that
-   comma-separated list and does not compare it to the crate. The
-   `facade-mismatch` fixture under `examples/spike/boundary-proof/` exports
-   `present` and `extra` while its facade names only
-   `facade_mismatch::present`; `sc-lint lint sc-boundary` on a copy of that
-   tree exits 0. `facade_lists_every_export` is the check that this
-   manifest stays aligned with `lib.rs`. The process-test helper
-   `sc-config-load-helper` is autodiscovered from `src/bin/` in this
-   checkout and excluded from the published package. It is not a facade item.
+   list, and `allowed_dependencies` is `serde` and `serde_json`. Its
+   `forbidden_edges` and the forbidden-name policy are owned by that manifest
+   and [REQ-RUN-0005](../requirements.md); `cargo tree -p sc-config -e normal --prefix none`
+   fails the crates.io names in that policy. `[public] facade` lists every
+   `lib.rs` export, checked by the test `facade_lists_every_export`
+   (`crates/sc-config/tests/facade.rs`), because `sc-lint` does not compare
+   the facade with the crate. The process-test helper
+   `sc-config-load-helper` is autodiscovered from `src/bin/`, excluded from
+   the published package, and is not a facade item.
 
 ### Consequences
 
@@ -373,128 +389,144 @@ a forbidden crate name followed by a space, including
 
 **Status:** Proposed  
 **Decision Date:** 2026-11-22  
-**Source:** extensibility review of PR #153 (`sc-config` `layers`, sc-agent team), 2026-11-22; amends [ADR-CFG-0002](architecture.md) Context ("The design fixes the layers") and Decision item 6 ("The only file format is JSON")  
+**Source:** extensibility review of PR #153 (`sc-config` `layers`, sc-agent team), 2026-11-22, and the owner's consumer-choice ruling of 2026-11-22. When Active, amends [ADR-CFG-0002](architecture.md) Context ("The design fixes the layers"), item 3 and item 6, and amends [ADR-CFG-0001](architecture.md) items 3 and 4 and its error inventory, as stated in Decision item 5  
 
 ### Context
 
 ADR-CFG-0002 fixed three layers (`default.json`, `local.json`, environment)
 and JSON. sc-agent needs more: command-line flags above the environment,
-several files in its own order, aliased variable names and per-leaf
-provenance for `config show`. PR #153 met that by adding a second public
-loader with a closed `Source` enum (flag, env, file, default), a fixed
+several files in its own order, aliased and string-typed variables,
+per-file key sets and per-leaf provenance for `config show`. PR #153 met that
+with a second public loader: a closed `Source` enum, a fixed
 flags > env > files precedence, JSON only, a hard-coded 1 MiB cap,
 exhaustive public structs, a separate `LayersError` with no codes, and a
 per-layer `decode` into `T` that ADR-CFG-0002 item 4 forbids. The two
 loaders already differ on environment ordering, file checks and error
 semantics.
 
-Every one of those fixed choices is right for sc-agent and wrong for some
-other consumer: a daemon that wants files over environment, a tool reading
-TOML, a service with a secrets source, keys with upper case. The only
-in-repo consumers of `sc-config` today are the template CLI and daemon,
-which use `load` and `AppName`, so the public API can be opened now at no
-migration cost.
+Each fixed choice is right for sc-agent and wrong for some other consumer: a
+daemon that wants files over environment, a tool reading TOML, a service
+with a secrets source, mixed-case keys. In-repo, `sc-config` is used by the
+template CLI and daemon. They call `load` and `AppName`, and the daemon's
+test `config_startup_uses_each_library_code_once`
+(`template/crates/daemon/src/main.rs:258-290`) constructs every
+`ConfigError` variant by literal.
 
 ### Decision
 
-1. `sc-config` provides one layered engine (`Layers`) over an ordered list of
-   `LayerSource` trait objects. The caller chooses the sources and their
-   order; `sc-config` assigns no source kind a rank
-   ([REQ-CFG-0005](requirements.md)).
-2. `LayerSource` is public, object safe and unsealed. Built-in `FileSource`,
-   `EnvSource` and `ValueSource` implement it; consumers add their own
-   ([REQ-CFG-0006](requirements.md)).
-3. Every behaviour a consumer could reasonably want differently is a builder
-   parameter whose default equals today's behaviour: file optionality, size
-   cap (off by default), file format, environment separator, key case,
-   aliases and an accept list ([REQ-CFG-0006](requirements.md)).
-4. Amends ADR-CFG-0002 item 6: the built-in format is still JSON and the
-   crate still depends only on `serde` and `serde_json`
-   ([NFR-CFG-0002](requirements.md)), but a `FileSource` accepts a
-   caller-supplied parser to `serde_json::Value`, so consumers are not
-   limited to JSON.
-5. ADR-CFG-0002 items 1 to 5 stay binding: layers fold as
-   `serde_json::Value` with the existing `merge`, and the result is
-   deserialised into `T` once. Provenance is computed from the layer values,
-   never by deserialising a layer ([REQ-CFG-0007](requirements.md)).
-6. Provenance uses an open `Source { kind, name }` with a `Custom` kind,
-   runtime-built `KeyPath`s, typed serialisable rows and caller-marked
-   redaction ([REQ-CFG-0007](requirements.md)).
-7. `Loader` and `load` become a preset stack on the engine and keep their
-   documented behaviour. The crate has one file reader, one override
-   applier and one `merge` ([REQ-CFG-0008](requirements.md)).
-8. `ConfigError` stays the only error type, becomes `#[non_exhaustive]`, and
-   gains `TooLarge`, `ParseFormat` and `Source` with codes and recovery
-   steps; `MissingDefault` becomes `MissingFile`
-   ([REQ-CFG-0009](requirements.md)). Error inventory additions to
-   ADR-CFG-0001:
+1. `sc-config` provides one layered engine over an ordered list of
+   `LayerSource` trait objects, which receive the accumulated value
+   read-only and return a layer. The caller chooses the sources and their
+   order; `sc-config` assigns no source kind a rank. The requirements are
+   [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md)
+   and [NFR-CFG-0004](requirements.md); this ADR does not restate them.
+2. Behaviour a consumer may need differently is a builder parameter whose
+   default equals `develop` at `9f61527`. The one exception is `merge`,
+   which stays fixed because provenance, `replace_at` and REQ-CFG-0001 are
+   defined against it; a consumer needing other rules combines values in its
+   own source. Parameters and their consumers:
 
-   | Failure mode | Stable code | Cause payload | Recovery steps |
-   |---|---|---|---|
-   | A required file is absent | `CFG.MISSING_FILE` (replaces `CFG.MISSING_DEFAULT`) | `MissingFile.path` | Create that file, or mark the source optional. |
-   | A capped file exceeds its limit | `CFG.TOO_LARGE` | `TooLarge.path`, `TooLarge.limit` | Shrink the file or raise the limit the program set. |
-   | A caller-supplied format parser failed | `CFG.PARSE_FORMAT` | `ParseFormat.path`, `.message`, `.line`, `.column` | Fix the file at the reported place. |
-   | A consumer-defined source failed | `CFG.SOURCE` | `Source.source`, `Source.message` | Follow the message from that source. |
+   | Parameter | Consumer |
+   |---|---|
+   | caller-ordered layers, `ValueSource`, `Source::flag`/`default_values` | sc-agent (flags over env over files; PR #153) |
+   | `FileSource::accepts`, `UnknownKey` | sc-agent (REQ-SAG-0019, ADR-SAG-0021) |
+   | `EnvSource::alias`, `alias_string`, `string_paths` | sc-agent (`SC_AGENT_MODEL`; REQ-SAG-0020) |
+   | `Provenance::source_of`, `rows` | sc-agent (`config show`) |
+   | `FileSource::optional`, `max_bytes`, `format`; `EnvSource::separator`, `key_case`, `value_mode`, `only` | owner's consumer-choice ruling, 2026-11-22: no consumer is limited to one consumer's choice |
 
-9. Public types follow [NFR-CFG-0004](requirements.md): non-exhaustive,
-   builder-constructed, no `&'static str` inputs.
-10. `sc-config` never parses command lines. Flags enter as a `ValueSource`
-    built by the consumer's own argument parser.
-11. `sc-config` stays synchronous ([NFR-CFG-0003](requirements.md));
-    `LayerSource::load` is a synchronous call. An async source is the job of
-    a separate crate.
+3. ADR-CFG-0002 items 1, 2, 4 and 5 stay binding: layers fold as
+   `serde_json::Value` with the one `merge`, and the result is deserialised
+   into `T` once; provenance is computed from layer values, never by
+   deserialising a layer.
+4. `sc-config` never parses command lines (flags enter as a `ValueSource`)
+   and stays synchronous ([NFR-CFG-0003](requirements.md)); `LayerSource`
+   is `Send + Sync` and its `load` is synchronous.
+5. Amendments, effective when this ADR is Active:
+   - ADR-CFG-0002 Context: the layers are caller-defined; the
+     `default.json`, `local.json`, environment stack is `Loader`'s preset
+     ([REQ-CFG-0008](requirements.md)).
+   - ADR-CFG-0002 item 3: overrides are applied by `EnvSource` to a working
+     copy of the value accumulated below it, with the same rules, and enter
+     the fold as a layer with `replace_at` paths; the result is identical.
+   - ADR-CFG-0002 item 6: the built-in format is JSON and the crate still
+     depends only on `serde` and `serde_json`; a `FileSource` accepts a
+     caller-supplied parser.
+   - ADR-CFG-0001 items 3 and 4 and its inventory: `ConfigError` gains the
+     variants of [REQ-CFG-0009](requirements.md) item 4, becomes
+     `#[non_exhaustive]`, and `Deserialize` gains `sources`. The inventory
+     rows are added to the ADR-CFG-0001 table, which stays the only
+     inventory. `MissingDefault` and `CFG.MISSING_DEFAULT` are unchanged.
 
 ### Consequences
 
 - sc-agent builds its stack in its own code, for example
-  `Loader::layers()` plus a `ValueSource` of flags, or a fully custom
+  `Loader::layers()` plus a `ValueSource` of flags, or a custom
   `[files…, EnvSource with aliases, flags]`. Its order lives in sc-agent.
-- PR #153 must be reworked onto this design before it merges: its `Inputs`,
+- PR #153 is reworked onto this design before it merges: its `Inputs`,
   `Key`, `LayersError`, closed `Source` and per-layer `decode` are replaced.
-- Renaming `MissingDefault` to `MissingFile` and adding `#[non_exhaustive]`
-  break exhaustive matches once. The crate is pre-1.0 and the only in-repo
-  callers print the error, so the cost is one minor-version bump.
-- A type error is still reported against the merged document. `Deserialize`
-  now lists every contributing `Source`, and a consumer can use provenance
-  to point at the layer that set a failing key.
+  sc-agent 0.3.x keeps building from tag `sc-config-pin-0.3` (`eb293db`)
+  until a release carries this design; the tag is kept.
+- Migration in the activating change: the template daemon test at
+  `template/crates/daemon/src/main.rs:258-290` adds `sources` to its
+  `ConfigError::Deserialize` literal, and any exhaustive `match` on
+  `ConfigError` outside the crate gains a wildcard arm. Variants stay
+  constructible by literal. This is a breaking change for the pre-1.0
+  crate: one minor-version bump.
+- A type error is still reported against the merged document.
+  `Deserialize` lists every contributing `Source`, and `resolve()` gives a
+  caller the provenance to point at the layer that set a failing key.
+- Array elements are not tracked in provenance, a consequence of replacing
+  arrays whole.
 - Boxed sources cost one allocation per layer per load; loads happen at
   start-up, so this is negligible.
+- `Source`, `KeyPath` and `ResolvedRow` derive `Serialize` with `serde`'s
+  `derive` feature, which `crates/sc-config/Cargo.toml` already enables;
+  no crate is added ([NFR-CFG-0002](requirements.md)).
 
 ### Alternatives Considered
 
 - Merge PR #153 as is and generalise later. Rejected: every public type in it
   is exhaustive, so generalising is a breaking change for each new consumer,
   and its per-layer decode contradicts ADR-CFG-0002.
-- Generic sources (`Layers<S: LayerSource>` or a tuple of sources) instead of
-  `Box<dyn LayerSource>`. Rejected: a heterogeneous, runtime-assembled stack
-  (files found by search, optional profiles) needs trait objects; static
-  dispatch saves nothing measurable at start-up.
-- Per-layer typed validation to attribute type errors to one layer (PR #153's
-  `decode` per layer). Rejected: it requires `T` to deserialise from a
-  partial layer, which forces `#[serde(default)]` everywhere or fails on
-  valid partial layers, and ADR-CFG-0002 item 4 forbids it. Provenance plus
-  the `sources` list gives attribution without it.
+- Sources that return an independent overlay with no view of the base.
+  Rejected: an environment override could then neither fail through a scalar
+  nor replace an object whole, so REQ-CFG-0002 could not hold.
+- Sources that take and return the whole accumulated value. Rejected: the
+  engine could no longer compute provenance from what each layer set.
+- Generic sources (`Layers<S>` or a tuple) instead of
+  `Box<dyn LayerSource>`. Rejected: a runtime-assembled stack (files found by
+  search, optional profiles) needs trait objects; static dispatch saves
+  nothing measurable at start-up.
+- Per-layer typed validation to attribute type errors to one layer.
+  Rejected: it requires `T` to deserialise from a partial layer, and
+  ADR-CFG-0002 item 4 forbids it. Provenance gives attribution without it.
 - Ship TOML and YAML support in `sc-config`. Rejected: adds parser
   dependencies against NFR-CFG-0002; the parser hook gives consumers the
   same capability.
 - A fixed precedence with an override hook. Rejected: still privileges one
   order; push order is simpler and complete.
+- Redaction of sensitive values in provenance rows. Deferred with no work
+  item: no consumer has named the need, and `ResolvedRow` is
+  `#[non_exhaustive]`, so it can be added without breaking callers.
 
 ### Implementation
 
-**Enforced by:** the success criteria of [REQ-CFG-0005](requirements.md)
-through [REQ-CFG-0009](requirements.md) and [NFR-CFG-0004](requirements.md),
-and the `arch-qa` review agent, which checks every change to
-`crates/sc-config` for a second load pipeline, a built-in source rank, a
-public type without `#[non_exhaustive]`, an error type other than
-`ConfigError`, or a per-layer deserialisation into `T`.
+**Enforced by:** when Active, the success criteria of
+[REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md) and
+[NFR-CFG-0004](requirements.md), all run by `cargo test -p sc-config`, and
+the `arch-qa` review agent, which checks every change to `crates/sc-config`
+for a second load pipeline, a built-in source rank, an error type other than
+`ConfigError`, or a deserialisation into `T` other than the single call
+after `resolve()`. The boundary manifest's `[public] facade` is updated in
+the same change as the new exports, checked by `facade_lists_every_export`.
+While Proposed, nothing here is enforced.
 
 ### Related Documents
 
-- [ADR-CFG-0001](architecture.md): `ConfigError` contract and inventory,
-  extended by item 8
+- [ADR-CFG-0001](architecture.md): `ConfigError` contract and the only
+  error inventory, amended by item 5
 - [ADR-CFG-0002](architecture.md): value merge and single deserialisation,
-  amended by items 4 and 5
+  amended by item 5
 - [ADR-CFG-0003](architecture.md): synchronous, two dependencies; unchanged
 - [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md),
   [NFR-CFG-0004](requirements.md)
