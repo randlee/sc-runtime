@@ -33,10 +33,10 @@ impl Layer {
         }
     }
 
-    /// Marks `path` so its value replaces the value below instead of merging into it.
+    /// Marks the key path `path`, a slice of segments, so its value replaces the value below instead of merging into it.
     #[must_use]
-    pub fn replace_at(mut self, path: impl Into<KeyPath>) -> Self {
-        self.replace.push(path.into());
+    pub fn replace_at<'a>(mut self, path: impl AsRef<[&'a str]>) -> Self {
+        self.replace.push(KeyPath::from_strs(path));
         self
     }
 
@@ -44,8 +44,18 @@ impl Layer {
     ///
     /// When attributed paths nest, the deepest wins.
     #[must_use]
-    pub fn attribute(mut self, path: impl Into<KeyPath>, source: Source) -> Self {
-        self.attributes.push((path.into(), source));
+    pub fn attribute<'a>(mut self, path: impl AsRef<[&'a str]>, source: Source) -> Self {
+        self.attributes.push((KeyPath::from_strs(path), source));
+        self
+    }
+
+    pub(crate) fn replace_key(mut self, path: KeyPath) -> Self {
+        self.replace.push(path);
+        self
+    }
+
+    pub(crate) fn attribute_key(mut self, path: KeyPath, source: Source) -> Self {
+        self.attributes.push((path, source));
         self
     }
 
@@ -109,10 +119,10 @@ impl Resolved {
 /// # Examples
 ///
 /// ```
-/// use sc_config::{Layers, Source, SourceKind, ValueSource};
+/// use sc_config::{Layers, Source, ValueSource};
 /// use serde_json::json;
 ///
-/// let source = |value| ValueSource::new(Source::new(SourceKind::Default, "x"), value);
+/// let source = |value| ValueSource::new(Source::default("x"), value);
 /// let resolved = Layers::new()
 ///     .push(source(json!({"a": 1, "b": 1})))
 ///     .push(source(json!({"a": 2})))

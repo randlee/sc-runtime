@@ -1,13 +1,13 @@
 //! The sources `sc-config` ships: [`FileSource`], [`EnvSource`] and [`ValueSource`].
 
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use serde_json::{Map, Value};
 
 use crate::error::ConfigError;
 use crate::layers::{Layer, LayerSource};
-use crate::provenance::{KeyPath, Source, SourceKind, leaves};
+use crate::provenance::{KeyPath, Source, leaves};
 
 /// One JSON file.
 ///
@@ -47,13 +47,18 @@ impl FileSource {
         self
     }
 
-    /// Limits the file to the given key paths.
+    /// Limits the file to the given key paths, each a slice of segments.
     ///
     /// A leaf at or below one of `paths` is accepted; any other leaf is
     /// [`ConfigError::UnknownKey`]. Without this call every key is allowed.
     #[must_use]
-    pub fn accepts<P: Into<KeyPath>>(mut self, paths: impl IntoIterator<Item = P>) -> Self {
-        self.accepts = Some(paths.into_iter().map(Into::into).collect());
+    pub fn accepts<'a, P: AsRef<[&'a str]>>(mut self, paths: impl IntoIterator<Item = P>) -> Self {
+        self.accepts = Some(paths.into_iter().map(KeyPath::from_strs).collect());
+        self
+    }
+
+    pub(crate) fn with_accepted(mut self, accepted: Option<Vec<KeyPath>>) -> Self {
+        self.accepts = accepted;
         self
     }
 
@@ -104,7 +109,7 @@ impl FileSource {
 
 impl LayerSource for FileSource {
     fn source(&self) -> Source {
-        file_source(&self.path)
+        Source::file(&self.path)
     }
 
     fn load(&self, _base: &Value) -> Result<Option<Layer>, ConfigError> {
@@ -116,10 +121,6 @@ impl LayerSource for FileSource {
     }
 }
 
-fn file_source(path: &Path) -> Source {
-    Source::new(SourceKind::File, path.to_string_lossy())
-}
-
 /// Environment variables from an explicit list. Never reads the process environment.
 ///
 /// A variable whose name starts with the prefix sets the key path named by the
@@ -129,8 +130,7 @@ fn file_source(path: &Path) -> Source {
 /// order of their names' bytes, and a set value replaces what is below it. An
 /// empty segment, or a path through a value that is not an object, is
 /// [`ConfigError::Override`]; a matching name or value that is not Unicode is
-/// [`ConfigError::NonUnicode`]. An empty prefix matches no variable, so the
-/// source then applies only its aliases.
+/// [`ConfigError::NonUnicode`]. An empty prefix matches every variable.
 ///
 /// # Examples
 ///
@@ -148,7 +148,8 @@ fn file_source(path: &Path) -> Source {
 /// ```
 #[derive(Clone, Debug)]
 pub struct EnvSource {
-    prefix: String,
+    /// `None` matches no variable, so only aliases apply.
+    prefix: Option<String>,
     environment: Vec<(OsString, OsString)>,
     aliases: Vec<(String, KeyPath)>,
 }
@@ -157,30 +158,43 @@ impl EnvSource {
     /// Matches `prefix` literally against the names in `environment`.
     pub fn new(prefix: impl Into<String>, environment: Vec<(OsString, OsString)>) -> Self {
         Self {
-            prefix: prefix.into(),
+            prefix: Some(prefix.into()),
             environment,
             aliases: Vec::new(),
         }
     }
 
-    /// Maps the variable named exactly `variable` to the key path `path`.
+    /// A source with no prefix match, holding only the aliases added to it.
+    pub(crate) fn aliases_only(environment: Vec<(OsString, OsString)>) -> Self {
+        Self {
+            prefix: None,
+            environment,
+            aliases: Vec::new(),
+        }
+    }
+
+    /// Maps the variable named exactly `variable` to the key path `path`, a slice of segments.
     ///
     /// Aliases apply after prefixed variables, in ascending order of the
     /// variable name's bytes. The value is parsed the same way.
     #[must_use]
-    pub fn alias(mut self, variable: impl Into<String>, path: impl Into<KeyPath>) -> Self {
-        self.aliases.push((variable.into(), path.into()));
+    pub fn alias<'a>(self, variable: impl Into<String>, path: impl AsRef<[&'a str]>) -> Self {
+        self.alias_path(variable.into(), KeyPath::from_strs(path))
+    }
+
+    pub(crate) fn alias_path(mut self, variable: String, path: KeyPath) -> Self {
+        self.aliases.push((variable, path));
         self
     }
 
     /// Lists the variables to apply, in order, with the alias path if any.
     fn matches(&self) -> Vec<(&OsString, &OsString, Option<&KeyPath>)> {
+        let prefix = self.prefix.as_deref();
         let mut prefixed: Vec<_> = self
             .environment
             .iter()
             .filter(|(name, _)| {
-                !self.prefix.is_empty()
-                    && name.as_encoded_bytes().starts_with(self.prefix.as_bytes())
+                prefix.is_some_and(|prefix| name.as_encoded_bytes().starts_with(prefix.as_bytes()))
             })
             .map(|(name, value)| (name, value, None))
             .collect();
@@ -200,7 +214,7 @@ impl EnvSource {
 
 impl LayerSource for EnvSource {
     fn source(&self) -> Source {
-        Source::new(SourceKind::Env, self.prefix.clone())
+        Source::env(self.prefix.clone().unwrap_or_default())
     }
 
     fn load(&self, base: &Value) -> Result<Option<Layer>, ConfigError> {
@@ -221,7 +235,7 @@ impl LayerSource for EnvSource {
             };
             let segments = match alias {
                 Some(path) => path.0.clone(),
-                None => key_segments(name, &self.prefix),
+                None => key_segments(name, self.prefix.as_deref().unwrap_or_default()),
             };
             let parsed = parse_value(value);
             let failed = || ConfigError::Override {
@@ -229,11 +243,11 @@ impl LayerSource for EnvSource {
             };
             set_path(&mut scratch, &segments, parsed.clone()).map_err(|()| failed())?;
             set_path(&mut overlay, &segments, parsed).map_err(|()| failed())?;
-            applied.push((KeyPath(segments), Source::new(SourceKind::Env, name)));
+            applied.push((KeyPath(segments), Source::env(name)));
         }
         let mut layer = Layer::new(self.source(), overlay);
         for (path, origin) in applied {
-            layer = layer.replace_at(path.clone()).attribute(path, origin);
+            layer = layer.replace_key(path.clone()).attribute_key(path, origin);
         }
         Ok(Some(layer))
     }
@@ -286,10 +300,10 @@ fn set_path(root: &mut Value, path: &[String], value: Value) -> Result<(), ()> {
 /// # Examples
 ///
 /// ```
-/// use sc_config::{Layers, Source, SourceKind, ValueSource};
+/// use sc_config::{Layers, Source, ValueSource};
 ///
 /// let flags = ValueSource::new(
-///     Source::new(SourceKind::Flag, "--port"),
+///     Source::flag("--port"),
 ///     serde_json::json!({"port": 9000}),
 /// );
 /// let value: serde_json::Value = Layers::new().push(flags).load()?;

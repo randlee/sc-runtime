@@ -5,7 +5,7 @@
 //! files:
 //!
 //! - system: `<system_dir>/<product>.json`
-//! - user: `<home>/.<family>/<product>.json`
+//! - user: `<home>/.<family>/<product>.json` (see [`StandardContext::with_home`])
 //! - project: `<project_root>/.<family>/<product>.json`
 //! - local: `<project_root>/.<family>/<product>.local.json`
 //!
@@ -23,7 +23,7 @@ use serde_json::Value;
 use crate::app_name::AppName;
 use crate::error::ConfigError;
 use crate::layers::{LayerSource, Layers, Resolved};
-use crate::provenance::{KeyPath, Source, SourceKind};
+use crate::provenance::{KeyPath, Source};
 use crate::sources::{EnvSource, FileSource, ValueSource};
 
 /// One position in the standard order.
@@ -46,8 +46,38 @@ pub enum Slot {
     Flags,
 }
 
-/// Names the slot a source is inserted directly above, as in `After::User`.
-pub type After = Slot;
+/// The slot a source is inserted directly above, as in `After::User`.
+///
+/// Same variants as [`Slot`] except `Flags`, which has nothing above it.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[non_exhaustive]
+pub enum After {
+    /// Above [`Slot::Defaults`].
+    Defaults,
+    /// Above [`Slot::System`].
+    System,
+    /// Above [`Slot::User`].
+    User,
+    /// Above [`Slot::Project`].
+    Project,
+    /// Above [`Slot::Local`].
+    Local,
+    /// Above [`Slot::Env`].
+    Env,
+}
+
+impl After {
+    fn slot(self) -> Slot {
+        match self {
+            Self::Defaults => Slot::Defaults,
+            Self::System => Slot::System,
+            Self::User => Slot::User,
+            Self::Project => Slot::Project,
+            Self::Local => Slot::Local,
+            Self::Env => Slot::Env,
+        }
+    }
+}
 
 const SLOTS: [Slot; 7] = [
     Slot::Defaults,
@@ -80,6 +110,7 @@ pub struct StandardContext {
     products: Vec<AppName>,
     environment: Vec<(OsString, OsString)>,
     home: Option<PathBuf>,
+    home_var: OsString,
     system_dir: Option<PathBuf>,
     project_root: Option<PathBuf>,
 }
@@ -87,28 +118,46 @@ pub struct StandardContext {
 impl StandardContext {
     /// Names the `family` folder and the `products` whose files are read.
     ///
-    /// `environment` supplies the `EnvSource` variables and, unless
-    /// [`with_home`](Self::with_home) is called, the home folder: `HOME` on
-    /// Unix, `USERPROFILE` on Windows.
+    /// `environment` supplies the `EnvSource` variables and the variables
+    /// that locate the user folder; see [`with_home`](Self::with_home).
     pub fn new(
         family: AppName,
         products: Vec<AppName>,
         environment: Vec<(OsString, OsString)>,
     ) -> Self {
+        let prefix = family.env_prefix();
+        let home_var = OsString::from(format!("{}_HOME", prefix.trim_end_matches("__")));
         Self {
             family,
             products,
             environment,
             home: None,
+            home_var,
             system_dir: None,
             project_root: None,
         }
     }
 
-    /// Sets the home folder instead of reading it from the environment.
+    /// Sets the user folder itself, ahead of any variable.
+    ///
+    /// Without it the user folder is, first match wins: the value of the home
+    /// variable (`SC_AGENT_HOME` for family `sc-agent`; see
+    /// [`with_home_var`](Self::with_home_var)) from the context's environment,
+    /// used as the folder itself; else `<home>/.<family>/`, where `<home>` is
+    /// `USERPROFILE` on Windows and `HOME` elsewhere.
     #[must_use]
     pub fn with_home(mut self, dir: impl Into<PathBuf>) -> Self {
         self.home = Some(dir.into());
+        self
+    }
+
+    /// Names the variable that relocates the user folder.
+    ///
+    /// The default is the family name upper-cased with `-` mapped to `_`, plus
+    /// `_HOME`.
+    #[must_use]
+    pub fn with_home_var(mut self, name: impl Into<OsString>) -> Self {
+        self.home_var = name.into();
         self
     }
 
@@ -130,19 +179,31 @@ impl StandardContext {
         self
     }
 
-    fn home_dir(&self) -> Option<PathBuf> {
-        if let Some(home) = &self.home {
-            return Some(home.clone());
-        }
-        let variable = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
+    fn variable(&self, name: &str) -> Option<PathBuf> {
         self.environment
             .iter()
-            .find(|(name, _)| name.as_os_str() == variable)
+            .find(|(key, _)| key.as_os_str() == name)
             .map(|(_, value)| PathBuf::from(value))
     }
 
-    fn family_dir(&self, root: Option<PathBuf>) -> Option<PathBuf> {
-        root.map(|root| root.join(format!(".{}", self.family)))
+    fn user_dir(&self) -> Option<PathBuf> {
+        if let Some(dir) = &self.home {
+            return Some(dir.clone());
+        }
+        let relocated = self
+            .environment
+            .iter()
+            .find(|(key, _)| *key == self.home_var)
+            .map(|(_, value)| PathBuf::from(value));
+        relocated.or_else(|| {
+            let home = self.variable(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
+            Some(home.join(format!(".{}", self.family)))
+        })
+    }
+
+    fn project_dir(&self) -> Option<PathBuf> {
+        let root = self.project_root.clone()?;
+        Some(root.join(format!(".{}", self.family)))
     }
 }
 
@@ -264,7 +325,7 @@ impl StandardLayers {
     /// Sources inserted after the same slot stack in insertion order.
     #[must_use]
     pub fn insert(mut self, after: After, source: impl LayerSource + 'static) -> Self {
-        self.inserted.push((after, Box::new(source)));
+        self.inserted.push((after.slot(), Box::new(source)));
         self
     }
 
@@ -272,13 +333,15 @@ impl StandardLayers {
     ///
     /// See [`FileSource::accepts`].
     #[must_use]
-    pub fn accepts<P: Into<KeyPath>>(
+    pub fn accepts<'a, P: AsRef<[&'a str]>>(
         mut self,
         product: &AppName,
         paths: impl IntoIterator<Item = P>,
     ) -> Self {
-        self.accepts
-            .insert(product.clone(), paths.into_iter().map(Into::into).collect());
+        self.accepts.insert(
+            product.clone(),
+            paths.into_iter().map(KeyPath::from_strs).collect(),
+        );
         self
     }
 
@@ -287,8 +350,9 @@ impl StandardLayers {
     /// Aliases load in the `Env` slot, after its prefixed variables, even
     /// when [`env`](Self::env) is not called.
     #[must_use]
-    pub fn alias(mut self, variable: impl Into<String>, path: impl Into<KeyPath>) -> Self {
-        self.aliases.push((variable.into(), path.into()));
+    pub fn alias<'a>(mut self, variable: impl Into<String>, path: impl AsRef<[&'a str]>) -> Self {
+        self.aliases
+            .push((variable.into(), KeyPath::from_strs(path)));
         self
     }
 
@@ -341,12 +405,12 @@ impl StandardLayers {
     }
 
     fn value_for(&self, slot: Slot) -> Option<ValueSource> {
-        let (kind, name, value) = match slot {
-            Slot::Defaults => (SourceKind::Default, "defaults", self.defaults.clone()?),
-            Slot::Flags => (SourceKind::Flag, "flags", self.flags.clone()?),
+        let (source, value) = match slot {
+            Slot::Defaults => (Source::default("defaults"), self.defaults.clone()?),
+            Slot::Flags => (Source::flag("flags"), self.flags.clone()?),
             _ => return None,
         };
-        Some(ValueSource::new(Source::new(kind, name), value))
+        Some(ValueSource::new(source, value))
     }
 
     fn env_sources(&self) -> Vec<EnvSource> {
@@ -357,10 +421,9 @@ impl StandardLayers {
             .map(|prefix| EnvSource::new(prefix.clone(), environment.clone()))
             .collect();
         if !self.aliases.is_empty() {
-            // An empty prefix matches nothing, so this source holds only the aliases.
-            let mut aliases = EnvSource::new("", environment.clone());
+            let mut aliases = EnvSource::aliases_only(environment.clone());
             for (variable, path) in &self.aliases {
-                aliases = aliases.alias(variable.clone(), path.clone());
+                aliases = aliases.alias_path(variable.clone(), path.clone());
             }
             sources.push(aliases);
         }
@@ -375,17 +438,9 @@ impl StandardLayers {
         let context = &self.context;
         let (folder, plain, local) = match slot {
             Slot::System => (context.system_dir.clone(), true, true),
-            Slot::User => (context.family_dir(context.home_dir()), true, true),
-            Slot::Project => (
-                context.family_dir(context.project_root.clone()),
-                true,
-                false,
-            ),
-            Slot::Local => (
-                context.family_dir(context.project_root.clone()),
-                false,
-                true,
-            ),
+            Slot::User => (context.user_dir(), true, true),
+            Slot::Project => (context.project_dir(), true, false),
+            Slot::Local => (context.project_dir(), false, true),
             _ => return Vec::new(),
         };
         let Some(folder) = folder else {
@@ -407,7 +462,7 @@ impl StandardLayers {
     fn product_file(&self, folder: &Path, product: &AppName, suffix: &str) -> FileSource {
         let file = FileSource::new(folder.join(format!("{product}{suffix}"))).optional();
         match self.accepts.get(product) {
-            Some(paths) => file.accepts(paths.iter().cloned()),
+            Some(paths) => file.with_accepted(Some(paths.clone())),
             None => file,
         }
     }

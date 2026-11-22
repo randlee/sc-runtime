@@ -92,17 +92,17 @@ fn layered_exports_are_usable_from_outside_the_crate() {
     assert_send_sync::<ValueSource>();
     assert_send_sync::<StandardLayers>();
     let _: Option<Box<dyn LayerSource>> = None;
-    let _: Option<(
-        Layer,
-        Resolved,
-        Provenance,
-        ResolvedRow,
-        KeyPath,
-        Source,
-        SourceKind,
-        StandardContext,
-    )> = None;
-    assert_eq!(After::User, Slot::User);
+    fn exported<T>() {}
+    exported::<Layer>();
+    exported::<Resolved>();
+    exported::<Provenance>();
+    exported::<ResolvedRow>();
+    exported::<KeyPath>();
+    exported::<Source>();
+    exported::<SourceKind>();
+    exported::<StandardContext>();
+    assert_ne!(After::User, After::Env);
+    assert_ne!(Slot::User, Slot::Flags);
 
     let error = ConfigError::DuplicateSlot { slot: Slot::User };
     let named = match error {

@@ -52,12 +52,31 @@ pub struct Source {
 }
 
 impl Source {
-    /// Builds a source from a kind and a name.
-    pub fn new(kind: SourceKind, name: impl Into<String>) -> Self {
+    fn new(kind: SourceKind, name: impl Into<String>) -> Self {
         Self {
             kind,
             name: name.into(),
         }
+    }
+
+    /// A file, named by its path.
+    pub fn file(path: impl AsRef<std::path::Path>) -> Self {
+        Self::new(SourceKind::File, path.as_ref().to_string_lossy())
+    }
+
+    /// An environment variable.
+    pub fn env(variable: impl Into<String>) -> Self {
+        Self::new(SourceKind::Env, variable)
+    }
+
+    /// A command-line flag.
+    pub fn flag(name: impl Into<String>) -> Self {
+        Self::new(SourceKind::Flag, name)
+    }
+
+    /// A built-in default.
+    pub fn default(name: impl Into<String>) -> Self {
+        Self::new(SourceKind::Default, name)
     }
 
     /// Builds a source with a consumer-defined kind, such as `keychain`.
@@ -86,10 +105,9 @@ impl KeyPath {
     }
 }
 
-/// Splits on `.`. Use [`KeyPath::from_segments`] for a key that contains `.`.
-impl From<&str> for KeyPath {
-    fn from(path: &str) -> Self {
-        Self(path.split('.').map(str::to_owned).collect())
+impl KeyPath {
+    pub(crate) fn from_strs<'a>(segments: impl AsRef<[&'a str]>) -> Self {
+        Self(segments.as_ref().iter().map(|s| (*s).to_owned()).collect())
     }
 }
 
