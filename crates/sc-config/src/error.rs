@@ -87,6 +87,18 @@ pub enum ConfigError {
 }
 
 impl ConfigError {
+    fn layered_recovery(&self) -> &'static str {
+        match self {
+            Self::MissingFile { .. } => "Create the file, or make the source optional.",
+            Self::UnknownKey { .. } => {
+                "Remove the key from that file, or set it where it is accepted."
+            }
+            Self::SourceFailed { .. } => "Follow the message from that source.",
+            Self::DuplicateSlot { .. } => "Fill each slot once; add extra sources with insert.",
+            _ => "",
+        }
+    }
+
     /// Builds the error a consumer's `LayerSource` returns when it fails.
     pub fn source_failed(origin: Source, message: impl Into<String>) -> Self {
         Self::SourceFailed {
@@ -136,12 +148,44 @@ impl ConfigError {
             Self::NonUnicode { .. } => {
                 "Give the variable a Unicode name and value. Names that do not start with the application prefix are ignored."
             }
-            Self::MissingFile { .. } => "Create the file, or make the source optional.",
-            Self::UnknownKey { .. } => {
-                "Remove the key from that file, or set it where it is accepted."
-            }
-            Self::SourceFailed { .. } => "Follow the message from that source.",
-            Self::DuplicateSlot { .. } => "Fill each slot once; add extra sources with insert.",
+            Self::MissingFile { .. }
+            | Self::UnknownKey { .. }
+            | Self::SourceFailed { .. }
+            | Self::DuplicateSlot { .. } => self.layered_recovery(),
+        }
+    }
+}
+
+impl ConfigError {
+    fn fmt_layered(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingFile { path } => write!(
+                formatter,
+                "{}: required file not found at {}; {}",
+                self.code(),
+                path.display(),
+                self.recovery()
+            ),
+            Self::UnknownKey { path, key } => write!(
+                formatter,
+                "{}: key {key} in {} is not accepted; {}",
+                self.code(),
+                path.display(),
+                self.recovery()
+            ),
+            Self::SourceFailed { origin, message } => write!(
+                formatter,
+                "{}: source {origin} failed: {message}; {}",
+                self.code(),
+                self.recovery()
+            ),
+            Self::DuplicateSlot { slot } => write!(
+                formatter,
+                "{}: slot {slot} was filled twice; {}",
+                self.code(),
+                self.recovery()
+            ),
+            _ => Ok(()),
         }
     }
 }
@@ -206,32 +250,10 @@ impl fmt::Display for ConfigError {
                 variable.to_string_lossy(),
                 self.recovery()
             ),
-            Self::MissingFile { path } => write!(
-                formatter,
-                "{}: required file not found at {}; {}",
-                self.code(),
-                path.display(),
-                self.recovery()
-            ),
-            Self::UnknownKey { path, key } => write!(
-                formatter,
-                "{}: key {key} in {} is not accepted; {}",
-                self.code(),
-                path.display(),
-                self.recovery()
-            ),
-            Self::SourceFailed { origin, message } => write!(
-                formatter,
-                "{}: source {origin} failed: {message}; {}",
-                self.code(),
-                self.recovery()
-            ),
-            Self::DuplicateSlot { slot } => write!(
-                formatter,
-                "{}: slot {slot} was filled twice; {}",
-                self.code(),
-                self.recovery()
-            ),
+            Self::MissingFile { .. }
+            | Self::UnknownKey { .. }
+            | Self::SourceFailed { .. }
+            | Self::DuplicateSlot { .. } => self.fmt_layered(formatter),
         }
     }
 }
