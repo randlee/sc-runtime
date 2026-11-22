@@ -126,3 +126,21 @@ Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under 
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | complete | `sprint/c-4-runtime-ecosystem-release` |
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
 | c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |
+
+## Proposed reusable Dolt access (on hold)
+
+The owner requested a thin multi-consumer `sc-dolt` crate maintained in this
+workspace: explicit branch-scoped SQL, concurrent-client isolation, native branch
+creation and clean merge, and native conflict/diff information. Earlier push/pull
+scope remains. Fork and clone are outside the initial delivery.
+
+[Plan sprint](plans/maintenance/sc-dolt-plan.md),
+[proposed requirements](sc-dolt/requirements.md), and
+[architecture](sc-dolt/architecture.md) are grounded in
+[pinned Dolt source and executed native probes](research/dolt-v2.6.2/README.md).
+Implementation work is tracked by Beads epic `run-sc-dolt` and its three children.
+
+**Status: on hold.** The branch is rebased on current `develop`. Implementation,
+registry publication, and tag release remain unauthorized until plan QA-1 reports
+PASS on the updated documents and CI is green. Raptor is the first intended
+consumer, not the API namespace.

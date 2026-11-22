@@ -1,0 +1,22 @@
+{
+  "source_repository": "https://github.com/dolthub/dolt",
+  "source_tag": "v2.6.2",
+  "source_commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+  "review_date": "2026-11-02",
+  "sdk_baseline": "026907bf4033685cd61aa09d2d81e243e8e8b0b1",
+  "native_probe": "Official v2.6.2 binary; checksum verified; disposable native SQL tests. No Rust SQLx probe run.",
+  "files": {
+    "version-api.json": "488f642a93a203671ea349220063ac7d4e45c9d4149044643b77c21fdab2b770",
+    "version-api.md": "d35d7a08604ecbbda11bd79d54cd1fab661c26073c5c7762167e675d4c9cf9cd",
+    "identity.md": "ece7f748390cca8c4cd3a1e96f2a334a20ddb98ec1099a727b375d859646bc35",
+    "README.md": "f27ba819cdb5efdca314d1091bbb7904ec4a1b07ba284501be4584b564acefa4",
+    "branches.md": "73b40485aff3981f50ae9d243128d67627dcccefcef9b60c499e35330a4ff013",
+    "identity.json": "a86caf9d31b05f0d9ae3c575c09d7675206af15e537c2632d59a90624c318a1e",
+    "version-api.csv": "825e87ba7c6be943d0b53a1688b1b326935b9a24eb7d0100317df2773425a359",
+    "branches.json": "6032e204a58aae9819bc1ba755412bdb460d963c0f279000f6d1b980726f6139",
+    "probes/probe.md": "31808d6e61ef6cca25995323ad26276a03c01a51801a9d48ddd4312c89dfc8ca",
+    "probes/probe-output.txt": "6ec10d9cf9358d8fd6dd35bc570fd4a9425bc9f0bfb3fabdb4bce35b24dc474e",
+    "probes/supplement-output.txt": "c5c8e943b80bd5047101d38c24d5fb7613dc072b2b0901c4813701da15b61e93",
+    "probes/probe-results.json": "6890d58b307d919d416dd82d7404417cc9c973bbc1eb073a7956d5c31dd0437d"
+  }
+}
