@@ -835,18 +835,21 @@ This item covers `StandardLayers`, the stack products use
 3. `.load::<T>()` and `.resolve()` build the stack and return what
    `Layers` does (REQ-CFG-0005). Filling a slot twice is
    `ConfigError::DuplicateSlot { slot }`, returned by them.
-4. `.insert(After::Slot, source: impl LayerSource + 'static)` adds a
+4. `.insert(after: After, source: impl LayerSource + 'static)`, for example `After::User`, adds a
    consumer source directly above the named slot; several at one point
    apply in call order. There is no way to reorder slots.
 5. `StandardContext::new(family: AppName, products: Vec<AppName>,
    environment: Vec<(OsString, OsString)>)` names the folder and the files. `.with_home(dir)`,
    `.with_system_dir(dir)` and `.with_project_root(dir)` set the folders.
-   `.with_home_var(name)` sets the name of the variable that relocates the
-   user folder; the default is the family name upper-cased with `-` mapped
-   to `_`, plus `_HOME` (`sc-agent` gives `SC_AGENT_HOME`).
+   `.with_home_var(name: impl Into<String>)` sets, verbatim, the name of the
+   variable that relocates the user folder; the default is
+   `family.env_prefix()` with its trailing `__` replaced by `_HOME`
+   (`sc-agent` gives `SC_AGENT_HOME`). The home variable is never applied
+   as an environment override, whatever the env prefixes.
 6. Folders: System is the system dir. User is, first match wins:
-   `with_home(dir)` if set; else the value of the home variable (item 5)
-   in the context's environment, used as the user folder itself; else
+   `with_home(dir)` if set; else the home variable (item 5) if set and
+   non-empty in the context's environment. Either is used as the user
+   folder itself, with nothing appended. Otherwise
    `<home>/.<family>/`, where `<home>` is `USERPROFILE` on Windows and
    `HOME` elsewhere, from the context's environment. Project and Local are
    `<project_root>/.<family>/`. A slot whose folder is not set reads
@@ -859,7 +862,8 @@ This item covers `StandardLayers`, the stack products use
    an optional `FileSource`.
 8. `.accepts(product, paths)` applies `FileSource::accepts` to that
    product's files in every slot; a product not in the context is ignored.
-9. `.alias(variable, path)` adds an alias to the `Env` slot.
+9. `.alias(variable, path)` adds an alias to the `Env` slot; calling it
+   fills that slot even when `.env` is not called.
 
 ### Rationale
 
@@ -884,7 +888,7 @@ Tests use temporary directories passed with `with_home`,
    `decidr.json` overrides `sc-agent.json` in the same folder, and
    `decidr.local.json` in the project folder overrides both.
 5. An unset system dir, home or project root reads nothing for that slot.
-6. `.accepts(decidr, [["model"]])` with `decidr.json` holding `log_root`
+6. `.accepts("decidr", [["model"]])` with `decidr.json` holding `log_root`
    returns `UnknownKey`.
 7. `.env(["A_", "B_"])` with `A_X=1` and `B_X=2` gives `x` = `2`.
 8. With no `with_home` and `HOME` (or `USERPROFILE` on Windows) set to a
@@ -892,7 +896,10 @@ Tests use temporary directories passed with `with_home`,
    `<home>/.<family>/`. With `SC_AGENT_HOME` also set to another temporary
    directory, `.user()` reads that directory instead, and with
    `.with_home_var("ATM_HOME")` it reads the directory named by
-   `ATM_HOME`.
+   `ATM_HOME`. With `with_home(dir)` also set, it reads `dir`. With prefix
+   `SC_AGENT_` and `SC_AGENT_HOME` set, the result has no `home` key.
+9. `.alias("SC_PROJECT", ["project"])` with no `.env` call and
+   `SC_PROJECT=p` gives `project` = `"p"`.
 
 ---
 
