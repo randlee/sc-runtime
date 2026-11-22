@@ -466,25 +466,26 @@
       "id": "ANC-006",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C's rusqlite dependency must remain at version 0.39.x.",
-      "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
+      "statement": "rusqlite tracks the newest release whose libsqlite3-sys the consuming repository's sqlx accepts.",
+      "quote": "Don't put absolute #, limit is from consuming repo. Can sqlx be upgraded? That's easiest fix",
       "kind": "directive",
       "stated_by": "randlee",
-      "stated_at": "2026-11-02",
-      "context": "Phase C planning conversation",
-      "summary": "Keep rusqlite 0.39.x SQLite compatibility",
+      "stated_at": "2026-11-22",
+      "context": "sc-runtime session, RUSTSEC-2026-0459 dependency fix (PR #158)",
+      "summary": "rusqlite: newest release compatible with the consumer's sqlx",
       "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
-      "deterministic_check": "Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.",
+      "deterministic_check": "In the sqlx-resolve fixture, cargo tree --locked -i libsqlite3-sys shows one libsqlite3-sys version, reached by both rusqlite and sqlx-sqlite.",
       "fixtures": {
         "pass": [
-          "Phase C retains rusqlite 0.39.x while upgrading the other approved dependencies."
+          "rusqlite is upgraded to its newest release, and the sqlx-resolve fixture resolves one libsqlite3-sys shared with sqlx."
         ],
         "fail": [
-          "Phase C upgrades rusqlite from 0.39 to a newer minor release line."
+          "rusqlite is pinned to a fixed version line older than the newest release that shares libsqlite3-sys with the consumer's sqlx.",
+          "rusqlite is upgraded to a release whose libsqlite3-sys the consumer's sqlx rejects."
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -551,6 +552,19 @@
           "item": "c-6",
           "reason": "C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-22T22:40:00+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "quote",
+            "deterministic_check",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C's rusqlite dependency must remain at version 0.39.x.",
+          "approved_by": "randlee",
+          "approval": "Owner approved the new wording in session 2026-11-22: 'Agree with anc wording'."
         }
       ],
       "exclude": [
