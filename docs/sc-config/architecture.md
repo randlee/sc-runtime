@@ -1,9 +1,9 @@
 # `sc-config` Architecture
 
-**ID Range:** ADR-CFG-0001 through ADR-CFG-0003  
+**ID Range:** ADR-CFG-0001 through ADR-CFG-0005  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-22  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -12,8 +12,11 @@ Crate-level architecture and ADRs for `sc-config`. Repo-level architecture is in
 [`../architecture.md`](../architecture.md); this crate's requirements are in
 [`requirements.md`](requirements.md); its boundary manifest is
 `boundaries/sc-config/`. ADRs follow
-the shared SC requirement and ADR templates. Every ADR here is Active
-and binding; an ADR changes only through a later ADR that names it.
+the shared SC requirement and ADR templates. Only ADRs with **Status: Active**
+are binding; an Active ADR changes only through a later ADR that names it. An
+ADR with **Status: Proposed** binds nothing, is not cited as governing by any
+sprint plan, and is not enforced by `arch-qa` until a later change makes it
+Active.
 
 ## Role
 
@@ -31,7 +34,21 @@ observability, and nothing in this workspace is a dependency of it.
 | `Loader::load::<T>() -> Result<T, ConfigError>` | same merge as `load`, using only those inputs |
 | `ConfigError` | typed error enum; inventory below and [REQ-CFG-0004](requirements.md) |
 
+Proposed additions, not binding until [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names)
+and [ADR-CFG-0005](#adr-cfg-0005-products-use-one-standard-layer-order) are
+Active: `Layers`, `Resolved`, the `LayerSource` trait and `Layer`;
+`FileSource`, `EnvSource`, `ValueSource`; `Source`, `SourceKind`,
+`ResolvedRow`; `StandardLayers`, `StandardContext`, `Slot`. `ConfigError`
+becomes `#[non_exhaustive]` and gains `UnknownKey` and `SourceFailed`.
+
 ## How loading works
+
+This is `Loader`'s behaviour. Its rules are owned by
+[REQ-CFG-0001](requirements.md) (files and `merge`) and
+[REQ-CFG-0002](requirements.md) (environment); the steps below summarise
+them. When [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names)
+is Active, the same steps run as `Loader`'s preset stack on the layered engine
+([REQ-CFG-0008](requirements.md)).
 
 1. Read `default.json` into a `serde_json::Value` (required).
 2. Read `local.json` if present and merge it over the first value.
@@ -52,6 +69,8 @@ observability, and nothing in this workspace is a dependency of it.
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document  
+
+**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends items 3 and 4 and adds the inventory rows marked Proposed below.
 
 ### Context
 
@@ -114,6 +133,8 @@ carry a source location.
 | Override path is empty or walks through a non-object | `CFG.OVERRIDE` | `Override.variable`, the full variable name | Drop the empty segment, or change the name so the path does not descend through a scalar, array, or null. |
 | Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
 | Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
+| (Proposed, ADR-CFG-0004) A file holds a key outside its accepted set | `CFG.UNKNOWN_KEY` | `UnknownKey.path`, `UnknownKey.key` | Remove the key from that file, or set it where it is accepted. |
+| (Proposed) A consumer-defined source failed | `CFG.SOURCE` | `SourceFailed.origin`, `SourceFailed.message` | Follow the message from that source. |
 
 ### Consequences
 
@@ -166,6 +187,8 @@ panicking constructs and opaque error types in the public API.
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document  
+
+**Proposed amendment:** [ADR-CFG-0004](#adr-cfg-0004-one-layered-engine-consumers-extend-it-with-sources-and-names) item 5 amends the Context and item 3. The other items stay binding, and the Enforced-by check of one `serde_json::from_value::<T>` call applies to the single call in `Resolved::deserialize`.
 
 ### Context
 
@@ -288,24 +311,15 @@ reload features as a note for later, possibly as a separate
    `sc-config`. `sc-config` never depends on that crate, and these features
    are not added to `sc-config` behind a Cargo feature.
 6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
-   list. `allowed_dependencies` is `serde` and `serde_json`.
-   `forbidden_edges` lists workspace-member targets only. This lint tree's
-   only workspace member is `sc-config`, so that list is empty.
-   `sc-observability-types` and the other crates.io names in the
-   [REQ-RUN-0005](../requirements.md) policy table are not members of this
-   tree, so they are not manifest edges. `cargo tree -p sc-config -e normal --prefix none`
-   is what fails those names. a-2 created the single-member root lint tree
-   (`members = ["crates/sc-config"]`). a-5 extends that workspace to four
-   members; this crate's manifest stays the one this sprint writes.
-   `[public] facade` lists every `lib.rs` export. sc-lint 0.8.0 parses that
-   comma-separated list and does not compare it to the crate. The
-   `facade-mismatch` fixture under `examples/spike/boundary-proof/` exports
-   `present` and `extra` while its facade names only
-   `facade_mismatch::present`; `sc-lint lint sc-boundary` on a copy of that
-   tree exits 0. `facade_lists_every_export` is the check that this
-   manifest stays aligned with `lib.rs`. The process-test helper
-   `sc-config-load-helper` is autodiscovered from `src/bin/` in this
-   checkout and excluded from the published package. It is not a facade item.
+   list, and `allowed_dependencies` is `serde` and `serde_json`. Its
+   `forbidden_edges` and the forbidden-name policy are owned by that manifest
+   and [REQ-RUN-0005](../requirements.md); `cargo tree -p sc-config -e normal --prefix none`
+   fails the crates.io names in that policy. `[public] facade` lists every
+   `lib.rs` export, checked by the test `facade_lists_every_export`
+   (`crates/sc-config/tests/facade.rs`), because `sc-lint` does not compare
+   the facade with the crate. The process-test helper
+   `sc-config-load-helper` is autodiscovered from `src/bin/`, excluded from
+   the published package, and is not a facade item.
 
 ### Consequences
 
@@ -339,9 +353,9 @@ reload features as a note for later, possibly as a separate
 ### Implementation
 
 **Enforced by:** `boundaries/sc-config/sc-config.toml`, checked by
-`sc-lint lint sc-boundary`. That manifest's `forbidden_edges` lists
-workspace-member targets only; this tree has none, so the list is empty.
-[REQ-RUN-0005](../requirements.md) still owns the full forbidden-name policy.
+`sc-lint lint sc-boundary`, whose `forbidden_edges` lists the workspace
+crates `sc-config` must not depend on. [REQ-RUN-0005](../requirements.md)
+owns the full forbidden-name policy.
 The `Cargo.toml` inspection in [NFR-CFG-0002](requirements.md) and
 `cargo tree -p sc-config -e normal --prefix none` fail a line beginning with
 a forbidden crate name followed by a space, including
@@ -360,3 +374,152 @@ a forbidden crate name followed by a space, including
   and forbidden edges of all four crates
 - [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md):
   hold the OPEN on cargo feature unification under `cargo build --workspace`
+
+---
+
+## ADR-CFG-0004: One layered engine; consumers extend it with sources and names
+
+**Status:** Proposed  
+**Decision Date:** 2026-11-22  
+**Source:** extensibility review of PR #153 (`sc-config` `layers`, sc-agent team), 2026-11-22; owner rulings of 2026-11-22 (extension points are a trait and consumer-given names; no options beyond those). When Active, amends [ADR-CFG-0002](architecture.md) Context and item 3, and [ADR-CFG-0001](architecture.md) items 3 and 4 and its inventory, as stated in Decision item 5  
+
+### Context
+
+ADR-CFG-0002 fixed three layers: `default.json`, `local.json` and the
+environment. sc-agent needs more: flags above the environment, several
+files, aliased variables, per-file key sets and per-leaf provenance. PR #153
+met that with a second loader that had a closed source enum, a fixed
+precedence, a separate error type without codes and a per-layer decode into
+`T`, which ADR-CFG-0002 item 4 forbids.
+
+### Decision
+
+1. `sc-config` has one layered engine: `Layers` over an ordered list of
+   `LayerSource`s ([REQ-CFG-0005](requirements.md)). `Loader` and
+   `StandardLayers` are stacks on it.
+2. Consumers extend `sc-config` in two ways only: by implementing the
+   public `LayerSource` trait, and by passing their own names (family,
+   products, env prefix, aliases) when they build a stack. The built-in
+   sources have only the options their consumers use (`optional`,
+   `accepts`, `alias`): no format hook, no size cap, no environment naming
+   options ([REQ-CFG-0006](requirements.md)).
+3. Layers fold as `serde_json::Value` with the one `merge`, and the result
+   is deserialised into `T` once. An environment value and a file value for
+   the same setting therefore reach `T` the same way.
+4. `sc-config` never parses command lines; flags enter as a `ValueSource`.
+   It stays synchronous ([NFR-CFG-0003](requirements.md)).
+5. Amendments, effective when Active:
+   - ADR-CFG-0002 Context: the layers are caller-defined; the three-layer
+     stack is `Loader`'s ([REQ-CFG-0008](requirements.md)).
+   - ADR-CFG-0002 item 3: `EnvSource` applies the same override rules as
+     a layer over the value below it. The result is identical.
+   - ADR-CFG-0001 items 3 and 4 and inventory: `ConfigError` becomes
+     `#[non_exhaustive]` and gains the variants of
+     [REQ-CFG-0009](requirements.md); item 4 reads "the path, variable or
+     source at fault". Item 3 and the `CFG.MISSING_DEFAULT` row read "a
+   required file is absent" in place of "`default.json` is absent".
+6. New public enums, and new public structs with public fields, are
+   `#[non_exhaustive]`, so a later field or variant does not break callers.
+
+### Consequences
+
+- sc-agent builds its stack with `StandardLayers`
+  ([ADR-CFG-0005](architecture.md)); PR #153 is reworked onto this design.
+  sc-agent 0.3.x keeps building from tag `sc-config-pin-0.3` until a
+  release carries it.
+- Callers that match `ConfigError` exhaustively add a wildcard arm. Variant
+  literals still compile. One minor-version bump of the pre-1.0 crate.
+- A type error is still reported against the merged value. `resolve()`
+  then `rows()` shows which source set the failing key.
+
+### Alternatives Considered
+
+- Merge PR #153 and generalise later. Rejected: its public types are
+  exhaustive, so each later change breaks callers.
+- Options on the built-in sources (formats, size cap, env separator and
+  key case). Rejected: no consumer needs them, and each one is
+  specification, code and error handling. A consumer that does need one
+  writes a `LayerSource`.
+- Per-layer typed validation. Rejected by ADR-CFG-0002 item 4; provenance
+  attributes errors instead.
+
+### Implementation
+
+**Enforced by:** when Active, the success criteria of
+[REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md), run by `cargo test -p sc-config`, and
+`arch-qa` review for a second load pipeline, a second error type, or a
+new public enum or field-bearing struct without `#[non_exhaustive]`.
+
+### Related Documents
+
+- [ADR-CFG-0001](architecture.md), [ADR-CFG-0002](architecture.md):
+  amended by item 5
+- [ADR-CFG-0005](architecture.md): the standard stack built on this engine
+- [REQ-CFG-0005](requirements.md) through [REQ-CFG-0009](requirements.md)
+
+---
+
+## ADR-CFG-0005: Products use one standard layer order
+
+**Status:** Proposed  
+**Decision Date:** 2026-11-22  
+**Source:** owner instruction, 2026-11-22 ("define a recommended order and methods that enforce that order ... if teams pick and choose, all products will work differently"); owner rulings of 2026-11-22 on folders (`~/.<family>/<product>`) and names; owner direction relayed by ai-lead@sc-ai  
+
+### Context
+
+With only `Layers`, each product would choose its own precedence and its
+own paths, and products built on `sc-config` would behave differently.
+sc-agent ships several products (CLIs and wheels) that share one folder,
+`~/.sc-agent/`, each with its own file.
+
+### Decision
+
+1. The standard order has seven slots, lowest first: defaults, system,
+   user, project, local, environment, flags
+   ([REQ-CFG-0010](requirements.md)). A project's settings override a
+   user's, as in git's system, global, local order.
+2. `StandardLayers` enforces it. Consumers choose which slots to fill and
+   may insert their own source above a named slot; they cannot reorder
+   slots.
+3. The family names the folder and each product names its files:
+   `~/.<family>/<product>.json` and `<project_root>/.<family>/<product>.json`,
+   each overridden by `<product>.local.json` in the same folder.
+4. The consumer passes the home override, system folder and project root.
+   `sc-config` derives only the user folder: a consumer-nameable
+   `<FAMILY>_HOME` variable relocates it (so several apps and instances
+   can share one environment), else `~/.<family>/` from `HOME`, or
+   `USERPROFILE` on Windows, in the environment it is given.
+5. Products built on `sc-config` use `StandardLayers`. A product that uses
+   raw `Layers` says why in its own architecture document. `load` and
+   `Loader` remain for the template's `config/` layout
+   ([REQ-CFG-0008](requirements.md)).
+
+### Consequences
+
+- Every product's configuration is found in the same places and overrides
+  in the same order.
+- sc-agent fills defaults, user, local, env (prefix plus aliases such as
+  `SC_PROJECT`) and flags, with products `[sc-agent, decidr]`.
+- The system folder has no built-in location. The crate README and the
+  rustdoc of `with_system_dir` recommend `/etc/<family>/` on Unix and
+  `%ProgramData%\<family>\` on Windows.
+
+### Alternatives Considered
+
+- A recommended order without enforcement. Rejected: teams then pick and
+  choose.
+- XDG or `%APPDATA%` user folders. Rejected: one folder,
+  `~/.<family>/`, is simpler and is what sc-agent uses.
+- Detecting the project root by walking up to `.git`. Rejected: the
+  consumer knows its root and passes it.
+
+### Implementation
+
+**Enforced by:** when Active, the success criteria of
+[REQ-CFG-0010](requirements.md), run by
+`cargo test -p sc-config`, and `arch-qa` review for a product using raw `Layers` without a stated reason.
+
+### Related Documents
+
+- [ADR-CFG-0004](architecture.md): the engine and extension points
+- [REQ-CFG-0010](requirements.md)
