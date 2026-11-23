@@ -31,6 +31,9 @@ class ReleaseEvidenceTests(unittest.TestCase):
         self.report_dir.mkdir(parents=True)
         original = ROOT / "site/reports/benchmark-monty/20261028T230213Z-Mac.campaign.json"
         self.payload = json.loads(original.read_text())
+        # The stored campaign predates the toolchain bump; give it the required rustc.
+        self.payload["rustc"] = self.payload["rustc"].replace(
+            self.payload["rustc"].split()[1], evidence.RUSTC_VERSION, 1)
         self.payload.update(host="rand-m5", campaign_id="20261028T230213Z-rand-m5", git_sha=self.source,
                             report_html="20261028T230213Z-rand-m5.html")
         self.json_path = self.report_dir / (self.payload["campaign_id"] + ".campaign.json")

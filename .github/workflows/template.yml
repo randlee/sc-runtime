@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.94.1
+        uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
 
@@ -102,7 +102,7 @@ jobs:
         uses: ./.github/actions/rust-build-cache
         with:
           namespace: template-${{ matrix.fixture }}-default-general-db-off-debug-release
-          toolchains: 1.94.1
+          toolchains: 1.98.1
 
       # A tag selects the driver's release mode (no checkout path patch).
       - name: Generate
@@ -155,7 +155,7 @@ jobs:
 
       - name: Install Rust
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        uses: dtolnay/rust-toolchain@1.94.1
+        uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
 
@@ -182,7 +182,7 @@ jobs:
         with:
           namespace: plain-cargo-generate-default-debug
           target: plain
-          toolchains: 1.94.1
+          toolchains: 1.98.1
           compose: 'false'
 
       - name: Generate without the driver
@@ -212,7 +212,7 @@ jobs:
       SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
       - name: Install just
@@ -224,7 +224,7 @@ jobs:
         with:
           namespace: isolated-signal-cron-debug-release
           target: lifecycle
-          toolchains: 1.94.1
+          toolchains: 1.98.1
       - name: Install generation dependencies
         run: |
           set -euo pipefail

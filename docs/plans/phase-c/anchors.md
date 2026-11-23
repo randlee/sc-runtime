@@ -11,7 +11,7 @@ Intent: `docs/plans/phase-c/phase-c-plan.md`
 | ANC-003 | locked | Repository and template share sc-lint 0.8.4 | 2026-11-02 |
 | ANC-004 | locked | Phase C uses c consistently | 2026-11-02 |
 | ANC-005 | retired | Dedicated Phase C planning worktree and PR | 2026-11-02 |
-| ANC-006 | locked | Keep rusqlite 0.39.x SQLite compatibility | 2026-11-02 |
+| ANC-006 | locked | rusqlite: newest release compatible with the consumer's sqlx | 2026-11-22 |
 | ANC-007 | locked | Configuration-selected default boundaries | 2026-11-02 |
 | ANC-008 | locked | Consumer-owned boundaries policy | 2026-11-02 |
 | ANC-009 | locked | upgrade rmcp to its latest released version. | 2026-11-02 |
@@ -140,17 +140,17 @@ Fixtures:
 
 ## ANC-006
 
-Anchor: Phase C's rusqlite dependency must remain at version 0.39.x.
+Anchor: rusqlite tracks the newest release whose libsqlite3-sys the consuming repository's sqlx accepts.
 
-> so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.
+> Don't put absolute #, limit is from consuming repo. Can sqlx be upgraded? That's easiest fix
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 3.
+Said by randlee, sc-runtime session, RUSTSEC-2026-0459 dependency fix (PR #158), 2026-11-22. Status: locked. Version 4. Wording approved: "Agree with anc wording".
 
-Summary: Keep rusqlite 0.39.x SQLite compatibility
+Summary: rusqlite: newest release compatible with the consumer's sqlx
 
 Scope: the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys
 
-Deterministic check to pair with the development gate: Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.
+Deterministic check to pair with the development gate: In the sqlx-resolve fixture, cargo tree --locked -i libsqlite3-sys shows one libsqlite3-sys version, reached by both rusqlite and sqlx-sqlite.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `c-2`: C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions.
