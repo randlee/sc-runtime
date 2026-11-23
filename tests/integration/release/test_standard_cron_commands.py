@@ -897,7 +897,7 @@ class StandardCronCompositionTests(unittest.TestCase):
         for relative in ("src/lib.rs", "tests/application_schema.rs"):
             shutil.copyfile(source/relative,proof/relative)
         manifest=(source/"Cargo.toml").read_text()
-        dependency='version = "=0.2.0"' if registry else 'path = '+json.dumps(str(ROOT/"crates/sc-cron"))
+        dependency='version = "=0.3.0"' if registry else 'path = '+json.dumps(str(ROOT/"crates/sc-cron"))
         manifest=manifest.replace('path = "../../../crates/sc-cron"',dependency)
         (proof/"Cargo.toml").write_text(manifest)
         support=(source/"tests/support/mod.rs").read_text().replace(

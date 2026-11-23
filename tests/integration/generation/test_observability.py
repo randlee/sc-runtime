@@ -298,7 +298,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual({p["name"] for p in packages}, expected)
             for item in packages:
                 self.assertTrue((item["source"] or "").startswith("registry+"), item)
-                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.2.0"
+                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.3.0"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
                 run_owned(["cargo", "+1.98.1", "test", "-p", package, "--features", feature],
@@ -348,7 +348,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((ROOT / "template/Cargo.toml").read_text())
         dependencies = manifest["workspace"]["dependencies"]
         for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"):
-            self.assertEqual(dependencies[name]["version"], "0.2.0")
+            self.assertEqual(dependencies[name]["version"], "0.3.0")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
             self.assertEqual(dependencies[name]["version"], "=1.5.0")

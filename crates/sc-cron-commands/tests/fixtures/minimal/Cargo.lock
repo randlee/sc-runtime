@@ -442,9 +442,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fancy-regex"
-version = "0.17.0"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72cf461f865c862bb7dc573f643dd6a2b6842f7c30b07882b56bd148cc2761b8"
+checksum = "0a2e16b9a584b602f1e0e5e22c30ca0906786088c27500653e432d086def8b53"
 dependencies = [
  "bit-set",
  "regex-automata",
@@ -1023,9 +1023,9 @@ dependencies = [
 
 [[package]]
 name = "monty"
-version = "1.4.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7d354901f6d6655e6bc3826f31c035417025253d7c3f7b3ef1519f681dd3469"
+checksum = "f4f97929e824988444863bed787476e03d7b3d1b21a95c33a9bb31466a67ccd7"
 dependencies = [
  "ahash",
  "chrono",
@@ -1065,9 +1065,9 @@ dependencies = [
 
 [[package]]
 name = "monty-macros"
-version = "1.4.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb48631728d292ef4fd0eb58a7bbe65047fc70beef3c3659d0d3288a71a28f3c"
+checksum = "11f486980c1b8c952f5caa24979e04d64c92732253209c22b65632cbce78ff9c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1076,13 +1076,14 @@ dependencies = [
 
 [[package]]
 name = "monty-types"
-version = "1.4.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "560e0f529ceb10575efb25dabc95d41e9de0f5036fbb46f02c2ac03d83dc89e3"
+checksum = "f5ab5cdd7efd4b4e67630d7f80c4ad4268b1808f9341a0e00aa7c7f5061ebfb7"
 dependencies = [
  "chrono",
  "jiff",
  "monty-macros",
+ "nix",
  "num-bigint",
  "num-traits",
  "ruff_python_stdlib",
@@ -1709,7 +1710,7 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "sc-command"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "sc-observability-types",
  "schemars",
@@ -1720,7 +1721,7 @@ dependencies = [
 
 [[package]]
 name = "sc-cron"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1741,7 +1742,7 @@ dependencies = [
 
 [[package]]
 name = "sc-cron-commands"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "sc-command",
  "sc-cron",

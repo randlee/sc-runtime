@@ -117,12 +117,12 @@ class RuntimeIdentityTests(unittest.TestCase):
         for name in ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"]:
             manifest = tomllib.loads((ROOT / "crates" / name / "Cargo.toml").read_text())
             version = manifest["package"]["version"]
-            self.assertEqual(root_version() if isinstance(version, dict) else version, "0.2.0")
+            self.assertEqual(root_version() if isinstance(version, dict) else version, "0.3.0")
             for template in ["Cargo.toml", "workspace.template.toml"]:
                 spec = tomllib.loads((ROOT / "template" / template).read_text())
-                self.assertEqual(spec["workspace"]["dependencies"][name]["version"], "0.2.0")
+                self.assertEqual(spec["workspace"]["dependencies"][name]["version"], "0.3.0")
         root = tomllib.loads((ROOT / "Cargo.toml").read_text())
-        self.assertEqual(root["workspace"]["package"]["version"], "0.2.0")
+        self.assertEqual(root["workspace"]["package"]["version"], "0.3.0")
 
     def test_former_utoipa5_router_is_rejected_at_public_composition_seam(self):
         fixture = ROOT / "crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml"

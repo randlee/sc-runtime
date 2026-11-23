@@ -14,8 +14,8 @@ independent, and CLI clients can keep defaults off.
 
 ```toml
 [dependencies]
-sc-cron-commands = { version = "0.2.0", default-features = false, features = ["scheduler"] }
-sc-cron = { version = "0.2.0", default-features = false }
+sc-cron-commands = { version = "0.3.0", default-features = false, features = ["scheduler"] }
+sc-cron = { version = "0.3.0", default-features = false }
 ```
 
 ## Selected default path
