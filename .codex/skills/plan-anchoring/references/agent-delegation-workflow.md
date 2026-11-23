@@ -1,5 +1,5 @@
 ---
-version: 0.8.7
+version: 0.11.0
 ---
 
 # Agent delegation workflow

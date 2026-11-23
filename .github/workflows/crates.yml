@@ -78,20 +78,7 @@ jobs:
 
       - name: Install Rust
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        uses: dtolnay/rust-toolchain@1.94.1
-        with:
-          components: rustfmt, clippy
-
-      # sc-cron Monty hooks (`monty` 1.4) require rustc 1.96; workspace MSRV stays 1.94.1.
-      - name: Install Rust 1.96.1 for sc-cron Monty
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        uses: dtolnay/rust-toolchain@1.96.1
-        with:
-          components: clippy
-
-      - name: Restore default Rust 1.94.1
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        uses: dtolnay/rust-toolchain@1.94.1
+        uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
 
@@ -100,10 +87,6 @@ jobs:
         uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
         with:
           just-version: '1.58.0'
-
-      - name: Install generation test dependency
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: python3 -m pip install -r requirements-generation.txt
 
       - name: Install cargo-generate
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -128,7 +111,7 @@ jobs:
         with:
           namespace: crates-linux-default-server-test-util-monty-xwin-nodebug-release
           target: workspace
-          toolchains: 1.94.1-1.96.1
+          toolchains: 1.98.1
 
       - name: Install cargo-deny
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -169,11 +152,11 @@ jobs:
         run: |
           set -euo pipefail
           for features in schema scheduler schema,scheduler; do
-            cargo +1.94.1 test -p sc-cron-commands --no-default-features --features "$features"
+            cargo +1.98.1 test -p sc-cron-commands --no-default-features --features "$features"
           done
-          cargo +1.94.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler -- -D warnings -D clippy::await_holding_lock
-          cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
-          cargo +1.96.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler,monty -- -D warnings -D clippy::await_holding_lock
+          cargo +1.98.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler -- -D warnings -D clippy::await_holding_lock
+          cargo +1.98.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
+          cargo +1.98.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler,monty -- -D warnings -D clippy::await_holding_lock
 
       - name: Test
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -198,7 +181,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: dtolnay/rust-toolchain@1.98.1
       - uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
         with:
           just-version: '1.58.0'
@@ -206,7 +189,7 @@ jobs:
         with:
           namespace: windows-hook-default-monty-debug
           target: windows
-          toolchains: 1.94.1-1.96.1
+          toolchains: 1.98.1
           compose: 'false'
       - name: Verify owned process cleanup on Windows
         run: just test owned-process-windows
@@ -215,16 +198,15 @@ jobs:
       - name: Execute runtime fixture ownership on Windows
         run: cargo test -p sc-runtime --features test-util --lib
       - name: Execute standard cron adapter on Windows
-        run: cargo +1.94.1 test -p sc-cron-commands --no-default-features --features schema,scheduler
+        run: cargo +1.98.1 test -p sc-cron-commands --no-default-features --features schema,scheduler
       - name: Execute isolated runtime Ctrl-C and Ctrl-Break lifecycle
         env:
           SC_RUNTIME_EPHEMERAL_CI: '1'
           SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST: '1'
         run: python crates/sc-runtime/tests/windows_console_driver.py
-      - uses: dtolnay/rust-toolchain@1.96.1
       - name: Execute Monty shared hook environment root
         run: just test windows-hook-monty
       - name: Execute Monty host bridge root
         run: just test windows-host-monty
       - name: Execute Monty cron adapter on Windows
-        run: cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
+        run: cargo +1.98.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty

@@ -119,7 +119,7 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
-| `monty` | Trusted in-process source hooks and empty-default application host registry; requires Rust 1.96.1. |
+| `monty` | Trusted in-process source hooks and empty-default application host registry; needs no separate toolchain. |
 
 Build a `MontyHostRegistry` with `.register("jev_call", handler)?` for custom
 JSON-shaped callbacks. Install it with `Scheduler::with_monty_hosts(registry)`.
@@ -163,7 +163,7 @@ writes. Direct `HookOutput` fields remain raw and Debug output is value-free.
 - Requirements: [`docs/sc-cron/requirements.md`](../../docs/sc-cron/requirements.md)
 - sc-compose hooks: [`docs/sc-cron/hooks-sc-compose.md`](../../docs/sc-cron/hooks-sc-compose.md)
 
-MSRV: Rust 1.94.1 (edition 2024) for the default build; enable `monty` only on Rust 1.96.1 or newer. License: MIT.
+MSRV: Rust 1.98.1 (edition 2024), including the `monty` feature. License: MIT.
 
 ## Cooperative consumers and physical ownership
 

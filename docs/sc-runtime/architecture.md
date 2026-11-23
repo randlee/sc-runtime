@@ -50,6 +50,7 @@ the application. Emission rejection never changes assembly or HTTP results.
 | `RuntimeError` | typed error naming the failing step |
 | `mcp_request_body(&axum::http::request::Parts)` | read-only original bounded HTTP JSON bytes for application-owned canonical validation, NFR-RT-0001 |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
+| `testing::instrument_router` | test-util-only composition of the existing timeout and tracking/logger middleware on an ordinary Axum router |
 
 Shape of use, from the design:
 
@@ -76,7 +77,10 @@ receipt alternative run_with_cleanup_and_bound. These remain Ready-only
 terminal alternatives through the same runner, with startup/teardown order
 and ADR-RT-0005 ownership unchanged. The bound callback observes the owned
 Endpoint after bind; it is not a registry, library wrapper, new typestate or
-general callback mechanism. No other public method is authorized by this change.
+general callback mechanism. The router test utility is the only additional
+free function authorized: it is gated by `test-util`, composes existing
+middleware on an ordinary Axum router, and adds no builder method, callback,
+lifecycle hook, or assembly behavior.
 
 **2026-10-31 amendment:** ADR-RUN-0017 changes only canonical port ownership
 to command for initial release; the existing command edge carries it. No

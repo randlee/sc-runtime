@@ -844,7 +844,7 @@ class StandardCronCompositionTests(unittest.TestCase):
             (app/"crates/cli/tests/phase_c_cron.rs").write_text(RUST_PROOF)
             env = dict(os.environ, CARGO_BUILD_JOBS="2", CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0")
             env["C4_SCHEMA_RECEIPT"] = str(temp/"schemas.json")
-            run(["cargo","+1.96.1","test","-p","c4-selected-cli","--features","daemon/monty",
+            run(["cargo","+1.98.1","test","-p","c4-selected-cli","--features","daemon/monty",
                  "--test","phase_c_cron"],cwd=app,env=env,timeout=600,check=True)
             receipt = json.loads((temp/"schemas.json").read_text())
             schemas = [tool["inputSchema"] for tool in receipt["tools"]["result"]["tools"]
@@ -879,11 +879,11 @@ class StandardCronCompositionTests(unittest.TestCase):
                             valid=copy.deepcopy(example)
                             valid["request"]["payload"]=payload
                             validator.validate(valid)
-            normal = run(["cargo","+1.96.1","tree","-p","c4-selected-cli","-e","normal","--prefix","none"],
+            normal = run(["cargo","+1.98.1","tree","-p","c4-selected-cli","-e","normal","--prefix","none"],
                          cwd=app,env=env,timeout=120,check=True,capture_output=True,text=True).stdout
             for forbidden in ("sc-cron v", "rusqlite v", "libsqlite3-sys v", "pydantic-monty v", "axum v", "rmcp v"):
                 self.assertNotIn(forbidden, normal)
-            metadata = run(["cargo","+1.96.1","metadata",*(["--locked"] if registry else []),"--format-version","1","--all-features"],
+            metadata = run(["cargo","+1.98.1","metadata",*(["--locked"] if registry else []),"--format-version","1","--all-features"],
                            cwd=app,env=env,timeout=120,check=True,capture_output=True,text=True)
             check_daemon_closure(json.loads(metadata.stdout),registry=registry)
             self.run_documented_consumer_schema(app, env, registry)
@@ -897,7 +897,7 @@ class StandardCronCompositionTests(unittest.TestCase):
         for relative in ("src/lib.rs", "tests/application_schema.rs"):
             shutil.copyfile(source/relative,proof/relative)
         manifest=(source/"Cargo.toml").read_text()
-        dependency='version = "=0.2.0"' if registry else 'path = '+json.dumps(str(ROOT/"crates/sc-cron"))
+        dependency='version = "=0.3.0"' if registry else 'path = '+json.dumps(str(ROOT/"crates/sc-cron"))
         manifest=manifest.replace('path = "../../../crates/sc-cron"',dependency)
         (proof/"Cargo.toml").write_text(manifest)
         support=(source/"tests/support/mod.rs").read_text().replace(

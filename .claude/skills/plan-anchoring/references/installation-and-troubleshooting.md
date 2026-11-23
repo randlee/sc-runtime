@@ -1,6 +1,6 @@
 ---
 name: installation-and-troubleshooting
-version: 0.8.7
+version: 0.11.0
 description: Installing plan-anchor into a repository or a parent folder with the plan-anchor-installer skill (install.py), per-repository overrides and per-folder upgrades, the anchor tracker this install is rendered for and how to switch it, the CLIs and credentials plan-anchoring depends on (python3, PyYAML, bd, sc-compose, jq, TypeSafe API key), minimum versions, PATH issues in Claude Code, Codex and Cursor environment policy, validation, and known issues.
 ---
 
@@ -28,7 +28,7 @@ The marketplace plugin (`/plugin install sc-plan-anchor`, the Codex and Cursor p
 uv run "<installer plugin>/install.py" --dest <folder> --tracker br|bd --allow-remote-judge|--no-remote-judge [--target claude,codex,cursor] [--dry-run]
 ```
 
-`uv` reads the script's inline dependencies (PyYAML and the `sc-compose` wheel) and needs no pip step; from a plan-anchor checkout, `uv run plugins/sc-plan-anchor/install.py ...` is the same command. The installer renders the skill and agent text for one tracker, so an installed copy names only that tracker, and writes `<folder>/.claude/skills/plan-anchoring/` and `<folder>/.claude/agents/anchor-*.md` (`.codex/` or `.cursor/` with `--target`; default `claude`). It records the version, tracker, targets and the sha256 of every file it wrote in `<folder>/.sc/plan-anchor/install-lock.json`; commit that file with the installed files. When no settings file says so yet, the installer skill asks once for the tracker and whether plan text may be sent to TypeSafe (Jev); it never infers that consent from earlier runs.
+`uv` reads the script's inline dependencies (PyYAML and the `sc-compose` wheel) and needs no pip step; from a plan-anchor checkout, `uv run plugins/sc-plan-anchor/install.py ...` is the same command. The installer renders the skill and agent text for one tracker, so an installed copy names only that tracker, and writes `<folder>/.claude/skills/plan-anchoring/` and `<folder>/.claude/agents/anchor-*.md` (and `.codex/`, `.cursor/`: without `--target` every harness the folder uses, meaning the locked targets, existing installs and every harness directory present, `claude` when there is none; `--target` only adds one). It records the version, tracker, targets and the sha256 of every file it wrote in `<folder>/.sc/plan-anchor/install-lock.json`; commit that file with the installed files. When no settings file says so yet, the installer skill asks once for the tracker and whether plan text may be sent to TypeSafe (Jev); it never infers that consent from earlier runs.
 
 **Destination.** `<folder>` is a repository, or a parent folder that holds several repositories (it need not be a git repository). Global locations are refused with `INSTALL.DEST_GLOBAL` (exit 2): the home directory itself, `~/.claude`, `~/.codex`, `~/.cursor`, `~/.agents`, `/etc/codex`, and any plugin cache under them. A parent folder that is not a repository and has no `.beads/` needs `--tracker` (`TRACKER.REQUIRED` otherwise); `--init-br` is ignored there, so run `br init` in each repository. A subfolder of a repository is not a parent folder: without `--tracker` the installer takes the tracker from the nearest `.sc/plan-anchor/settings.yaml` above it, or from the enclosing repository's `.beads/`, and `--init-br` runs at the repository root.
 
@@ -63,7 +63,7 @@ anchor_tracker: bd
 plan_dir: "docs/plans/phase-b"
 ```
 
-`plan_dir` names the current phase folder, `docs/plans/phase-<current>` with the phase id written out: a relative path with forward slashes and no `..` or `<placeholder>` (`SETTINGS.INVALID_PLAN_DIR`). Set it with `plan_anchor_settings.py set plan_dir docs/plans/phase-<id>`; the installer and `anchor_tracker.py write` keep it. `schema_version` must be `1`. Unknown or duplicate keys are rejected (`SETTINGS.UNKNOWN_KEY`, `SETTINGS.MALFORMED`) so a typo never falls back silently. When the file or its `anchor_tracker` key is absent, the installer detects (rule 2) and the installed `anchor_tracker.py` selects `bd`, checked against disk. `.gitignore` may ignore `.sc/sessions/` and `.sc/*/cache/`, never this file; `write` reports `settings_ignored_by_git` when it is.
+`plan_dir` names the current phase folder, `docs/plans/phase-<current>` with the phase id written out: a relative path with forward slashes and no `..` or `<placeholder>` (`SETTINGS.INVALID_PLAN_DIR`). Set it with `plan_anchor_settings.py set plan_dir docs/plans/phase-<id>`; the installer and `anchor_tracker.py write` keep it. The optional `issue_url_template` (unset by default) turns tracker ids in the change report into links: an http(s) URL holding `{id}` once (`SETTINGS.INVALID_ISSUE_URL` otherwise), set with `plan_anchor_settings.py set issue_url_template 'https://tracker.example/issues/{id}'` and kept the same way (`references/change-report.md`). `schema_version` must be `1`. Unknown or duplicate keys are rejected (`SETTINGS.UNKNOWN_KEY`, `SETTINGS.MALFORMED`) so a typo never falls back silently. When the file or its `anchor_tracker` key is absent, the installer detects (rule 2) and the installed `anchor_tracker.py` selects `bd`, checked against disk. `.gitignore` may ignore `.sc/sessions/` and `.sc/*/cache/`, never this file; `write` reports `settings_ignored_by_git` when it is.
 
 This install is rendered for `bd`; both gates read anchor and question beads with it. The sprint text comes from the caller, from wherever it wrote it (`item_file`).
 
@@ -89,10 +89,10 @@ Rerun the installer for the install folder with the other `--tracker` value. It 
 
 - Install: `brew install steveyegge/beads/bd` (or your team's tap), or with Go `go install github.com/steveyegge/beads/cmd/bd@latest` and `$HOME/go/bin` on PATH.
 
-**sc-compose** (1.7.0 or newer)
+**sc-compose** (1.8.0 or newer)
 
 - Install it from the Synaptic Canvas `sc-compose` release or team package
-  source, then confirm `sc-compose --version` reports at least 1.7.0.
+  source, then confirm `sc-compose --version` reports at least 1.8.0.
 - The skill uses strict checked-in Jinja2 templates for every anchor-tuning
   request/result. Do not continue with hand-built JSON when this CLI is absent.
 
@@ -139,14 +139,14 @@ Use the full path, or `export PATH="/opt/homebrew/bin:$PATH"` for the session.
 | python3 | 3.9 | tested floor; standard library only, except `anchor_tracker.py` |
 | PyYAML | 5.1 | `SafeLoader`-based strict reading of `.sc/plan-anchor/settings.yaml`; CI tests 5.1 and the latest release |
 | bd | 1.x, Dolt-backed `.beads/` only | `--parent`, `--labels`, `--silent`, `--body-file`, `show --json`, `children --json`, `comment --file`, `ready --exclude-label` |
-| sc-compose | 1.7.0 | strict render, declared-variable validation, and `--check-render` |
+| sc-compose | 1.8.0 | strict render, declared-variable validation, and `--check-render` |
 | jq | any current release | gate agents read question-override beads |
 | Jev | `jev-latest` | pin a version once thresholds are tuned |
 
 ## PATH troubleshooting
 
 - A tool works in your terminal but not in the skill: Claude Code's bash did not source the shell init that added it to PATH. Export the directory in the session or use the full path.
-- `sc-compose` is missing: install 1.7.0 or newer and rerun the dependency
+- `sc-compose` is missing: install 1.8.0 or newer and rerun the dependency
   gate; do not hand-assemble the fenced tuning payload.
 - `bd show --json` errors with "no database": run from the repo root that has `.beads/`, or pass `--db <path>` or `-C <repo root>`.
 - The key works in your terminal but the skill says it is missing: it was exported after Claude Code started, or only in an interactive rc file. Put it in `~/.zshenv`; restart Claude Code.

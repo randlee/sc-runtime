@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn rusqlite_hooks_and_interrupt_are_available() {
-        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        let mut connection = rusqlite::Connection::open_in_memory().expect("database");
         let _interrupt = connection.get_interrupt_handle();
         connection
             .busy_handler(Some(|_| false))

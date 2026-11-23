@@ -1,9 +1,9 @@
 # `sc-config` Requirements
 
-**ID Range:** REQ-CFG-0001 through REQ-CFG-0004; NFR-CFG-0001 through NFR-CFG-0003  
+**ID Range:** REQ-CFG-0001 through REQ-CFG-0010; NFR-CFG-0001 through NFR-CFG-0003  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-11-22  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -13,8 +13,11 @@ Crate-level requirements for `sc-config`. Repo-level requirements are in
 are in [`architecture.md`](architecture.md). Extracted from
 [`../sc-runtime-design.md`](../sc-runtime-design.md). Entries follow the
 shared SC requirement and ADR templates: each entry has the sections
-Requirement Statement, Rationale and Success Criteria, in that order. Every id
-is binding and is never reused.
+Requirement Statement, Rationale and Success Criteria, in that order. An id is
+never reused. Only ids with **Status: Active** are binding. An id with
+**Status: Proposed** is a design under review: it binds nothing, sprint plans
+must not cite it as governing, and it becomes binding only when a later change
+sets its status to Active.
 
 ## Purpose
 
@@ -26,16 +29,20 @@ they agree on the endpoint and the instance root.
 
 ## ID Ranges
 
-| Range | Area | Scope |
+| Range | Area | Status |
 |---|---|---|
-| REQ-CFG-0001 through REQ-CFG-0004 | Requirements | - |
-| NFR-CFG-0001 through NFR-CFG-0003 | Non-functional requirements | - |
+| REQ-CFG-0001 through REQ-CFG-0004 | Requirements | Active |
+| REQ-CFG-0005 through REQ-CFG-0009 | Requirements: layered engine ([ADR-CFG-0004](architecture.md)) | Proposed |
+| REQ-CFG-0010 | Requirements: standard layer order ([ADR-CFG-0005](architecture.md)) | Proposed |
+| NFR-CFG-0001 through NFR-CFG-0003 | Non-functional requirements | Active |
 
 ---
 
 ## REQ-CFG-0001: `load` merges `default.json` and `local.json`
 
 **Status:** Active  
+
+**Proposed amendment:** [ADR-CFG-0004](architecture.md) and [REQ-CFG-0008](requirements.md) re-express this behaviour on the layered engine without changing it. Until they are Active this item stands as written.
 
 ### Requirement Statement
 
@@ -170,6 +177,8 @@ equality, so key order is irrelevant.
 ## REQ-CFG-0002: Environment overrides named `APP__KEY__KEY`
 
 **Status:** Active  
+
+**Proposed amendment:** [ADR-CFG-0004](architecture.md) and [REQ-CFG-0008](requirements.md) re-express this behaviour on the layered engine without changing it. Until they are Active this item stands as written.
 
 ### Requirement Statement
 
@@ -462,6 +471,8 @@ for the tests of any program that uses it.
 
 **Status:** Active  
 
+**Proposed amendment:** [REQ-CFG-0009](requirements.md) adds variants and makes `ConfigError` `#[non_exhaustive]`; existing variants are unchanged, except that `MissingDefault` is returned for any absent required file, not only `default.json`. Until it is Active this item stands as written.
+
 ### Requirement Statement
 
 This item covers the public error enum `ConfigError` of the `sc-config` crate
@@ -545,6 +556,327 @@ directory and an in-memory environment.
    failure 3 the line number.
 9. A compile-time test asserts `ConfigError: std::error::Error`, for example
    `fn assert_error<E: std::error::Error>() {}` called with `ConfigError`.
+
+---
+
+## REQ-CFG-0005: One layered engine over caller-supplied sources
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the layered engine of `sc-config` (`crates/sc-config`):
+`Layers`, the `LayerSource` trait and `Layer`. `Loader`
+([REQ-CFG-0008](requirements.md)) and `StandardLayers`
+([REQ-CFG-0010](requirements.md)) are stacks built on it; the crate has no
+other load pipeline ([ADR-CFG-0004](architecture.md)).
+
+1. `LayerSource` MUST be a public, object-safe, unsealed trait:
+
+   ```rust
+   pub trait LayerSource {
+       fn load(&self, base: &serde_json::Value) -> Result<Option<Layer>, ConfigError>;
+   }
+   ```
+
+   `base` is the value accumulated from the layers below, read-only.
+   `Ok(None)` means the source is absent and contributes nothing.
+2. `Layer::new(source: Source, value)` builds a layer; `source` is what
+   provenance reports for all its leaves ([REQ-CFG-0007](requirements.md)).
+   `EnvSource` attributes each leaf to its own variable internally; the
+   variables applied and the files read come from those sources.
+   A key path is a list of string segments; criteria write it as
+   `["a","b"]`.
+3. `Layers::new()` creates an empty stack and `Layers::push(source)` adds a
+   source as the new highest layer. Precedence is push order.
+4. `Layers::resolve()` MUST call each source's `load` once, lowest first,
+   with the value accumulated so far; skip `Ok(None)`; return the first
+   `Err` unchanged; and fold each layer onto the accumulated value with
+   `merge` from [REQ-CFG-0001](requirements.md). It starts from `{}` and
+   returns a `Resolved`. On a deserialise failure, `Deserialize.files` and
+   `Deserialize.variables` list the files and variables that contributed
+   (REQ-CFG-0004 criterion 7).
+5. `Layers::load::<T>()` MUST equal `resolve()` followed by
+   `Resolved::deserialize::<T>()`, which calls `serde_json::from_value::<T>`
+   once on the final value. No layer is deserialised into `T` on its own
+   ([ADR-CFG-0002](architecture.md) item 4).
+
+### Rationale
+
+PR #153 added a second loader with its own file checks, environment order
+and a fixed precedence. One engine over caller-supplied sources removes the
+fork, and the public trait is the extension point: a consumer that needs a
+keychain, a remote store or another file format writes a source.
+
+### Success Criteria
+
+Tests live in `crates/sc-config/tests` and use `ValueSource`
+([REQ-CFG-0006](requirements.md)) unless stated.
+
+1. Stack `[{"a":1,"b":1}, {"a":2}]` resolves to `{"a":2,"b":1}`; pushed in
+   reverse it resolves to `{"a":1,"b":1}`.
+2. A source defined in the test file implements `LayerSource` and its value
+   appears in the result.
+3. A source returning `Ok(None)` leaves the result unchanged.
+4. A source returning `Err` makes `load` return that error, and a source
+   above it is never called (it holds a per-test `Arc<AtomicUsize>`).
+5. An empty stack loads a `#[serde(default)]` struct as its default.
+6. A `T` whose `Deserialize` increments a per-test `Arc<AtomicUsize>` is
+   deserialised once for a three-layer stack.
+7. A load over an existing `default.json` and an empty `local.json` that
+   fails to deserialise lists both files in `Deserialize.files`.
+
+---
+
+## REQ-CFG-0006: Built-in file, environment and value sources
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the three sources `sc-config` ships. Each implements
+`LayerSource` ([REQ-CFG-0005](requirements.md)).
+
+**`FileSource`**
+
+1. `FileSource::new(path)` reads one JSON file with the parsing and error
+   rules of [REQ-CFG-0001](requirements.md) and
+   [REQ-CFG-0004](requirements.md). A path that exists but is not a regular
+   file is `ConfigError::Read`.
+2. A file is required by default: absent is `ConfigError::MissingDefault
+   { path }`. `.optional()` makes an absent file return `Ok(None)`.
+3. `.accepts(paths)` limits the file to the given key paths: a leaf outside
+   them is `ConfigError::UnknownKey { path, key }`; a leaf is inside an
+   accepted path when its path equals it or lies under it. Without
+   `.accepts`, every key is allowed.
+
+**`EnvSource`**
+
+4. `EnvSource::new(prefix: impl Into<String>, environment)` takes the
+   prefix exactly as the consumer gives it (for example `DECIDR_` or
+   `MY_APP__`) and matches it literally against each variable name in the
+   explicit `Vec<(OsString, OsString)>`. The rest of the name is turned
+   into a key path and the value parsed exactly as in
+   [REQ-CFG-0002](requirements.md) items 4 onward: same splitting on `__`,
+   same JSON or string parsing, same order and the same errors. It never
+   reads the process environment. An empty prefix matches every variable.
+   `Loader` passes `app.env_prefix()`, so its behaviour is unchanged.
+5. `.alias(variable, path)` maps one exact variable name to a key path,
+   with the same value parsing. Aliases are applied after prefixed
+   variables, in ascending byte order of the variable name.
+6. An override through a non-object in `base` fails with `CFG.OVERRIDE`,
+   as in REQ-CFG-0002; each overridden path is replaced whole and reported
+   in provenance under its variable.
+
+**`ValueSource`**
+
+7. `ValueSource::new(source, value)` contributes a caller-built
+   `serde_json::Value`, for defaults and parsed command-line flags.
+   `sc-config` does not parse command lines.
+
+### Rationale
+
+These are the sources the template and sc-agent use. An environment value
+and a file value for the same setting reach `T` the same way, through the
+one merged value. Other formats and other naming schemes are a consumer's
+own `LayerSource`, not options here. `accepts` is sc-agent's per-file key
+set (REQ-SAG-0019).
+
+### Success Criteria
+
+1. An absent file returns `MissingDefault`; with `.optional()` it returns
+   `Ok(None)`. A directory at the path returns `Read`.
+2. `.accepts([["a"]])` over `{"a":1,"b":2}` returns `UnknownKey` naming
+   `b`; `.accepts([["laya"]])` over `{"laya":{"port":1}}` loads.
+3. The REQ-CFG-0002 success criteria pass against
+   `EnvSource::new("MY_APP__", env)`, and with prefix `DECIDR_` the
+   variable `DECIDR_LAYA__PORT=1` sets `{"laya":{"port":1}}`.
+4. `.alias("SC_PROJECT", ["project"])` with `SC_PROJECT=x` sets
+   `{"project":"x"}`.
+5. `MY_APP__A__B=2` over a base `{"a":1}` returns `Override`.
+
+---
+
+## REQ-CFG-0007: Per-leaf provenance
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers the provenance in `Resolved`
+([REQ-CFG-0005](requirements.md)).
+
+1. `Source { kind, name }` and `SourceKind { File, Env, Flag, Default,
+   Custom(String) }` MUST be public, `#[non_exhaustive]`, `Clone`, `Eq`,
+   `Display` and `Serialize`, built with `Source::file`, `env`, `flag`,
+   `default` and `custom`. A consumer's own kind uses `Custom`.
+2. A leaf is a scalar, an array, `null` or an empty object of the merged
+   value.
+3. `Resolved::rows()` returns every leaf as
+   `ResolvedRow { path, source, value }` (`Serialize`,
+   `#[non_exhaustive]`), sorted by path:
+   `path` is the leaf's segments, `source` the source of the highest layer
+   that set it (an environment leaf names its variable) and `value` the
+   JSON value. A leaf replaced by a higher layer has no row.
+
+### Rationale
+
+sc-agent's `config show` needs to say where each setting came from.
+
+### Success Criteria
+
+1. Stack `[file {"a":{"b":1,"c":2}}, env MY_APP__A__B=3]` gives rows
+   `a.b` from `MY_APP__A__B` with `3` and `a.c` from the file with `2`.
+2. Stack `[{"a":{"b":1}}, {"a":5}]` gives a row for `a` and none for `a.b`.
+3. A source with `Source::custom("keychain", "login")` is reported as such.
+4. `serde_json::to_value(rows)` succeeds.
+
+---
+
+## REQ-CFG-0008: `Loader` runs on the layered engine, unchanged
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+`Loader::load` MUST run on `Layers` ([REQ-CFG-0005](requirements.md)), and
+every behaviour of [REQ-CFG-0001](requirements.md) through
+[REQ-CFG-0004](requirements.md) is unchanged.
+
+### Rationale
+
+Running `Loader` on the engine leaves one pipeline.
+
+### Success Criteria
+
+1. Every existing test in `crates/sc-config/tests` passes without edits.
+
+---
+
+## REQ-CFG-0009: New `ConfigError` variants
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+1. `ConfigError` stays the crate's only error type and becomes
+   `#[non_exhaustive]`.
+2. It gains these variants, each with a stable code and a recovery step in
+   the [ADR-CFG-0001](architecture.md) inventory and a `Display` that names
+   the path, key or source it carries:
+
+   | Variant | Code |
+   |---|---|
+   | `UnknownKey { path, key }` | `CFG.UNKNOWN_KEY` |
+   | `SourceFailed { origin: Source, message }` | `CFG.SOURCE` |
+
+   A consumer's `LayerSource` reports its own failure as `SourceFailed`.
+3. Existing variants and their fields are unchanged; `MissingDefault`
+   now means any absent required file.
+
+### Rationale
+
+One error type keeps the actionable-error contract of REQ-CFG-0004 for the
+new paths. `#[non_exhaustive]` lets the next variant land without breaking
+callers.
+
+### Success Criteria
+
+1. Each new variant is triggered by a test that asserts its `code()` and
+   that its `Display` names the carried path, key or source.
+2. A test outside the crate matches `ConfigError` with a wildcard arm.
+
+---
+
+## REQ-CFG-0010: `StandardLayers` enforces one layer order
+
+**Status:** Proposed  
+
+### Requirement Statement
+
+This item covers `StandardLayers`, the stack products use
+([ADR-CFG-0005](architecture.md)).
+
+1. The standard slots, lowest first, are the variants of the public enum
+   `Slot` (`#[non_exhaustive]`): `Defaults`, `System`, `User`,
+   `Project`, `Local`, `Env`, `Flags`.
+2. `StandardLayers::new(ctx: StandardContext)` and one method per slot,
+   each taking `self` and returning `Self`: `.defaults(value)`,
+   `.system()`, `.user()`, `.project()`, `.local()`, `.env(prefixes)`,
+   `.flags(value)`. `prefixes` is the consumer's list of literal env
+   prefixes, one per product (REQ-CFG-0006 item 4), applied in list order
+   so a later prefix wins; aliases apply after all of them. A slot not
+   called is not loaded; calling one again replaces the earlier call.
+   Call order does not matter: slots load in slot order.
+3. `.load::<T>()` and `.resolve()` build the stack and return what
+   `Layers` does (REQ-CFG-0005).
+4. `.insert(above: Slot, source: impl LayerSource + 'static)` adds a
+   consumer source directly above the named slot; several at one point
+   apply in call order. There is no way to reorder slots.
+5. `StandardContext::new(family: AppName, products: Vec<AppName>,
+   environment: Vec<(OsString, OsString)>)` names the folder and the files. `.with_home(dir)`,
+   `.with_system_dir(dir)` and `.with_project_root(dir)` set the folders.
+   `.with_home_var(name: impl Into<String>)` sets, verbatim, the name of the
+   variable that relocates the user folder; the default is
+   `family.env_prefix()` with its trailing `__` replaced by `_HOME`
+   (`sc-agent` gives `SC_AGENT_HOME`). The home variable is never applied
+   as an environment override, whatever the env prefixes.
+6. Folders: System is the system dir. User is, first match wins:
+   `with_home(dir)` if set; else the home variable (item 5) if set and
+   non-empty in the context's environment. Either is used as the user
+   folder itself, with nothing appended. Otherwise
+   `<home>/.<family>/`, where `<home>` is `USERPROFILE` on Windows and
+   `HOME` elsewhere, from the context's environment. Project and Local are
+   `<project_root>/.<family>/`. A slot whose folder is not set reads
+   nothing.
+7. Files: in every folder, each product's `<product>.json` is read in list
+   order, then each product's `<product>.local.json` in list order, so a
+   local file wins. In the project folder the `.json` files are the
+   `Project` slot and the `.local.json` files are the `Local` slot; in the
+   system and user folders both belong to that folder's slot. Every file is
+   an optional `FileSource`.
+8. `.accepts(product, paths)` applies `FileSource::accepts` to that
+   product's files in every slot; a product not in the context is ignored.
+9. `.alias(variable, path)` adds an alias to the `Env` slot; calling it
+   fills that slot even when `.env` is not called.
+
+### Rationale
+
+If each product picks its own order and paths, products built on
+`sc-config` behave differently. One builder with fixed slots and
+consumer-given names (family, products, env prefix, aliases) makes them
+behave the same and keeps the folder layout `~/.<family>/<product>.json`
+that sc-agent uses.
+
+### Success Criteria
+
+Tests use temporary directories passed with `with_home`,
+`with_system_dir` and `with_project_root`.
+
+1. A value set in every slot resolves to the `Flags` value; with `Flags`
+   removed, to `Env`; and so on down to `Defaults`. Calling the slot
+   methods in reverse order gives the same result.
+2. `.flags(a)` then `.flags(b)` resolves to `b`.
+3. A source inserted above `Slot::User` overrides the user file and is
+   overridden by the project file.
+4. With family `sc-agent` and products `[sc-agent, decidr]`,
+   `decidr.json` overrides `sc-agent.json` in the same folder, and
+   `decidr.local.json` in the project folder overrides both.
+5. An unset system dir, home or project root reads nothing for that slot.
+6. `.accepts("decidr", [["model"]])` with `decidr.json` holding `log_root`
+   returns `UnknownKey`.
+7. `.env(["A_", "B_"])` with `A_X=1` and `B_X=2` gives `x` = `2`.
+8. With no `with_home` and `HOME` (or `USERPROFILE` on Windows) set to a
+   temporary directory in the context's environment, `.user()` reads
+   `<home>/.<family>/`. With `SC_AGENT_HOME` also set to another temporary
+   directory, `.user()` reads that directory instead, and with
+   `.with_home_var("ATM_HOME")` it reads the directory named by
+   `ATM_HOME`. With `with_home(dir)` also set, it reads `dir`. With prefix
+   `SC_AGENT_` and `SC_AGENT_HOME` set, the result has no `home` key.
+9. `.alias("SC_PROJECT", ["project"])` with no `.env` call and
+   `SC_PROJECT=p` gives `project` = `"p"`. With `.env(["SC_AGENT_"])` also called and
+   `SC_AGENT_PROJECT=q`, `project` is still `"p"`: aliases apply after the
+   prefixes, whatever the call order.
 
 ---
 

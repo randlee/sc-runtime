@@ -33,8 +33,21 @@ their own prompts.
   carry-forward finding it owns. Plan QA is capped at 3 rounds
   (`plan_qa_cycle_limit`); a round that leaves only minor findings reports
   `PASS — minor fixes required, no re-QA`
+- `extensibility-qa` in every QA round, sprint or plan: open-ended in the
+  first round, and in QA-2 and later scope-locked to its own carried
+  findings plus the round's fix diff whenever that diff changes a public
+  API or a consumer-facing record, or removes an option or capability
+  (owner directive 2026-11-22: extensibility is consulted in every round,
+  so cuts made to simplify are checked against named consumers)
 - `ceremony-finding-screen`: every sprint or plan QA round that has
   findings, over all of them, before the report is posted
+- `blastr`: every sprint or plan QA round that has blocking or important
+  findings, over those findings, after the primary reviewers return; its
+  blast-radius triage is a separate report section and recommends only.
+  Consumer: the lead's fix-or-loosen triage. Defect class: over-specified
+  requirements growing through QA (PR #154: 4 records grew to 11). Retire it
+  if two consecutive phases show no `fix-smaller` or `escalate-record-change`
+  verdict the lead adopted.
 - Phase-end review: the initial implementation set plus `flaky-test-qa`
 - Run `flaky-test-qa` earlier when tests changed or instability is suspected
 - Run `schema-reviewer` only when the governed-interface section below names
@@ -93,7 +106,7 @@ in `doc_review` or pre-implementation sprints.
 
 ## Boundary Enforcement
 
-**Product:** sc-lint **0.8.4** (`minimum_version` in root `sc-lint.toml`).
+**Product:** sc-lint **0.8.6** (`minimum_version` in root `sc-lint.toml`).
 
 **Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
 and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
@@ -152,8 +165,7 @@ configuration-derived selected application crate/edge inventory, consumer-owned
 after setup. No copied maintainer manifests or lint rules. Execution receipts
 prove all three analyzers ran; a configured TOML row alone is insufficient.
 
-Successful repeated init after customized SDK files is temporarily waived
-only by [the user decision in #117](https://github.com/randlee/sc-runtime/issues/117),
-tracking [upstream #849](https://github.com/randlee/sc-lint/issues/849).
-Record actual exit3 and unchanged consumer bytes; keep exact0.8.4 and all
-three analyzer/profile proofs. All other quality gates remain binding.
+Repeated native `sc-lint init --just` after customized SDK files must succeed
+and preserve consumer bytes. Regression coverage uses the released 0.8.6 product
+pin and proves all three analyzer/profile paths and the external policy remain
+intact.

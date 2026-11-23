@@ -27,7 +27,7 @@ def check_daemon_closure(metadata, *, registry):
     for name in PUBLIC:
         matches = [p for p in reachable if p["name"] == name]
         assert len(matches) == 1, (name, matches)
-        assert matches[0]["version"] == "0.2.0", matches[0]
+        assert matches[0]["version"] == "0.3.0", matches[0]
         if registry:
             assert matches[0].get("source") == CRATES_IO_SOURCE, matches[0]
     return {p["name"]: p["version"] for p in reachable if p["name"] in PUBLIC | ECOSYSTEM}
@@ -36,7 +36,7 @@ def check_daemon_closure(metadata, *, registry):
 class IdentityGuardTests(unittest.TestCase):
     def test_reachable_duplicate_fails_even_when_a_root_identity_is_valid(self):
         packages = [{"id": "daemon", "name": "sample-daemon", "version": "0.1.1", "source": None}]
-        packages += [{"id": name, "name": name, "version": "0.2.0", "source": CRATES_IO_SOURCE}
+        packages += [{"id": name, "name": name, "version": "0.3.0", "source": CRATES_IO_SOURCE}
                      for name in PUBLIC | ECOSYSTEM]
         packages.append({"id": "old-rmcp", "name": "rmcp", "version": "0.8.0", "source": CRATES_IO_SOURCE})
         nodes = [{"id": p["id"], "deps": []} for p in packages]
@@ -48,8 +48,8 @@ class IdentityGuardTests(unittest.TestCase):
     def metadata(source=CRATES_IO_SOURCE):
         packages = [{"id": "path+file:///consumer#sample-daemon@0.1.1",
                      "name": "sample-daemon", "version": "0.1.1", "source": None}]
-        packages += [{"id": f"{source}#{name}@0.2.0", "name": name,
-                      "version": "0.2.0", "source": source} for name in sorted(PUBLIC | ECOSYSTEM)]
+        packages += [{"id": f"{source}#{name}@0.3.0", "name": name,
+                      "version": "0.3.0", "source": source} for name in sorted(PUBLIC | ECOSYSTEM)]
         nodes = [{"id": p["id"], "deps": []} for p in packages]
         nodes[0]["deps"] = [{"pkg": p["id"], "dep_kinds": [{"kind": None}]} for p in packages[1:]]
         return {"packages": packages, "resolve": {"nodes": nodes}}

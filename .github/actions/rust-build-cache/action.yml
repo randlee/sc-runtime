@@ -13,6 +13,9 @@ inputs:
   compose:
     description: Install the pinned generation tool
     default: 'true'
+  compose-version:
+    description: Exact sc-compose release to install from GitHub (not crates.io compile)
+    default: '1.7.0'
 runs:
   using: composite
   steps:
@@ -44,15 +47,36 @@ runs:
       id: compose-cache
       with:
         path: ${{ runner.temp }}/sc-compose
-        key: sc-compose-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.toolchains }}-1.7.0-locked
+        key: sc-compose-v2-${{ runner.os }}-${{ runner.arch }}-${{ inputs.compose-version }}-release-binary
     - name: Install sc-compose
       if: inputs.compose == 'true' && steps.compose-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: cargo install sc-compose --version '=1.7.0' --locked --root "$RUNNER_TEMP/sc-compose"
+      env:
+        SC_COMPOSE_VERSION: ${{ inputs.compose-version }}
+      run: |
+        set -euo pipefail
+        root="$RUNNER_TEMP/sc-compose"
+        mkdir -p "$root"
+        arch="$(uname -m)"
+        case "$arch" in
+          x86_64) triple="x86_64-unknown-linux-gnu" ;;
+          aarch64) triple="aarch64-unknown-linux-gnu" ;;
+          *) echo "unsupported runner arch: $arch" >&2; exit 1 ;;
+        esac
+        archive="sc-compose_${SC_COMPOSE_VERSION}_${triple}.tar.gz"
+        base="https://github.com/randlee/sc-compose/releases/download/v${SC_COMPOSE_VERSION}"
+        curl -fsSL -o "$RUNNER_TEMP/${archive}" "${base}/${archive}"
+        curl -fsSL -o "$RUNNER_TEMP/checksums.txt" "${base}/checksums.txt"
+        expected="$(awk -v file="$archive" '$2 == file { print $1; exit }' "$RUNNER_TEMP/checksums.txt")"
+        test -n "$expected"
+        echo "${expected}  $RUNNER_TEMP/${archive}" | sha256sum -c -
+        tar xzf "$RUNNER_TEMP/${archive}" -C "$root" --strip-components=1
     - name: Verify sc-compose and expose binary
       if: inputs.compose == 'true'
       shell: bash
+      env:
+        SC_COMPOSE_VERSION: ${{ inputs.compose-version }}
       run: |
         set -euo pipefail
-        "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx 'sc-compose 1.7.0'
+        "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx "sc-compose ${SC_COMPOSE_VERSION}"
         echo "$RUNNER_TEMP/sc-compose/bin" >> "$GITHUB_PATH"

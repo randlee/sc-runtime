@@ -198,7 +198,7 @@ def check_trees(root):
     violations = []
     for package, features in FEATURES.items():
         for feature in features:
-            cmd = ["cargo"] + (["+1.96.1"] if feature and "monty" in feature.split(",") else [])
+            cmd = ["cargo"] + (["+1.98.1"] if feature and "monty" in feature.split(",") else [])
             cmd += ["tree", "-p", package, "-e", "normal,build", "--prefix", "none", "--color", "never"]
             if feature:
                 cmd += ["--features", feature]
@@ -244,7 +244,7 @@ class ProductionToolBoundaryTests(unittest.TestCase):
 
     def test_transitive_tree_checks_package_names(self):
         self.assertEqual(tree_violations('sc-runtime v0.1.1\ninnocent v1.0\nagent-team-mail-core v1.0\n'), ['agent-team-mail-core'])
-        self.assertEqual(tree_violations('sc-cron v0.1.1\nmonty v1.4.0\n'), [])
+        self.assertEqual(tree_violations('sc-cron v0.1.1\nmonty v1.6.0\n'), [])
 
     def test_real_fixture_manifests_reject_production_and_allow_dev_only(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -373,7 +373,7 @@ repository MUST define these three recipes. That is the name `sc-lint init
 `just test` MUST run all of these. The list is decided in this document; the
 sc-runtime design names only the recipe.
 
-1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.96; see items 2 and 6).
+1. `cargo test --workspace --exclude sc-cron` (Monty needs rustc 1.98; see items 2 and 6).
 2. `cargo test -p sc-cron` with default features.
 3. `cargo test -p sc-config`, `cargo test -p sc-transport`,
    `cargo test -p sc-command` and `cargo test -p sc-runtime`, each with
@@ -385,8 +385,8 @@ sc-runtime design names only the recipe.
 4. `cargo test -p sc-transport --features server` and
    `cargo test -p sc-command --features server`.
 5. The generator contract tests under `tests/unit/`.
-6. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`
-   1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).
+6. `cargo test -p sc-cron --features monty` on **rustc 1.98** (the `monty`
+   1.6 crates require 1.98, which is the single workspace toolchain).
 
 `lint` and `test` are the standard SC base command names; they MUST NOT be
 renamed or aliased to other primary names.
@@ -401,12 +401,12 @@ that plain `cargo generate` works without the driver, and therefore runs
 A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `just lint` and `just test` at the repository root on every pull request.
 
-`just lint` with no profile runs the sc-lint 0.8.4 full profile through
+`just lint` with no profile runs the sc-lint 0.8.6 full profile through
 `.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
 `boundary` lint), line-counts, `cargo fmt --all -- --check`,
 `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
 `cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on
-**rustc 1.96**. `just lint gates`
+**rustc 1.98**. `just lint gates`
 is the early profile of boundary plus line-counts. The line-counts key is
 `[line_counts] max_production_lines` and its value is `1000` for non-test
 files under `crates/*/src`. `template/**/*.rs` is not configured in this
@@ -1984,18 +1984,18 @@ use and the path CI tests cannot drift apart.
 
 ---
 
-## REQ-RUN-0307: sc-lint 0.8.4 consumer install
+## REQ-RUN-0307: sc-lint 0.8.6 consumer install
 
 **Status:** Active  
 
 ### Requirement Statement
 
-Every SC repository exposes the same base `just` commands. sc-lint 0.8.4
+Every SC repository exposes the same base `just` commands. sc-lint 0.8.6
 installs them. The placeholder `Justfile` and the prototype-handoff order are
 retired.
 
 1. The install command is `sc-lint init --just`.
-2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.4
+2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.6
    and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
    The only additional invocation wiring is the three analyzer entries below.
 3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
@@ -2025,7 +2025,7 @@ remain after a later init.
 
 ### Success Criteria
 
-1. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
+1. `template/sc-lint.toml` sets `minimum_version` to `0.8.6`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile` that stands in for this install.
 2. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
@@ -2034,8 +2034,9 @@ remain after a later init.
 4. In that project, copy `crates/store-sqlite/.sqlx/` to a directory outside
    the project, delete the original, and run `just db-prepare`: it recreates
    the directory, and `diff -r` of the copy and the recreated directory
-   prints nothing. Running `sc-lint init --just` again leaves `db-prepare`
-   in place.
+   prints nothing. After customization, repeated native `sc-lint init --just`
+   and the public `just setup` and `just upgrade` commands succeed and preserve
+   the SDK's custom profiles, `db-prepare`, and edited external boundary policy.
 5. The rendered `.github/workflows/ci.yml` has at least one `run:` step that
    is `just lint` and at least one that is `just test`; every `run:` step
    that lints or tests is one of those two; the file contains no direct
@@ -2045,7 +2046,7 @@ remain after a later init.
    configuration-derived application crate/edge inventory (ADR-RUN-0005).
 
 
-Phase C invocation contract (sc-lint **0.8.4** for repository and consumer):
+Current invocation contract (sc-lint **0.8.6** for repository and consumer):
 
 ```toml
 [[tool.sc-lint.lint]]
@@ -2068,23 +2069,9 @@ After setup it is consumer-owned: later setup/upgrade and repeated
 `sc-lint init --just` must preserve policy edits, analyzer declarations, both
 profiles and `db-prepare`. Bootstrap execution receipts must identify all three
 exact analyzer commands and zero statuses; TOML inspection alone is insufficient.
-ADR-RUN-0005 records the released-product result and the narrow temporary
-user waiver below; byte preservation and real analyzer execution stay binding.
-
-
-Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
-[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
-after SDK/consumer customization. Released0.8.4 returns exit3
-`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
-Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
-result explicitly; never report init PASS, hide its error, force overwrite,
-delete consumer edits or add a workaround wrapper. This known result does not
-block current C1/C2 acceptance. Issue117 owns restoration of the successful
-repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
-all three real analyzers in ordinary/default/full profiles, causal failure
-proofs, configuration-derived fresh boundary policy and consumer ownership/
-preservation, and usable public setup/lint/test/upgrade remain binding. No
-upstream source fix, release or new pin is authorized by this waiver.
+ADR-RUN-0005 records the active 0.8.6 contract. Native repeated initialization
+must succeed while preserving customized consumer files. Historical Phase C
+evidence records the 0.8.4 exit-3 behavior and remains unchanged.
 
 ---
 
@@ -4214,8 +4201,8 @@ The `cargo-generate` template under `template/` MUST NOT contain:
   as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
   clap command model.
 
-The template commits the sc-lint 0.8.4 consumer install:
-`template/sc-lint.toml` (`minimum_version` 0.8.4) and
+The template commits the sc-lint 0.8.6 consumer install:
+`template/sc-lint.toml` (`minimum_version` 0.8.6) and
 `template/.sc-lint/bootstrap.py`, installed with `sc-lint init --just`.
 Public recipes are `setup`, `lint`, `test`, and `upgrade`. The
 consumer-owned recipe `db-prepare` survives a later init. Those files and
@@ -4253,7 +4240,7 @@ rule changes from sc-lint and nothing in this repository changes.
    `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, copied maintainer manifests,
    any `*.just` file.
 2. `grep -rn "^\[lints\|^\[workspace.lints" template` prints nothing.
-3. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
+3. `template/sc-lint.toml` sets `minimum_version` to `0.8.6`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile`. Recipe names are checked by REQ-RUN-0307.
 4. `template/` contains no snapshot file of `openapi.json`, of MCP

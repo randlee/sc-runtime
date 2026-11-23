@@ -63,7 +63,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         return cls._generated_fixture
 
     def run_generated_test(self, app, package, target, name, *, monty=False, ignored=False):
-        cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]
+        cargo = ["cargo", "+1.98.1"] if monty else ["cargo"]
         result = run_owned(
             [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact", *(["--ignored"] if ignored else [])],
             cwd=app, check=False, timeout=900, stdin=subprocess.DEVNULL,
@@ -289,7 +289,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertNotIn("patch", manifest)
             package = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())["package"]["name"]
             metadata = json.loads(owned_check_output(
-                ["cargo", "+1.96.1", "metadata", "--all-features", "--format-version", "1"],
+                ["cargo", "+1.98.1", "metadata", "--all-features", "--format-version", "1"],
                 cwd=app, text=True, timeout=900, stdin=subprocess.DEVNULL,
             ))
             expected = {"sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron",
@@ -298,10 +298,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual({p["name"] for p in packages}, expected)
             for item in packages:
                 self.assertTrue((item["source"] or "").startswith("registry+"), item)
-                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.2.0"
+                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.3.0"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
-                run_owned(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
+                run_owned(["cargo", "+1.98.1", "test", "-p", package, "--features", feature],
                                cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL)
 
     def test_pinned_publish_kit_inventory(self):
@@ -348,7 +348,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((ROOT / "template/Cargo.toml").read_text())
         dependencies = manifest["workspace"]["dependencies"]
         for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"):
-            self.assertEqual(dependencies[name]["version"], "0.2.0")
+            self.assertEqual(dependencies[name]["version"], "0.3.0")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
             self.assertEqual(dependencies[name]["version"], "=1.5.0")

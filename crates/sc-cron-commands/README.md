@@ -8,14 +8,14 @@ JSON semantics stay the same. Nothing starts a job automatically.
 Defaults contain only DTOs and the object-safe `CronExecutor` port. `schema`
 adds the canonical owner-local Schemars/OpenAPI traits. `scheduler` adds
 `StandardCronExecutor`, native `sc_cron::CronOperations`, and application target
-bindings. `monty` explicitly enables the interpreter and requires Rust1.96.1;
-the other builds retain workspace MSRV1.94.1. `schema` and `scheduler` are
+bindings. `monty` explicitly enables the interpreter; all builds use the workspace
+toolchain, Rust 1.98.1. `schema` and `scheduler` are
 independent, and CLI clients can keep defaults off.
 
 ```toml
 [dependencies]
-sc-cron-commands = { version = "0.2.0", default-features = false, features = ["scheduler"] }
-sc-cron = { version = "0.2.0", default-features = false }
+sc-cron-commands = { version = "0.3.0", default-features = false, features = ["scheduler"] }
+sc-cron = { version = "0.3.0", default-features = false }
 ```
 
 ## Selected default path
@@ -130,7 +130,7 @@ of every possible misuse.
 ## Local qualification
 
 Run adapter tests with no features, `schema`, `scheduler`, `schema,scheduler`,
-and explicit `monty` (Rust1.96.1). The isolated consumer fixture has no dev
+and explicit `monty`. The isolated consumer fixture has no dev
 dependencies, so its normal graph cannot be masked by workspace test unification:
 
 ```sh
