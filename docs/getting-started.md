@@ -90,7 +90,7 @@ This JSON publishes crates.io and a GitHub Release carrying the `example` binary
     "homepage": "https://github.com/example/example",
     "license": "MIT",
     "workspace_toml": "Cargo.toml",
-    "rust_toolchain": "1.98.1"
+    "rust_toolchain": "1.94.1"
   },
   "release_targets": [
     {"target": "x86_64-unknown-linux-gnu", "os": "ubuntu-latest", "archive": "tar.gz"}
