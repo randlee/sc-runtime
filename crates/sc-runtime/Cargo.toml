@@ -26,7 +26,7 @@ fd-lock = "4"
 utoipa = "=6.0.0"
 utoipa-axum = "=0.3.0"
 serde = { version = "1", features = ["derive"] }
-rmcp = { version = "~3.8", default-features = false, features = [
+rmcp = { version = "~3.9", default-features = false, features = [
     "server",
     "transport-streamable-http-server",
 ] }
@@ -39,7 +39,7 @@ tower = { version = "0.5", features = ["util"] }
 sc-command = { version = "0.3.0", path = "../sc-command", default-features = false, features = ["test-util"] }
 axum = { version = "0.8.9", features = ["http1", "json", "macros", "tokio"] }
 reqwest = { version = "0.13", default-features = false, features = ["json"] }
-rmcp = { version = "~3.8", default-features = false, features = [
+rmcp = { version = "~3.9", default-features = false, features = [
     "server",
     "transport-streamable-http-server",
 ] }

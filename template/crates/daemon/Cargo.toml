@@ -35,7 +35,7 @@ sc-runtime.workspace = true
 sc-transport.workspace = true
 axum = { version = "0.8.9", features = ["http1", "json", "tokio"] }
 {% if mcp %}
-rmcp = { version = "~3.8", default-features = false, features = [
+rmcp = { version = "~3.9", default-features = false, features = [
     "macros",
     "server",
     "transport-streamable-http-server",

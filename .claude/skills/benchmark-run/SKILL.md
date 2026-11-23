@@ -36,14 +36,14 @@ ssh atmbench@rand-m5
 ```
 
 On `atmbench@rand-m5`, the tree must be clean before you publish. Install the
-Monty toolchain (Rust 1.96.1) and have `sc-compose` on `PATH`. Python cases
+Rust 1.98.1 toolchain and have `sc-compose` on `PATH`. Python cases
 also need `import sc_compose`.
 
 ```sh
 git status --short
 command -v sc-compose
 python3 -c "import sc_compose" || true
-rustup run 1.96.1 rustc --version
+rustup run 1.98.1 rustc --version
 hostname -s
 ```
 
@@ -67,7 +67,7 @@ just --justfile scripts/benchmark/justfile benchmark monty
 ```
 
 `benchmark-monty` is the same Monty campaign. The recipe runs release
-`sc_compose_bench` with `SC_CRON_BENCH=1` on Rust 1.96.1, then writes the
+`sc_compose_bench` with `SC_CRON_BENCH=1` on Rust 1.98.1, then writes the
 campaign under `site/reports/benchmark-monty/`. A campaign id looks like
 `20261027T180000Z-rand-m5`. The runner refuses to overwrite an existing
 campaign file.

@@ -29,6 +29,22 @@ Releases before 0.3.0 are described in `site/announcements/`.
 - **All crates:** the shared version is now 0.3.0. Update every `sc-*`
   requirement together (for example `sc-config = "0.3.0"`). A consumer that
   mixes 0.2.x and 0.3.x `sc-*` crates gets two copies of the shared types.
+- **All crates (MSRV):** the workspace now uses one Rust toolchain,
+  1.98.1. `rust-version` went from 1.94.1 to 1.98.1, and the release
+  toolchain in `release/` matches. (#158)
+  *Migration:* build with rustc >= 1.98.1 (`rustup toolchain install
+  1.98.1`), and raise `rust-version` in your own manifests if you declare
+  one.
+- **sc-cron (`monty` feature):** `monty` and `monty-types` went from 1.4 to
+  1.6. The 1.6 crates are the reason for the rustc 1.98 requirement. (#158)
+  *Migration:* if you depend on `monty` directly next to `sc-cron`'s
+  `monty` feature, move to 1.6 too so only one copy resolves.
+- **sc-cron, sc-runtime-db-sqlite (SQLite):** `rusqlite` went from 0.39 to
+  0.43, which resolves `libsqlite3-sys` 0.40. (#158)
+  *Migration:* a consumer that also uses `sqlx` with SQLite needs
+  `sqlx >= 0.9.1`, the first release that accepts `libsqlite3-sys` 0.40
+  (`>=0.30.1, <0.41.0`). Any direct `rusqlite` dependency must move to 0.43,
+  because the native `links = "sqlite3"` library can only resolve once.
 
 ### Added
 
@@ -67,6 +83,18 @@ Releases before 0.3.0 are described in `site/announcements/`.
   `serde` and `serde_json`. Loading is still synchronous. (#157)
 - **template:** generated projects pin `sc-*` crates at 0.3.0. (this
   release)
+- **template:** generated projects declare `rust-version = "1.98.1"`, and
+  generated CI uses 1.98.1. The daemon template's `main.rs` adds
+  `#![recursion_limit = "256"]`, which rustc 1.98 needs to lay out the
+  daemon future when the MySQL store is generated. (#158)
+  *Migration (existing generated projects):* add
+  `#![recursion_limit = "256"]` to the daemon crate root if
+  rustc 1.98 reports a query-depth overflow.
+- **sc-command, sc-runtime, template daemon:** `rmcp` went from 3.8 to 3.9.
+  (#158)
+- **Compatibility rule:** anchor ANC-006 was amended to v4 with owner
+  approval. `rusqlite` now tracks the newest release whose `libsqlite3-sys`
+  the consuming repository's `sqlx` accepts. (#158)
 - **template:** the generated consumer upgrades to sc-lint 0.8.6, with a
   synchronized bootstrap. The generated SQLite concurrency regression now
   uses two independent stores. (#129)
@@ -78,9 +106,18 @@ Releases before 0.3.0 are described in `site/announcements/`.
 
 ### Security
 
-- No dependency security fixes are in this release yet. The RUSTSEC
-  dependency updates in #158 had not merged into `develop` when this
-  changelog was written. Add them here if they land before the release.
+- RUSTSEC-2026-0459: `rusqlite` 0.39 -> 0.43 and `libsqlite3-sys`
+  0.37 -> 0.40 (see the SQLite migration note under Breaking). (#158)
+- RUSTSEC-2026-0462: `rmcp` 3.8 -> 3.9.0, in the workspace, the template
+  daemon and the contract/consumer fixtures. (#158)
+- RUSTSEC-2026-0592: `url` 2.5.8 -> 2.5.9, in all lockfiles. (#158)
+- RUSTSEC-2026-0543 (chrono is unmaintained; this is not a vulnerability)
+  is ignored in `deny.toml`. No chrono-free release exists: `cron` 0.17,
+  `rmcp` 3.9 (through `schemars` 1.2.3) and `sc-cron` itself use chrono.
+  Replacing chrono is tracked in #159. (#158)
+- `deny.toml`: removed the stale ignores RUSTSEC-2024-0436 (paste) and
+  RUSTSEC-2023-0089 (atomic-polyfill, monty 1.4). No crate in the resolved
+  graph matches them anymore. (this release)
 
 ### Internal (not user-visible)
 

@@ -34,7 +34,7 @@ crates.io release of the new workspace members.
 linux `release_targets` row (`x86_64-unknown-linux-gnu`, `ubuntu-latest`,
 `tar.gz`) is the row [ADR-RUN-0002](../architecture.md) names for the
 workspace source archive `sc-runtime-{version}-source.tar.gz` on the
-`v0.1.0` GitHub Release. The release toolchain is Rust `1.94.1`, the same
+`v0.1.0` GitHub Release. The release toolchain is Rust `1.98.1`, the same
 `rust-version` as the workspace. Publish order is `sc-config`,
 `sc-transport`, `sc-command`, then `sc-runtime`.
 
@@ -86,7 +86,7 @@ run and inspect actual `.crate` normalized manifests/contents for registry
 requirements and absence of local shim/adapter/path/git/patch leakage:
 
 ```sh
-cargo +1.96.1 publish --dry-run --locked -p sc-config -p sc-transport -p sc-command -p sc-runtime -p sc-cron
+cargo +1.98.1 publish --dry-run --locked -p sc-config -p sc-transport -p sc-command -p sc-runtime -p sc-cron
 ```
 
 Record source/toolchain identities, archive checksums and verification output.

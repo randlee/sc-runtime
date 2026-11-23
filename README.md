@@ -11,7 +11,7 @@ Four MIT-licensed library crates and a `cargo-generate` template for a JSON CLI,
 | `sc-command` | Response envelope and REST/MCP conversions |
 | `sc-runtime` | Daemon assembly: instance lock, one router, graceful shutdown |
 
-Each crate is version 0.1.0 and is intended for separate crates.io publication once release authorization completes. Publish order is `sc-config`, `sc-transport`, `sc-command`, then `sc-runtime`. The workspace `rust-version` is 1.94.1.
+Each crate is version 0.1.0 and is intended for separate crates.io publication once release authorization completes. Publish order is `sc-config`, `sc-transport`, `sc-command`, then `sc-runtime`. The workspace `rust-version` is 1.98.1.
 
 ## Generate a project
 
@@ -33,4 +33,4 @@ On a development checkout the driver adds a `[patch.crates-io]` entry that point
 
 Release notes: [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
 
-The integrated tree includes the four crates, the template path above, and the Wyvern wizard (`wizard/wizard.json`, `wizard/pages/`, `scripts/run_wizard.py`). CLI auto-start, attribute-generated CLI tests, and a separate minimum Cargo version beyond Cargo from the 1.94.1 toolchain (including `cargo publish --workspace`) stay deferred. crates.io publication and git tag `v0.1.0` still need release authorization.
+The integrated tree includes the four crates, the template path above, and the Wyvern wizard (`wizard/wizard.json`, `wizard/pages/`, `scripts/run_wizard.py`). CLI auto-start, attribute-generated CLI tests, and a separate minimum Cargo version beyond Cargo from the 1.98.1 toolchain (including `cargo publish --workspace`) stay deferred. crates.io publication and git tag `v0.1.0` still need release authorization.
