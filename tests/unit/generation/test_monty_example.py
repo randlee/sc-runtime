@@ -44,7 +44,7 @@ class MontyExampleTests(unittest.TestCase):
             dependencies = tomllib.loads((ROOT / "template" / name).read_text())["workspace"]["dependencies"]
             self.assertEqual({name for name in dependencies if name in INTERNAL}, INTERNAL)
             for name in INTERNAL:
-                self.assertEqual(dependencies[name]["version"], "0.2.0")
+                self.assertEqual(dependencies[name]["version"], "0.3.0")
             for name in ("sc-observability", "sc-observability-types"):
                 self.assertEqual(dependencies[name]["version"], "=1.5.0")
         with tempfile.TemporaryDirectory(prefix="runtime-default-features-") as temporary:
