@@ -12,7 +12,7 @@ ROOT_CHANNELS = frozenset({"crates_io", "github_release"})
 SUPPORTED_SCHEMA_VERSION = 1
 # Single source for the release Rust toolchain when the manifest does not
 # declare [project].rust_toolchain; workflows read it via `build-plan`.
-DEFAULT_RUST_TOOLCHAIN = "1.98.1"
+DEFAULT_RUST_TOOLCHAIN = "1.94.1"
 
 
 def _require_keys(entry: dict, required: tuple[str, ...], label: str) -> None:

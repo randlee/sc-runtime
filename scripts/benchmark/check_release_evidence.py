@@ -24,6 +24,9 @@ class EvidenceError(Exception):
     """Committed evidence does not establish release readiness."""
 
 
+# Toolchain every authoritative campaign must be measured with.
+RUSTC_VERSION = "1.98.1"
+
 def git(root: Path, *args: str) -> str:
     try:
         return subprocess.run(["git", *args], cwd=root, check=True, text=True,
@@ -80,7 +83,7 @@ def verify_campaign(root: Path, payload: dict, path: Path, module, directories: 
         raise EvidenceError("campaign id does not match UTC")
     if (payload.get("host") != "rand-m5" or payload.get("cargo_profile") != "release"
             or payload.get("harness") != "crates/sc-cron/tests/sc_compose_bench.rs"
-            or not str(payload.get("rustc", "")).startswith("rustc 1.98.1 ")
+            or not str(payload.get("rustc", "")).startswith(f"rustc {RUSTC_VERSION} ")
             or payload.get("python_sc_compose") is not True
             or not str(payload.get("sc_compose_cli_version", "")).startswith("sc-compose ")):
         raise EvidenceError("wrong host, profile, harness, or tool metadata")

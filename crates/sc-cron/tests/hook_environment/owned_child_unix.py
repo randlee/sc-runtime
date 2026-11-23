@@ -26,7 +26,11 @@ def launch(request_path):
         _check_session_inspection()
     except RuntimeError as error:
         print(str(error), file=sys.stderr)
-        (root / "status").write_text(json.dumps({"returncode": 127}))
+        # Publish atomically: the Rust side polls for "status" and must never
+        # read a partly written file.
+        temporary = root / "status.tmp"
+        temporary.write_text(json.dumps({"returncode": 127}))
+        os.replace(temporary, root / "status")
         return 127
     config = root / "launcher.json"
     config.write_text(json.dumps({"args": [decode(raw) for raw in request["args"]],

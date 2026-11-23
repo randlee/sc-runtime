@@ -130,9 +130,9 @@ def test_python_setup_selects_manifest_toolchain_for_all_maturin_builds(tmp_path
     assert steps.index(selection) > next(i for i, s in enumerate(steps) if s.get("uses", "").startswith("dtolnay/rust-toolchain@"))
     output = tmp_path / "environment"
     result = subprocess.run(["bash", "-c", selection["run"]], cwd=tmp_path,
-        env={**os.environ, "GITHUB_ENV": str(output), "RELEASE_RUST_TOOLCHAIN": "1.98.1"}, capture_output=True, text=True, timeout=30)
+        env={**os.environ, "GITHUB_ENV": str(output), "RELEASE_RUST_TOOLCHAIN": "1.94.1"}, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, result.stderr
-    assert output.read_text() == "RUSTUP_TOOLCHAIN=1.98.1\n"
+    assert output.read_text() == "RUSTUP_TOOLCHAIN=1.94.1\n"
     workflow = yaml.safe_load((INSTALL.PACKAGE_ROOT / ".github/workflows/release.yml").read_text())
     for job in ["build-python-wheels", "build-python-sdists"]:
         setup = next(s for s in workflow["jobs"][job]["steps"] if s.get("uses") == "./.github/actions/setup-python-release-build")
